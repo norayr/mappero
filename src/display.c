@@ -1008,7 +1008,8 @@ sat_panel_expose(GtkWidget *widget, GdkEventExpose *event)
         FALSE);
 
     /* Sat View/In Use */
-    tmp = g_strdup_printf("%d/%d", _gps.satinuse, _gps.satinview);
+    tmp = g_strdup_printf("%d/%d %.0fm", _gps.satinuse, _gps.satinview,
+                          _gps.hdop);
     pango_layout_set_text(_sat_panel_layout, tmp, -1);
     pango_layout_set_alignment(_sat_panel_layout, PANGO_ALIGN_LEFT);
     gdk_draw_layout(widget->window,
