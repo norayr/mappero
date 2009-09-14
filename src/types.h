@@ -376,6 +376,7 @@ struct _RepoData {
 };
 
 /** GPS Data and Satellite **/
+#define MAX_SATELLITES 24
 typedef struct _GpsData GpsData;
 struct _GpsData {
     gint fix;
@@ -390,7 +391,7 @@ struct _GpsData {
     gfloat vdop;
     gint satinview;
     gint satinuse;
-    gint satforfix[12];
+    gint satforfix[MAX_SATELLITES];
 };
 
 typedef struct _GpsSatelliteData GpsSatelliteData;

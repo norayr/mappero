@@ -104,7 +104,7 @@ Point _pos = { 0, 0, 0, INT_MIN};
 const Point _point_null = { 0, 0, 0, 0};
 
 GpsData _gps;
-GpsSatelliteData _gps_sat[12];
+GpsSatelliteData _gps_sat[MAX_SATELLITES];
 gboolean _satdetails_on = FALSE;
 
 gboolean _is_first_time = FALSE;
