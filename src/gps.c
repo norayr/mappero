@@ -122,6 +122,13 @@ on_gps_changed(LocationGPSDevice *device)
 	_gps.fix = 2;
 	_gps.satinuse = device->satellites_in_use;
 
+	/* fetch timestamp from gps if available, otherwise create one. */
+	if (device->fix->fields & LOCATION_GPS_DEVICE_TIME_SET) {
+            _pos.time = (time_t)device->fix->time;
+	} else {
+            _pos.time = time(NULL);
+	}
+
 	/* Translate data into integers. */
 	latlon2unit(_gps.lat, _gps.lon, _pos.unitx, _pos.unity);
 
