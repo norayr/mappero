@@ -52,6 +52,11 @@
 #    include <hildon-widgets/hildon-banner.h>
 #endif
 
+//#if (MAEMO_VERSION_MAJOR == 5)
+#    include <gdk/gdkx.h>
+#    include <X11/Xatom.h>
+//#endif
+
 #include "types.h"
 #include "data.h"
 #include "defines.h"
@@ -208,6 +213,26 @@ maemo_mapper_destroy()
 
     vprintf("%s(): return\n", __PRETTY_FUNCTION__);
 }
+
+//#if (MAEMO_VERSION_MAJOR == 5)
+static void
+on_window_realize(GtkWidget *widget, void *userdata)
+{
+  if (widget->window) {
+    /* Tell maemo-status-volume daemon to ungrab keys */
+    unsigned char value = 1; /* ungrab, use 0 to grab */
+    Atom hildon_zoom_key_atom = 
+	    gdk_x11_get_xatom_by_name("_HILDON_ZOOM_KEY_ATOM");
+    Atom integer_atom = gdk_x11_get_xatom_by_name("INTEGER");
+    Display *dpy = 
+	    GDK_DISPLAY_XDISPLAY(gdk_drawable_get_display(widget->window));
+    Window w = GDK_WINDOW_XID(widget->window);
+
+    XChangeProperty(dpy, w, hildon_zoom_key_atom, 
+		    integer_atom, 8, PropModeReplace, &value, 1);
+  }
+}
+//#endif
 
 /**
  * Initialize everything required in preparation for calling gtk_main().
@@ -450,6 +475,11 @@ maemo_mapper_init(gint argc, gchar **argv)
     _window = GTK_WIDGET(hildon_window_new());
     hildon_program_add_window(_program, HILDON_WINDOW(_window));
 
+//#if (MAEMO_VERSION_MAJOR == 5)
+    g_signal_connect(G_OBJECT(_window), "realize",
+            G_CALLBACK(on_window_realize), NULL);
+//#endif
+    
     gtk_window_set_default_size(GTK_WINDOW(_window), 800, 480);
 
     /* Create and add widgets and supporting data. */
