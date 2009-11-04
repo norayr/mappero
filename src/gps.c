@@ -129,6 +129,11 @@ on_gps_changed(LocationGPSDevice *device)
             _pos.time = time(NULL);
 	}
 
+	/* fetch altitude in meters from gps */
+	if (device->fix->fields & LOCATION_GPS_DEVICE_ALTITUDE_SET) {
+            _pos.altitude = (gint)device->fix->altitude;
+	}
+
 	/* Translate data into integers. */
 	latlon2unit(_gps.lat, _gps.lon, _pos.unitx, _pos.unity);
 
