@@ -96,9 +96,25 @@ static gint _gmtoffset = 0;
     } \
 }
 
+static void update_satellite_info(LocationGPSDeviceSatellite *satellite,
+                                  int satellite_index)
+{
+    if (satellite_index >= MAX_SATELLITES)
+        return;
+
+    _gps_sat[satellite_index].prn	= satellite->prn;
+    _gps_sat[satellite_index].elevation	= satellite->elevation / 100;
+    _gps_sat[satellite_index].azimuth	= satellite->azimuth;
+
+    _gps_sat[satellite_index].snr	= satellite->signal_strength;
+    _gps.satforfix[satellite_index]	= satellite->in_use ?
+        satellite->prn : 0;
+}
+
 static void
 on_gps_changed(LocationGPSDevice *device)
 {
+    int i;
     gboolean newly_fixed = FALSE;
 
     /* ignore any signals arriving while gps is disabled */
@@ -123,6 +139,7 @@ on_gps_changed(LocationGPSDevice *device)
 	_gps.heading = device->fix->track;
 	_gps.fix = 2;
 	_gps.satinuse = device->satellites_in_use;
+        _gps.satinview = device->satellites_in_view;
 
 	/* Translate data into integers. */
 	latlon2unit(_gps.lat, _gps.lon, _pos.unitx, _pos.unity);
@@ -137,6 +154,19 @@ on_gps_changed(LocationGPSDevice *device)
 	    map_move_mark();
 	}
     }
+
+    for(i = 0; device->satellites && i < device->satellites->len; i++)
+        update_satellite_info((LocationGPSDeviceSatellite *)
+                              device->satellites->pdata[i], i);
+    _gps.fix = device->fix->mode;
+    _gps.satinuse = device->satellites_in_use;
+    _gps.satinview = device->satellites_in_view;
+
+    if(_gps_info)
+        gps_display_data();
+
+    if(_satdetails_on)
+        gps_display_details();
 }
 
 /**
