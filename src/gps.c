@@ -118,13 +118,42 @@ on_gps_changed(LocationGPSDevice *device)
     gboolean newly_fixed = FALSE;
 
     /* ignore any signals arriving while gps is disabled */
-    if (!_enable_gps) return;
+    if (!_enable_gps)
+        return;
+
+    if (device->fix->fields & LOCATION_GPS_DEVICE_LATLONG_SET) {
+        _gps.lat = device->fix->latitude;
+        _gps.lon = device->fix->longitude;
+    }
+
+    if (device->fix->fields & LOCATION_GPS_DEVICE_SPEED_SET) {
+        _gps.speed = device->fix->speed;
+    }
+
+    if (device->fix->fields & LOCATION_GPS_DEVICE_TRACK_SET) {
+        _gps.heading = device->fix->track;
+    }
+
+    /* fetch timestamp from gps if available, otherwise create one. */
+    if (device->fix->fields & LOCATION_GPS_DEVICE_TIME_SET) {
+        _pos.time = (time_t)device->fix->time;
+    } else {
+        _pos.time = time(NULL);
+    }
+
+    /* fetch altitude in meters from gps */
+    if (device->fix->fields & LOCATION_GPS_DEVICE_ALTITUDE_SET) {
+        _pos.altitude = (gint)device->fix->altitude;
+    }
+
+    /* Translate data into integers. */
+    latlon2unit(_gps.lat, _gps.lon, _pos.unitx, _pos.unity);
 
     /* We consider a fix only if the geocoordinates are given, and if the
      * precision is below 10 km (TODO: this should be a configuration option).
      * The precision is eph, and is measured in centimetres. */
-    if (device->fix->fields & LOCATION_GPS_DEVICE_LATLONG_SET &&
-        device->fix->eph < 10 * 1000 * 100)
+    if ((device->status >= LOCATION_GPS_DEVICE_STATUS_FIX) &&
+	device->fix->eph < 10 * 1000 * 100)
     {
         /* Data is valid. */
         if (_gps_state < RCVR_FIXED)
@@ -132,17 +161,6 @@ on_gps_changed(LocationGPSDevice *device)
             newly_fixed = TRUE;
             set_conn_state(RCVR_FIXED);
         }
-
-	_gps.lat = device->fix->latitude;
-	_gps.lon = device->fix->longitude;
-	_gps.speed = device->fix->speed;
-	_gps.heading = device->fix->track;
-	_gps.fix = 2;
-	_gps.satinuse = device->satellites_in_use;
-        _gps.satinview = device->satellites_in_view;
-
-	/* Translate data into integers. */
-	latlon2unit(_gps.lat, _gps.lon, _pos.unitx, _pos.unity);
 
 	if (track_add(_pos.time, newly_fixed) || newly_fixed)
 	{
