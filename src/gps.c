@@ -153,6 +153,12 @@ on_gps_changed(LocationGPSDevice *device)
 	{
 	    map_move_mark();
 	}
+    } else {
+        track_insert_break(FALSE);
+        _gps.speed = 0;
+        _gps.fix = 0;
+        set_conn_state(RCVR_UP);
+        map_move_mark();
     }
 
     for(i = 0; device->satellites && i < device->satellites->len; i++)
