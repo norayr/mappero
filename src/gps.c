@@ -162,6 +162,15 @@ on_gps_changed(LocationGPSDevice *device)
     _gps.satinuse = device->satellites_in_use;
     _gps.satinview = device->satellites_in_view;
 
+    /*
+     * Horizontal accuracy, liblocation provides the value in
+     * centimeters
+     */
+    _gps.hdop = device->fix->eph / 100;
+
+    /* Vertical inaccuracy, in meters */
+    _gps.vdop = device->fix->epv;
+
     if(_gps_info)
         gps_display_data();
 
