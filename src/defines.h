@@ -48,7 +48,7 @@
 
 #define PI   (3.14159265358979323846)
 
-#define EARTH_RADIUS (3443.91847)
+#define EARTH_RADIUS (6378.13701) /* Kilometers */
 
 /* BT dbus service location */
 #define BASE_PATH                "/org/bluez"
