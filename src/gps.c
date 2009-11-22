@@ -150,10 +150,10 @@ on_gps_changed(LocationGPSDevice *device)
     latlon2unit(_gps.lat, _gps.lon, _pos.unitx, _pos.unity);
 
     /* We consider a fix only if the geocoordinates are given, and if the
-     * precision is below 10 km (TODO: this should be a configuration option).
+     * precision is below 1 km (TODO: this should be a configuration option).
      * The precision is eph, and is measured in centimetres. */
     if ((device->status >= LOCATION_GPS_DEVICE_STATUS_FIX) &&
-	device->fix->eph < 10 * 1000 * 100)
+	device->fix->eph < 1 * 1000 * 100)
     {
         /* Data is valid. */
         if (_gps_state < RCVR_FIXED)
