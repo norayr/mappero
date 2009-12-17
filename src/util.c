@@ -256,55 +256,6 @@ force_min_visible_bars(HildonControlbar *control_bar, gint num_bars)
 #endif
 }
 
-gboolean
-banner_reset()
-{
-    printf("%s()\n", __PRETTY_FUNCTION__);
-
-    /* Re-enable any banners that might have been up. */
-    {
-        if(_connect_banner)
-        {
-            gtk_widget_hide(_connect_banner);
-            gtk_widget_unrealize(_connect_banner);
-            gtk_widget_realize(_connect_banner);
-            gtk_widget_show(_connect_banner);
-        }
-
-        if(_fix_banner)
-        {
-            gtk_widget_hide(_fix_banner);
-            gtk_widget_unrealize(_fix_banner);
-            gtk_widget_realize(_fix_banner);
-            gtk_widget_show(_fix_banner);
-        }
-
-        if(_waypoint_banner)
-        {
-            gtk_widget_hide(_waypoint_banner);
-            gtk_widget_unrealize(_waypoint_banner);
-            gtk_widget_realize(_waypoint_banner);
-            gtk_widget_show(_waypoint_banner);
-        }
-
-        if(_download_banner)
-        {
-            gtk_widget_hide(_download_banner);
-            gtk_widget_unrealize(_download_banner);
-            gtk_widget_realize(_download_banner);
-            gtk_widget_show(_download_banner);
-        }
-
-        /*
-        ConnState old_state = _gps_state;
-        set_conn_state(RCVR_OFF);
-        set_conn_state(old_state);
-        */
-    }
-
-    vprintf("%s(): return FALSE\n", __PRETTY_FUNCTION__);
-    return FALSE;
-}
 /*
  * Get one numeric token off the string, fractional part separator
  * is ',' or '.' and number may follow any token from sep.
