@@ -30,6 +30,7 @@
 #include "math.h"
 #include "osm.h"
 #include "path.h"
+#include "poi.h"
 #include "tile.h"
 #include "util.h"
 
@@ -147,6 +148,40 @@ map_screen_pixel_to_units(MapScreen *screen, gint px, gint py,
     map_screen_pixel_to_screen_units(priv, px, py, &usx, &usy);
     *ux = usx + priv->map_center_ux;
     *uy = usy + priv->map_center_uy;
+}
+
+static void
+map_screen_add_poi(const Point *p, GdkPixbuf *pixbuf, MapScreen *self)
+{
+    MapScreenPrivate *priv;
+    ClutterActor *poi;
+    gint angle, x, y;
+
+    g_return_if_fail(MAP_IS_SCREEN(self));
+    priv = self->priv;
+
+    if (pixbuf)
+        poi = gtk_clutter_texture_new_from_pixbuf(pixbuf);
+    else
+    {
+        ClutterColor color;
+
+        color.red = _color[COLORABLE_POI].red >> 8;
+        color.green = _color[COLORABLE_POI].green >> 8;
+        color.blue = _color[COLORABLE_POI].blue >> 8;
+        color.alpha = 255;
+        poi = clutter_rectangle_new_with_color(&color);
+        clutter_actor_set_size(poi, 3 * _draw_width, 3 * _draw_width);
+    }
+
+    angle = clutter_actor_get_rotation(priv->map, CLUTTER_Z_AXIS,
+                                       NULL, NULL, NULL);
+    clutter_actor_set_rotation(poi, CLUTTER_Z_AXIS, -angle, 0, 0, 0);
+    clutter_actor_set_anchor_point_from_gravity(poi, CLUTTER_GRAVITY_CENTER);
+    x = unit2zpixel(p->unitx, priv->zoom);
+    y = unit2zpixel(p->unity, priv->zoom);
+    clutter_actor_set_position(poi, x, y);
+    clutter_container_add_actor(CLUTTER_CONTAINER(priv->poi_group), poi);
 }
 
 static inline void
@@ -891,6 +926,11 @@ map_screen_set_center(MapScreen *screen, gint x, gint y, gint zoom)
     priv->map_center_ux = x;
     priv->map_center_uy = y;
 
+    /* render the POIs */
+    map_screen_clear_pois(screen);
+    if (_poi_zoom > priv->zoom)
+        map_poi_render(&area, (MapPoiRenderCb)map_screen_add_poi, screen);
+
     /* draw the paths */
     overlay_redraw_idle(screen);
 }
@@ -1066,6 +1106,22 @@ map_screen_action_point(MapScreen *screen)
 }
 
 /**
+ * map_screen_show_pois:
+ * @self: the #MapScreen.
+ * @show: %TRUE if the POIs should be shown.
+ */
+void
+map_screen_show_pois(MapScreen *self, gboolean show)
+{
+    g_return_if_fail(MAP_IS_SCREEN(self));
+
+    if (show)
+        clutter_actor_show(self->priv->poi_group);
+    else
+        clutter_actor_hide(self->priv->poi_group);
+}
+
+/**
  * map_screen_clear_pois:
  * @self: the #MapScreen.
  *
@@ -1080,49 +1136,6 @@ map_screen_clear_pois(MapScreen *self)
     priv = self->priv;
 
     clutter_group_remove_all(CLUTTER_GROUP(priv->poi_group));
-}
-
-/**
- * map_screen_show_poi:
- * @self: the #MapScreen.
- * @x: X coordinate, in units.
- * @y: Y coordinate, in units.
- * @pixbuf: #GdkPixbuf to show, or %NULL if standard icon.
- *
- * Show a POI in the map.
- */
-void
-map_screen_show_poi(MapScreen *self, gint x, gint y, GdkPixbuf *pixbuf)
-{
-    MapScreenPrivate *priv;
-    ClutterActor *poi;
-    gint angle;
-
-    g_return_if_fail(MAP_IS_SCREEN(self));
-    priv = self->priv;
-
-    if (pixbuf)
-        poi = gtk_clutter_texture_new_from_pixbuf(pixbuf);
-    else
-    {
-        ClutterColor color;
-
-        color.red = _color[COLORABLE_POI].red >> 8;
-        color.green = _color[COLORABLE_POI].green >> 8;
-        color.blue = _color[COLORABLE_POI].blue >> 8;
-        color.alpha = 255;
-        poi = clutter_rectangle_new_with_color(&color);
-        clutter_actor_set_size(poi, 3 * _draw_width, 3 * _draw_width);
-    }
-
-    angle = clutter_actor_get_rotation(priv->map, CLUTTER_Z_AXIS,
-                                       NULL, NULL, NULL);
-    clutter_actor_set_rotation(poi, CLUTTER_Z_AXIS, -angle, 0, 0, 0);
-    clutter_actor_set_anchor_point_from_gravity(poi, CLUTTER_GRAVITY_CENTER);
-    x = unit2zpixel(x, priv->zoom);
-    y = unit2zpixel(y, priv->zoom);
-    clutter_actor_set_position(poi, x, y);
-    clutter_container_add_actor(CLUTTER_CONTAINER(priv->poi_group), poi);
 }
 
 void

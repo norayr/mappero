@@ -430,7 +430,7 @@ map_controller_set_show_poi(MapController *self, gboolean show)
     if (_show_poi == show) return;
 
     _show_poi = show;
-    /* TODO */
+    map_screen_show_pois(self->priv->screen, show);
 }
 
 gboolean

@@ -3228,80 +3228,63 @@ poi_browse_dialog(gint unitx, gint unity)
  * Render all the POI data.  This should be done before rendering track data.
  */
 void
-map_render_poi()
+map_poi_render(MapArea *area, MapPoiRenderCb callback, gpointer user_data)
 {
-    gint unitx, unity;
+    Point p;
     gdouble lat1, lat2, lon1, lon2;
     gchar buffer[100];
-    gint poix, poiy;
-    GdkPixbuf *pixbuf = NULL;
-    GError *error = NULL;
-    printf("%s()\n", __PRETTY_FUNCTION__);
+    GdkPixbuf *pixbuf;
 
-    map_screen_clear_pois(MAP_SCREEN(_w_map));
+    if (!_poi_db) return;
 
-    if(_poi_db && _poi_zoom > _zoom)
+    unit2latlon(area->x1, area->y2, lat1, lon1);
+    unit2latlon(area->x2, area->y1, lat2, lon2);
+
+    if(SQLITE_OK != sqlite3_bind_double(_stmt_select_poi, 1, lat1) ||
+       SQLITE_OK != sqlite3_bind_double(_stmt_select_poi, 2, lat2) ||
+       SQLITE_OK != sqlite3_bind_double(_stmt_select_poi, 3, lon1) ||
+       SQLITE_OK != sqlite3_bind_double(_stmt_select_poi, 4, lon2))
     {
-        gint diag_offset = pixel2unit(MAX(_view_width_pixels,
-                    _view_height_pixels) / 2);
-        buf2unit(0, _view_height_pixels, unitx, unity);
-        unitx = _center.unitx - diag_offset;
-        unity = _center.unity + diag_offset;
-        unit2latlon(unitx, unity, lat1, lon1);
-        unitx = _center.unitx + diag_offset;
-        unity = _center.unity - diag_offset;
-        unit2latlon(unitx, unity, lat2, lon2);
+        g_warning("Failed to bind values for _stmt_select_poi");
+        return;
+    }
 
-        if(SQLITE_OK != sqlite3_bind_double(_stmt_select_poi, 1, lat1) ||
-           SQLITE_OK != sqlite3_bind_double(_stmt_select_poi, 2, lat2) ||
-           SQLITE_OK != sqlite3_bind_double(_stmt_select_poi, 3, lon1) ||
-           SQLITE_OK != sqlite3_bind_double(_stmt_select_poi, 4, lon2))
-        {
-            g_printerr("Failed to bind values for _stmt_select_poi\n");
-            return;
-        }
+    while(SQLITE_ROW == sqlite3_step(_stmt_select_poi))
+    {
+        lat1 = sqlite3_column_double(_stmt_select_poi, 0);
+        lon1 = sqlite3_column_double(_stmt_select_poi, 1);
+        gchar *poi_label = g_utf8_strdown(sqlite3_column_str(
+                _stmt_select_poi, 3), -1);
 
-        while(SQLITE_ROW == sqlite3_step(_stmt_select_poi))
+        latlon2unit(lat1, lon1, p.unitx, p.unity);
+
+        /* Try to get icon for specific POI first. */
+        snprintf(buffer, sizeof(buffer), "%s/%s.jpg",
+                 _poi_db_dirname, poi_label);
+        if (!g_file_test(buffer, G_FILE_TEST_IS_REGULAR))
         {
-            lat1 = sqlite3_column_double(_stmt_select_poi, 0);
-            lon1 = sqlite3_column_double(_stmt_select_poi, 1);
-            gchar *poi_label = g_utf8_strdown(sqlite3_column_str(
-                    _stmt_select_poi, 3), -1);
             gchar *cat_label = g_utf8_strdown(sqlite3_column_str(
-                    _stmt_select_poi, 6), -1);
-
-            latlon2unit(lat1, lon1, unitx, unity);
-            unit2buf(unitx, unity, poix, poiy);
-
-            /* Try to get icon for specific POI first. */
+                _stmt_select_poi, 6), -1);
+            /* No icon for specific POI - try for category. */
             snprintf(buffer, sizeof(buffer), "%s/%s.jpg",
-                    _poi_db_dirname, poi_label);
-            pixbuf = gdk_pixbuf_new_from_file(buffer, &error);
-            if(error)
-            {
-                /* No icon for specific POI - try for category. */
-                error = NULL;
-                snprintf(buffer, sizeof(buffer), "%s/%s.jpg",
-                        _poi_db_dirname, cat_label);
-                pixbuf = gdk_pixbuf_new_from_file(buffer, &error);
-            }
-            if(error)
+                     _poi_db_dirname, cat_label);
+            if (!g_file_test(buffer, G_FILE_TEST_IS_REGULAR))
             {
                 /* No icon for POI or for category.
                  * Try default POI icon file. */
-                error = NULL;
                 snprintf(buffer, sizeof(buffer), "%s/poi.jpg",
-                        _poi_db_dirname);
-                pixbuf = gdk_pixbuf_new_from_file(buffer, &error);
+                         _poi_db_dirname);
             }
-            map_screen_show_poi(MAP_SCREEN(_w_map), unitx, unity, pixbuf);
-            g_free(poi_label);
             g_free(cat_label);
         }
-        sqlite3_reset(_stmt_select_poi);
-    }
+        g_free(poi_label);
 
-    vprintf("%s(): return\n", __PRETTY_FUNCTION__);
+        pixbuf = gdk_pixbuf_new_from_file(buffer, NULL);
+        (callback)(&p, pixbuf, user_data);
+        if (pixbuf)
+            g_object_unref(pixbuf);
+    }
+    sqlite3_reset(_stmt_select_poi);
 }
 
 void

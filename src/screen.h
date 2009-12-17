@@ -69,8 +69,8 @@ void map_screen_update_mark(MapScreen *screen);
 
 void map_screen_action_point(MapScreen *screen);
 
+void map_screen_show_pois(MapScreen *self, gboolean show);
 void map_screen_clear_pois(MapScreen *self);
-void map_screen_show_poi(MapScreen *self, gint x, gint y, GdkPixbuf *pixbuf);
 
 void map_screen_get_tap_area_from_units(MapScreen *self, gint ux, gint uy,
                                         MapArea *area);

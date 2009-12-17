@@ -41,7 +41,9 @@ gboolean poi_browse_dialog(gint unitx, gint unity);
 gboolean poi_run_select_dialog(GtkTreeModel *model, PoiInfo *poi);
 GtkTreeModel *poi_get_model_for_area(MapArea *area);
 
-void map_render_poi(void);
+typedef void (*MapPoiRenderCb)(const Point *point, GdkPixbuf *pixbuf,
+                               gpointer user_data);
+void map_poi_render(MapArea *area, MapPoiRenderCb callback, gpointer user_data);
 
 void poi_destroy(void);
 
