@@ -1,3 +1,11 @@
+maemo-mapper (3.0+alpha4) unstable; urgency=low
+
+  * Remove startup dialog.
+  * Faster application startup.
+  * Fix update of tracks.
+
+ -- Alberto Mardegan <mardy@users.sourceforge.net>  Thu, 17 Dec 2009 18:16:53 +0200
+
 maemo-mapper (3.0+alpha3) unstable; urgency=low
 
   * Barcelona Long Weekend release, take two!
