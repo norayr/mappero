@@ -61,14 +61,6 @@ set_center_real(MapController *self)
 
     map_screen_set_center(priv->screen,
                           priv->center.unitx, priv->center.unity, priv->zoom);
-#if OLD_MAP
-    if (_map_widget)
-    {
-        map_center_unit_full(priv->center, priv->zoom,
-                             _center_mode > 0 && _center_rotate
-                             ? _gps.heading : priv->rotation_angle);
-    }
-#endif
     priv->source_map_center = 0;
     return FALSE;
 }
