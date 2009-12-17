@@ -48,8 +48,6 @@ void map_render_paths(void);
 
 void update_gcs(void);
 
-gboolean window_present(void);
-
 void map_pan(gint delta_unitx, gint delta_unity);
 void map_move_mark(void);
 void map_refresh_mark(gboolean force_redraw);

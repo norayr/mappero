@@ -55,6 +55,15 @@ G_DEFINE_TYPE(MapController, map_controller, G_TYPE_OBJECT);
 static MapController *instance = NULL;
 
 static gboolean
+activate_gps()
+{
+    /* Connect to receiver. */
+    if (_enable_gps)
+        rcvr_connect();
+    return FALSE;
+}
+
+static gboolean
 set_center_real(MapController *self)
 {
     MapControllerPrivate *priv = self->priv;
@@ -104,6 +113,8 @@ map_controller_init(MapController *controller)
     map_screen_show_zoom_box(priv->screen, _show_zoomlevel);
 
     map_controller_set_center(controller, _next_center, _next_zoom);
+
+    g_idle_add(activate_gps, NULL);
 }
 
 static void
@@ -163,8 +174,6 @@ map_controller_switch_fullscreen(MapController *self)
         gtk_window_fullscreen(GTK_WINDOW(_window));
     else
         gtk_window_unfullscreen(GTK_WINDOW(_window));
-
-    g_idle_add((GSourceFunc)window_present, NULL);
 }
 
 void

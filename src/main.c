@@ -534,7 +534,7 @@ maemo_mapper_init(gint argc, gchar **argv)
 
     latlon2unit(_gps.lat, _gps.lon, _pos.unitx, _pos.unity);
 
-    gtk_widget_realize(_window);
+    gtk_widget_show(_window);
     menu_init();
     cmenu_init();
     path_init();
@@ -587,9 +587,6 @@ maemo_mapper_init(gint argc, gchar **argv)
     g_signal_connect(G_OBJECT(_conic_conn), "connection-event",
             G_CALLBACK(conic_conn_event), NULL);
 #endif
-
-    g_idle_add((GSourceFunc)window_present, NULL);
-
 
     osso_hw_set_event_cb(_osso, NULL, osso_cb_hw_state, NULL);
 

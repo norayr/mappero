@@ -1139,8 +1139,6 @@ menu_cb_view_fullscreen(GtkMenuItem *item)
     else
         gtk_window_unfullscreen(GTK_WINDOW(_window));
 
-    g_idle_add((GSourceFunc)window_present, NULL);
-
     vprintf("%s(): return TRUE\n", __PRETTY_FUNCTION__);
     return TRUE;
 }

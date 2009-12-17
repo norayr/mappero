@@ -51,11 +51,7 @@ dbus_ifc_cb_default(const gchar *interface, const gchar *method,
 {
     printf("%s()\n", __PRETTY_FUNCTION__);
 
-    if(!strcmp(method, "top_application"))
-    {
-        g_idle_add((GSourceFunc)window_present, NULL);
-    }
-
+    /* TODO: study this code and figure out if this callback can be removed */
     retval->type = DBUS_TYPE_INVALID;
 
     vprintf("%s(): return\n", __PRETTY_FUNCTION__);
