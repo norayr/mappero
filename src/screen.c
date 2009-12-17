@@ -827,6 +827,7 @@ map_screen_set_center(MapScreen *screen, gint x, gint y, gint zoom)
     GtkAllocation *allocation;
     gint diag_halflength_units;
     gint start_tilex, start_tiley, stop_tilex, stop_tiley;
+    MapArea area;
     gint px, py;
     gint cache_amount;
     gint new_zoom;
@@ -854,18 +855,19 @@ map_screen_set_center(MapScreen *screen, gint x, gint y, gint zoom)
                     MAX(allocation->width, allocation->height) / 2,
                     new_zoom);
 
-    start_tilex = unit2ztile(x - diag_halflength_units + _map_correction_unitx,
-                             new_zoom);
+    area.x1 = x - diag_halflength_units + _map_correction_unitx;
+    area.y1 = y - diag_halflength_units + _map_correction_unity;
+    area.x2 = x + diag_halflength_units + _map_correction_unitx;
+    area.y2 = y + diag_halflength_units + _map_correction_unity;
+
+    start_tilex = unit2ztile(area.x1, new_zoom);
     start_tilex = MAX(start_tilex - (cache_amount - 1), 0);
-    start_tiley = unit2ztile(y - diag_halflength_units + _map_correction_unity,
-                             new_zoom);
+    start_tiley = unit2ztile(area.y1, new_zoom);
     start_tiley = MAX(start_tiley - (cache_amount - 1), 0);
-    stop_tilex = unit2ztile(x + diag_halflength_units + _map_correction_unitx,
-                            new_zoom);
+    stop_tilex = unit2ztile(area.x2, new_zoom);
     stop_tilex = MIN(stop_tilex + (cache_amount - 1),
                      unit2ztile(WORLD_SIZE_UNITS, new_zoom));
-    stop_tiley = unit2ztile(y + diag_halflength_units + _map_correction_unity,
-                            new_zoom);
+    stop_tiley = unit2ztile(area.y2, new_zoom);
     stop_tiley = MIN(stop_tiley + (cache_amount - 1),
                      unit2ztile(WORLD_SIZE_UNITS, new_zoom));
 
