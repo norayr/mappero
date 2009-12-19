@@ -56,5 +56,8 @@ GType map_osm_get_type (void);
 
 void map_osm_set_screen_size(MapOsm *self, gint width, gint height);
 
+void map_osm_hide(MapOsm *self);
+void map_osm_show(MapOsm *self);
+
 G_END_DECLS
 #endif /* MAP_OSM_H */

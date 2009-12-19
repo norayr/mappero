@@ -144,7 +144,7 @@ enable_hide_on_timeout(MapOsm *self, gboolean hide_on_timeout)
     static gboolean wrap_action_##action(MapController *controller) \
     { \
         map_controller_action_##action(controller); \
-        return TRUE; \
+        return FALSE; \
     }
 
 WRAP_CONTROLLER_ACTION(point)
@@ -168,7 +168,7 @@ on_gps_toggled(ClutterTexture *button, ClutterButtonEvent *event, MapOsm *self)
     map_controller_set_gps_enabled(controller, enabled);
     gtk_clutter_texture_set_from_pixbuf(button,
         enabled ? self->priv->gps_disable : self->priv->gps_enable, NULL);
-    return TRUE;
+    return FALSE;
 }
 
 static void
@@ -295,27 +295,15 @@ map_osm_init(MapOsm *osm)
 }
 
 static void
-map_osm_show(ClutterActor *actor)
-{
-    CLUTTER_ACTOR_CLASS(map_osm_parent_class)->show(actor);
-
-    /* TODO animation to show the OSM */
-    g_debug("%s called", G_STRFUNC);
-    enable_hide_on_timeout(MAP_OSM(actor), TRUE);
-}
-
-static void
 map_osm_class_init(MapOsmClass *klass)
 {
     GObjectClass *object_class = G_OBJECT_CLASS(klass);
-    ClutterActorClass *actor_class = (ClutterActorClass *)klass;
 
     g_type_class_add_private(object_class, sizeof(MapOsmPrivate));
 
     object_class->constructed = map_osm_constructed;
     object_class->set_property = map_osm_set_property;
     object_class->dispose = map_osm_dispose;
-    actor_class->show = map_osm_show;
 
     g_object_class_install_property(object_class, PROP_WIDGET,
         g_param_spec_object("widget", "widget", "widget",
@@ -368,5 +356,20 @@ map_osm_set_screen_size(MapOsm *self, gint width, gint height)
         clutter_actor_set_position(button, x, y);
         x += dx;
     }
+}
+
+void
+map_osm_hide(MapOsm *self)
+{
+    enable_hide_on_timeout(self, TRUE);
+}
+
+void
+map_osm_show(MapOsm *self)
+{
+    enable_hide_on_timeout(self, FALSE);
+
+    /* TODO animation to show the OSM */
+    clutter_actor_show(CLUTTER_ACTOR(self));
 }
 

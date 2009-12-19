@@ -223,15 +223,15 @@ on_pointer_event(ClutterActor *actor, ClutterEvent *event, MapScreen *screen)
         ClutterButtonEvent *be = (ClutterButtonEvent *)event;
         priv->btn_press_screen_x = be->x;
         priv->btn_press_screen_y = be->y;
+
+        if (!priv->action_ongoing)
+            map_osm_show(MAP_OSM(priv->osm));
     }
     else if (event->type == CLUTTER_BUTTON_RELEASE)
     {
         ClutterButtonEvent *be = (ClutterButtonEvent *)event;
 
-        /* if the screen was not being dragged, show the On-Screen Menu */
-        if (!priv->is_dragging && !priv->action_ongoing)
-            clutter_actor_show(priv->osm);
-        else if (priv->is_dragging)
+        if (priv->is_dragging)
         {
             MapController *controller;
             Point p;
@@ -250,6 +250,8 @@ on_pointer_event(ClutterActor *actor, ClutterEvent *event, MapScreen *screen)
 
         priv->btn_press_screen_x = -1;
         priv->is_dragging = FALSE;
+
+        map_osm_hide(MAP_OSM(priv->osm));
 
         if (be->click_count > 1)
         {
@@ -272,7 +274,6 @@ on_pointer_event(ClutterActor *actor, ClutterEvent *event, MapScreen *screen)
             (ABS(dx) > TOUCH_RADIUS || ABS(dy) > TOUCH_RADIUS))
         {
             priv->is_dragging = TRUE;
-            clutter_actor_hide(priv->osm);
         }
 
         if (priv->is_dragging)
@@ -833,6 +834,7 @@ map_screen_init(MapScreen *screen)
                              "widget", screen,
                              NULL);
     clutter_container_add_actor(CLUTTER_CONTAINER(stage), priv->osm);
+    map_osm_hide(MAP_OSM(priv->osm));
 }
 
 static void
