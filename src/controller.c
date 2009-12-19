@@ -565,6 +565,13 @@ map_controller_set_zoom(MapController *self, gint zoom)
     map_controller_set_center(self, center, zoom);
 }
 
+gint
+map_controller_get_zoom(MapController *self)
+{
+    g_return_val_if_fail(MAP_IS_CONTROLLER(self), 0);
+    return self->priv->zoom;
+}
+
 void
 map_controller_calc_best_center(MapController *self, Point *new_center)
 {
