@@ -42,14 +42,14 @@ typedef struct _MapMarkClass MapMarkClass;
 
 struct _MapMark
 {
-    ClutterCairoTexture parent;
+    ClutterGroup parent;
 
     MapMarkPrivate *priv;
 };
 
 struct _MapMarkClass
 {
-    ClutterCairoTextureClass parent_class;
+    ClutterGroupClass parent_class;
 };
 
 GType map_mark_get_type (void);

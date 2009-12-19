@@ -37,10 +37,13 @@
 
 struct _MapMarkPrivate
 {
+    /* The mark itself */
+    ClutterActor *dot;
+
     guint is_disposed : 1;
 };
 
-G_DEFINE_TYPE(MapMark, map_mark, CLUTTER_TYPE_CAIRO_TEXTURE);
+G_DEFINE_TYPE(MapMark, map_mark, CLUTTER_TYPE_GROUP);
 
 #define MAP_MARK_PRIV(mark) (MAP_MARK(mark)->priv)
 
@@ -74,11 +77,12 @@ map_mark_init(MapMark *mark)
     priv = G_TYPE_INSTANCE_GET_PRIVATE(mark, MAP_TYPE_MARK, MapMarkPrivate);
     mark->priv = priv;
 
-    clutter_cairo_texture_set_surface_size(CLUTTER_CAIRO_TEXTURE(mark),
-                                           MARK_WIDTH, MARK_HEIGHT);
-    clutter_actor_set_anchor_point(CLUTTER_ACTOR(mark),
+    priv->dot = clutter_cairo_texture_new(MARK_WIDTH, MARK_HEIGHT);
+    clutter_actor_set_anchor_point(priv->dot,
                                    MARK_WIDTH / 2,
                                    MARK_HEIGHT - MARK_WIDTH / 2);
+
+    clutter_container_add_actor(CLUTTER_CONTAINER(mark), priv->dot);
 }
 
 static void
@@ -94,15 +98,15 @@ map_mark_class_init(MapMarkClass *klass)
 void
 map_mark_update(MapMark *self)
 {
-    ClutterActor *actor = CLUTTER_ACTOR(self);
+    MapMarkPrivate *priv = self->priv;
     MapController *controller = map_controller_get_instance();
     cairo_t *cr;
     Colorable color;
     gfloat x, y, sqrt_speed;
     gint zoom;
 
-    clutter_actor_get_anchor_point(actor, &x, &y);
-    cr = clutter_cairo_texture_create(CLUTTER_CAIRO_TEXTURE(self));
+    clutter_actor_get_anchor_point(priv->dot, &x, &y);
+    cr = clutter_cairo_texture_create(CLUTTER_CAIRO_TEXTURE(priv->dot));
 
     cairo_new_sub_path(cr);
     cairo_arc(cr, x, y, _draw_width, 0, 2 * M_PI);
@@ -127,10 +131,10 @@ map_mark_update(MapMark *self)
 
     zoom = map_controller_get_zoom(controller);
     /* set position and angle */
-    clutter_actor_set_position(actor,
+    clutter_actor_set_position(CLUTTER_ACTOR(self),
                                unit2zpixel(_pos.unitx, zoom),
                                unit2zpixel(_pos.unity, zoom));
-    clutter_actor_set_rotation(actor,
+    clutter_actor_set_rotation(priv->dot,
                                CLUTTER_Z_AXIS, _gps.heading, 0, 0, 0);
 }
 
