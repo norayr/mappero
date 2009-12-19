@@ -37,6 +37,7 @@ maemo_mapper_SOURCES = \
 	input.c \
 	main.c \
 	maps.c \
+	mark.c \
 	marshal.c \
 	menu.c \
 	osm.c \

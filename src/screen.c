@@ -27,6 +27,7 @@
 #include "defines.h"
 #include "display.h"
 #include "maps.h"
+#include "mark.h"
 #include "math.h"
 #include "osm.h"
 #include "path.h"
@@ -42,10 +43,6 @@
 #define SCALE_HEIGHT    22
 #define ZOOM_WIDTH      25
 #define ZOOM_HEIGHT     SCALE_HEIGHT
-
-#define VELVEC_SIZE_FACTOR 4
-#define MARK_WIDTH      (_draw_width * 4)
-#define MARK_HEIGHT     100
 
 /* (im)precision of a finger tap, in screen pixels */
 #define TOUCH_RADIUS    25
@@ -648,54 +645,11 @@ create_scale_and_zoom(MapScreen *screen)
 }
 
 static void
-update_mark(MapScreen *screen)
-{
-    MapScreenPrivate *priv = screen->priv;
-    cairo_t *cr;
-    Colorable color;
-    gfloat x, y, sqrt_speed;
-
-    clutter_actor_get_anchor_point(priv->mark, &x, &y);
-    cr = clutter_cairo_texture_create(CLUTTER_CAIRO_TEXTURE(priv->mark));
-
-    cairo_new_sub_path(cr);
-    cairo_arc(cr, x, y, _draw_width, 0, 2 * M_PI);
-    cairo_set_line_width(cr, _draw_width);
-    color = (_gps_state == RCVR_FIXED) ? COLORABLE_MARK : COLORABLE_MARK_OLD;
-    set_source_color(cr, &_color[color]);
-    cairo_stroke(cr);
-
-    /* draw the speed vector */
-    sqrt_speed = VELVEC_SIZE_FACTOR * sqrtf(10 + _gps.speed);
-    cairo_move_to(cr, x, y);
-    cairo_line_to(cr, x, y - sqrt_speed);
-    cairo_set_line_width(cr, _draw_width);
-    cairo_set_line_cap(cr, CAIRO_LINE_JOIN_ROUND);
-    color = (_gps_state == RCVR_FIXED) ?
-        (_show_velvec ? COLORABLE_MARK_VELOCITY : COLORABLE_MARK) :
-        COLORABLE_MARK_OLD;
-    set_source_color(cr, &_color[color]);
-    cairo_stroke(cr);
-
-    cairo_destroy(cr);
-
-    /* set position and angle */
-    clutter_actor_set_position(priv->mark,
-                               unit2zpixel(_pos.unitx, priv->zoom),
-                               unit2zpixel(_pos.unity, priv->zoom));
-    clutter_actor_set_rotation(priv->mark,
-                               CLUTTER_Z_AXIS, _gps.heading, 0, 0, 0);
-}
-
-static void
 create_mark(MapScreen *screen)
 {
     MapScreenPrivate *priv = screen->priv;
 
-    priv->mark = clutter_cairo_texture_new(MARK_WIDTH, MARK_HEIGHT);
-    clutter_actor_set_anchor_point(priv->mark,
-                                   MARK_WIDTH / 2,
-                                   MARK_HEIGHT - MARK_WIDTH / 2);
+    priv->mark = g_object_new(MAP_TYPE_MARK, NULL);
 }
 
 static void
@@ -1079,7 +1033,7 @@ void
 map_screen_update_mark(MapScreen *screen)
 {
     g_return_if_fail(MAP_IS_SCREEN(screen));
-    update_mark(screen);
+    map_mark_update(MAP_MARK(screen->priv->mark));
 }
 
 void
