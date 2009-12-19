@@ -318,7 +318,7 @@ window_cb_key_press(GtkWidget* widget, GdkEventKey *event)
             break;
 
         case CUSTOM_ACTION_TOGGLE_FULLSCREEN:
-            map_controller_switch_fullscreen(controller);
+            map_controller_action_switch_fullscreen(controller);
             break;
 
         case CUSTOM_ACTION_TOGGLE_TRACKING:

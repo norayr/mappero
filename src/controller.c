@@ -150,21 +150,21 @@ map_controller_get_main_window(MapController *self)
 }
 
 void
-map_controller_zoom_in(MapController *self)
+map_controller_action_zoom_in(MapController *self)
 {
     g_return_if_fail(MAP_IS_CONTROLLER(self));
     map_controller_set_zoom(self, self->priv->zoom - 1);
 }
 
 void
-map_controller_zoom_out(MapController *self)
+map_controller_action_zoom_out(MapController *self)
 {
     g_return_if_fail(MAP_IS_CONTROLLER(self));
     map_controller_set_zoom(self, self->priv->zoom + 1);
 }
 
 void
-map_controller_switch_fullscreen(MapController *self)
+map_controller_action_switch_fullscreen(MapController *self)
 {
     g_return_if_fail(MAP_IS_CONTROLLER(self));
 
@@ -202,6 +202,13 @@ map_controller_action_track(MapController *self)
 {
     g_return_if_fail(MAP_IS_CONTROLLER(self));
     map_menu_track();
+}
+
+void
+map_controller_action_view(MapController *self)
+{
+    g_return_if_fail(MAP_IS_CONTROLLER(self));
+    map_menu_view();
 }
 
 void
