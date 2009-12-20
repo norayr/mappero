@@ -50,6 +50,9 @@
 
 #define EARTH_RADIUS (6378.13701) /* Kilometers */
 
+/* mean circumference, in meters */
+#define EARTH_CIRCUMFERENCE (40041470)
+
 /* BT dbus service location */
 #define BASE_PATH                "/org/bluez"
 #define BASE_INTERFACE           "org.bluez"
