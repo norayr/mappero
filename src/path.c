@@ -1147,13 +1147,14 @@ route_download(gchar *to)
 {
     GtkWidget *dialog;
     GtkWidget *label;
-    GtkWidget *txt_source_url;
     GtkWidget *btn_swap, *btn_highways;
-    GtkWidget *origin, *destination;
+    GtkWidget *router, *origin, *destination;
     GtkWidget *table, *pannable;
     GtkEntryCompletion *to_comp;
-    HildonTouchSelector *selector;
+    HildonTouchSelector *router_selector;
+    HildonTouchSelector *origin_selector;
     RouteDownloadInfo rdi;
+    gint i;
     gint active_origin_row, row;
 
     g_debug("%s", G_STRFUNC);
@@ -1165,7 +1166,7 @@ route_download(gchar *to)
                                          GTK_STOCK_OK, GTK_RESPONSE_ACCEPT,
                                          NULL);
     rdi.dialog = GTK_WINDOW(dialog);
-    table = gtk_table_new(7, 2, FALSE);
+    table = gtk_table_new(6, 2, FALSE);
 
     pannable = hildon_pannable_area_new();
     gtk_widget_set_size_request(pannable, -1, 400);
@@ -1174,50 +1175,49 @@ route_download(gchar *to)
     gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox), pannable,
                        TRUE, TRUE, 0);
 
-    /* Source URL. */
+    /* Destination. */
     gtk_table_attach(GTK_TABLE(table),
-                     label = gtk_label_new(_("Source URL")),
-                     0, 1, 0, 1, 0, 0, 0, 0);
+                     gtk_label_new(_("Destination")),
+                     0, 1, 1, 2, 0, 0, 0, 0);
     gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5f);
-    txt_source_url = hildon_entry_new(HILDON_SIZE_FINGER_HEIGHT);
-    gtk_table_attach(GTK_TABLE(table), txt_source_url,
-                     1, 2, 0, 1, GTK_EXPAND|GTK_FILL, 0, 0, 0);
+    destination = hildon_entry_new(HILDON_SIZE_FINGER_HEIGHT);
+    gtk_table_attach(GTK_TABLE(table), destination,
+                     1, 2, 1, 2, GTK_EXPAND|GTK_FILL, 0, 0, 0);
+
 
     /* Origin. */
-    selector = HILDON_TOUCH_SELECTOR (hildon_touch_selector_new_text());
+    origin_selector = HILDON_TOUCH_SELECTOR (hildon_touch_selector_new_text());
     row = 0;
     rdi.origin_row_gps = row++;
-    hildon_touch_selector_append_text(selector, _("Use GPS Location"));
+    hildon_touch_selector_append_text(origin_selector, _("Use GPS Location"));
     /* Use "End of Route" by default if they have a route. */
     if(_route.head != _route.tail)
     {
-        hildon_touch_selector_append_text(selector, _("Use End of Route"));
+        hildon_touch_selector_append_text(origin_selector, _("Use End of Route"));
         rdi.origin_row_route = row++;
         rdi.origin_row_other = row++;
         active_origin_row = rdi.origin_row_route;
     }
     else
     {
-        /* Else use "GPS Location" if they have GPS enabled. */
         rdi.origin_row_other = row++;
         rdi.origin_row_route = -1;
-        active_origin_row =
-            _enable_gps ? rdi.origin_row_gps : rdi.origin_row_other;
+        active_origin_row = (_pos.unitx != 0 && _pos.unity != 0) ? rdi.origin_row_gps : rdi.origin_row_other;
     }
-    hildon_touch_selector_append_text(selector, _("Other..."));
-    hildon_touch_selector_set_active(selector, 0, active_origin_row);
+    hildon_touch_selector_append_text(origin_selector, _("Other..."));
+    hildon_touch_selector_set_active(origin_selector, 0, active_origin_row);
 
     origin =
         g_object_new(HILDON_TYPE_PICKER_BUTTON,
                      "arrangement", HILDON_BUTTON_ARRANGEMENT_HORIZONTAL,
                      "size", HILDON_SIZE_FINGER_HEIGHT,
                      "title", _("Origin"),
-                     "touch-selector", selector,
+                     "touch-selector", origin_selector,
                      "xalign", 0.0,
                      NULL);
     g_signal_connect(origin, "value-changed",
                      G_CALLBACK(on_origin_changed_other), &rdi);
-    gtk_table_attach_defaults(GTK_TABLE(table), origin, 0, 2, 1, 2);
+    gtk_table_attach_defaults(GTK_TABLE(table), origin, 0, 2, 2, 3);
 
     /* Auto. */
     rdi.autoroute = hildon_check_button_new(HILDON_SIZE_FINGER_HEIGHT);
@@ -1226,26 +1226,33 @@ route_download(gchar *to)
     gtk_button_set_label(GTK_BUTTON(rdi.autoroute), _("Auto-Update"));
     g_signal_connect(origin, "value-changed",
                      G_CALLBACK(on_origin_changed_gps), &rdi);
-    gtk_table_attach_defaults(GTK_TABLE(table), rdi.autoroute, 0, 2, 2, 3);
-
-    /* Destination. */
-    gtk_table_attach(GTK_TABLE(table),
-                     gtk_label_new(_("Destination")),
-                     0, 1, 4, 5, 0, 0, 0, 0);
-    gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5f);
-    destination = hildon_entry_new(HILDON_SIZE_FINGER_HEIGHT);
-    gtk_table_attach(GTK_TABLE(table), destination,
-                     1, 2, 4, 5, GTK_EXPAND|GTK_FILL, 0, 0, 0);
+    gtk_table_attach_defaults(GTK_TABLE(table), rdi.autoroute, 0, 1, 3, 4);
 
     /* Avoid Highways. */
     btn_highways = hildon_check_button_new(HILDON_SIZE_FINGER_HEIGHT);
     gtk_button_set_label(GTK_BUTTON(btn_highways), _("Avoid Highways"));
-    gtk_table_attach_defaults(GTK_TABLE(table), btn_highways, 0, 2, 5, 6);
+    gtk_table_attach_defaults(GTK_TABLE(table), btn_highways, 1, 2, 3, 4);
 
     /* Swap button. */
     btn_swap = gtk_toggle_button_new_with_label("Swap");
     hildon_gtk_widget_set_theme_size(btn_swap, HILDON_SIZE_FINGER_HEIGHT);
-    gtk_table_attach_defaults(GTK_TABLE(table), btn_swap, 0, 2, 6, 7);
+    gtk_table_attach_defaults(GTK_TABLE(table), btn_swap, 0, 2, 4, 5);
+
+    /* Router */
+    router_selector = HILDON_TOUCH_SELECTOR (hildon_touch_selector_new_text ());
+    i = 0;
+    while (_route_dl_url_table[i].title)
+        hildon_touch_selector_append_text (router_selector, _route_dl_url_table[i++].title);
+    hildon_touch_selector_set_active (router_selector, 0, _route_dl_index);
+
+    router = g_object_new(HILDON_TYPE_PICKER_BUTTON,
+                          "arrangement", HILDON_BUTTON_ARRANGEMENT_HORIZONTAL,
+                          "size", HILDON_SIZE_FINGER_HEIGHT,
+                          "title", _("Router"),
+                          "touch-selector", router_selector,
+                          "xalign", 0.0,
+                          NULL);
+    gtk_table_attach_defaults(GTK_TABLE(table), router, 0, 2, 5, 6);
 
     /* Set up auto-completion. */
     to_comp = gtk_entry_completion_new();
@@ -1253,9 +1260,7 @@ route_download(gchar *to)
     gtk_entry_completion_set_text_column(to_comp, 0);
     gtk_entry_set_completion(GTK_ENTRY(destination), to_comp);
 
-
     /* Initialize fields. */
-    gtk_entry_set_text(GTK_ENTRY(txt_source_url), _route_dl_url);
     if(to)
         gtk_entry_set_text(GTK_ENTRY(destination), to);
 
@@ -1264,19 +1269,22 @@ route_download(gchar *to)
     while(GTK_RESPONSE_ACCEPT == gtk_dialog_run(GTK_DIALOG(dialog)))
     {
         gchar buffer[BUFFER_SIZE];
-        const gchar *source_url, *from, *to;
+        const gchar *source_url = NULL, *from, *to;
         gboolean avoid_highways;
         gint replace_policy;
+        gint router_idx;
 
-        source_url = gtk_entry_get_text(GTK_ENTRY(txt_source_url));
+        router_idx = hildon_touch_selector_get_active (router_selector, 0);
+        if (router_idx >= 0) {
+            source_url = _route_dl_url_table[router_idx].url;
+            _route_dl_index = router_idx;
+        }
+
         if (STR_EMPTY(source_url))
         {
             popup_error(dialog, _("Please specify a source URL."));
             continue;
         }
-
-        g_free(_route_dl_url);
-        _route_dl_url = g_strdup(source_url);
 
         active_origin_row =
             hildon_picker_button_get_active(HILDON_PICKER_BUTTON(origin));
