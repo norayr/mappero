@@ -30,6 +30,7 @@
 
 #include <clutter-gtk/clutter-gtk.h>
 #include <stdlib.h>
+#include <string.h>
 
 #define VELVEC_SIZE_FACTOR 4
 #define MARK_WIDTH      (_draw_width * 4)
@@ -40,12 +41,126 @@ struct _MapMarkPrivate
     /* The mark itself */
     ClutterActor *dot;
 
+    /* The elliptical actor representing the GPS uncertainty */
+    ClutterActor *uncertainty;
+
     guint is_disposed : 1;
 };
 
 G_DEFINE_TYPE(MapMark, map_mark, CLUTTER_TYPE_GROUP);
 
 #define MAP_MARK_PRIV(mark) (MAP_MARK(mark)->priv)
+
+/* Define the uncertainty actor */
+#define MAP_TYPE_UNCERTAINTY (map_uncertainty_get_type())
+#define MAP_UNCERTAINTY(obj) \
+(G_TYPE_CHECK_INSTANCE_CAST ((obj), MAP_TYPE_UNCERTAINTY, MapUncertainty))
+#define MAP_IS_UNCERTAINTY(obj) \
+(G_TYPE_CHECK_INSTANCE_TYPE ((obj), MAP_TYPE_UNCERTAINTY))
+#define MAP_UNCERTAINTY_CLASS(klass) \
+(G_TYPE_CHECK_CLASS_CAST ((klass), MAP_TYPE_UNCERTAINTY, MapUncertaintyClass))
+#define MAP_IS_UNCERTAINTY_CLASS(klass) \
+(G_TYPE_CHECK_CLASS_TYPE ((klass), MAP_TYPE_UNCERTAINTY))
+#define MAP_UNCERTAINTY_GET_CLASS(obj) \
+(G_TYPE_INSTANCE_GET_CLASS ((obj), MAP_TYPE_UNCERTAINTY, MapUncertaintyClass))
+
+typedef struct _MapUncertainty
+{
+      ClutterActor parent_instance;
+} MapUncertainty;
+
+typedef struct _MapUncertaintyClass
+{
+      ClutterActorClass parent_class;
+} MapUncertaintyClass;
+
+G_DEFINE_TYPE(MapUncertainty, map_uncertainty, CLUTTER_TYPE_ACTOR);
+
+typedef struct {
+    gfloat sin;
+    gfloat cos;
+} SineCosine;
+
+static const SineCosine sine_cosine[] = {
+    { 0.0, 1.0 },
+    { 0.195090322016, 0.980785280403 },
+    { 0.382683432365, 0.923879532511 },
+    { 0.55557023302, 0.831469612303 },
+    { 0.707106781187, 0.707106781187 },
+    { 0.831469612303, 0.55557023302 },
+    { 0.923879532511, 0.382683432365 },
+    { 0.980785280403, 0.195090322016 },
+};
+#define POINTS_PER_QUADRANT G_N_ELEMENTS(sine_cosine)
+
+static void
+map_uncertainty_paint(ClutterActor *actor)
+{
+    ClutterActorBox allocation = { 0, };
+    GdkColor *color;
+    gfloat width, height;
+    CoglTextureVertex vertices[POINTS_PER_QUADRANT * 4];
+    gint i;
+
+    color = &_color[COLORABLE_MARK];
+
+    clutter_actor_get_allocation_box(actor, &allocation);
+    clutter_actor_box_get_size(&allocation, &width, &height);
+
+    cogl_push_matrix();
+    cogl_set_source_color4ub(color->red >> 8,
+                             color->green >> 8,
+                             color->blue >> 8,
+                             clutter_actor_get_paint_opacity(actor) / 3);
+
+    cogl_scale(width, height, 1);
+    memset(vertices, 0, sizeof(vertices));
+    for (i = 0; i < POINTS_PER_QUADRANT; i++)
+    {
+        gint v = i;
+        vertices[v].x = sine_cosine[i].cos;
+        vertices[v].y = sine_cosine[i].sin;
+    }
+    for (i = 0; i < POINTS_PER_QUADRANT; i++)
+    {
+        gint v = i + POINTS_PER_QUADRANT;
+        vertices[v].x = -sine_cosine[i].sin;
+        vertices[v].y = sine_cosine[i].cos;
+    }
+    for (i = 0; i < POINTS_PER_QUADRANT; i++)
+    {
+        gint v = i + 2 * POINTS_PER_QUADRANT;
+        vertices[v].x = -sine_cosine[i].cos;
+        vertices[v].y = -sine_cosine[i].sin;
+    }
+    for (i = 0; i < POINTS_PER_QUADRANT; i++)
+    {
+        gint v = i + 3 * POINTS_PER_QUADRANT;
+        vertices[v].x = sine_cosine[i].sin;
+        vertices[v].y = -sine_cosine[i].cos;
+    }
+    cogl_polygon(vertices, POINTS_PER_QUADRANT * 4, FALSE);
+#if 0
+    /* See http://bugzilla.openedhand.com/show_bug.cgi?id=1916 */
+    cogl_path_ellipse(0, 0, width, height);
+    cogl_path_fill();
+#endif
+    cogl_pop_matrix();
+}
+
+static void
+map_uncertainty_class_init(MapUncertaintyClass *klass)
+{
+    ClutterActorClass *actor_class = CLUTTER_ACTOR_CLASS(klass);
+
+    actor_class->paint = map_uncertainty_paint;
+}
+
+static void
+map_uncertainty_init(MapUncertainty *uncertainty)
+{
+}
+
 
 static inline void
 set_source_color(cairo_t *cr, GdkColor *color)
@@ -76,6 +191,15 @@ map_mark_init(MapMark *mark)
 
     priv = G_TYPE_INSTANCE_GET_PRIVATE(mark, MAP_TYPE_MARK, MapMarkPrivate);
     mark->priv = priv;
+
+    priv->uncertainty = g_object_new(MAP_TYPE_UNCERTAINTY, NULL);
+    clutter_actor_set_anchor_point(priv->uncertainty, 0, 0);
+    clutter_actor_set_position(priv->uncertainty, 0, 0);
+
+    clutter_actor_set_size(priv->uncertainty, 0, 0);
+
+    clutter_container_add_actor(CLUTTER_CONTAINER(mark), priv->uncertainty);
+    clutter_actor_hide(priv->uncertainty);
 
     priv->dot = clutter_cairo_texture_new(MARK_WIDTH, MARK_HEIGHT);
     clutter_actor_set_anchor_point(priv->dot,
@@ -130,11 +254,36 @@ map_mark_update(MapMark *self)
     cairo_destroy(cr);
 
     zoom = map_controller_get_zoom(controller);
+
     /* set position and angle */
     clutter_actor_set_position(CLUTTER_ACTOR(self),
                                unit2zpixel(_pos.unitx, zoom),
                                unit2zpixel(_pos.unity, zoom));
     clutter_actor_set_rotation(priv->dot,
                                CLUTTER_Z_AXIS, _gps.heading, 0, 0, 0);
+
+    /* set the uncertainty ellipse */
+    if (_gps_state == RCVR_FIXED)
+    {
+        gint units_per_metre_y;
+        gint x, y;
+
+        units_per_metre_y = WORLD_SIZE_UNITS / (EARTH_CIRCUMFERENCE / 2);
+
+        /* TODO: make it an ellipse, considering that near the poles the the
+         * density of x units is higher */
+
+        /* _gps.hdop is in m */
+        y = _gps.hdop * units_per_metre_y;
+
+        x = y;
+
+        y = unit2zpixel(y, zoom);
+        x = unit2zpixel(x, zoom);
+        clutter_actor_set_size(priv->uncertainty, x, y);
+        clutter_actor_show(priv->uncertainty);
+    }
+    else
+        clutter_actor_hide(priv->uncertainty);
 }
 
