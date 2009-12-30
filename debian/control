@@ -16,14 +16,18 @@ Description: Geographical mapping and driving directions.
  interacting with maps, GPX data (including driving directions), and other
  geo-related information.  It focuses in part on in-car navigation and
  usability.  Home page: http://www.gnuite.com/nokia770/maemo-mapper
-XB-Maemo-Upgrade-Description: Faster startup
- Removed the initial startup dialogs.
+XB-Maemo-Upgrade-Description: Old year farewell release
+ Add circle of uncertainty.
  .
- Speed up application startup.
+ Show the OSM while touching the screen.
  .
- Fix map positioning when zooming.
+ Updating of satellite information and better handling of GPS data.
  .
- Update track while moving.
+ Add support for Yandex router.
+ .
+ Reorder items in "Download route" dialog.
+ .
+ Don't add to track those fixes whose inaccuracy is bigger then 200m.
 XB-Maemo-Icon-26:
  iVBORw0KGgoAAAANSUhEUgAAABoAAAAaCAYAAACpSkzOAAAF/ElEQVRIS42WyXMbxxXGf92z
  YidgkCAkrrCokCLDRLJLsSwvB1duLl9S5UMcl33Vxf9LDi5Xbr6lUpWDqnxKVeJYthbLUUm2

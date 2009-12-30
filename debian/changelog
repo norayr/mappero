@@ -1,3 +1,14 @@
+maemo-mapper (3.0+alpha5) unstable; urgency=low
+
+  * Add circle of uncertainty.
+  * Show the OSM while touching the screen.
+  * Updating of satellite information and better handling of GPS data.
+  * Add support for Yandex router.
+  * Reorder items in "Download route" dialog.
+  * Don't add to track those fixes whose inaccuracy is bigger then 200m.
+
+ -- Alberto Mardegan <mardy@users.sourceforge.net>  Wed, 30 Dec 2009 18:59:54 +0200
+
 maemo-mapper (3.0+alpha4) unstable; urgency=low
 
   * Remove startup dialog.
