@@ -158,11 +158,11 @@ on_gps_changed(LocationGPSDevice *device)
     /* Translate data into integers. */
     latlon2unit(_gps.lat, _gps.lon, _pos.unitx, _pos.unity);
 
-    /* We consider a fix only if the geocoordinates are given, and if the
-     * precision is below 1 km (TODO: this should be a configuration option). */
-    if ((device->status >= LOCATION_GPS_DEVICE_STATUS_FIX) &&
-	_gps.hdop < 1000)
+    /* We consider a fix only if the geocoordinates are given */
+    if (device->status >= LOCATION_GPS_DEVICE_STATUS_FIX)
     {
+        _gps.fix = device->fix->mode;
+
         /* Data is valid. */
         if (_gps_state < RCVR_FIXED)
         {
@@ -170,7 +170,11 @@ on_gps_changed(LocationGPSDevice *device)
             set_conn_state(RCVR_FIXED);
         }
 
-	if (track_add(_pos.time, newly_fixed) || newly_fixed)
+        /* Add the point to the track only if it's not too inaccurate: if the
+         * uncertainty is greater than 200m, don't add it (TODO: this should be
+         * a configuration option). */
+        if (_gps.hdop < 200 &&
+            (track_add(_pos.time, newly_fixed) || newly_fixed))
 	{
 	    /* Move mark to new location. */
 	    map_refresh_mark(FALSE);
@@ -190,7 +194,6 @@ on_gps_changed(LocationGPSDevice *device)
     for(i = 0; device->satellites && i < device->satellites->len; i++)
         update_satellite_info((LocationGPSDeviceSatellite *)
                               device->satellites->pdata[i], i);
-    _gps.fix = device->fix->mode;
     _gps.satinuse = device->satellites_in_use;
     _gps.satinview = device->satellites_in_view;
 
