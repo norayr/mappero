@@ -542,7 +542,7 @@ draw_sat_details(GtkWidget *widget, gint x0, gint y0,
         _sat_details_layout);
     g_free(buffer);
 
-    color.red = 0;
+    color.red = 0xffff;
     color.green = 0;
     color.blue = 0;
     gc1 = gdk_gc_new (widget->window);
@@ -1008,7 +1008,8 @@ sat_panel_expose(GtkWidget *widget, GdkEventExpose *event)
         FALSE);
 
     /* Sat View/In Use */
-    tmp = g_strdup_printf("%d/%d", _gps.satinuse, _gps.satinview);
+    tmp = g_strdup_printf("%d/%d %.0fm", _gps.satinuse, _gps.satinview,
+                          _gps.hdop);
     pango_layout_set_text(_sat_panel_layout, tmp, -1);
     pango_layout_set_alignment(_sat_panel_layout, PANGO_ALIGN_LEFT);
     gdk_draw_layout(widget->window,
@@ -1449,7 +1450,7 @@ display_init()
 
     /* draw_sat_info() */
     _sat_info_gc1 = gdk_gc_new(_window->window);
-    color.red = 0;
+    color.red = 0xffff;
     color.green = 0;
     color.blue = 0;
     gdk_gc_set_rgb_fg_color(_sat_info_gc1, &color);

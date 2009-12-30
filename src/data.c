@@ -34,12 +34,12 @@
 /* Constants regarding enums and defaults. */
 gchar *UNITS_ENUM_TEXT[UNITS_ENUM_COUNT];
 
-/* UNITS_CONVERT, when multiplied, converts from NM. */
+/* UNITS_CONVERT, when multiplied, converts from kilometers. */
 gdouble UNITS_CONVERT[] =
 {
-    1.85200,
-    1.150779448,
-    1.0,
+    1.0,		/* to kilometers */
+    0.621371192,	/* to miles */
+    0.539956803,	/* to nautical miles */
 };
 
 gchar *UNBLANK_ENUM_TEXT[UNBLANK_ENUM_COUNT];
@@ -104,7 +104,7 @@ Point _pos = { 0, 0, 0, INT_MIN};
 const Point _point_null = { 0, 0, 0, 0};
 
 GpsData _gps;
-GpsSatelliteData _gps_sat[12];
+GpsSatelliteData _gps_sat[MAX_SATELLITES];
 gboolean _satdetails_on = FALSE;
 
 gboolean _is_first_time = FALSE;

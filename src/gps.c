@@ -96,19 +96,64 @@ static gint _gmtoffset = 0;
     } \
 }
 
+static void update_satellite_info(LocationGPSDeviceSatellite *satellite,
+                                  int satellite_index)
+{
+    if (satellite_index >= MAX_SATELLITES)
+        return;
+
+    _gps_sat[satellite_index].prn	= satellite->prn;
+    _gps_sat[satellite_index].elevation	= satellite->elevation / 100;
+    _gps_sat[satellite_index].azimuth	= satellite->azimuth;
+
+    _gps_sat[satellite_index].snr	= satellite->signal_strength;
+    _gps.satforfix[satellite_index]	= satellite->in_use ?
+        satellite->prn : 0;
+}
+
 static void
 on_gps_changed(LocationGPSDevice *device)
 {
+    int i;
     gboolean newly_fixed = FALSE;
 
     /* ignore any signals arriving while gps is disabled */
-    if (!_enable_gps) return;
+    if (!_enable_gps)
+        return;
+
+    if (device->fix->fields & LOCATION_GPS_DEVICE_LATLONG_SET) {
+        _gps.lat = device->fix->latitude;
+        _gps.lon = device->fix->longitude;
+    }
+
+    if (device->fix->fields & LOCATION_GPS_DEVICE_SPEED_SET) {
+        _gps.speed = device->fix->speed;
+    }
+
+    if (device->fix->fields & LOCATION_GPS_DEVICE_TRACK_SET) {
+        _gps.heading = device->fix->track;
+    }
+
+    /* fetch timestamp from gps if available, otherwise create one. */
+    if (device->fix->fields & LOCATION_GPS_DEVICE_TIME_SET) {
+        _pos.time = (time_t)device->fix->time;
+    } else {
+        _pos.time = time(NULL);
+    }
+
+    /* fetch altitude in meters from gps */
+    if (device->fix->fields & LOCATION_GPS_DEVICE_ALTITUDE_SET) {
+        _pos.altitude = (gint)device->fix->altitude;
+    }
+
+    /* Translate data into integers. */
+    latlon2unit(_gps.lat, _gps.lon, _pos.unitx, _pos.unity);
 
     /* We consider a fix only if the geocoordinates are given, and if the
-     * precision is below 10 km (TODO: this should be a configuration option).
+     * precision is below 1 km (TODO: this should be a configuration option).
      * The precision is eph, and is measured in centimetres. */
-    if (device->fix->fields & LOCATION_GPS_DEVICE_LATLONG_SET &&
-        device->fix->eph < 10 * 1000 * 100)
+    if ((device->status >= LOCATION_GPS_DEVICE_STATUS_FIX) &&
+	device->fix->eph < 1 * 1000 * 100)
     {
         /* Data is valid. */
         if (_gps_state < RCVR_FIXED)
@@ -116,28 +161,6 @@ on_gps_changed(LocationGPSDevice *device)
             newly_fixed = TRUE;
             set_conn_state(RCVR_FIXED);
         }
-
-	_gps.lat = device->fix->latitude;
-	_gps.lon = device->fix->longitude;
-	_gps.speed = device->fix->speed;
-	_gps.heading = device->fix->track;
-	_gps.fix = 2;
-	_gps.satinuse = device->satellites_in_use;
-
-	/* fetch timestamp from gps if available, otherwise create one. */
-	if (device->fix->fields & LOCATION_GPS_DEVICE_TIME_SET) {
-            _pos.time = (time_t)device->fix->time;
-	} else {
-            _pos.time = time(NULL);
-	}
-
-	/* fetch altitude in meters from gps */
-	if (device->fix->fields & LOCATION_GPS_DEVICE_ALTITUDE_SET) {
-            _pos.altitude = (gint)device->fix->altitude;
-	}
-
-	/* Translate data into integers. */
-	latlon2unit(_gps.lat, _gps.lon, _pos.unitx, _pos.unity);
 
 	if (track_add(_pos.time, newly_fixed) || newly_fixed)
 	{
@@ -148,7 +171,35 @@ on_gps_changed(LocationGPSDevice *device)
 	{
 	    map_move_mark();
 	}
+    } else {
+        track_insert_break(FALSE);
+        _gps.speed = 0;
+        _gps.fix = 0;
+        set_conn_state(RCVR_UP);
+        map_move_mark();
     }
+
+    for(i = 0; device->satellites && i < device->satellites->len; i++)
+        update_satellite_info((LocationGPSDeviceSatellite *)
+                              device->satellites->pdata[i], i);
+    _gps.fix = device->fix->mode;
+    _gps.satinuse = device->satellites_in_use;
+    _gps.satinview = device->satellites_in_view;
+
+    /*
+     * Horizontal accuracy, liblocation provides the value in
+     * centimeters
+     */
+    _gps.hdop = device->fix->eph / 100;
+
+    /* Vertical inaccuracy, in meters */
+    _gps.vdop = device->fix->epv;
+
+    if(_gps_info)
+        gps_display_data();
+
+    if(_satdetails_on)
+        gps_display_details();
 }
 
 /**

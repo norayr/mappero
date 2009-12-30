@@ -195,7 +195,7 @@ Point locate_address(GtkWidget *parent, const gchar *addr)
 
 /**
  * Calculate the distance between two lat/lon pairs.  The distance is returned
- * in nautical miles and should be converted using UNITS_CONVERT[_units].
+ * in kilometers and should be converted using UNITS_CONVERT[_units].
  */
 gdouble
 calculate_distance(gdouble lat1, gdouble lon1, gdouble lat2, gdouble lon2)

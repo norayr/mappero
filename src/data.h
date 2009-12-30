@@ -85,7 +85,7 @@ extern Point _pos;
 extern const Point _point_null;
 
 extern GpsData _gps;
-extern GpsSatelliteData _gps_sat[12];
+extern GpsSatelliteData _gps_sat[MAX_SATELLITES];
 extern gboolean _satdetails_on;
 
 extern gboolean _is_first_time;
