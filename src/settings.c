@@ -326,6 +326,7 @@ settings_save()
     /* Save last center point. */
     {
         gdouble center_lat, center_lon;
+        gint zoom;
 
         map_controller_get_center(controller, &_center);
         unit2latlon(_center.unitx, _center.unity, center_lat, center_lon);
@@ -341,6 +342,10 @@ settings_save()
         /* Save last view angle. */
         gconf_client_set_int(gconf_client,
                 GCONF_KEY_CENTER_ANGLE, _map_rotate_angle, NULL);
+
+        /* Save last Zoom Level. */
+        zoom = map_controller_get_zoom(controller);
+        gconf_client_set_int(gconf_client, GCONF_KEY_ZOOM, zoom, NULL);
     }
 
     /* Save map correction. */
@@ -348,10 +353,6 @@ settings_save()
             GCONF_KEY_MAP_CORRECTION_UNITX, _map_correction_unitx, NULL);
     gconf_client_set_int(gconf_client,
             GCONF_KEY_MAP_CORRECTION_UNITY, _map_correction_unity, NULL);
-
-    /* Save last Zoom Level. */
-    gconf_client_set_int(gconf_client,
-            GCONF_KEY_ZOOM, _zoom, NULL);
 
     /* Save Route Directory. */
     if(_route_dir_uri)
