@@ -922,6 +922,11 @@ map_screen_set_center(MapScreen *screen, gint x, gint y, gint zoom)
     {
         priv->zoom = new_zoom;
         update_scale_and_zoom(screen);
+
+        /* update the position of the mark */
+        clutter_actor_set_position(priv->mark,
+                                   unit2zpixel(_pos.unitx, priv->zoom),
+                                   unit2zpixel(_pos.unity, priv->zoom));
     }
 
     /* Update map data */
