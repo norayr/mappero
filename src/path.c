@@ -43,7 +43,7 @@
 #include "types.h"
 #include "data.h"
 #include "defines.h"
-
+#include "dialog.h"
 #include "display.h"
 #include "gdk-pixbuf-rotate.h"
 #include "gpx.h"
@@ -1146,10 +1146,11 @@ gboolean
 route_download(gchar *to)
 {
     GtkWidget *dialog;
+    MapDialog *dlg;
     GtkWidget *label;
     GtkWidget *btn_swap, *btn_highways;
     GtkWidget *router, *origin, *destination;
-    GtkWidget *table, *pannable;
+    GtkWidget *hbox;
     GtkEntryCompletion *to_comp;
     HildonTouchSelector *router_selector;
     HildonTouchSelector *origin_selector;
@@ -1160,29 +1161,23 @@ route_download(gchar *to)
     g_debug("%s", G_STRFUNC);
     conic_recommend_connected();
 
+    dialog = map_dialog_new(_("Download Route"), GTK_WINDOW(_window), TRUE);
+    gtk_dialog_add_button(GTK_DIALOG(dialog),
+                          GTK_STOCK_OK, GTK_RESPONSE_ACCEPT);
 
-    dialog = gtk_dialog_new_with_buttons(_("Download Route"),
-                                         GTK_WINDOW(_window), GTK_DIALOG_MODAL,
-                                         GTK_STOCK_OK, GTK_RESPONSE_ACCEPT,
-                                         NULL);
+    dlg = (MapDialog *)dialog;
     rdi.dialog = GTK_WINDOW(dialog);
-    table = gtk_table_new(6, 2, FALSE);
-
-    pannable = hildon_pannable_area_new();
-    gtk_widget_set_size_request(pannable, -1, 400);
-    hildon_pannable_area_add_with_viewport(HILDON_PANNABLE_AREA(pannable),
-                                           table);
-    gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox), pannable,
-                       TRUE, TRUE, 0);
 
     /* Destination. */
-    gtk_table_attach(GTK_TABLE(table),
-                     gtk_label_new(_("Destination")),
-                     0, 1, 1, 2, 0, 0, 0, 0);
+    hbox = gtk_hbox_new(FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(hbox),
+                       label = gtk_label_new(_("Destination")),
+                       FALSE, TRUE, 0);
     gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5f);
     destination = hildon_entry_new(HILDON_SIZE_FINGER_HEIGHT);
-    gtk_table_attach(GTK_TABLE(table), destination,
-                     1, 2, 1, 2, GTK_EXPAND|GTK_FILL, 0, 0, 0);
+    gtk_box_pack_start(GTK_BOX(hbox), destination,
+                       TRUE, TRUE, 0);
+    map_dialog_add_widget(dlg, hbox);
 
 
     /* Origin. */
@@ -1217,7 +1212,7 @@ route_download(gchar *to)
                      NULL);
     g_signal_connect(origin, "value-changed",
                      G_CALLBACK(on_origin_changed_other), &rdi);
-    gtk_table_attach_defaults(GTK_TABLE(table), origin, 0, 2, 2, 3);
+    map_dialog_add_widget(dlg, origin);
 
     /* Auto. */
     rdi.autoroute = hildon_check_button_new(HILDON_SIZE_FINGER_HEIGHT);
@@ -1226,17 +1221,17 @@ route_download(gchar *to)
     gtk_button_set_label(GTK_BUTTON(rdi.autoroute), _("Auto-Update"));
     g_signal_connect(origin, "value-changed",
                      G_CALLBACK(on_origin_changed_gps), &rdi);
-    gtk_table_attach_defaults(GTK_TABLE(table), rdi.autoroute, 0, 1, 3, 4);
+    map_dialog_add_widget(dlg, rdi.autoroute);
 
     /* Avoid Highways. */
     btn_highways = hildon_check_button_new(HILDON_SIZE_FINGER_HEIGHT);
     gtk_button_set_label(GTK_BUTTON(btn_highways), _("Avoid Highways"));
-    gtk_table_attach_defaults(GTK_TABLE(table), btn_highways, 1, 2, 3, 4);
+    map_dialog_add_widget(dlg, btn_highways);
 
     /* Swap button. */
     btn_swap = gtk_toggle_button_new_with_label("Swap");
     hildon_gtk_widget_set_theme_size(btn_swap, HILDON_SIZE_FINGER_HEIGHT);
-    gtk_table_attach_defaults(GTK_TABLE(table), btn_swap, 0, 2, 4, 5);
+    map_dialog_add_widget(dlg, btn_swap);
 
     /* Router */
     router_selector = HILDON_TOUCH_SELECTOR (hildon_touch_selector_new_text ());
@@ -1252,7 +1247,7 @@ route_download(gchar *to)
                           "touch-selector", router_selector,
                           "xalign", 0.0,
                           NULL);
-    gtk_table_attach_defaults(GTK_TABLE(table), router, 0, 2, 5, 6);
+    map_dialog_add_widget(dlg, router);
 
     /* Set up auto-completion. */
     to_comp = gtk_entry_completion_new();
