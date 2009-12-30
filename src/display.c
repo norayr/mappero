@@ -629,7 +629,7 @@ sat_details_panel_expose(GtkWidget *widget, GdkEventExpose *event)
         _sat_details_expose_layout);
     g_free(buffer);
 
-    buffer = g_strdup_printf("HDOP: %.01f", _gps.hdop);
+    buffer = g_strdup_printf("HDOP: %d", _gps.hdop);
     pango_layout_set_text(_sat_details_expose_layout, buffer, -1);
     pango_layout_get_pixel_size(_sat_details_expose_layout, &x, &y);
     gdk_draw_layout(widget->window,
@@ -1008,7 +1008,7 @@ sat_panel_expose(GtkWidget *widget, GdkEventExpose *event)
         FALSE);
 
     /* Sat View/In Use */
-    tmp = g_strdup_printf("%d/%d %.0fm", _gps.satinuse, _gps.satinview,
+    tmp = g_strdup_printf("%d/%d %dm", _gps.satinuse, _gps.satinview,
                           _gps.hdop);
     pango_layout_set_text(_sat_panel_layout, tmp, -1);
     pango_layout_set_alignment(_sat_panel_layout, PANGO_ALIGN_LEFT);

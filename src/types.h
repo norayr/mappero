@@ -383,12 +383,12 @@ struct _GpsData {
     gint fixquality;
     gdouble lat;
     gdouble lon;
-    gfloat speed;    /* in knots */
-    gfloat maxspeed;    /* in knots */
+    gfloat speed;    /* in km/h */
+    gfloat maxspeed;    /* in km/h */
     gfloat heading;
-    gfloat hdop;
+    gint hdop;  /* in metres */
     gfloat pdop;
-    gfloat vdop;
+    gfloat vdop;  /* in metres */
     gint satinview;
     gint satinuse;
     gint satforfix[MAX_SATELLITES];

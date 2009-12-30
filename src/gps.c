@@ -146,14 +146,22 @@ on_gps_changed(LocationGPSDevice *device)
         _pos.altitude = (gint)device->fix->altitude;
     }
 
+    /*
+     * Horizontal accuracy, liblocation provides the value in
+     * centimeters
+     */
+    _gps.hdop = device->fix->eph / 100;
+
+    /* Vertical inaccuracy, in meters */
+    _gps.vdop = device->fix->epv;
+
     /* Translate data into integers. */
     latlon2unit(_gps.lat, _gps.lon, _pos.unitx, _pos.unity);
 
     /* We consider a fix only if the geocoordinates are given, and if the
-     * precision is below 1 km (TODO: this should be a configuration option).
-     * The precision is eph, and is measured in centimetres. */
+     * precision is below 1 km (TODO: this should be a configuration option). */
     if ((device->status >= LOCATION_GPS_DEVICE_STATUS_FIX) &&
-	device->fix->eph < 1 * 1000 * 100)
+	_gps.hdop < 1000)
     {
         /* Data is valid. */
         if (_gps_state < RCVR_FIXED)
@@ -185,15 +193,6 @@ on_gps_changed(LocationGPSDevice *device)
     _gps.fix = device->fix->mode;
     _gps.satinuse = device->satellites_in_use;
     _gps.satinview = device->satellites_in_view;
-
-    /*
-     * Horizontal accuracy, liblocation provides the value in
-     * centimeters
-     */
-    _gps.hdop = device->fix->eph / 100;
-
-    /* Vertical inaccuracy, in meters */
-    _gps.vdop = device->fix->epv;
 
     if(_gps_info)
         gps_display_data();
