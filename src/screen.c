@@ -209,7 +209,7 @@ on_point_chosen(ClutterActor *actor, ClutterButtonEvent *event,
 }
 
 static gboolean
-on_pointer_event(ClutterActor *actor, ClutterEvent *event, MapScreen *screen)
+on_captured_event(ClutterActor *actor, ClutterEvent *event, MapScreen *screen)
 {
     MapScreenPrivate *priv = screen->priv;
     gboolean handled = FALSE;
@@ -745,12 +745,8 @@ map_screen_init(MapScreen *screen)
 
     stage = gtk_clutter_embed_get_stage(GTK_CLUTTER_EMBED(screen));
     g_return_if_fail(stage != NULL);
-    g_signal_connect(stage, "motion-event",
-                     G_CALLBACK(on_pointer_event), screen);
-    g_signal_connect(stage, "button-press-event",
-                     G_CALLBACK(on_pointer_event), screen);
-    g_signal_connect(stage, "button-release-event",
-                     G_CALLBACK(on_pointer_event), screen);
+    g_signal_connect(stage, "captured-event",
+                     G_CALLBACK(on_captured_event), screen);
     priv->btn_press_screen_x = -1;
 
     priv->map = clutter_group_new();

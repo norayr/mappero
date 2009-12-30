@@ -144,7 +144,7 @@ enable_hide_on_timeout(MapOsm *self, gboolean hide_on_timeout)
     static gboolean wrap_action_##action(MapController *controller) \
     { \
         map_controller_action_##action(controller); \
-        return FALSE; \
+        return TRUE; \
     }
 
 WRAP_CONTROLLER_ACTION(point)
