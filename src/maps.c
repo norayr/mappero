@@ -673,9 +673,6 @@ map_update_task_completed(MapUpdateTask *mut)
     {
         g_thread_pool_stop_unused_threads();
 
-        if (_curr_repo->gdbm_db && !_curr_repo->is_sqlite)
-            gdbm_sync(_curr_repo->gdbm_db);
-
         if (_download_banner)
         {
             gtk_widget_destroy(_download_banner);
