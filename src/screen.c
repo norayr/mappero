@@ -513,9 +513,9 @@ create_compass(MapScreen *screen)
     cairo_line_to(cr, 20, 0);
     cairo_line_to(cr, 0, 75);
     cairo_close_path(cr);
-    cairo_set_source_rgb(cr, 0, 0, 0);
-    cairo_fill_preserve(cr);
     cairo_set_source_rgb(cr, 1, 1, 1);
+    cairo_fill_preserve(cr);
+    cairo_set_source_rgb(cr, 0, 0, 0);
     cairo_set_line_width(cr, 2);
     cairo_stroke(cr);
     cairo_destroy(cr);
@@ -527,7 +527,7 @@ create_compass(MapScreen *screen)
     priv->compass_north = clutter_cairo_texture_new(width, height);
     cr = clutter_cairo_texture_create
         (CLUTTER_CAIRO_TEXTURE(priv->compass_north));
-    cairo_set_source_rgb (cr, 1, 1, 1);
+    cairo_set_source_rgb (cr, 0, 0, 0);
     cairo_select_font_face (cr, "Sans Serif",
                             CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
     cairo_set_font_size (cr, 20);
@@ -572,15 +572,15 @@ update_scale_and_zoom(MapScreen *screen)
     cr = clutter_cairo_texture_create(CLUTTER_CAIRO_TEXTURE(priv->scale));
 
     cairo_rectangle(cr, 0, 0, SCALE_WIDTH, SCALE_HEIGHT);
-    cairo_set_source_rgb(cr, 0, 0, 0);
-    cairo_fill_preserve(cr);
     cairo_set_source_rgb(cr, 1, 1, 1);
+    cairo_fill_preserve(cr);
+    cairo_set_source_rgb(cr, 0, 0, 0);
     cairo_set_line_width(cr, 4);
     cairo_stroke(cr);
 
     /* text in scale box */
     compute_scale_text(buffer, sizeof(buffer), priv->zoom);
-    cairo_set_source_rgb (cr, 1, 1, 1);
+    cairo_set_source_rgb (cr, 0, 0, 0);
     cairo_select_font_face (cr, "Sans Serif",
                             CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
     cairo_set_font_size (cr, 16);
@@ -609,14 +609,14 @@ update_scale_and_zoom(MapScreen *screen)
     cr = clutter_cairo_texture_create(CLUTTER_CAIRO_TEXTURE(priv->zoom_box));
 
     cairo_rectangle(cr, 0, 0, ZOOM_WIDTH, ZOOM_HEIGHT);
-    cairo_set_source_rgb(cr, 0, 0, 0);
-    cairo_fill_preserve(cr);
     cairo_set_source_rgb(cr, 1, 1, 1);
+    cairo_fill_preserve(cr);
+    cairo_set_source_rgb(cr, 0, 0, 0);
     cairo_set_line_width(cr, 4);
     cairo_stroke(cr);
 
     snprintf(buffer, sizeof(buffer), "%d", priv->zoom);
-    cairo_set_source_rgb (cr, 1, 1, 1);
+    cairo_set_source_rgb (cr, 0, 0, 0);
     cairo_select_font_face (cr, "Sans Serif",
                             CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
     cairo_set_font_size (cr, 16);
