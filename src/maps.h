@@ -42,10 +42,6 @@ gboolean mut_exists_equalfunc(gconstpointer a, gconstpointer b);
 gint mut_priority_comparefunc(gconstpointer a, gconstpointer b);
 gboolean thread_proc_mut(void);
 
-gboolean repoman_dialog(void);
-
-gboolean repoman_download(void);
-
 gboolean mapman_dialog(void);
 
 gboolean map_layer_refresh_cb (gpointer data);

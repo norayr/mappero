@@ -489,25 +489,6 @@ menu_cb_poi_categories(GtkMenuItem *item)
 /****************************************************************************
  * BELOW: MAPS MENU *********************************************************
  ****************************************************************************/
-
-static gboolean
-menu_cb_maps_repoman(GtkMenuItem *item)
-{
-    printf("%s()\n", __PRETTY_FUNCTION__);
-    repoman_dialog();
-    vprintf("%s(): return TRUE\n", __PRETTY_FUNCTION__);
-    return TRUE;
-}
-
-static gboolean
-menu_cb_maps_repodown(GtkMenuItem *item)
-{
-    printf("%s()\n", __PRETTY_FUNCTION__);
-    repoman_download();
-    vprintf("%s(): return TRUE\n", __PRETTY_FUNCTION__);
-    return TRUE;
-}
-
 static gboolean
 menu_cb_maps_select(GtkMenuItem *item, gpointer new_repo)
 {
@@ -1477,11 +1458,6 @@ menu_init()
     gtk_check_menu_item_set_active(
             GTK_CHECK_MENU_ITEM(_menu_maps_auto_download_item),_auto_download);
     gtk_menu_append(_menu_maps_submenu, gtk_separator_menu_item_new());
-    gtk_menu_append(_menu_maps_submenu, _menu_maps_repoman_item
-            = gtk_menu_item_new_with_label(_("Manage Repositories...")));
-    gtk_menu_append(_menu_maps_submenu, _menu_maps_repodown_item
-            = gtk_menu_item_new_with_label(
-                _("Download Sample Repositories...")));
     menu_maps_add_repos();
 
     gtk_menu_append(menu, gtk_separator_menu_item_new());
@@ -1684,10 +1660,6 @@ menu_init()
                       G_CALLBACK(menu_cb_poi_categories), NULL);
 
     /* Connect the "Maps" signals. */
-    g_signal_connect(G_OBJECT(_menu_maps_repoman_item), "activate",
-                      G_CALLBACK(menu_cb_maps_repoman), NULL);
-    g_signal_connect(G_OBJECT(_menu_maps_repodown_item), "activate",
-                      G_CALLBACK(menu_cb_maps_repodown), NULL);
     g_signal_connect(G_OBJECT(_menu_maps_mapman_item), "activate",
                       G_CALLBACK(menu_cb_maps_mapman), NULL);
     g_signal_connect(G_OBJECT(_menu_maps_auto_download_item), "toggled",
