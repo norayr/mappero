@@ -24,9 +24,7 @@
 #ifndef MAEMO_MAPPER_SETTINGS_H
 #define MAEMO_MAPPER_SETTINGS_H
 
-RepoData* settings_parse_repo(gchar *str);
-
-void settings_init(void);
+void settings_init(GConfClient *gconf_client);
 void settings_save(void);
 
 gboolean settings_dialog(void);

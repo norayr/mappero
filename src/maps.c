@@ -54,10 +54,12 @@
 #include "data.h"
 #include "defines.h"
 
+#include "controller.h"
 #include "display.h"
 #include "main.h"
 #include "maps.h"
 #include "menu.h"
+#include "screen.h"
 #include "settings.h"
 #include "util.h"
 
@@ -72,7 +74,6 @@ typedef struct
     MapTileSpec tile;
     gint priority;
     gint8 update_type;
-    gint8 layer_level;
     guint downloading : 1;
     /* list of MapUpdateCbData */
     GSList *callbacks;
@@ -121,7 +122,7 @@ struct _CompactInfo {
 
 typedef struct _MapCacheKey MapCacheKey;
 struct _MapCacheKey {
-    RepoData      *repo;
+    TileSource     *source;
     gint           zoom;
     gint           tilex;
     gint           tiley;
@@ -162,31 +163,31 @@ const gchar* layer_timestamp_key = "tEXt::mm_ts";
 
 static void
 build_tile_path(gchar *buffer, gsize size,
-                RepoData *repo, gint zoom, gint tilex, gint tiley)
+                TileSource *source, gint zoom, gint tilex, gint tiley)
 {
     g_snprintf(buffer, size,
                "/home/user/MyDocs/.maps/%s/%d/%d/",
-               repo->name, zoom, tilex);
+               source->cache_dir, zoom, tilex);
 }
 
 static void
 build_tile_filename(gchar *buffer, gsize size,
-                    RepoData *repo, gint zoom, gint tilex, gint tiley)
+                    TileSource *source, gint zoom, gint tilex, gint tiley)
 {
     g_snprintf(buffer, size,
                "/home/user/MyDocs/.maps/%s/%d/%d/%d.png",
-               repo->name, zoom, tilex, tiley);
+               source->cache_dir, zoom, tilex, tiley);
 }
 
 gboolean
-mapdb_exists(RepoData *repo, gint zoom, gint tilex, gint tiley)
+mapdb_exists(TileSource *source, gint zoom, gint tilex, gint tiley)
 {
     gchar filename[200];
     gboolean exists;
     vprintf("%s(%s, %d, %d, %d)\n", __PRETTY_FUNCTION__,
-            repo->name, zoom, tilex, tiley);
+            source->name, zoom, tilex, tiley);
 
-    build_tile_filename(filename, sizeof(filename), repo, zoom, tilex, tiley);
+    build_tile_filename(filename, sizeof(filename), source, zoom, tilex, tiley);
     exists = g_file_test(filename, G_FILE_TEST_EXISTS);
 
     g_debug("%s(): return %d", __PRETTY_FUNCTION__, exists);
@@ -194,33 +195,33 @@ mapdb_exists(RepoData *repo, gint zoom, gint tilex, gint tiley)
 }
 
 GdkPixbuf*
-mapdb_get(RepoData *repo, gint zoom, gint tilex, gint tiley)
+mapdb_get(TileSource *source, gint zoom, gint tilex, gint tiley)
 {
     gchar filename[200];
     GdkPixbuf *pixbuf;
     vprintf("%s(%s, %d, %d, %d)\n", __PRETTY_FUNCTION__,
-            repo->name, zoom, tilex, tiley);
+            source->name, zoom, tilex, tiley);
 
-    build_tile_filename(filename, sizeof(filename), repo, zoom, tilex, tiley);
+    build_tile_filename(filename, sizeof(filename), source, zoom, tilex, tiley);
     pixbuf = gdk_pixbuf_new_from_file(filename, NULL);
 
     g_debug("%s(%s, %d, %d, %d): return %p", __PRETTY_FUNCTION__,
-           repo->name, zoom, tilex, tiley, pixbuf);
+           source->name, zoom, tilex, tiley, pixbuf);
     return pixbuf;
 }
 
 static gboolean
-mapdb_update(RepoData *repo, gint zoom, gint tilex, gint tiley,
+mapdb_update(TileSource *source, gint zoom, gint tilex, gint tiley,
         void *bytes, gint size)
 {
     gint success = TRUE;
     gchar filename[200], path[200];
     vprintf("%s(%s, %d, %d, %d)\n", __PRETTY_FUNCTION__,
-            repo->name, zoom, tilex, tiley);
+            source->name, zoom, tilex, tiley);
 
-    build_tile_path(path, sizeof(path), repo, zoom, tilex, tiley);
+    build_tile_path(path, sizeof(path), source, zoom, tilex, tiley);
     g_mkdir_with_parents(path, 0766);
-    build_tile_filename(filename, sizeof(filename), repo, zoom, tilex, tiley);
+    build_tile_filename(filename, sizeof(filename), source, zoom, tilex, tiley);
     success = g_file_set_contents(filename, bytes, size, NULL);
 
     g_debug("%s(): return %d", __PRETTY_FUNCTION__, success);
@@ -228,74 +229,18 @@ mapdb_update(RepoData *repo, gint zoom, gint tilex, gint tiley,
 }
 
 static gboolean
-mapdb_delete(RepoData *repo, gint zoom, gint tilex, gint tiley)
+mapdb_delete(TileSource *source, gint zoom, gint tilex, gint tiley)
 {
     gchar filename[200];
     gint success = FALSE;
     vprintf("%s(%s, %d, %d, %d)\n", __PRETTY_FUNCTION__,
-            repo->name, zoom, tilex, tiley);
+            source->name, zoom, tilex, tiley);
 
-    build_tile_filename(filename, sizeof(filename), repo, zoom, tilex, tiley);
+    build_tile_filename(filename, sizeof(filename), source, zoom, tilex, tiley);
     g_remove(filename);
 
     vprintf("%s(): return %d\n", __PRETTY_FUNCTION__, success);
     return success;
-}
-
-void
-set_repo_type(RepoData *repo)
-{
-    printf("%s(%s)\n", __PRETTY_FUNCTION__, repo->url);
-
-    if(repo->url && *repo->url)
-    {
-        gchar *url = g_utf8_strdown(repo->url, -1);
-
-        /* Determine type of repository. */
-        if(strstr(url, "service=wms"))
-            repo->type = REPOTYPE_WMS;
-        else if(strstr(url, "%s"))
-            repo->type = REPOTYPE_QUAD_QRST;
-        else if(strstr(url, "%0d"))
-            repo->type = REPOTYPE_XYZ_INV;
-        else if(strstr(url, "%-d"))
-            repo->type = REPOTYPE_XYZ_SIGNED;
-        else if(strstr(url, "%0s"))
-            repo->type = REPOTYPE_QUAD_ZERO;
-        else
-            repo->type = REPOTYPE_XYZ;
-
-        g_free(url);
-    }
-    else
-        repo->type = REPOTYPE_NONE;
-
-    vprintf("%s(): return\n", __PRETTY_FUNCTION__);
-}
-
-gboolean
-repo_set_curr(RepoData *rd)
-{
-    /* Set the current repository */
-    _curr_repo = rd;
-    return TRUE;
-}
-
-
-/**
- * Returns true if:
- * 1. base == layer, or
- * 2. layer is sublayer of base
- */
-gboolean repo_is_layer (RepoData* base, RepoData* layer)
-{
-    while (base) {
-        if (base == layer)
-            return TRUE;
-        base = base->layers;
-    }
-
-    return FALSE;
 }
 
 
@@ -408,25 +353,25 @@ map_convert_coords_to_quadtree_string(gint x, gint y, gint zoomlevel,
  * system.
  */
 static gchar*
-map_construct_url(RepoData *repo, gint zoom, gint tilex, gint tiley)
+map_construct_url(TileSource *source, gint zoom, gint tilex, gint tiley)
 {
     gchar *retval;
     vprintf("%s(%p, %d, %d, %d)\n", __PRETTY_FUNCTION__,
-            repo, zoom, tilex, tiley);
-    switch(repo->type)
+            source, zoom, tilex, tiley);
+    switch(source->type)
     {
         case REPOTYPE_XYZ:
-            retval = g_strdup_printf(repo->url,
+            retval = g_strdup_printf(source->url,
                     tilex, tiley,  zoom - (MAX_ZOOM - 16));
             break;
 
         case REPOTYPE_XYZ_INV:
-            retval = g_strdup_printf(repo->url,
+            retval = g_strdup_printf(source->url,
                     MAX_ZOOM + 1 - zoom, tilex, tiley);
             break;
 
         case REPOTYPE_XYZ_SIGNED:
-            retval = g_strdup_printf(repo->url,
+            retval = g_strdup_printf(source->url,
                     tilex,
                     (1 << (MAX_ZOOM - zoom)) - tiley - 1,
                     zoom - (MAX_ZOOM - 17));
@@ -437,7 +382,7 @@ map_construct_url(RepoData *repo, gint zoom, gint tilex, gint tiley)
             gchar location[MAX_ZOOM + 2];
             map_convert_coords_to_quadtree_string(
                     tilex, tiley, zoom, location, 't', "qrts");
-            retval = g_strdup_printf(repo->url, location);
+            retval = g_strdup_printf(source->url, location);
             break;
         }
 
@@ -447,16 +392,16 @@ map_construct_url(RepoData *repo, gint zoom, gint tilex, gint tiley)
             gchar location[MAX_ZOOM + 2];
             map_convert_coords_to_quadtree_string(
                     tilex, tiley, zoom, location, '\0', "0123");
-            retval = g_strdup_printf(repo->url, location);
+            retval = g_strdup_printf(source->url, location);
             break;
         }
 
         case REPOTYPE_WMS:
-            retval = map_convert_wms_to_wms(tilex, tiley, zoom, repo->url);
+            retval = map_convert_wms_to_wms(tilex, tiley, zoom, source->url);
             break;
 
         default:
-            retval = g_strdup(repo->url);
+            retval = g_strdup(source->url);
             break;
     }
     vprintf("%s(): return \"%s\"\n", __PRETTY_FUNCTION__, retval);
@@ -487,7 +432,7 @@ map_update_tile_int(MapTileSpec *tile, gint priority, MapUpdateType update_type,
     MapUpdateCbData *cb_data = NULL;
 
     g_debug("%s(%s, %d, %d, %d, %d)", G_STRFUNC,
-            tile->repo->name, tile->zoom, tile->tilex, tile->tiley, update_type);
+            tile->source->name, tile->zoom, tile->tilex, tile->tiley, update_type);
 
     mut = g_slice_new0(MapUpdateTask);
     if (!mut)
@@ -497,7 +442,6 @@ map_update_tile_int(MapTileSpec *tile, gint priority, MapUpdateType update_type,
         return;
     }
     memcpy(&mut->tile, tile, sizeof(MapTileSpec));
-    mut->layer_level = tile->repo->layer_level;
     mut->priority = priority;
     mut->update_type = update_type;
 
@@ -566,13 +510,13 @@ map_download_tile(MapTileSpec *tile, gint priority,
  * downloading the map, then this method does nothing.
  */
 gboolean
-mapdb_initiate_update(RepoData *repo, gint zoom, gint tilex, gint tiley,
+mapdb_initiate_update(TileSource *source, gint zoom, gint tilex, gint tiley,
         gint update_type, gint batch_id, gint priority,
         ThreadLatch *refresh_latch)
 {
     MapTileSpec tile;
 
-    tile.repo = repo;
+    tile.source = source;
     tile.zoom = zoom;
     tile.tilex = tilex;
     tile.tiley = tiley;
@@ -602,7 +546,7 @@ map_update_task_completed(MapUpdateTask *mut)
     MapTileSpec *tile = &mut->tile;
 
     g_debug("%s(%s, %d, %d, %d)", G_STRFUNC,
-            tile->repo->name, tile->zoom, tile->tilex, tile->tiley);
+            tile->source->name, tile->zoom, tile->tilex, tile->tiley);
 
     g_mutex_lock(_mut_priority_mutex);
     g_hash_table_remove(_mut_exists_table, mut);
@@ -651,10 +595,10 @@ download_tile(MapTileSpec *tile, gchar **bytes, gint *size,
     GdkPixbufLoader *loader = NULL;
 
     g_debug("%s (%s, %d, %d, %d)", G_STRFUNC,
-            tile->repo->name, tile->zoom, tile->tilex, tile->tiley);
+            tile->source->name, tile->zoom, tile->tilex, tile->tiley);
 
     /* First, construct the URL from which we will get the data. */
-    src_url = map_construct_url(tile->repo, tile->zoom,
+    src_url = map_construct_url(tile->source, tile->zoom,
                                 tile->tilex, tile->tiley);
 
     /* Now, attempt to read the entire contents of the URL. */
@@ -732,7 +676,7 @@ thread_proc_mut()
     while(conic_ensure_connected())
     {
         gint retries;
-        gboolean notification_sent = FALSE, layer_tile;
+        gboolean notification_sent = FALSE;
         MapUpdateTask *mut = NULL;
         MapTileSpec *tile;
 
@@ -753,24 +697,16 @@ thread_proc_mut()
         g_mutex_unlock(_mut_priority_mutex);
 
         g_debug("%s %p (%s, %d, %d, %d)", G_STRFUNC, mut,
-                tile->repo->name, tile->zoom, tile->tilex, tile->tiley);
-
-        layer_tile = tile->repo != _curr_repo &&
-            repo_is_layer(_curr_repo, tile->repo);
+                tile->source->name, tile->zoom, tile->tilex, tile->tiley);
 
         mut->pixbuf = NULL;
         mut->error = NULL;
 
-        if (tile->repo != _curr_repo && !layer_tile)
-        {
-            /* Do nothing, except report that there is no error. */
-        }
-        else if (mut->update_type == MAP_UPDATE_DELETE)
+        if (mut->update_type == MAP_UPDATE_DELETE)
         {
             /* Easy - just delete the entry from the database.  We don't care
              * about failures (sorry). */
-            if (MAPDB_EXISTS(tile->repo))
-                mapdb_delete(tile->repo, tile->zoom, tile->tilex, tile->tiley);
+            mapdb_delete(tile->source, tile->zoom, tile->tilex, tile->tiley);
         }
         else
         {
@@ -781,7 +717,7 @@ thread_proc_mut()
             {
                 /* We don't want to overwrite, so check for existence. */
                 /* Map already exists, and we're not going to overwrite. */
-                if (mapdb_exists(tile->repo, tile->zoom, tile->tilex, tile->tiley))
+                if (mapdb_exists(tile->source, tile->zoom, tile->tilex, tile->tiley))
                 {
                     download_needed = FALSE;
                 }
@@ -789,13 +725,12 @@ thread_proc_mut()
 
             if (download_needed)
             {
-                RepoData *repo;
+                TileSource *source;
                 gint zoom, tilex, tiley;
                 gchar *bytes = NULL;
                 gint size;
 
-                for (retries = tile->repo->layer_level
-                     ? 1 : INITIAL_DOWNLOAD_RETRIES; retries > 0; --retries)
+                for (retries = INITIAL_DOWNLOAD_RETRIES; retries > 0; --retries)
                 {
                     g_clear_error(&mut->error);
                     download_tile(tile, &bytes, &size,
@@ -806,13 +741,13 @@ thread_proc_mut()
                 }
 
                 /* Copy database-relevant mut data before we release it. */
-                repo = tile->repo;
+                source = tile->source;
                 zoom = tile->zoom;
                 tilex = tile->tilex;
                 tiley = tile->tiley;
 
                 g_debug("%s(%s, %d, %d, %d): %s", G_STRFUNC,
-                        tile->repo->name, tile->zoom, tile->tilex, tile->tiley,
+                        tile->source->name, tile->zoom, tile->tilex, tile->tiley,
                         mut->pixbuf ? "Success" : "Failed");
                 g_idle_add_full(G_PRIORITY_HIGH_IDLE,
                                 (GSourceFunc)map_update_task_completed, mut,
@@ -823,7 +758,7 @@ thread_proc_mut()
 
                 /* Also attempt to add to the database. */
                 if (bytes &&
-                    !mapdb_update(repo, zoom, tilex, tiley, bytes, size)) {
+                    !mapdb_update(source, zoom, tilex, tiley, bytes, size)) {
                     g_idle_add((GSourceFunc)map_handle_error,
                                _("Error saving map to disk - disk full?"));
                 }
@@ -856,7 +791,7 @@ mut_exists_hashfunc(gconstpointer a)
 {
     const MapUpdateTask *t = a;
     const MapTileSpec *r = &t->tile;
-    return r->zoom + r->tilex + r->tiley + t->update_type + t->layer_level;
+    return r->zoom + r->tilex + r->tiley + t->update_type;
 }
 
 gboolean
@@ -868,7 +803,7 @@ mut_exists_equalfunc(gconstpointer a, gconstpointer b)
             && t1->tile.tiley == t2->tile.tiley
             && t1->tile.zoom == t2->tile.zoom
             && t1->update_type == t2->update_type
-            && t1->layer_level == t2->layer_level);
+            && t1->tile.source == t2->tile.source);
 }
 
 gint
@@ -881,9 +816,6 @@ mut_priority_comparefunc(gconstpointer _a, gconstpointer _b)
     if(diff)
         return diff;
     diff = (a->priority - b->priority); /* Lower priority numbers first. */
-    if(diff)
-        return diff;
-    diff = (a->layer_level - b->layer_level); /* Lower layers first. */
     if(diff)
         return diff;
 
@@ -909,6 +841,8 @@ mapman_by_area(gdouble start_lat, gdouble start_lon,
     gint z;
     gchar buffer[80];
     GtkWidget *confirm;
+    Repository* rd = map_controller_get_repository(map_controller_get_instance());
+
     printf("%s(%f, %f, %f, %f)\n", __PRETTY_FUNCTION__, start_lat, start_lon,
             end_lat, end_lon);
 
@@ -953,9 +887,8 @@ mapman_by_area(gdouble start_lat, gdouble start_lon,
     else
     {
         snprintf(buffer, sizeof(buffer),
-                "%s %d %s\n(%s %.2f MB)\n", _("Confirm download of"),
-                num_maps, _("maps"), _("up to about"),
-                num_maps * (strstr(_curr_repo->url, "%s") ? 18e-3 : 6e-3));
+                "%s %d %s\n", _("Confirm download of"),
+                num_maps, _("maps"));
     }
     confirm = hildon_note_new_confirmation(
             GTK_WINDOW(mapman_info->dialog), buffer);
@@ -987,18 +920,11 @@ mapman_by_area(gdouble start_lat, gdouble start_lon,
                     if((unsigned)tilex < unit2ztile(WORLD_SIZE_UNITS, z)
                       && (unsigned)tiley < unit2ztile(WORLD_SIZE_UNITS, z))
                     {
-                        RepoData* rd = _curr_repo;
-
-                        while (rd) {
-                            if (rd == _curr_repo
-                                    || (rd->layer_enabled && MAPDB_EXISTS(rd)))
-                                mapdb_initiate_update(rd, z, tilex, tiley,
-                                  update_type, download_batch_id,
-                                  (abs(tilex - unit2tile(_next_center.unitx))
-                                   +abs(tiley - unit2tile(_next_center.unity))),
-                                  NULL);
-                            rd = rd->layers;
-                        }
+                        mapdb_initiate_update(rd->primary, z, tilex, tiley,
+                                              update_type, download_batch_id,
+                                              (abs(tilex - unit2tile(_next_center.unitx))
+                                               +abs(tiley - unit2tile(_next_center.unity))),
+                                              NULL);
                     }
                 }
             }
@@ -1019,6 +945,7 @@ mapman_by_route(MapmanInfo *mapman_info, MapUpdateType update_type,
     gint prev_tilex, prev_tiley, num_maps = 0, z;
     Point *curr;
     gchar buffer[80];
+    Repository* rd = map_controller_get_repository(map_controller_get_instance());
     gint radius = hildon_number_editor_get_value(
             HILDON_NUMBER_EDITOR(mapman_info->num_route_radius));
     printf("%s()\n", __PRETTY_FUNCTION__);
@@ -1060,10 +987,9 @@ mapman_by_route(MapmanInfo *mapman_info, MapUpdateType update_type,
     else
     {
         snprintf(buffer, sizeof(buffer),
-                "%s %s %d %s\n(%s %.2f MB)\n", _("Confirm download of"),
+                "%s %s %d %s\n", _("Confirm download of"),
                 _("about"),
-                num_maps, _("maps"), _("up to about"),
-                num_maps * (strstr(_curr_repo->url, "%s") ? 18e-3 : 6e-3));
+                 num_maps, _("maps"));
     }
     confirm = hildon_note_new_confirmation(
             GTK_WINDOW(mapman_info->dialog), buffer);
@@ -1117,7 +1043,7 @@ mapman_by_route(MapmanInfo *mapman_info, MapUpdateType update_type,
                                   && (unsigned)tiley
                                         < unit2ztile(WORLD_SIZE_UNITS, z))
                                 {
-                                    mapdb_initiate_update(_curr_repo, z, x, y,
+                                    mapdb_initiate_update(rd->primary, z, x, y,
                                         update_type, download_batch_id,
                                         (abs(tilex - unit2tile(
                                                  _next_center.unitx))
@@ -1207,16 +1133,7 @@ mapman_dialog()
     
     printf("%s()\n", __PRETTY_FUNCTION__);
 
-    if(!MAPDB_EXISTS(_curr_repo))
-    {
-        popup_error(_window, "To manage maps, you must set a valid repository "
-                "database filename in the \"Manage Repositories\" dialog.");
-        vprintf("%s(): return TRUE\n", __PRETTY_FUNCTION__);
-        return TRUE;
-    }
-
     // - If the coord system has changed then we need to update certain values
-    
     /* Initialize to the bounds of the screen. */
     unit2latlon(
             _center.unitx - pixel2unit(MAX(_view_width_pixels,
@@ -1590,25 +1507,12 @@ mapman_dialog()
                     GTK_TOGGLE_BUTTON(mapman_info.chk_zoom_levels[i]), FALSE);
         }
     }
-    gtk_toggle_button_set_active(
-            GTK_TOGGLE_BUTTON(mapman_info.chk_zoom_levels[
-                _zoom + (_curr_repo->double_size ? 1 : 0)]), TRUE);
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(mapman_info.chk_zoom_levels[_zoom]), TRUE);
 
     gtk_widget_show_all(dialog);
 
     mapman_update_state(NULL, &mapman_info);
-
-    if(_curr_repo->type != REPOTYPE_NONE)
-    {
-        gtk_widget_set_sensitive(mapman_info.rad_download, TRUE);
-    }
-    else
-    {
-        gtk_widget_set_sensitive(mapman_info.rad_download, FALSE);
-        popup_error(dialog,
-                _("NOTE: You must set a Map URI in the current repository in "
-                    "order to download maps."));
-    }
+    gtk_widget_set_sensitive(mapman_info.rad_download, TRUE);
 
     while(GTK_RESPONSE_ACCEPT == gtk_dialog_run(GTK_DIALOG(dialog)))
     {
@@ -1672,67 +1576,7 @@ mapman_dialog()
 }
 
 
-/* changes visibility of current repo's layers to it's previous state */
 void maps_toggle_visible_layers ()
 {
-    RepoData *rd = _curr_repo;
-    gboolean changed = FALSE;
-
-    printf("%s()\n", __PRETTY_FUNCTION__);
-
-    if (!rd) {
-        vprintf("%s(): return\n", __PRETTY_FUNCTION__);
-        return;
-    }
-
-    rd = rd->layers;
-
-    while (rd) {
-        if (rd->layer_enabled) {
-            changed = TRUE;
-            rd->layer_was_enabled = rd->layer_enabled;
-            rd->layer_enabled = FALSE;
-        }
-        else {
-            rd->layer_enabled = rd->layer_was_enabled;
-            if (rd->layer_was_enabled)
-                changed = TRUE;
-        }
-
-        rd = rd->layers;
-    }
-
-    /* redraw map */
-    if (changed) {
-        menu_layers_remove_repos ();
-        menu_layers_add_repos ();
-        map_refresh_mark (TRUE);
-    }
-
-    vprintf("%s(): return\n", __PRETTY_FUNCTION__);
+    map_screen_toggle_layers_visibility(MAP_SCREEN(map_controller_get_screen_widget(map_controller_get_instance())));
 }
-
-RepoData*
-create_default_repo()
-{
-    /* We have no repositories - create a default one. */
-    RepoData *repo = g_new0(RepoData, 1);
-
-    repo->db_filename = gnome_vfs_expand_initial_tilde(
-            REPO_DEFAULT_CACHE_DIR);
-    repo->url=g_strdup(REPO_DEFAULT_MAP_URI);
-    repo->dl_zoom_steps = REPO_DEFAULT_DL_ZOOM_STEPS;
-    repo->name = g_strdup(REPO_DEFAULT_NAME);
-    repo->view_zoom_steps = REPO_DEFAULT_VIEW_ZOOM_STEPS;
-    repo->double_size = FALSE;
-    repo->nextable = TRUE;
-    repo->min_zoom = REPO_DEFAULT_MIN_ZOOM;
-    repo->max_zoom = REPO_DEFAULT_MAX_ZOOM;
-    repo->layers = NULL;
-    repo->layer_level = 0;
-    repo->is_sqlite = TRUE;
-    set_repo_type(repo);
-
-    return repo;
-}
-

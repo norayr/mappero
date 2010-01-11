@@ -946,12 +946,10 @@ map_download_refresh_idle(MapTileSpec *tile, GdkPixbuf *pixbuf,
 
         if(_dl_errors)
         {
-            if (tile->repo->layer_level == 0) {
-                gchar buffer[BUFFER_SIZE];
-                snprintf(buffer, sizeof(buffer), "%d %s", _dl_errors,
-                         _("maps failed to download."));
-                MACRO_BANNER_SHOW_INFO(_window, buffer);
-            }
+            gchar buffer[BUFFER_SIZE];
+            snprintf(buffer, sizeof(buffer), "%d %s", _dl_errors,
+                     _("maps failed to download."));
+            MACRO_BANNER_SHOW_INFO(_window, buffer);
             _dl_errors = 0;
         }
 
@@ -987,9 +985,7 @@ map_set_zoom(gint new_zoom)
         return;
 
     controller = map_controller_get_instance();
-    map_controller_set_zoom(controller,
-                            new_zoom / _curr_repo->view_zoom_steps
-                            * _curr_repo->view_zoom_steps);
+    map_controller_set_zoom(controller, new_zoom);
 
     vprintf("%s(): return\n", __PRETTY_FUNCTION__);
 }

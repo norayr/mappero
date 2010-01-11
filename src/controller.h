@@ -27,6 +27,7 @@
 #include <glib.h>
 #include <glib-object.h>
 #include <gtk/gtk.h>
+#include <gconf/gconf-client.h>
  
 G_BEGIN_DECLS
 
@@ -60,6 +61,12 @@ MapController *map_controller_get_instance();
 
 GtkWidget *map_controller_get_screen_widget(MapController *self);
 GtkWindow *map_controller_get_main_window(MapController *self);
+
+/* Repository */
+Repository *map_controller_get_repository(MapController *self);
+void map_controller_set_repository(MapController *self, Repository *repo);
+GList *map_controller_get_repo_list(MapController *self);
+GList *map_controller_get_tile_sources_list(MapController *self);
 
 void map_controller_action_zoom_in(MapController *self);
 void map_controller_action_zoom_out(MapController *self);
@@ -116,6 +123,10 @@ gint map_controller_get_zoom(MapController *self);
 void map_controller_calc_best_center(MapController *self, Point *new_center);
 
 void map_controller_refresh_paths(MapController *controller);
+
+/* Settings */
+void map_controller_load_repositories(MapController *self, GConfClient *gconf_client);
+void map_controller_save_repositories(MapController *self, GConfClient *gconf_client);
 
 G_END_DECLS
 #endif /* MAP_CONTROLLER_H */

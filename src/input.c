@@ -291,31 +291,9 @@ window_cb_key_press(GtkWidget* widget, GdkEventKey *event)
             map_controller_set_show_poi(controller,
                 !map_controller_get_show_poi(controller));
             break;
-        case CUSTOM_ACTION_CHANGE_REPO: {
-            GList *curr = g_list_find(_repo_list, _curr_repo);
-            if(!curr)
-                break;
-
-            /* Loop until we reach a next-able repo, or until we get
-             * back to the current repo. */
-            while((curr = (curr->next ? curr->next : _repo_list))
-                    && !((RepoData*)curr->data)->nextable
-                    && curr->data != _curr_repo) { }
-
-            if(curr->data != _curr_repo)
-            {
-                repo_set_curr(curr->data);
-                gtk_check_menu_item_set_active(
-                        GTK_CHECK_MENU_ITEM(_curr_repo->menu_item),
-                        TRUE);
-            }
-            else
-            {
-                popup_error(_window,
-                    _("There are no other next-able repositories."));
-            }
+        case CUSTOM_ACTION_CHANGE_REPO:
+            /* TODO: change to next next-able repository (do we really need this?) */
             break;
-        }
 
         case CUSTOM_ACTION_RESET_BLUETOOTH:
             reset_bluetooth();

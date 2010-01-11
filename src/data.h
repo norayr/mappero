@@ -192,9 +192,6 @@ extern SpeedLocation _speed_location;
 extern UnblankOption _unblank_option;
 extern InfoFontSize _info_font_size;
 
-extern GList *_repo_list;
-extern RepoData *_curr_repo;
-
 /** POI */
 extern gchar *_poi_db_filename;
 extern gchar *_poi_db_dirname;

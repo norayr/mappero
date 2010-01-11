@@ -60,6 +60,7 @@ struct _MapScreenPrivate
     gint map_center_uy;
 
     ClutterActor *tile_group;
+    ClutterActor *layers_group;
     ClutterActor *poi_group;
 
     /* On-screen Menu */
@@ -528,26 +529,34 @@ overlay_redraw_idle(MapScreen *screen)
 }
 
 static void
-load_tiles_into_map(MapScreen *screen, RepoData *repo, gint zoom,
+load_tiles_into_map(MapScreen *screen, Repository *repo, gint zoom,
                     gint tx1, gint ty1, gint tx2, gint ty2)
 {
     MapScreenPrivate *priv = screen->priv;
-    ClutterContainer *tile_group;
+    ClutterContainer *tile_group, *layers_group;
     ClutterActor *tile;
     gfloat center_x, center_y;
-    gint tx, ty;
+    gint tx, ty, layer;
 
     tile_group = CLUTTER_CONTAINER(screen->priv->tile_group);
+    layers_group = CLUTTER_CONTAINER(screen->priv->layers_group);
 
     clutter_actor_set_scale(priv->tile_group, 1, 1);
     /* hide all the existing tiles */
     clutter_container_foreach(tile_group,
                               (ClutterCallback)clutter_actor_hide, NULL);
+    clutter_container_foreach(layers_group,
+                              (ClutterCallback)clutter_actor_hide, NULL);
 
     clutter_actor_get_anchor_point(priv->map, &center_x, &center_y);
-    clutter_actor_set_position(priv->tile_group, center_x, center_y);
 
+    clutter_actor_set_position(priv->tile_group, center_x, center_y);
     clutter_actor_set_anchor_point(priv->tile_group,
+                                   center_x - (tx1 * TILE_SIZE_PIXELS),
+                                   center_y - (ty1 * TILE_SIZE_PIXELS));
+
+    clutter_actor_set_position(priv->layers_group, center_x, center_y);
+    clutter_actor_set_anchor_point(priv->layers_group,
                                    center_x - (tx1 * TILE_SIZE_PIXELS),
                                    center_y - (ty1 * TILE_SIZE_PIXELS));
 
@@ -555,11 +564,11 @@ load_tiles_into_map(MapScreen *screen, RepoData *repo, gint zoom,
     {
         for (ty = ty1; ty <= ty2; ty++)
         {
-            tile = map_tile_cached(repo, zoom, tx, ty);
+            tile = map_tile_cached(repo->primary, zoom, tx, ty);
             if (!tile)
             {
                 gboolean new_tile;
-                tile = map_tile_load(repo, zoom, tx, ty, &new_tile);
+                tile = map_tile_load(repo->primary, zoom, tx, ty, &new_tile);
                 if (new_tile)
                     clutter_container_add_actor(tile_group, tile);
             }
@@ -568,6 +577,24 @@ load_tiles_into_map(MapScreen *screen, RepoData *repo, gint zoom,
                                        (tx - tx1) * TILE_SIZE_PIXELS,
                                        (ty - ty1) * TILE_SIZE_PIXELS);
             clutter_actor_show(tile);
+
+            /* Handle layers */
+            for (layer = 0; layer < repo->layers_count; layer++)
+            {
+                tile = map_tile_cached(repo->layers[layer], zoom, tx, ty);
+                if (!tile)
+                {
+                    gboolean new_tile;
+                    tile = map_tile_load(repo->layers[layer], zoom, tx, ty, &new_tile);
+                    if (new_tile)
+                        clutter_container_add_actor(layers_group, tile);
+                }
+
+                clutter_actor_set_position(tile,
+                                           (tx - tx1) * TILE_SIZE_PIXELS,
+                                           (ty - ty1) * TILE_SIZE_PIXELS);
+                clutter_actor_show(tile);
+            }
         }
     }
 }
@@ -835,6 +862,11 @@ map_screen_init(MapScreen *screen)
     clutter_container_add_actor(CLUTTER_CONTAINER(priv->map), priv->tile_group);
     clutter_actor_show(priv->tile_group);
 
+    priv->layers_group = clutter_group_new();
+    g_return_if_fail(priv->layers_group != NULL);
+    clutter_container_add_actor(CLUTTER_CONTAINER(priv->map), priv->layers_group);
+    clutter_actor_show(priv->layers_group);
+
     priv->poi_group = clutter_group_new();
     g_return_if_fail(priv->poi_group != NULL);
     clutter_container_add_actor(CLUTTER_CONTAINER(priv->map), priv->poi_group);
@@ -906,7 +938,6 @@ map_screen_set_center(MapScreen *screen, gint x, gint y, gint zoom)
     gint px, py;
     gint cache_amount;
     gint new_zoom;
-    RepoData *repo = _curr_repo;
 
     g_return_if_fail(MAP_IS_SCREEN(screen));
     priv = screen->priv;
@@ -925,10 +956,7 @@ map_screen_set_center(MapScreen *screen, gint x, gint y, gint zoom)
     clutter_actor_set_anchor_point(priv->map, px, py);
 
     /* Calculate cache amount */
-    if(repo->type != REPOTYPE_NONE && MAPDB_EXISTS(repo))
-        cache_amount = _auto_download_precache;
-    else
-        cache_amount = 1; /* No cache. */
+    cache_amount = _auto_download_precache;
 
     diag_halflength_units =
         pixel2zunit(TILE_HALFDIAG_PIXELS +
@@ -952,7 +980,7 @@ map_screen_set_center(MapScreen *screen, gint x, gint y, gint zoom)
                      unit2ztile(WORLD_SIZE_UNITS, new_zoom));
 
     /* create the tiles */
-    load_tiles_into_map(screen, repo, new_zoom,
+    load_tiles_into_map(screen, map_controller_get_repository (map_controller_get_instance ()), new_zoom,
                         start_tilex, start_tiley, stop_tilex, stop_tiley);
 
     /* if the zoom changed, update scale, mark and zoom box */
@@ -1240,6 +1268,8 @@ map_screen_refresh_tiles(MapScreen *self)
     /* hide all the existing tiles */
     clutter_container_foreach(CLUTTER_CONTAINER(self->priv->tile_group),
                               (ClutterCallback)map_tile_refresh, NULL);
+    clutter_container_foreach(CLUTTER_CONTAINER(self->priv->layers_group),
+                              (ClutterCallback)map_tile_refresh, NULL);
 }
 
 void
@@ -1321,4 +1351,19 @@ map_screen_refresh_pois(MapScreen *self, MapArea *poi_area)
     }
 }
 
+gboolean
+map_screen_layers_visible(MapScreen *self)
+{
+    gboolean res;
+    g_object_get(self->priv->layers_group, "visible", &res, NULL);
+    return res;
+}
 
+void
+map_screen_toggle_layers_visibility(MapScreen *self)
+{
+    if (map_screen_layers_visible(self))
+        clutter_actor_hide(self->priv->layers_group);
+    else
+        clutter_actor_show(self->priv->layers_group);
+}

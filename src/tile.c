@@ -57,7 +57,8 @@ compare_tile_spec(MapTile *tile, MapTileSpec *ts)
 {
     return (tile->ts.zoom == ts->zoom &&
             tile->ts.tilex == ts->tilex &&
-            tile->ts.tiley == ts->tiley) ? 0 : 1;
+            tile->ts.tiley == ts->tiley &&
+            tile->ts.source == ts->source) ? 0 : 1;
 }
 
 static void
@@ -196,7 +197,7 @@ map_tile_get_instance(gboolean *new_tile)
  * Returns: a #ClutterActor representing the tile.
  */
 ClutterActor *
-map_tile_load(RepoData *repo, gint zoom, gint x, gint y, gboolean *new_tile)
+map_tile_load(TileSource *source, gint zoom, gint x, gint y, gboolean *new_tile)
 {
     MapTile *tile;
     GdkPixbuf *pixbuf, *area;
@@ -204,15 +205,14 @@ map_tile_load(RepoData *repo, gint zoom, gint x, gint y, gboolean *new_tile)
 
     tile = map_tile_get_instance(new_tile);
 
-    tile->ts.repo = repo;
+    tile->ts.source = source;
     tile->ts.zoom = zoom;
     tile->ts.tilex = x;
     tile->ts.tiley = y;
 
-    /* TODO: handle layers */
     for (zoff = 0; zoff + zoom <= MAX_ZOOM && zoff < 4; zoff++)
     {
-        pixbuf = mapdb_get(repo, zoom + zoff, x >> zoff, y >> zoff);
+        pixbuf = mapdb_get(source, zoom + zoff, x >> zoff, y >> zoff);
         if (pixbuf)
         {
             if (zoff != 0)
@@ -253,13 +253,13 @@ map_tile_load(RepoData *repo, gint zoom, gint x, gint y, gboolean *new_tile)
 }
 
 ClutterActor *
-map_tile_cached(RepoData *repo, gint zoom, gint x, gint y)
+map_tile_cached(TileSource *source, gint zoom, gint x, gint y)
 {
     MapTileSpec ts;
     GList *list;
     ClutterActor *tile = NULL;
 
-    ts.repo = repo;
+    ts.source = source;
     ts.tilex = x;
     ts.tiley = y;
     ts.zoom = zoom;

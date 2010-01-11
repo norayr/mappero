@@ -329,9 +329,6 @@
     g_free(my_macro_buffer); \
 }
 
-#define MAPDB_EXISTS(map_repo) ( ((map_repo)->is_sqlite) \
-    ? ((map_repo)->sqlite_db != NULL) \
-    : ((map_repo)->gdbm_db != NULL) )
 #define _voice_synth_path "/usr/bin/flite"
 
 #define STR_EMPTY(s) (!s || s[0] == '\0')

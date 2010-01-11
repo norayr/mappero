@@ -359,71 +359,8 @@ settings_save()
         gconf_client_set_string(gconf_client,
                 GCONF_KEY_ROUTEDIR, _route_dir_uri, NULL);
 
-    /* Save the repositories. */
-    {
-        GList *curr = _repo_list;
-        GSList *temp_list = NULL;
-        gint curr_repo_index = 0;
-
-        for(curr = _repo_list; curr != NULL; curr = curr->next)
-        {
-            /* Build from each part of a repo, delimited by newline characters:
-             * 1. name
-             * 2. url
-             * 3. db_filename
-             * 4. dl_zoom_steps
-             * 5. view_zoom_steps
-             * 6. layer_level
-             *     If layer_level > 0, have additional fields:
-             *     8. layer_enabled
-             *     9. layer_refresh_interval
-             * 7/9. is_sqlite
-             */
-            RepoData *rd = curr->data;
-            gchar buffer[BUFFER_SIZE];
-
-            while (rd) {
-                if (!rd->layer_level)
-                    snprintf(buffer, sizeof(buffer),
-                             "%s\t%s\t%s\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d",
-                             rd->name,
-                             rd->url,
-                             rd->db_filename,
-                             rd->dl_zoom_steps,
-                             rd->view_zoom_steps,
-                             rd->double_size,
-                             rd->nextable,
-                             rd->min_zoom,
-                             rd->max_zoom,
-                             rd->layer_level,
-                             rd->is_sqlite);
-                else
-                    snprintf(buffer, sizeof(buffer),
-                             "%s\t%s\t%s\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d",
-                             rd->name,
-                             rd->url,
-                             rd->db_filename,
-                             rd->dl_zoom_steps,
-                             rd->view_zoom_steps,
-                             rd->double_size,
-                             rd->nextable,
-                             rd->min_zoom,
-                             rd->max_zoom,
-                             rd->layer_level,
-                             rd->layer_enabled,
-                             rd->layer_refresh_interval,
-                             rd->is_sqlite);
-                temp_list = g_slist_append(temp_list, g_strdup(buffer));
-                if(rd == _curr_repo)
-                    gconf_client_set_int(gconf_client,
-                                         GCONF_KEY_CURRREPO, curr_repo_index, NULL);
-                rd = rd->layers;
-            }
-            curr_repo_index++;
-        }
-        gconf_client_set_list(gconf_client,
-                GCONF_KEY_REPOSITORIES, GCONF_VALUE_STRING, temp_list, NULL);
-    }
+    /* Repositories */
+    map_controller_save_repositories(controller, gconf_client);
 
     /* Save Last Track File. */
     if(_track_file_uri)
@@ -1539,116 +1476,15 @@ gboolean settings_dialog()
     return FALSE;
 }
 
-RepoData*
-settings_parse_repo(gchar *str)
-{
-    /* Parse each part of a repo, delimited by newline characters:
-     * 1. name
-     * 2. url
-     * 3. db_filename
-     * 4. dl_zoom_steps
-     * 5. view_zoom_steps
-     * 6. layer_level
-     *     If layer_level > 0, have additional fields:
-     *     8. layer_enabled
-     *     9. layer_refresh_interval
-     * 7/9. is_sqlite
-     */
-    gchar *token, *error_check;
-    printf("%s(%s)\n", __PRETTY_FUNCTION__, str);
-
-    RepoData *rd = g_new0(RepoData, 1);
-
-    /* Parse name. */
-    token = strsep(&str, "\n\t");
-    if(token)
-        rd->name = g_strdup(token);
-
-    /* Parse URL format. */
-    token = strsep(&str, "\n\t");
-    if(token)
-        rd->url = g_strdup(token);
-
-    /* Parse cache dir. */
-    token = strsep(&str, "\n\t");
-    if(token)
-        rd->db_filename = gnome_vfs_expand_initial_tilde(token);
-
-    /* Parse download zoom steps. */
-    token = strsep(&str, "\n\t");
-    if(!token || !*token || !(rd->dl_zoom_steps = atoi(token)))
-        rd->dl_zoom_steps = 2;
-
-    /* Parse view zoom steps. */
-    token = strsep(&str, "\n\t");
-    if(!token || !*token || !(rd->view_zoom_steps = atoi(token)))
-        rd->view_zoom_steps = 1;
-
-    /* Parse double-size. */
-    token = strsep(&str, "\n\t");
-    if(token)
-        rd->double_size = atoi(token); /* Default is zero (FALSE) */
-
-    /* Parse next-able. */
-    token = strsep(&str, "\n\t");
-    if(!token || !*token
-            || (rd->nextable = strtol(token, &error_check, 10), token == str))
-        rd->nextable = TRUE;
-
-    /* Parse min zoom. */
-    token = strsep(&str, "\n\t");
-    if(!token || !*token
-            || (rd->min_zoom = strtol(token, &error_check, 10), token == str))
-        rd->min_zoom = 4;
-
-    /* Parse max zoom. */
-    token = strsep(&str, "\n\t");
-    if(!token || !*token
-            || (rd->max_zoom = strtol(token, &error_check, 10), token == str))
-        rd->max_zoom = 20;
-
-    /* Parse layer_level */
-    token = strsep(&str, "\n\t");
-    if(!token || !*token
-            || (rd->layer_level = strtol(token, &error_check, 10), token == str))
-        rd->layer_level = 0;
-
-    if (rd->layer_level) {
-        /* Parse layer_enabled */
-        token = strsep(&str, "\n\t");
-        if(!token || !*token || (rd->layer_enabled = strtol(token, &error_check, 10), token == str))
-            rd->layer_enabled = 0;
-
-        /* Parse layer_refresh_interval */
-        token = strsep(&str, "\n\t");
-        if(!token || !*token || (rd->layer_refresh_interval = strtol(token, &error_check, 10), token == str))
-            rd->layer_refresh_interval = 0;
-
-        rd->layer_refresh_countdown = rd->layer_refresh_interval;
-    }
-
-    /* Parse is_sqlite. */
-    token = strsep(&str, "\n\t");
-    if(!token || !*token
-            || (rd->is_sqlite = strtol(token, &error_check, 10), token == str))
-        /* If the bool is not present, then this is a gdbm database. */
-        rd->is_sqlite = FALSE;
-
-    set_repo_type(rd);
-
-    vprintf("%s(): return %p\n", __PRETTY_FUNCTION__, rd);
-    return rd;
-}
 
 /**
  * Initialize all configuration from GCONF.  This should not be called more
  * than once during execution.
  */
 void
-settings_init()
+settings_init(GConfClient *gconf_client)
 {
     GConfValue *value;
-    GConfClient *gconf_client = gconf_client_get_default();
     gchar *str;
     printf("%s()\n", __PRETTY_FUNCTION__);
 
@@ -1974,6 +1810,7 @@ settings_init()
         _next_center = _center;
     }
 
+
     /* Get map correction.  Default is 0. */
     _map_correction_unitx = gconf_client_get_int(gconf_client,
             GCONF_KEY_MAP_CORRECTION_UNITX, NULL);
@@ -1990,55 +1827,15 @@ settings_init()
             _map_reverse_matrix,
             deg2rad(_map_rotate_angle - ROTATE_DIR_ENUM_DEGREES[_rotate_dir]));
 
-
-    /* Load the repositories. */
-    {
-        GSList *list, *curr;
-        RepoData *prev_repo = NULL, *curr_repo = NULL;
-        gint curr_repo_index = gconf_client_get_int(gconf_client,
-            GCONF_KEY_CURRREPO, NULL);
-        list = gconf_client_get_list(gconf_client,
-            GCONF_KEY_REPOSITORIES, GCONF_VALUE_STRING, NULL);
-
-        for(curr = list; curr != NULL; curr = curr->next)
-        {
-            RepoData *rd = settings_parse_repo(curr->data);
-
-            if (rd->layer_level == 0) {
-                _repo_list = g_list_append(_repo_list, rd);
-                if(!curr_repo_index--)
-                    curr_repo = rd;
-            }
-            else
-                prev_repo->layers = rd;
-            prev_repo = rd;
-            g_free(curr->data);
-        }
-        g_slist_free(list);
-
-        if (curr_repo)
-            repo_set_curr(curr_repo);
-    }
-
-    if(_repo_list == NULL)
-    {
-        RepoData *repo = create_default_repo();
-        _repo_list = g_list_append(_repo_list, repo);
-        repo_set_curr(repo);
-    }
-
     /* Get last Zoom Level.  Default is 16. */
     value = gconf_client_get(gconf_client, GCONF_KEY_ZOOM, NULL);
     if(value)
     {
-        _zoom = gconf_value_get_int(value) / _curr_repo->view_zoom_steps
-            * _curr_repo->view_zoom_steps;
+        _zoom = gconf_value_get_int(value);
         gconf_value_free(value);
     }
     else
-        _zoom = 16 / _curr_repo->view_zoom_steps
-            * _curr_repo->view_zoom_steps;
-    BOUND(_zoom, 0, MAX_ZOOM);
+        _zoom = 16;
     _next_zoom = _zoom;
 
     /* Get Route Directory.  Default is NULL. */
@@ -2226,9 +2023,6 @@ settings_init()
                 _color[i] = COLORABLE_DEFAULT[i];
         }
     }
-
-    gconf_client_clear_cache(gconf_client);
-    g_object_unref(gconf_client);
 
     /* GPS data init */
     _gps.fix = 1;

@@ -30,8 +30,11 @@
 #include "gps.h"
 #include "menu.h"
 #include "path.h"
+#include "repo.h"
 #include "screen.h"
+#include "settings.h"
 
+#include <gconf/gconf-client.h>
 #include <hildon/hildon-banner.h>
 #include <math.h>
 
@@ -39,6 +42,9 @@
 
 struct _MapControllerPrivate
 {
+    GList *repository_list;
+    GList *tile_sources_list;
+    Repository *repository;
     MapScreen *screen;
     Point center;
     gint rotation_angle;
@@ -97,6 +103,7 @@ static void
 map_controller_init(MapController *controller)
 {
     MapControllerPrivate *priv;
+    GConfClient *gconf_client = gconf_client_get_default();
 
     priv = G_TYPE_INSTANCE_GET_PRIVATE(controller, MAP_TYPE_CONTROLLER,
                                        MapControllerPrivate);
@@ -105,16 +112,24 @@ map_controller_init(MapController *controller)
     g_assert(instance == NULL);
     instance = controller;
 
-    /* TODO: load the settings from inside here */
+    /* Load settings */
+    settings_init(gconf_client);
+
+    /* Load repositories */
+    map_controller_load_repositories(controller, gconf_client);
 
     priv->screen = g_object_new(MAP_TYPE_SCREEN, NULL);
     map_screen_show_compass(priv->screen, _show_comprose);
     map_screen_show_scale(priv->screen, _show_scale);
     map_screen_show_zoom_box(priv->screen, _show_zoomlevel);
 
+    /* TODO: eliminate global _next_center, _next_zoom, _center, _zoom, etc values */
     map_controller_set_center(controller, _next_center, _next_zoom);
 
     g_idle_add(activate_gps, NULL);
+
+    gconf_client_clear_cache(gconf_client);
+    g_object_unref(gconf_client);
 }
 
 static void
@@ -564,6 +579,9 @@ map_controller_set_zoom(MapController *self, gint zoom)
     g_return_if_fail(MAP_IS_CONTROLLER(self));
     priv = self->priv;
 
+    /* Round zoom according step in repository */
+    zoom = zoom / priv->repository->zoom_step * priv->repository->zoom_step;
+
     if (zoom == priv->zoom) return;
 
     g_debug("%s %d", G_STRFUNC, zoom);
@@ -624,4 +642,109 @@ map_controller_refresh_paths(MapController *self)
     g_return_if_fail(MAP_IS_CONTROLLER(self));
 
     map_screen_redraw_overlays(self->priv->screen);
+}
+
+
+/*
+ * Load all repositories and associated layers
+ */
+void
+map_controller_load_repositories (MapController *self, GConfClient *gconf_client)
+{
+    MapControllerPrivate *priv = self->priv;
+    Repository *street_repo, *satellite_repo;
+    TileSource *street, *satellite, *traffic;
+
+    /* load all tile sources */
+    street = g_slice_new0(TileSource);
+    street->name = g_strdup("Google Vector");
+    street->id = g_strdup("GoogleVector");
+    street->cache_dir = g_strdup(street->id);
+    street->url = g_strdup("http://mt.google.com/vt?z=%d&x=%d&y=%0d");
+    street->type = REPOTYPE_XYZ_INV;
+    street->visible = TRUE;
+
+    satellite = g_slice_new0(TileSource);
+    satellite->name = g_strdup("Google Satellite");
+    satellite->id = g_strdup("GoogleSatellite");
+    satellite->cache_dir = g_strdup(satellite->id);
+    satellite->url = g_strdup("http://khm.google.com/kh/v=51&z=%d&x=%d&y=%0d");
+    satellite->type = REPOTYPE_XYZ_INV;
+    satellite->visible = TRUE;
+
+    traffic = g_slice_new0(TileSource);
+    traffic->name = g_strdup("Google Traffic");
+    traffic->id = g_strdup("GoogleTraffic");
+    traffic->cache_dir = g_strdup(traffic->id);
+    traffic->url = g_strdup("http://mt0.google.com/vt?lyrs=m@115,traffic&z=%d&x=%d&y=%0d&opts=T");
+    traffic->type = REPOTYPE_XYZ_INV;
+    traffic->visible = TRUE;
+
+    /* It's a stub for debugging. Final version will have XML storage format */
+    street_repo = g_slice_new0(Repository);
+    street_repo->name = g_strdup("Google");
+    street_repo->min_zoom = 4;
+    street_repo->max_zoom = 24;
+    street_repo->zoom_step = 1;
+    street_repo->primary = street;
+    street_repo->layers_count = 1;
+    street_repo->layers = g_new0(TileSource*, 1);
+    street_repo->layers[0] = traffic;
+
+    satellite_repo = g_slice_new0(Repository);
+    satellite_repo->name = g_strdup("Google Satellite");
+    satellite_repo->min_zoom = 4;
+    satellite_repo->max_zoom = 24;
+    satellite_repo->zoom_step = 1;
+    satellite_repo->primary = satellite;
+    satellite_repo->layers_count = 1;
+    satellite_repo->layers = g_new0(TileSource*, 1);
+    satellite_repo->layers[0] = traffic;
+
+    priv->repository = street_repo;
+    priv->repository_list = g_list_append(priv->repository_list, street_repo);
+    priv->repository_list = g_list_append(priv->repository_list, satellite_repo);
+
+    priv->tile_sources_list = g_list_append(priv->tile_sources_list, traffic);
+    priv->tile_sources_list = g_list_append(priv->tile_sources_list, satellite);
+    priv->tile_sources_list = g_list_append(priv->tile_sources_list, street);
+
+    /* TODO: XML deserialization */
+}
+
+/*
+ * Save all repositories and associated layers
+ */
+void
+map_controller_save_repositories (MapController *self, GConfClient *gconf_client)
+{
+    /* TODO: XML serialization */
+}
+
+Repository *
+map_controller_get_repository (MapController *self)
+{
+    g_return_val_if_fail(MAP_IS_CONTROLLER(self), NULL);
+    return self->priv->repository;
+}
+
+void
+map_controller_set_repository (MapController *self, Repository *repo)
+{
+    g_return_if_fail(MAP_IS_CONTROLLER(self));
+    self->priv->repository = repo;
+}
+
+GList *
+map_controller_get_repo_list (MapController *self)
+{
+    g_return_val_if_fail(MAP_IS_CONTROLLER(self), NULL);
+    return self->priv->repository_list;
+}
+
+GList *
+map_controller_get_tile_sources_list (MapController *self)
+{
+    g_return_val_if_fail(MAP_IS_CONTROLLER(self), NULL);
+    return self->priv->tile_sources_list;
 }
