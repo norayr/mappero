@@ -652,10 +652,18 @@ void
 map_controller_load_repositories (MapController *self, GConfClient *gconf_client)
 {
     MapControllerPrivate *priv = self->priv;
-    Repository *street_repo, *satellite_repo;
-    TileSource *street, *satellite, *traffic;
+    Repository *street_repo, *satellite_repo, *osm_repo;
+    TileSource *street, *satellite, *traffic, *osm;
 
     /* load all tile sources */
+    osm = g_slice_new0(TileSource);
+    osm->name = g_strdup("OpenStreet");
+    osm->id = g_strdup("OpenStreet");
+    osm->cache_dir = g_strdup(osm->id);
+    osm->url = g_strdup(REPO_DEFAULT_MAP_URI);
+    osm->type = REPOTYPE_XYZ_INV;
+    osm->visible = TRUE;
+
     street = g_slice_new0(TileSource);
     street->name = g_strdup("Google Vector");
     street->id = g_strdup("GoogleVector");
@@ -681,6 +689,14 @@ map_controller_load_repositories (MapController *self, GConfClient *gconf_client
     traffic->visible = TRUE;
 
     /* It's a stub for debugging. Final version will have XML storage format */
+    osm_repo = g_slice_new0(Repository);
+    osm_repo->name = g_strdup("OpenStreet");
+    osm_repo->min_zoom = REPO_DEFAULT_MIN_ZOOM;
+    osm_repo->max_zoom = REPO_DEFAULT_MAX_ZOOM;
+    osm_repo->zoom_step = 1;
+    osm_repo->primary = osm;
+    osm_repo->layers_count = 0;
+
     street_repo = g_slice_new0(Repository);
     street_repo->name = g_strdup("Google");
     street_repo->min_zoom = 4;
@@ -701,10 +717,12 @@ map_controller_load_repositories (MapController *self, GConfClient *gconf_client
     satellite_repo->layers = g_new0(TileSource*, 1);
     satellite_repo->layers[0] = traffic;
 
-    priv->repository = street_repo;
+    priv->repository = osm_repo;
+    priv->repository_list = g_list_append(priv->repository_list, osm_repo);
     priv->repository_list = g_list_append(priv->repository_list, street_repo);
     priv->repository_list = g_list_append(priv->repository_list, satellite_repo);
 
+    priv->tile_sources_list = g_list_append(priv->tile_sources_list, osm);
     priv->tile_sources_list = g_list_append(priv->tile_sources_list, traffic);
     priv->tile_sources_list = g_list_append(priv->tile_sources_list, satellite);
     priv->tile_sources_list = g_list_append(priv->tile_sources_list, street);
