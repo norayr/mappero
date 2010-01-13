@@ -687,6 +687,7 @@ map_controller_load_repositories (MapController *self, GConfClient *gconf_client
     traffic->url = g_strdup("http://mt0.google.com/vt?lyrs=m@115,traffic&z=%d&x=%d&y=%0d&opts=T");
     traffic->type = REPOTYPE_XYZ_INV;
     traffic->visible = TRUE;
+    traffic->transparent = TRUE;
 
     /* It's a stub for debugging. Final version will have XML storage format */
     osm_repo = g_slice_new0(Repository);
@@ -726,8 +727,6 @@ map_controller_load_repositories (MapController *self, GConfClient *gconf_client
     priv->tile_sources_list = g_list_append(priv->tile_sources_list, traffic);
     priv->tile_sources_list = g_list_append(priv->tile_sources_list, satellite);
     priv->tile_sources_list = g_list_append(priv->tile_sources_list, street);
-
-    /* TODO: XML deserialization */
 }
 
 /*
@@ -766,3 +765,29 @@ map_controller_get_tile_sources_list (MapController *self)
     g_return_val_if_fail(MAP_IS_CONTROLLER(self), NULL);
     return self->priv->tile_sources_list;
 }
+
+
+/* Return TileSource reference with this ID. If not found, return NULL */
+TileSource *
+map_controller_lookup_tile_source(MapController *self, gchar *id)
+{
+    GList *ts_list;
+    TileSource *ts;
+
+    g_return_val_if_fail(MAP_IS_CONTROLLER(self), NULL);
+
+    if (!id)
+        return NULL;
+
+    ts_list = self->priv->tile_sources_list;
+    while (ts_list)
+    {
+        ts = (TileSource*)ts_list->data;
+        if (ts && ts->id && !strcmp (ts->id, id))
+            return ts;
+        ts_list = g_list_next (ts_list);
+    }
+
+    return NULL;
+}
+

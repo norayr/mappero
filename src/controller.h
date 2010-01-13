@@ -64,6 +64,7 @@ GtkWindow *map_controller_get_main_window(MapController *self);
 
 /* Repository */
 Repository *map_controller_get_repository(MapController *self);
+TileSource *map_controller_lookup_tile_source(MapController *self, gchar *id);
 void map_controller_set_repository(MapController *self, Repository *repo);
 GList *map_controller_get_repo_list(MapController *self);
 GList *map_controller_get_tile_sources_list(MapController *self);
