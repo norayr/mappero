@@ -42,7 +42,7 @@
 
 struct _MapControllerPrivate
 {
-    GList *repository_list;
+    GList *repositories_list;
     GList *tile_sources_list;
     Repository *repository;
     MapScreen *screen;
@@ -651,82 +651,45 @@ map_controller_refresh_paths(MapController *self)
 void
 map_controller_load_repositories (MapController *self, GConfClient *gconf_client)
 {
-    MapControllerPrivate *priv = self->priv;
-    Repository *street_repo, *satellite_repo, *osm_repo;
-    TileSource *street, *satellite, *traffic, *osm;
+    MapControllerPrivate *priv;
+    GConfValue *value;
 
-    /* load all tile sources */
-    osm = g_slice_new0(TileSource);
-    osm->name = g_strdup("OpenStreet");
-    osm->id = g_strdup("OpenStreet");
-    osm->cache_dir = g_strdup(osm->id);
-    osm->url = g_strdup(REPO_DEFAULT_MAP_URI);
-    osm->type = REPOTYPE_XYZ_INV;
-    osm->visible = TRUE;
+    g_return_if_fail(MAP_IS_CONTROLLER(self));
+    priv = self->priv;
 
-    street = g_slice_new0(TileSource);
-    street->name = g_strdup("Google Vector");
-    street->id = g_strdup("GoogleVector");
-    street->cache_dir = g_strdup(street->id);
-    street->url = g_strdup("http://mt.google.com/vt?z=%d&x=%d&y=%0d");
-    street->type = REPOTYPE_XYZ_INV;
-    street->visible = TRUE;
+    /* tile sources */
+    value = gconf_client_get (gconf_client, GCONF_KEY_TILE_SOURCES, NULL);
+    if (value) {
+        priv->tile_sources_list = xml_to_tile_sources (gconf_value_get_string (value));
+        gconf_value_free (value);
+    }
 
-    satellite = g_slice_new0(TileSource);
-    satellite->name = g_strdup("Google Satellite");
-    satellite->id = g_strdup("GoogleSatellite");
-    satellite->cache_dir = g_strdup(satellite->id);
-    satellite->url = g_strdup("http://khm.google.com/kh/v=51&z=%d&x=%d&y=%0d");
-    satellite->type = REPOTYPE_XYZ_INV;
-    satellite->visible = TRUE;
+    /* repositories must be loaded after tile sources, because repository load routine performs
+     * lookup in tile sources list */
+    value = gconf_client_get (gconf_client, GCONF_KEY_REPOSITORIES, NULL);
+    if (value) {
+        priv->repositories_list = xml_to_repositories (gconf_value_get_string (value));
+        gconf_value_free (value);
+    }
 
-    traffic = g_slice_new0(TileSource);
-    traffic->name = g_strdup("Google Traffic");
-    traffic->id = g_strdup("GoogleTraffic");
-    traffic->cache_dir = g_strdup(traffic->id);
-    traffic->url = g_strdup("http://mt0.google.com/vt?lyrs=m@115,traffic&z=%d&x=%d&y=%0d&opts=T");
-    traffic->type = REPOTYPE_XYZ_INV;
-    traffic->visible = TRUE;
-    traffic->transparent = TRUE;
+    /* if some data failed to load, switch to defaults */
+    if (!priv->tile_sources_list || !priv->repositories_list) {
+        printf ("Create default\n");
+        priv->repository = create_default_repo_lists (&priv->tile_sources_list, &priv->repositories_list);
+    }
+    else {
+        /* current repository */
+        value = gconf_client_get (gconf_client, GCONF_KEY_ACTIVE_REPOSITORY, NULL);
+        if (value) {
+            char *val = (char*)gconf_value_get_string (value);
+            if (val)
+                priv->repository = map_controller_lookup_repository (self, val);
+            gconf_value_free (value);
+        }
 
-    /* It's a stub for debugging. Final version will have XML storage format */
-    osm_repo = g_slice_new0(Repository);
-    osm_repo->name = g_strdup("OpenStreet");
-    osm_repo->min_zoom = REPO_DEFAULT_MIN_ZOOM;
-    osm_repo->max_zoom = REPO_DEFAULT_MAX_ZOOM;
-    osm_repo->zoom_step = 1;
-    osm_repo->primary = osm;
-    osm_repo->layers_count = 0;
-
-    street_repo = g_slice_new0(Repository);
-    street_repo->name = g_strdup("Google");
-    street_repo->min_zoom = 4;
-    street_repo->max_zoom = 24;
-    street_repo->zoom_step = 1;
-    street_repo->primary = street;
-    street_repo->layers_count = 1;
-    street_repo->layers = g_new0(TileSource*, 1);
-    street_repo->layers[0] = traffic;
-
-    satellite_repo = g_slice_new0(Repository);
-    satellite_repo->name = g_strdup("Google Satellite");
-    satellite_repo->min_zoom = 4;
-    satellite_repo->max_zoom = 24;
-    satellite_repo->zoom_step = 1;
-    satellite_repo->primary = satellite;
-    satellite_repo->layers_count = 1;
-    satellite_repo->layers = g_new0(TileSource*, 1);
-    satellite_repo->layers[0] = traffic;
-
-    priv->repository = osm_repo;
-    priv->repository_list = g_list_append(priv->repository_list, osm_repo);
-    priv->repository_list = g_list_append(priv->repository_list, street_repo);
-    priv->repository_list = g_list_append(priv->repository_list, satellite_repo);
-
-    priv->tile_sources_list = g_list_append(priv->tile_sources_list, osm);
-    priv->tile_sources_list = g_list_append(priv->tile_sources_list, traffic);
-    priv->tile_sources_list = g_list_append(priv->tile_sources_list, satellite);
-    priv->tile_sources_list = g_list_append(priv->tile_sources_list, street);
+        if (!priv->repository)
+            priv->repository = priv->repositories_list->data;
+    }
 }
 
 /*
@@ -735,7 +698,34 @@ map_controller_load_repositories (MapController *self, GConfClient *gconf_client
 void
 map_controller_save_repositories (MapController *self, GConfClient *gconf_client)
 {
-    /* TODO: XML serialization */
+    MapControllerPrivate *priv;
+    gchar *xml;
+
+    g_return_if_fail(MAP_IS_CONTROLLER(self));
+    priv = self->priv;
+
+    /* Repositories */
+    xml = repositories_to_xml (priv->repositories_list);
+    if (xml) {
+        gconf_client_set_string (gconf_client, GCONF_KEY_REPOSITORIES, xml, NULL);
+        g_free (xml);
+    }
+    else
+        gconf_client_unset (gconf_client, GCONF_KEY_REPOSITORIES, NULL);
+
+    /* Tile sources */
+    xml = tile_sources_to_xml (priv->tile_sources_list);
+    if (xml) {
+        gconf_client_set_string (gconf_client, GCONF_KEY_TILE_SOURCES, xml, NULL);
+        g_free (xml);
+    }
+    else
+        gconf_client_unset (gconf_client, GCONF_KEY_TILE_SOURCES, NULL);
+
+    if (priv->repository)
+        gconf_client_set_string (gconf_client, GCONF_KEY_ACTIVE_REPOSITORY, priv->repository->name, NULL);
+    else
+        gconf_client_unset (gconf_client, GCONF_KEY_ACTIVE_REPOSITORY, NULL);
 }
 
 Repository *
@@ -756,7 +746,7 @@ GList *
 map_controller_get_repo_list (MapController *self)
 {
     g_return_val_if_fail(MAP_IS_CONTROLLER(self), NULL);
-    return self->priv->repository_list;
+    return self->priv->repositories_list;
 }
 
 GList *
@@ -791,3 +781,27 @@ map_controller_lookup_tile_source(MapController *self, gchar *id)
     return NULL;
 }
 
+
+
+Repository *
+map_controller_lookup_repository(MapController *self, gchar *name)
+{
+    GList *repo_list;
+    Repository *repo;
+
+    g_return_val_if_fail(MAP_IS_CONTROLLER(self), NULL);
+
+    if (!name)
+        return NULL;
+
+    repo_list = self->priv->repositories_list;
+    while (repo_list)
+    {
+        repo = (Repository*)repo_list->data;
+        if (repo && repo->name && !strcmp (repo->name, name))
+            return repo;
+        repo_list = g_list_next (repo_list);
+    }
+
+    return NULL;
+}

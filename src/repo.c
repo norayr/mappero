@@ -2,14 +2,14 @@
 #   include "config.h"
 #endif
 
-#include "controller.h"
-#include "types.h"
-#include "repo.h"
-
 #include <libxml/parser.h>
 #include <libxml/tree.h>
 #include <string.h>
 
+#include "types.h"
+#include "defines.h"
+#include "controller.h"
+#include "repo.h"
 
 /* Tag names. Used in XML generator and parser. */
 #define TS_ROOT  "TileSources"
@@ -311,11 +311,14 @@ tree_to_repository (xmlDocPtr doc, xmlNodePtr repo_node)
 
 
 /* Parse XML data */
-GList* xml_to_tile_sources (gchar *data)
+GList* xml_to_tile_sources (const gchar *data)
 {
     xmlDocPtr doc;
     xmlNodePtr n;
     GList *res = NULL;
+
+    if (!data)
+        return NULL;
 
     doc = xmlParseMemory (data, strlen (data));
 
@@ -343,11 +346,14 @@ GList* xml_to_tile_sources (gchar *data)
 
 
 /* Parse repositories XML */
-GList* xml_to_repositories (gchar *data)
+GList* xml_to_repositories (const gchar *data)
 {
     xmlDocPtr doc;
     xmlNodePtr n;
     GList *res = NULL;
+
+    if (!data)
+        return NULL;
 
     doc = xmlParseMemory (data, strlen (data));
 
@@ -372,3 +378,88 @@ GList* xml_to_repositories (gchar *data)
     return res;
 }
 
+
+/*
+ * Create default repositories
+ */
+Repository*
+create_default_repo_lists (GList **tile_sources, GList **repositories)
+{
+    TileSource *osm, *google, *satellite, *traffic;
+    Repository *repo;
+
+    *tile_sources = NULL;
+    *repositories = NULL;
+
+    osm = g_slice_new0(TileSource);
+    osm->name = g_strdup("OpenStreet");
+    osm->id = g_strdup("OpenStreet");
+    osm->cache_dir = g_strdup(osm->id);
+    osm->url = g_strdup(REPO_DEFAULT_MAP_URI);
+    osm->type = REPOTYPE_XYZ_INV;
+    osm->visible = TRUE;
+    *tile_sources = g_list_append (*tile_sources, osm);
+
+    google = g_slice_new0(TileSource);
+    google->name = g_strdup("Google Vector");
+    google->id = g_strdup("GoogleVector");
+    google->cache_dir = g_strdup(google->id);
+    google->url = g_strdup("http://mt.google.com/vt?z=%d&x=%d&y=%0d");
+    google->type = REPOTYPE_XYZ_INV;
+    google->visible = TRUE;
+    *tile_sources = g_list_append (*tile_sources, google);
+
+    satellite = g_slice_new0(TileSource);
+    satellite->name = g_strdup("Google Satellite");
+    satellite->id = g_strdup("GoogleSatellite");
+    satellite->cache_dir = g_strdup(satellite->id);
+    satellite->url = g_strdup("http://khm.google.com/kh/v=51&z=%d&x=%d&y=%0d");
+    satellite->type = REPOTYPE_XYZ_INV;
+    satellite->visible = TRUE;
+    *tile_sources = g_list_append (*tile_sources, satellite);
+
+    /* layers */
+    traffic = g_slice_new0(TileSource);
+    traffic->name = g_strdup("Google Traffic");
+    traffic->id = g_strdup("GoogleTraffic");
+    traffic->cache_dir = g_strdup(traffic->id);
+    traffic->url = g_strdup("http://mt0.google.com/vt?lyrs=m@115,traffic&z=%d&x=%d&y=%0d&opts=T");
+    traffic->type = REPOTYPE_XYZ_INV;
+    traffic->visible = TRUE;
+    traffic->transparent = TRUE;
+    *tile_sources = g_list_append (*tile_sources, traffic);
+
+    /* repositories */
+    repo = g_slice_new0(Repository);
+    repo->name = g_strdup("OpenStreet");
+    repo->min_zoom = REPO_DEFAULT_MIN_ZOOM;
+    repo->max_zoom = REPO_DEFAULT_MAX_ZOOM;
+    repo->zoom_step = 1;
+    repo->primary = osm;
+    repo->layers_count = 0;
+    *repositories = g_list_append (*repositories, repo);
+
+    repo = g_slice_new0(Repository);
+    repo->name = g_strdup("Google Satellite");
+    repo->min_zoom = 4;
+    repo->max_zoom = 24;
+    repo->zoom_step = 1;
+    repo->primary = satellite;
+    repo->layers_count = 1;
+    repo->layers = g_new0(TileSource*, 1);
+    repo->layers[0] = traffic;
+    *repositories = g_list_append (*repositories, repo);
+
+    repo = g_slice_new0(Repository);
+    repo->name = g_strdup("Google");
+    repo->min_zoom = 4;
+    repo->max_zoom = 24;
+    repo->zoom_step = 1;
+    repo->primary = google;
+    repo->layers_count = 1;
+    repo->layers = g_new0(TileSource*, 1);
+    repo->layers[0] = traffic;
+    *repositories = g_list_append (*repositories, repo);
+
+    return repo;
+}
