@@ -124,7 +124,6 @@ extern GdkGC *_gc[COLORABLE_ENUM_COUNT];
 extern GdkColor _color[COLORABLE_ENUM_COUNT];
 
 /** BANNERS. */
-extern GtkWidget *_connect_banner;
 extern GtkWidget *_fix_banner;
 extern GtkWidget *_waypoint_banner;
 extern GtkWidget *_download_banner;

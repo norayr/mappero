@@ -217,11 +217,6 @@ set_conn_state(ConnState new_conn_state)
     {
         case RCVR_OFF:
         case RCVR_FIXED:
-            if(_connect_banner)
-            {
-                gtk_widget_destroy(_connect_banner);
-                _connect_banner = NULL;
-            }
             if(_fix_banner)
             {
                 gtk_widget_destroy(_fix_banner);
@@ -234,16 +229,8 @@ set_conn_state(ConnState new_conn_state)
                 gtk_widget_destroy(_fix_banner);
                 _fix_banner = NULL;
             }
-            if(!_connect_banner)
-                _connect_banner = hildon_banner_show_animation(
-                        _window, NULL, _("Searching for GPS receiver"));
             break;
         case RCVR_UP:
-            if(_connect_banner)
-            {
-                gtk_widget_destroy(_connect_banner);
-                _connect_banner = NULL;
-            }
             if(!_fix_banner)
             {
                 _fix_banner = hildon_banner_show_progress(

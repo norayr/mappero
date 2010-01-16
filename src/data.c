@@ -142,7 +142,6 @@ GdkGC *_gc[COLORABLE_ENUM_COUNT];
 GdkColor _color[COLORABLE_ENUM_COUNT];
 
 /** BANNERS. */
-GtkWidget *_connect_banner = NULL;
 GtkWidget *_fix_banner = NULL;
 GtkWidget *_waypoint_banner = NULL;
 GtkWidget *_download_banner = NULL;
