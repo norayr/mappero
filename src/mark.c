@@ -233,7 +233,7 @@ map_mark_update(MapMark *self)
     cr = clutter_cairo_texture_create(CLUTTER_CAIRO_TEXTURE(priv->dot));
 
     cairo_new_sub_path(cr);
-    cairo_arc(cr, x, y, _draw_width, 0, 2 * M_PI);
+    cairo_arc(cr, x, y, _draw_width, 0, 2 * PI);
     cairo_set_line_width(cr, _draw_width);
     color = (_gps_state == RCVR_FIXED) ? COLORABLE_MARK : COLORABLE_MARK_OLD;
     set_source_color(cr, &_color[color]);

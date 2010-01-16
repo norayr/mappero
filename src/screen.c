@@ -149,7 +149,7 @@ on_zoom_tl_frame(ClutterTimeline *zoom_tl, gint elapsed, MapScreen *self)
     exponent = elapsed / (float)ZOOM_DURATION + priv->num_zoom_tl_completed;
     if (priv->zoom_direction_out)
         exponent = -exponent;
-    scale = powf(2, exponent);
+    scale = exp2f(exponent);
     clutter_actor_set_scale(priv->tile_group, scale, scale);
 }
 
@@ -169,7 +169,7 @@ map_screen_pixel_to_screen_units(MapScreenPrivate *priv, gint px, gint py,
 
     angle = clutter_actor_get_rotation(priv->map, CLUTTER_Z_AXIS,
                                        NULL, NULL, NULL);
-    angle = angle * M_PI / 180;
+    angle = angle * PI / 180;
     cos_angle = cos(angle);
     sin_angle = sin(angle);
     x = px, y = py;
@@ -355,7 +355,7 @@ draw_break(cairo_t *cr, GdkColor *color, gint x, gint y)
 {
     cairo_save(cr);
     cairo_new_sub_path(cr);
-    cairo_arc(cr, x, y, _draw_width, 0, 2 * M_PI);
+    cairo_arc(cr, x, y, _draw_width, 0, 2 * PI);
     cairo_set_line_width(cr, _draw_width);
     set_source_color(cr, color);
     cairo_stroke(cr);
