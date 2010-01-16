@@ -44,6 +44,9 @@
 #define ZOOM_WIDTH      25
 #define ZOOM_HEIGHT     SCALE_HEIGHT
 
+/* duration of one step of the zoom animation */
+#define ZOOM_DURATION   500
+
 /* (im)precision of a finger tap, in screen pixels */
 #define TOUCH_RADIUS    25
 
@@ -87,6 +90,11 @@ struct _MapScreenPrivate
 
     guint source_overlay_redraw;
 
+    ClutterTimeline *zoom_tl;
+    gint num_zoom_tl_completed;
+
+    guint zoom_direction_out : 1;
+
     /* Set this flag to TRUE when there is an action ongoing which requires
      * touchscreen interaction: this prevents the OSM from popping up */
     guint action_ongoing : 1;
@@ -105,6 +113,45 @@ struct _MapScreenPrivate
 G_DEFINE_TYPE(MapScreen, map_screen, GTK_CLUTTER_TYPE_EMBED);
 
 #define MAP_SCREEN_PRIV(screen) (MAP_SCREEN(screen)->priv)
+
+static void
+on_zoom_tl_completed(ClutterTimeline *zoom_tl, MapScreen *self)
+{
+    MapScreenPrivate *priv = self->priv;
+    gint zoom_diff;
+    gboolean ended;
+
+    priv->num_zoom_tl_completed++;
+
+    ended = !clutter_timeline_get_loop(zoom_tl);
+    if (ended)
+    {
+        MapController *controller = map_controller_get_instance();
+
+        zoom_diff = priv->num_zoom_tl_completed;
+        if (priv->zoom_direction_out)
+            zoom_diff = -zoom_diff;
+
+        map_controller_set_zoom(controller, priv->zoom - zoom_diff);
+    }
+}
+
+static void
+on_zoom_tl_frame(ClutterTimeline *zoom_tl, gint elapsed, MapScreen *self)
+{
+    MapScreenPrivate *priv = self->priv;
+    gfloat scale, exponent;
+
+    /* For some reason (clutter bug?) the elapsed time passed to the signal
+     * handler is always 0. So, we need to get it from the timeline. */
+    elapsed = clutter_timeline_get_elapsed_time(zoom_tl);
+
+    exponent = elapsed / (float)ZOOM_DURATION + priv->num_zoom_tl_completed;
+    if (priv->zoom_direction_out)
+        exponent = -exponent;
+    scale = powf(2, exponent);
+    clutter_actor_set_scale(priv->tile_group, scale, scale);
+}
 
 static void
 actor_set_rotation_cb(ClutterActor *actor, gpointer angle)
@@ -287,31 +334,6 @@ on_captured_event(ClutterActor *actor, ClutterEvent *event, MapScreen *screen)
     return handled;
 }
 
-static void
-map_screen_change_zoom_by_step(MapScreen *self, gboolean zoom_in)
-{
-    MapScreenPrivate *priv;
-    gint new_zoom, sign;
-
-    g_return_if_fail(MAP_IS_SCREEN(self));
-    priv = self->priv;
-
-    /* TODO: reimplement, once the old map is dropped */
-    sign = zoom_in ? -1 : 1;
-    new_zoom = priv->zoom + _curr_repo->view_zoom_steps * sign;
-    BOUND(new_zoom, 0, MAX_ZOOM);
-    if (new_zoom == priv->zoom) return;
-
-    {
-        gchar buffer[80];
-        snprintf(buffer, sizeof(buffer),"%s %d",
-                 _("Zoom to Level"), new_zoom);
-        MACRO_BANNER_SHOW_INFO(_window, buffer);
-    }
-
-    map_set_zoom(new_zoom);
-}
-
 static inline void
 point_to_pixels(MapScreenPrivate *priv, Point *p, gint *x, gint *y)
 {
@@ -440,6 +462,7 @@ overlay_redraw_real(MapScreen *screen)
     draw_paths(screen, cr);
 
     cairo_destroy(cr);
+    clutter_actor_show(priv->overlay);
 
     priv->source_overlay_redraw = 0;
     return FALSE;
@@ -469,6 +492,7 @@ load_tiles_into_map(MapScreen *screen, RepoData *repo, gint zoom,
 
     tile_group = CLUTTER_CONTAINER(screen->priv->tile_group);
 
+    clutter_actor_set_scale(priv->tile_group, 1, 1);
     /* hide all the existing tiles */
     clutter_container_foreach(tile_group,
                               (ClutterCallback)clutter_actor_hide, NULL);
@@ -790,6 +814,13 @@ map_screen_init(MapScreen *screen)
                              NULL);
     clutter_container_add_actor(CLUTTER_CONTAINER(stage), priv->osm);
     map_osm_hide(MAP_OSM(priv->osm));
+
+    /* Zoom timeline */
+    priv->zoom_tl = clutter_timeline_new(ZOOM_DURATION);
+    g_signal_connect(priv->zoom_tl, "new-frame",
+                     G_CALLBACK(on_zoom_tl_frame), screen);
+    g_signal_connect(priv->zoom_tl, "completed",
+                     G_CALLBACK(on_zoom_tl_completed), screen);
 }
 
 static void
@@ -815,6 +846,7 @@ map_screen_class_init(MapScreenClass * klass)
 void
 map_screen_set_center(MapScreen *screen, gint x, gint y, gint zoom)
 {
+    MapController *controller = map_controller_get_instance();
     MapScreenPrivate *priv;
     GtkAllocation *allocation;
     gint diag_halflength_units;
@@ -878,6 +910,7 @@ map_screen_set_center(MapScreen *screen, gint x, gint y, gint zoom)
         priv->zoom = new_zoom;
         update_scale_and_zoom(screen);
         map_mark_update(MAP_MARK(priv->mark));
+        clutter_actor_show(priv->mark);
     }
 
     /* Update map data */
@@ -886,8 +919,11 @@ map_screen_set_center(MapScreen *screen, gint x, gint y, gint zoom)
 
     /* render the POIs */
     map_screen_clear_pois(screen);
-    if (_poi_zoom > priv->zoom)
+    if (map_controller_get_show_poi(controller) && _poi_zoom > priv->zoom)
+    {
         map_poi_render(&area, (MapPoiRenderCb)map_screen_add_poi, screen);
+        clutter_actor_show(priv->poi_group);
+    }
 
     /* draw the paths */
     overlay_redraw_idle(screen);
@@ -1034,15 +1070,40 @@ map_screen_update_mark(MapScreen *screen)
 }
 
 void
-map_screen_zoom_in(MapScreen *screen)
+map_screen_zoom_start(MapScreen *self, MapScreenZoomDirection dir)
 {
-    map_screen_change_zoom_by_step(screen, TRUE);
+    MapScreenPrivate *priv;
+
+    g_return_if_fail(MAP_IS_SCREEN(self));
+    priv = self->priv;
+
+    if (clutter_timeline_is_playing(priv->zoom_tl))
+    {
+        /* A zooming operation is still running; don't start a second one */
+        return;
+    }
+
+    /* temporarily hide the overlays */
+    clutter_actor_hide(priv->poi_group);
+    clutter_actor_hide(priv->mark);
+    clutter_actor_hide(priv->overlay);
+
+    priv->zoom_direction_out = (dir == MAP_SCREEN_ZOOM_OUT);
+    priv->num_zoom_tl_completed = 0;
+    clutter_timeline_set_loop(priv->zoom_tl, TRUE);
+    clutter_timeline_start(priv->zoom_tl);
 }
 
 void
-map_screen_zoom_out(MapScreen *screen)
+map_screen_zoom_stop(MapScreen *self)
 {
-    map_screen_change_zoom_by_step(screen, FALSE);
+    MapScreenPrivate *priv;
+
+    g_return_if_fail(MAP_IS_SCREEN(self));
+    priv = self->priv;
+
+    g_return_if_fail(clutter_timeline_is_playing(priv->zoom_tl));
+    clutter_timeline_set_loop(priv->zoom_tl, FALSE);
 }
 
 void

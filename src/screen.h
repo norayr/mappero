@@ -55,10 +55,15 @@ struct _MapScreenClass
 
 GType map_screen_get_type (void);
 
+typedef enum {
+    MAP_SCREEN_ZOOM_IN = 0,
+    MAP_SCREEN_ZOOM_OUT,
+} MapScreenZoomDirection;
+
 void map_screen_set_center(MapScreen *screen, gint x, gint y, gint zoom);
 void map_screen_set_rotation(MapScreen *screen, gint angle);
-void map_screen_zoom_in(MapScreen *screen);
-void map_screen_zoom_out(MapScreen *screen);
+void map_screen_zoom_start(MapScreen *screen, MapScreenZoomDirection dir);
+void map_screen_zoom_stop(MapScreen *self);
 
 void map_screen_show_compass(MapScreen *screen, gboolean show);
 void map_screen_show_scale(MapScreen *screen, gboolean show);
