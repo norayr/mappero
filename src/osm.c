@@ -154,6 +154,7 @@ WRAP_CONTROLLER_ACTION(route)
 WRAP_CONTROLLER_ACTION(view)
 WRAP_CONTROLLER_ACTION(zoom_in)
 WRAP_CONTROLLER_ACTION(zoom_out)
+WRAP_CONTROLLER_ACTION(zoom_stop)
 WRAP_CONTROLLER_ACTION(go_to)
 
 static gboolean
@@ -224,10 +225,14 @@ map_osm_constructed(GObject *object)
         priv->gps_disable : priv->gps_enable, NULL);
 
     /* Connect signals */
-    g_signal_connect_swapped(priv->btn.n.zoom_in, "button-release-event",
+    g_signal_connect_swapped(priv->btn.n.zoom_in, "button-press-event",
                              G_CALLBACK(wrap_action_zoom_in), controller);
-    g_signal_connect_swapped(priv->btn.n.zoom_out, "button-release-event",
+    g_signal_connect_swapped(priv->btn.n.zoom_in, "button-release-event",
+                             G_CALLBACK(wrap_action_zoom_stop), controller);
+    g_signal_connect_swapped(priv->btn.n.zoom_out, "button-press-event",
                              G_CALLBACK(wrap_action_zoom_out), controller);
+    g_signal_connect_swapped(priv->btn.n.zoom_out, "button-release-event",
+                             G_CALLBACK(wrap_action_zoom_stop), controller);
     g_signal_connect_swapped(priv->btn.n.fullscreen, "button-release-event",
                              G_CALLBACK(wrap_action_switch_fullscreen),
                              controller);

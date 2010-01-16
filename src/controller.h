@@ -63,6 +63,7 @@ GtkWindow *map_controller_get_main_window(MapController *self);
 
 void map_controller_action_zoom_in(MapController *self);
 void map_controller_action_zoom_out(MapController *self);
+void map_controller_action_zoom_stop(MapController *self);
 void map_controller_action_switch_fullscreen(MapController *self);
 void map_controller_activate_menu_settings(MapController *self);
 void map_controller_action_point(MapController *self);

@@ -153,14 +153,21 @@ void
 map_controller_action_zoom_in(MapController *self)
 {
     g_return_if_fail(MAP_IS_CONTROLLER(self));
-    map_controller_set_zoom(self, self->priv->zoom - 1);
+    map_screen_zoom_start(self->priv->screen, MAP_SCREEN_ZOOM_IN);
 }
 
 void
 map_controller_action_zoom_out(MapController *self)
 {
     g_return_if_fail(MAP_IS_CONTROLLER(self));
-    map_controller_set_zoom(self, self->priv->zoom + 1);
+    map_screen_zoom_start(self->priv->screen, MAP_SCREEN_ZOOM_OUT);
+}
+
+void
+map_controller_action_zoom_stop(MapController *self)
+{
+    g_return_if_fail(MAP_IS_CONTROLLER(self));
+    map_screen_zoom_stop(self->priv->screen);
 }
 
 void
