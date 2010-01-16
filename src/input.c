@@ -51,9 +51,6 @@
 #include "poi.h"
 #include "util.h"
 
-static gint _key_zoom_is_down = FALSE;
-static gint _key_zoom_new = -1;
-static gint _key_zoom_timeout_sid = 0;
 static gint _key_pan_is_down = FALSE;
 static gfloat _key_pan_incr_devx = 0;
 static gfloat _key_pan_incr_devy = 0;
@@ -85,52 +82,6 @@ key_pan_timeout(CustomAction action)
         vprintf("%s(): return FALSE\n", __PRETTY_FUNCTION__);
         return FALSE;
     }
-}
-
-static gboolean
-key_zoom_timeout(CustomAction action)
-{
-    printf("%s()\n", __PRETTY_FUNCTION__);
-    if(_key_zoom_is_down)
-    {
-        /* The zoom key is still down.  Continue zooming. */
-        if(action == CUSTOM_ACTION_ZOOM_IN)
-        {
-            /* We're currently zooming in (_zoom is decreasing). */
-            gint test = _key_zoom_new - _curr_repo->view_zoom_steps;
-            if(test >= 0)
-                /* We can zoom some more.  Hurray! */
-                _key_zoom_new = test;
-        }
-        else
-        {
-            /* We're currently zooming out (_zoom is increasing). */
-            gint test = _key_zoom_new + _curr_repo->view_zoom_steps;
-            if(test <= MAX_ZOOM)
-                /* We can zoom some more.  Hurray! */
-                _key_zoom_new = test;
-        }
-        /* Tell them where they're about to zoom. */
-        {
-            gchar buffer[32];
-            snprintf(buffer, sizeof(buffer),
-                    "%s %d", _("Zoom to Level"), _key_zoom_new);
-            MACRO_BANNER_SHOW_INFO(_window, buffer);
-        }
-        vprintf("%s(): return TRUE\n", __PRETTY_FUNCTION__);
-        return TRUE;
-    }
-    else
-    {
-        /* Time is up for further action - execute. */
-        if(_key_zoom_new != _zoom)
-            map_set_zoom(_key_zoom_new);
-        _key_pan_timeout_sid = 0;
-        _key_zoom_new = -1;
-        vprintf("%s(): return FALSE\n", __PRETTY_FUNCTION__);
-        return FALSE;
-    }
-
 }
 
 static CustomKey
@@ -289,32 +240,11 @@ window_cb_key_press(GtkWidget* widget, GdkEventKey *event)
             break;
 
         case CUSTOM_ACTION_ZOOM_IN:
+            map_controller_action_zoom_in(controller);
+            break;
+
         case CUSTOM_ACTION_ZOOM_OUT:
-            if(!_key_zoom_is_down)
-            {
-                _key_zoom_is_down = TRUE;
-                if(_key_zoom_timeout_sid)
-                {
-                    g_source_remove(_key_zoom_timeout_sid);
-                    _key_zoom_timeout_sid = 0;
-                }
-                if(_key_zoom_new == -1)
-                    _key_zoom_new = _next_zoom;
-                _key_zoom_new = _key_zoom_new
-                    + (_action[custom_key] == CUSTOM_ACTION_ZOOM_IN
-                            ? -_curr_repo->view_zoom_steps
-                            : _curr_repo->view_zoom_steps);
-                BOUND(_key_zoom_new, 0, MAX_ZOOM);
-                {
-                    gchar buffer[80];
-                    snprintf(buffer, sizeof(buffer),"%s %d",
-                            _("Zoom to Level"), _key_zoom_new);
-                    MACRO_BANNER_SHOW_INFO(_window, buffer);
-                }
-                _key_zoom_timeout_sid =g_timeout_add_full(G_PRIORITY_HIGH_IDLE,
-                        500, (GSourceFunc)key_zoom_timeout,
-                        (gpointer)(_action[custom_key]), NULL);
-            }
+            map_controller_action_zoom_out(controller);
             break;
 
         case CUSTOM_ACTION_TOGGLE_FULLSCREEN:
@@ -447,6 +377,7 @@ window_cb_key_press(GtkWidget* widget, GdkEventKey *event)
 gboolean
 window_cb_key_release(GtkWidget* widget, GdkEventKey *event)
 {
+    MapController *controller = map_controller_get_instance();
     CustomKey custom_key;
     printf("%s()\n", __PRETTY_FUNCTION__);
 
@@ -458,14 +389,7 @@ window_cb_key_release(GtkWidget* widget, GdkEventKey *event)
     {
         case CUSTOM_ACTION_ZOOM_IN:
         case CUSTOM_ACTION_ZOOM_OUT:
-            if(_key_zoom_timeout_sid)
-            {
-                g_source_remove(_key_zoom_timeout_sid);
-                _key_zoom_timeout_sid = 0;
-                _key_zoom_timeout_sid =g_timeout_add_full(G_PRIORITY_HIGH_IDLE,
-                        500, (GSourceFunc)key_zoom_timeout, NULL, NULL);
-            }
-            _key_zoom_is_down = FALSE;
+            map_controller_action_zoom_stop(controller);
             return TRUE;
 
         case CUSTOM_ACTION_PAN_NORTH:
