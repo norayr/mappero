@@ -461,8 +461,10 @@ static void
 load_tiles_into_map(MapScreen *screen, RepoData *repo, gint zoom,
                     gint tx1, gint ty1, gint tx2, gint ty2)
 {
+    MapScreenPrivate *priv = screen->priv;
     ClutterContainer *tile_group;
     ClutterActor *tile;
+    gfloat center_x, center_y;
     gint tx, ty;
 
     tile_group = CLUTTER_CONTAINER(screen->priv->tile_group);
@@ -471,9 +473,12 @@ load_tiles_into_map(MapScreen *screen, RepoData *repo, gint zoom,
     clutter_container_foreach(tile_group,
                               (ClutterCallback)clutter_actor_hide, NULL);
 
-    clutter_actor_set_position(screen->priv->tile_group,
-                               tx1 * TILE_SIZE_PIXELS,
-                               ty1 * TILE_SIZE_PIXELS);
+    clutter_actor_get_anchor_point(priv->map, &center_x, &center_y);
+    clutter_actor_set_position(priv->tile_group, center_x, center_y);
+
+    clutter_actor_set_anchor_point(priv->tile_group,
+                                   center_x - (tx1 * TILE_SIZE_PIXELS),
+                                   center_y - (ty1 * TILE_SIZE_PIXELS));
 
     for (tx = tx1; tx <= tx2; tx++)
     {
@@ -831,6 +836,11 @@ map_screen_set_center(MapScreen *screen, gint x, gint y, gint zoom)
 
     new_zoom = (zoom > 0) ? zoom : priv->zoom;
 
+    /* Move the anchor point to the new center */
+    px = unit2zpixel(x, new_zoom);
+    py = unit2zpixel(y, new_zoom);
+    clutter_actor_set_anchor_point(priv->map, px, py);
+
     /* Calculate cache amount */
     if(repo->type != REPOTYPE_NONE && MAPDB_EXISTS(repo))
         cache_amount = _auto_download_precache;
@@ -861,11 +871,6 @@ map_screen_set_center(MapScreen *screen, gint x, gint y, gint zoom)
     /* create the tiles */
     load_tiles_into_map(screen, repo, new_zoom,
                         start_tilex, start_tiley, stop_tilex, stop_tiley);
-
-    /* Move the anchor point to the new center */
-    px = unit2zpixel(x, new_zoom);
-    py = unit2zpixel(y, new_zoom);
-    clutter_actor_set_anchor_point(priv->map, px, py);
 
     /* if the zoom changed, update scale, mark and zoom box */
     if (new_zoom != priv->zoom)
