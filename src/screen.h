@@ -82,6 +82,7 @@ void map_screen_get_tap_area_from_units(MapScreen *self, gint ux, gint uy,
 
 void map_screen_redraw_overlays(MapScreen *self);
 void map_screen_refresh_tiles(MapScreen *self);
+void map_screen_refresh_pois(MapScreen *self, MapArea *poi_area);
 
 void map_screen_track_append(MapScreen *self, Point p);
 

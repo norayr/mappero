@@ -1414,7 +1414,7 @@ poi_add_dialog(GtkWidget *parent, gint unitx, gint unity)
     g_free(poi.desc);
     g_free(dpoi.txt_label);
 
-    map_force_redraw();
+    map_screen_refresh_pois(MAP_SCREEN(_w_map), NULL);
 
     gtk_widget_hide(dialog);
 

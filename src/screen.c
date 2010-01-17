@@ -846,7 +846,6 @@ map_screen_class_init(MapScreenClass * klass)
 void
 map_screen_set_center(MapScreen *screen, gint x, gint y, gint zoom)
 {
-    MapController *controller = map_controller_get_instance();
     MapScreenPrivate *priv;
     GtkAllocation *allocation;
     gint diag_halflength_units;
@@ -918,12 +917,7 @@ map_screen_set_center(MapScreen *screen, gint x, gint y, gint zoom)
     priv->map_center_uy = y;
 
     /* render the POIs */
-    map_screen_clear_pois(screen);
-    if (map_controller_get_show_poi(controller) && _poi_zoom > priv->zoom)
-    {
-        map_poi_render(&area, (MapPoiRenderCb)map_screen_add_poi, screen);
-        clutter_actor_show(priv->poi_group);
-    }
+    map_screen_refresh_pois(screen, &area);
 
     /* draw the paths */
     overlay_redraw_idle(screen);
@@ -1230,4 +1224,42 @@ map_screen_track_append(MapScreen *self, Point p)
 
     cairo_destroy(cr);
 }
+
+void
+map_screen_refresh_pois(MapScreen *self, MapArea *poi_area)
+{
+    MapController *controller = map_controller_get_instance();
+    MapScreenPrivate *priv;
+    MapArea area;
+
+    g_return_if_fail(MAP_IS_SCREEN(self));
+    priv = self->priv;
+
+    map_screen_clear_pois(self);
+    if (map_controller_get_show_poi(controller) && _poi_zoom > priv->zoom)
+    {
+        if (!poi_area)
+        {
+            GtkAllocation *allocation = &(GTK_WIDGET(self)->allocation);
+            gint x, y, diag_halflength_units;
+
+            x = priv->map_center_ux;
+            y = priv->map_center_uy;
+            diag_halflength_units =
+                pixel2zunit(TILE_HALFDIAG_PIXELS +
+                            MAX(allocation->width, allocation->height) / 2,
+                            priv->zoom);
+
+            area.x1 = x - diag_halflength_units + _map_correction_unitx;
+            area.y1 = y - diag_halflength_units + _map_correction_unity;
+            area.x2 = x + diag_halflength_units + _map_correction_unitx;
+            area.y2 = y + diag_halflength_units + _map_correction_unity;
+
+            poi_area = &area;
+        }
+        map_poi_render(poi_area, (MapPoiRenderCb)map_screen_add_poi, self);
+        clutter_actor_show(priv->poi_group);
+    }
+}
+
 
