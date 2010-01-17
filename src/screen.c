@@ -47,6 +47,9 @@
 /* duration of one step of the zoom animation */
 #define ZOOM_DURATION   500
 
+/* duration of the rotate animation */
+#define ROTATE_DURATION   500
+
 /* (im)precision of a finger tap, in screen pixels */
 #define TOUCH_RADIUS    25
 
@@ -89,6 +92,10 @@ struct _MapScreenPrivate
     gint zoom;
 
     guint source_overlay_redraw;
+
+    ClutterTimeline *rotate_tl;
+    gint rotate_angle_start;
+    gint rotate_angle_end;
 
     ClutterTimeline *zoom_tl;
     gint num_zoom_tl_completed;
@@ -154,10 +161,50 @@ on_zoom_tl_frame(ClutterTimeline *zoom_tl, gint elapsed, MapScreen *self)
 }
 
 static void
-actor_set_rotation_cb(ClutterActor *actor, gpointer angle)
+actor_set_rotation_cb(ClutterActor *actor, gfloat angle)
 {
-    clutter_actor_set_rotation(actor, CLUTTER_Z_AXIS,
-                               GPOINTER_TO_INT(angle), 0, 0, 0);
+    clutter_actor_set_rotation(actor, CLUTTER_Z_AXIS, angle, 0, 0, 0);
+}
+
+static void
+map_screen_set_rotation_now(MapScreen *self, gfloat angle)
+{
+    MapScreenPrivate *priv = self->priv;
+    union float_cast {
+        gpointer ptr;
+        gfloat angle;
+    } cast;
+    clutter_actor_set_rotation(priv->map,
+                               CLUTTER_Z_AXIS, -angle, 0, 0, 0);
+
+    if (priv->compass)
+    {
+        clutter_actor_set_rotation(priv->compass,
+                                   CLUTTER_Z_AXIS, -angle, 0, 0, 0);
+    }
+
+    if (priv->poi_group)
+    {
+        cast.angle = angle;
+        clutter_container_foreach(CLUTTER_CONTAINER(priv->poi_group),
+                                  (ClutterCallback)actor_set_rotation_cb,
+                                  cast.ptr);
+    }
+}
+
+static void
+on_rotate_tl_frame(ClutterTimeline *rotate_tl, gint elapsed, MapScreen *self)
+{
+    MapScreenPrivate *priv = self->priv;
+    gfloat t, angle;
+
+    /* For some reason (clutter bug?) the elapsed time passed to the signal
+     * handler is always 0. So, we need to get it from the timeline. */
+    elapsed = clutter_timeline_get_elapsed_time(rotate_tl);
+
+    t = elapsed / (float) ROTATE_DURATION;
+    angle = priv->rotate_angle_start * (1 - t) + priv->rotate_angle_end * t;
+    map_screen_set_rotation_now(self, angle);
 }
 
 static void
@@ -821,6 +868,11 @@ map_screen_init(MapScreen *screen)
                      G_CALLBACK(on_zoom_tl_frame), screen);
     g_signal_connect(priv->zoom_tl, "completed",
                      G_CALLBACK(on_zoom_tl_completed), screen);
+
+    /* Rotate timeline */
+    priv->rotate_tl = clutter_timeline_new(ROTATE_DURATION);
+    g_signal_connect(priv->rotate_tl, "new-frame",
+                     G_CALLBACK(on_rotate_tl_frame), screen);
 }
 
 static void
@@ -932,22 +984,29 @@ void
 map_screen_set_rotation(MapScreen *screen, gint angle)
 {
     MapScreenPrivate *priv;
+    gint diff;
 
     g_return_if_fail(MAP_IS_SCREEN(screen));
     priv = screen->priv;
-    clutter_actor_set_rotation(priv->map,
-                               CLUTTER_Z_AXIS, -angle, 0, 0, 0);
+    priv->rotate_angle_start =
+        -clutter_actor_get_rotation(priv->map, CLUTTER_Z_AXIS,
+                                    NULL, NULL, NULL);
+    priv->rotate_angle_start %= 360;
+    priv->rotate_angle_end = angle % 360;
 
-    if (priv->compass)
+    if (clutter_timeline_is_playing(priv->rotate_tl))
+        clutter_timeline_stop(priv->rotate_tl);
+
+    diff = priv->rotate_angle_end - priv->rotate_angle_start;
+    if (diff != 0)
     {
-        clutter_actor_set_rotation(priv->compass,
-                                   CLUTTER_Z_AXIS, -angle, 0, 0, 0);
-    }
+        if (diff < 0) diff = -diff;
 
-    if (priv->poi_group)
-        clutter_container_foreach(CLUTTER_CONTAINER(priv->poi_group),
-                                  actor_set_rotation_cb,
-                                  GINT_TO_POINTER(angle));
+        /* always rotate via the shortest angle */
+        if (diff > 180)
+            priv->rotate_angle_start += 360;
+        clutter_timeline_start(priv->rotate_tl);
+    }
 }
 
 /**
