@@ -552,7 +552,7 @@ map_controller_rotate(MapController *self, gint angle)
 {
     g_return_if_fail(MAP_IS_CONTROLLER(self));
 
-    map_controller_rotate(self, self->priv->rotation_angle + angle);
+    map_controller_set_rotation(self, self->priv->rotation_angle + angle);
 }
 
 void
