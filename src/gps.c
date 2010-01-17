@@ -112,7 +112,7 @@ static void update_satellite_info(LocationGPSDeviceSatellite *satellite,
 }
 
 static void
-on_gps_changed(LocationGPSDevice *device)
+on_gps_changed(LocationGPSDevice *device, MapController *controller)
 {
     int i;
     gboolean newly_fixed = FALSE;
@@ -132,6 +132,8 @@ on_gps_changed(LocationGPSDevice *device)
 
     if (device->fix->fields & LOCATION_GPS_DEVICE_TRACK_SET) {
         _gps.heading = device->fix->track;
+        if (map_controller_get_auto_rotate(controller))
+            map_controller_set_rotation(controller, _gps.heading);
     }
 
     /* fetch timestamp from gps if available, otherwise create one. */
@@ -307,11 +309,12 @@ gps_init()
 
     if (!gpsd_control)
     {
+        MapController *controller = map_controller_get_instance();
 	gpsd_control = location_gpsd_control_get_default();
 
 	gps_device = g_object_new(LOCATION_TYPE_GPS_DEVICE, NULL);
 	g_signal_connect (gps_device, "changed",
-			  G_CALLBACK(on_gps_changed), NULL);
+			  G_CALLBACK(on_gps_changed), controller);
     }
 
     _gps_init_mutex = g_mutex_new();
