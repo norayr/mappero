@@ -1351,18 +1351,12 @@ map_screen_refresh_pois(MapScreen *self, MapArea *poi_area)
     }
 }
 
-gboolean
-map_screen_layers_visible(MapScreen *self)
-{
-    gboolean res;
-    g_object_get(self->priv->layers_group, "visible", &res, NULL);
-    return res;
-}
-
 void
 map_screen_toggle_layers_visibility(MapScreen *self)
 {
-    if (map_screen_layers_visible(self))
+    g_return_if_fail(MAP_IS_SCREEN(self));
+
+    if (CLUTTER_ACTOR_IS_VISIBLE(self->priv->layers_group))
         clutter_actor_hide(self->priv->layers_group);
     else
         clutter_actor_show(self->priv->layers_group);
