@@ -303,11 +303,13 @@ on_point_chosen(ClutterActor *actor, ClutterButtonEvent *event,
 }
 
 static gboolean
-on_captured_event(ClutterActor *actor, ClutterEvent *event, MapScreen *screen)
+on_stage_event(ClutterActor *actor, ClutterEvent *event, MapScreen *screen)
 {
     MapScreenPrivate *priv = screen->priv;
     gboolean handled = FALSE;
     gint dx, dy;
+
+    if (clutter_event_get_source(event) != actor) return FALSE;
 
     if (event->type == CLUTTER_BUTTON_PRESS)
     {
@@ -316,12 +318,16 @@ on_captured_event(ClutterActor *actor, ClutterEvent *event, MapScreen *screen)
         priv->btn_press_screen_y = be->y;
 
         if (!priv->action_ongoing)
+        {
+            map_osm_set_reactive(MAP_OSM(priv->osm), FALSE);
             map_osm_show(MAP_OSM(priv->osm));
+        }
     }
     else if (event->type == CLUTTER_BUTTON_RELEASE)
     {
         ClutterButtonEvent *be = (ClutterButtonEvent *)event;
 
+        map_osm_set_reactive(MAP_OSM(priv->osm), TRUE);
         if (priv->is_dragging)
         {
             MapController *controller;
@@ -822,7 +828,7 @@ map_screen_init(MapScreen *screen)
     stage = gtk_clutter_embed_get_stage(GTK_CLUTTER_EMBED(screen));
     g_return_if_fail(stage != NULL);
     g_signal_connect(stage, "event",
-                     G_CALLBACK(on_captured_event), screen);
+                     G_CALLBACK(on_stage_event), screen);
     priv->btn_press_screen_x = -1;
 
     priv->map = clutter_group_new();
