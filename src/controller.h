@@ -55,7 +55,7 @@ struct _MapControllerClass
     GObjectClass parent_class;
 };
 
-GType map_controller_get_type (void);
+GType map_controller_get_type(void);
 
 MapController *map_controller_get_instance();
 

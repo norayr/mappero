@@ -650,7 +650,7 @@ map_controller_refresh_paths(MapController *self)
  * Load all repositories and associated layers
  */
 void
-map_controller_load_repositories (MapController *self, GConfClient *gconf_client)
+map_controller_load_repositories(MapController *self, GConfClient *gconf_client)
 {
     MapControllerPrivate *priv;
     GConfValue *value;
@@ -659,33 +659,32 @@ map_controller_load_repositories (MapController *self, GConfClient *gconf_client
     priv = self->priv;
 
     /* tile sources */
-    value = gconf_client_get (gconf_client, GCONF_KEY_TILE_SOURCES, NULL);
+    value = gconf_client_get(gconf_client, GCONF_KEY_TILE_SOURCES, NULL);
     if (value) {
-        priv->tile_sources_list = xml_to_tile_sources (gconf_value_get_string (value));
-        gconf_value_free (value);
+        priv->tile_sources_list = xml_to_tile_sources(gconf_value_get_string(value));
+        gconf_value_free(value);
     }
 
     /* repositories must be loaded after tile sources, because repository load routine performs
      * lookup in tile sources list */
-    value = gconf_client_get (gconf_client, GCONF_KEY_REPOSITORIES, NULL);
+    value = gconf_client_get(gconf_client, GCONF_KEY_REPOSITORIES, NULL);
     if (value) {
-        priv->repositories_list = xml_to_repositories (gconf_value_get_string (value));
-        gconf_value_free (value);
+        priv->repositories_list = xml_to_repositories(gconf_value_get_string(value));
+        gconf_value_free(value);
     }
 
     /* if some data failed to load, switch to defaults */
-    if (!priv->tile_sources_list || !priv->repositories_list) {
-        printf ("Create default\n");
-        priv->repository = create_default_repo_lists (&priv->tile_sources_list, &priv->repositories_list);
-    }
+    if (!priv->tile_sources_list || !priv->repositories_list)
+        priv->repository = create_default_repo_lists(&priv->tile_sources_list,
+                                                     &priv->repositories_list);
     else {
         /* current repository */
-        value = gconf_client_get (gconf_client, GCONF_KEY_ACTIVE_REPOSITORY, NULL);
+        value = gconf_client_get(gconf_client, GCONF_KEY_ACTIVE_REPOSITORY, NULL);
         if (value) {
-            char *val = (char*)gconf_value_get_string (value);
+            char *val = (char*)gconf_value_get_string(value);
             if (val)
-                priv->repository = map_controller_lookup_repository (self, val);
-            gconf_value_free (value);
+                priv->repository = map_controller_lookup_repository(self, val);
+            gconf_value_free(value);
         }
 
         if (!priv->repository)
@@ -697,7 +696,7 @@ map_controller_load_repositories (MapController *self, GConfClient *gconf_client
  * Save all repositories and associated layers
  */
 void
-map_controller_save_repositories (MapController *self, GConfClient *gconf_client)
+map_controller_save_repositories(MapController *self, GConfClient *gconf_client)
 {
     MapControllerPrivate *priv;
     gchar *xml;
@@ -706,52 +705,53 @@ map_controller_save_repositories (MapController *self, GConfClient *gconf_client
     priv = self->priv;
 
     /* Repositories */
-    xml = repositories_to_xml (priv->repositories_list);
+    xml = repositories_to_xml(priv->repositories_list);
     if (xml) {
-        gconf_client_set_string (gconf_client, GCONF_KEY_REPOSITORIES, xml, NULL);
-        g_free (xml);
+        gconf_client_set_string(gconf_client, GCONF_KEY_REPOSITORIES, xml, NULL);
+        g_free(xml);
     }
     else
-        gconf_client_unset (gconf_client, GCONF_KEY_REPOSITORIES, NULL);
+        gconf_client_unset(gconf_client, GCONF_KEY_REPOSITORIES, NULL);
 
     /* Tile sources */
-    xml = tile_sources_to_xml (priv->tile_sources_list);
+    xml = tile_sources_to_xml(priv->tile_sources_list);
     if (xml) {
-        gconf_client_set_string (gconf_client, GCONF_KEY_TILE_SOURCES, xml, NULL);
-        g_free (xml);
+        gconf_client_set_string(gconf_client, GCONF_KEY_TILE_SOURCES, xml, NULL);
+        g_free(xml);
     }
     else
-        gconf_client_unset (gconf_client, GCONF_KEY_TILE_SOURCES, NULL);
+        gconf_client_unset(gconf_client, GCONF_KEY_TILE_SOURCES, NULL);
 
     if (priv->repository)
-        gconf_client_set_string (gconf_client, GCONF_KEY_ACTIVE_REPOSITORY, priv->repository->name, NULL);
+        gconf_client_set_string(gconf_client, GCONF_KEY_ACTIVE_REPOSITORY,
+                                priv->repository->name, NULL);
     else
-        gconf_client_unset (gconf_client, GCONF_KEY_ACTIVE_REPOSITORY, NULL);
+        gconf_client_unset(gconf_client, GCONF_KEY_ACTIVE_REPOSITORY, NULL);
 }
 
 Repository *
-map_controller_get_repository (MapController *self)
+map_controller_get_repository(MapController *self)
 {
     g_return_val_if_fail(MAP_IS_CONTROLLER(self), NULL);
     return self->priv->repository;
 }
 
 void
-map_controller_set_repository (MapController *self, Repository *repo)
+map_controller_set_repository(MapController *self, Repository *repo)
 {
     g_return_if_fail(MAP_IS_CONTROLLER(self));
     self->priv->repository = repo;
 }
 
 GList *
-map_controller_get_repo_list (MapController *self)
+map_controller_get_repo_list(MapController *self)
 {
     g_return_val_if_fail(MAP_IS_CONTROLLER(self), NULL);
     return self->priv->repositories_list;
 }
 
 GList *
-map_controller_get_tile_sources_list (MapController *self)
+map_controller_get_tile_sources_list(MapController *self)
 {
     g_return_val_if_fail(MAP_IS_CONTROLLER(self), NULL);
     return self->priv->tile_sources_list;
@@ -774,9 +774,9 @@ map_controller_lookup_tile_source(MapController *self, gchar *id)
     while (ts_list)
     {
         ts = (TileSource*)ts_list->data;
-        if (ts && ts->id && !strcmp (ts->id, id))
+        if (ts && ts->id && !strcmp(ts->id, id))
             return ts;
-        ts_list = g_list_next (ts_list);
+        ts_list = g_list_next(ts_list);
     }
 
     return NULL;
@@ -799,9 +799,9 @@ map_controller_lookup_repository(MapController *self, gchar *name)
     while (repo_list)
     {
         repo = (Repository*)repo_list->data;
-        if (repo && repo->name && !strcmp (repo->name, name))
+        if (repo && repo->name && !strcmp(repo->name, name))
             return repo;
-        repo_list = g_list_next (repo_list);
+        repo_list = g_list_next(repo_list);
     }
 
     return NULL;
