@@ -37,6 +37,7 @@
 #include <gconf/gconf-client.h>
 #include <hildon/hildon-banner.h>
 #include <math.h>
+#include <string.h>
 
 #define VELVEC_SIZE_FACTOR (4)
 

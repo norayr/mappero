@@ -39,9 +39,8 @@ struct {
 };
 
 
-
-inline void
-append_url (xmlDocPtr doc, xmlNodePtr parent, gchar *url)
+static void
+append_url(xmlDocPtr doc, xmlNodePtr parent, gchar *url)
 {
     xmlNodePtr n, nn;
 
@@ -51,9 +50,8 @@ append_url (xmlDocPtr doc, xmlNodePtr parent, gchar *url)
     xmlAddChild(parent, n);
 }
 
-
-inline void
-append_int (xmlNodePtr parent, const gchar *name, int val)
+static void
+append_int(xmlNodePtr parent, const gchar *name, int val)
 {
     gchar *p;
 
@@ -63,9 +61,8 @@ append_int (xmlNodePtr parent, const gchar *name, int val)
 }
 
 
-
-inline const gchar *
-repotype_to_str (RepoType type)
+static const gchar *
+repotype_to_str(RepoType type)
 {
     int i = 0;
 
@@ -79,9 +76,8 @@ repotype_to_str (RepoType type)
 }
 
 
-
-inline RepoType
-str_to_repotype (const char* s)
+static RepoType
+str_to_repotype(const char* s)
 {
     int i = 0;
 
