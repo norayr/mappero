@@ -364,6 +364,9 @@ on_stage_event(ClutterActor *actor, ClutterEvent *event, MapScreen *screen)
         if (!(me->modifier_state & CLUTTER_BUTTON1_MASK))
             return TRUE; /* ignore pure motion events */
 
+        if (priv->btn_press_screen_x == -1)
+            return TRUE; /* do nothing if we missed the button press */
+
         dx = me->x - priv->btn_press_screen_x;
         dy = me->y - priv->btn_press_screen_y;
 
