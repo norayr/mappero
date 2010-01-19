@@ -774,12 +774,6 @@ void cmenu_init()
 
     gtk_widget_show_all(GTK_WIDGET(_map_cmenu));
 
-#if OLD_MAP
-#ifdef MAEMO_CHANGES
-    gtk_widget_tap_and_hold_setup(_map_widget, GTK_WIDGET(_map_cmenu), NULL, 0);
-#endif
-#endif
-
     /* Add a "hide" signal event handler to handle dismissing the context
      * menu. */
     g_signal_connect(GTK_WIDGET(_map_cmenu), "hide",
