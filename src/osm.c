@@ -152,10 +152,37 @@ WRAP_CONTROLLER_ACTION(switch_fullscreen)
 WRAP_CONTROLLER_ACTION(track)
 WRAP_CONTROLLER_ACTION(route)
 WRAP_CONTROLLER_ACTION(view)
-WRAP_CONTROLLER_ACTION(zoom_in)
-WRAP_CONTROLLER_ACTION(zoom_out)
-WRAP_CONTROLLER_ACTION(zoom_stop)
 WRAP_CONTROLLER_ACTION(go_to)
+
+static gboolean
+on_zoom_in_event(MapController *controller, ClutterEvent *event)
+{
+    switch (event->type) {
+    case CLUTTER_BUTTON_PRESS:
+        map_controller_action_zoom_in(controller);
+        break;
+    case CLUTTER_BUTTON_RELEASE:
+    case CLUTTER_LEAVE:
+        map_controller_action_zoom_stop(controller);
+        break;
+    }
+    return TRUE;
+}
+
+static gboolean
+on_zoom_out_event(MapController *controller, ClutterEvent *event)
+{
+    switch (event->type) {
+    case CLUTTER_BUTTON_PRESS:
+        map_controller_action_zoom_out(controller);
+        break;
+    case CLUTTER_BUTTON_RELEASE:
+    case CLUTTER_LEAVE:
+        map_controller_action_zoom_stop(controller);
+        break;
+    }
+    return TRUE;
+}
 
 static gboolean
 on_gps_toggled(ClutterTexture *button, ClutterButtonEvent *event, MapOsm *self)
@@ -225,14 +252,10 @@ map_osm_constructed(GObject *object)
         priv->gps_disable : priv->gps_enable, NULL);
 
     /* Connect signals */
-    g_signal_connect_swapped(priv->btn.n.zoom_in, "button-press-event",
-                             G_CALLBACK(wrap_action_zoom_in), controller);
-    g_signal_connect_swapped(priv->btn.n.zoom_in, "button-release-event",
-                             G_CALLBACK(wrap_action_zoom_stop), controller);
-    g_signal_connect_swapped(priv->btn.n.zoom_out, "button-press-event",
-                             G_CALLBACK(wrap_action_zoom_out), controller);
-    g_signal_connect_swapped(priv->btn.n.zoom_out, "button-release-event",
-                             G_CALLBACK(wrap_action_zoom_stop), controller);
+    g_signal_connect_swapped(priv->btn.n.zoom_in, "event",
+                             G_CALLBACK(on_zoom_in_event), controller);
+    g_signal_connect_swapped(priv->btn.n.zoom_out, "event",
+                             G_CALLBACK(on_zoom_out_event), controller);
     g_signal_connect_swapped(priv->btn.n.fullscreen, "button-release-event",
                              G_CALLBACK(wrap_action_switch_fullscreen),
                              controller);

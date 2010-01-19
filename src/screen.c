@@ -821,7 +821,7 @@ map_screen_init(MapScreen *screen)
 
     stage = gtk_clutter_embed_get_stage(GTK_CLUTTER_EMBED(screen));
     g_return_if_fail(stage != NULL);
-    g_signal_connect(stage, "captured-event",
+    g_signal_connect(stage, "event",
                      G_CALLBACK(on_captured_event), screen);
     priv->btn_press_screen_x = -1;
 
