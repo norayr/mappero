@@ -149,7 +149,8 @@ repositories_to_xml(GList *repositories)
     xmlChar *xmlbuf;
     int i;
     int buf_size;
-    gchar *res, *prop;
+    gchar *res;
+    TileSource *ts;
 
     doc = xmlNewDoc(BAD_CAST "1.0");
     n = xmlNewNode(NULL, BAD_CAST REPO_ROOT);
@@ -169,21 +170,16 @@ repositories_to_xml(GList *repositories)
         nl = xmlNewNode(NULL, BAD_CAST REPO_LAYERS_GROUP);
         xmlAddChild(nn, nl);
 
-        prop = g_strdup_printf("%d", repo->layers_count);
-        xmlNewProp(nl, BAD_CAST "count", prop);
-        g_free(prop);
-
         if (repo->primary && repo->primary->id)
             xmlNewChild(nl, NULL, BAD_CAST REPO_PRIMARY_ENTRY, repo->primary->id);
 
-        for (i = 0; i < repo->layers_count; i++)
-            if (repo->layers[i] && repo->layers[i]->name) {
-                nll = xmlNewChild(nl, NULL, BAD_CAST REPO_LAYER_ENTRY,
-                                  repo->layers[i]->id ? repo->layers[i]->id : "");
-                prop = g_strdup_printf("%d", i);
-                xmlNewProp(nll, BAD_CAST "order", BAD_CAST prop);
-                g_free(prop);
+        if (repo->layers) {
+            for (i = 0; i < repo->layers->len; i++) {
+                ts = g_ptr_array_index (repo->layers, i);
+                if (ts && ts->name)
+                    nll = xmlNewChild(nl, NULL, BAD_CAST REPO_LAYER_ENTRY, ts->id ? ts->id : "");
             }
+        }
         repositories = g_list_next(repositories);
     }
 
@@ -249,7 +245,7 @@ tree_to_repository(xmlDocPtr doc, xmlNodePtr repo_node)
     Repository* repo;
     xmlNodePtr n, nn;
     xmlChar *s, *ss;
-    gint val;
+    gint val, count;
     gboolean val_valid;
     TileSource *ts;
     MapController *controller = map_controller_get_instance();
@@ -273,30 +269,22 @@ tree_to_repository(xmlDocPtr doc, xmlNodePtr repo_node)
         if (!strcmp(n->name, "zoom_step") && val_valid)
             repo->zoom_step = val;
         else if (!strcmp(n->name, REPO_LAYERS_GROUP)) {
-            xmlChar *prop = xmlGetProp(n, "count");
+            repo->layers = g_ptr_array_new();
 
-            if (prop) {
-                repo->layers_count = atoi(prop);
-                repo->layers = g_new0(TileSource*, repo->layers_count);
+            for (nn = n->children; nn; nn = nn->next) {
+                ss = xmlNodeListGetString(doc, nn->children, 1);
+                if (!strcmp(nn->name, REPO_LAYER_ENTRY)) {
+                    ts = map_controller_lookup_tile_source(controller, ss);
 
-                for (nn = n->children; nn; nn = nn->next) {
-                    ss = xmlNodeListGetString(doc, nn->children, 1);
-                    if (!strcmp(nn->name, REPO_LAYER_ENTRY)) {
-                        prop = xmlGetProp(nn, BAD_CAST "order");
-
-                        ts = map_controller_lookup_tile_source(controller, ss);
-
-                        if (ts && prop)
-                            repo->layers[atoi(prop)] = ts;
-                    }
-                    else if (!strcmp(nn->name, REPO_PRIMARY_ENTRY)) {
-                        ts = map_controller_lookup_tile_source(controller, ss);
-                        if (ts)
-                            repo->primary = ts;
-                    }
+                    if (ts)
+                        g_ptr_array_add(repo->layers, ts);
+                }
+                else if (!strcmp(nn->name, REPO_PRIMARY_ENTRY)) {
+                    ts = map_controller_lookup_tile_source(controller, ss);
+                    if (ts)
+                        repo->primary = ts;
                 }
             }
-
         }
         xmlFree(s);
     }
@@ -432,7 +420,6 @@ create_default_repo_lists(GList **tile_sources, GList **repositories)
     repo->max_zoom = REPO_DEFAULT_MAX_ZOOM;
     repo->zoom_step = 1;
     repo->primary = osm;
-    repo->layers_count = 0;
     *repositories = g_list_append(*repositories, repo);
 
     repo = g_slice_new0(Repository);
@@ -441,9 +428,8 @@ create_default_repo_lists(GList **tile_sources, GList **repositories)
     repo->max_zoom = 24;
     repo->zoom_step = 1;
     repo->primary = satellite;
-    repo->layers_count = 1;
-    repo->layers = g_new0(TileSource*, 1);
-    repo->layers[0] = traffic;
+    repo->layers = g_ptr_array_new();
+    g_ptr_array_add(repo->layers, traffic);
     *repositories = g_list_append(*repositories, repo);
 
     repo = g_slice_new0(Repository);
@@ -452,9 +438,8 @@ create_default_repo_lists(GList **tile_sources, GList **repositories)
     repo->max_zoom = 24;
     repo->zoom_step = 1;
     repo->primary = google;
-    repo->layers_count = 1;
-    repo->layers = g_new0(TileSource*, 1);
-    repo->layers[0] = traffic;
+    repo->layers = g_ptr_array_new();
+    g_ptr_array_add(repo->layers, traffic);
     *repositories = g_list_append(*repositories, repo);
 
     return repo;

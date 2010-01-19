@@ -1315,31 +1315,36 @@ menu_layers_add_repos()
         GtkWidget *item, *submenu = NULL, *layer_item;
         gchar *title;
         gint i;
+        TileSource *ts;
 
-        switch (rd->layers_count) {
-        case 0:
-            break;
+        if (rd->layers) {
+            switch (rd->layers->len) {
+            case 0:
+                break;
 
-        case 1:
-            title = g_malloc(strlen(rd->name) + strlen(rd->layers[0]->name) + 3);
-            sprintf (title, "%s[%s]", rd->name, rd->layers[0]->name);
-            gtk_menu_append(_menu_layers_submenu, layer_item = gtk_check_menu_item_new_with_label(title));
-            gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM (layer_item), rd->layers[0]->visible);
-            g_signal_connect(G_OBJECT(layer_item), "toggled", G_CALLBACK(menu_cb_layers_toggle), rd->layers[0]);
-            break;
+            case 1:
+                ts = g_ptr_array_index(rd->layers, 0);
+                title = g_malloc(strlen(rd->name) + strlen(ts->name) + 3);
+                sprintf (title, "%s[%s]", rd->name, ts->name);
+                gtk_menu_append(_menu_layers_submenu, layer_item = gtk_check_menu_item_new_with_label(title));
+                gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM (layer_item), ts->visible);
+                g_signal_connect(G_OBJECT(layer_item), "toggled", G_CALLBACK(menu_cb_layers_toggle), ts);
+                break;
 
-        default:
-            gtk_menu_append(_menu_layers_submenu, item = gtk_menu_item_new_with_label(rd->name));
-            for (i = 0; i < rd->layers_count; i++) {
-                if (!submenu)
-                    submenu = gtk_menu_new();
-                gtk_menu_append(submenu, layer_item = gtk_check_menu_item_new_with_label(rd->layers[i]->name));
-                gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(layer_item), rd->layers[i]->visible);
-                g_signal_connect(G_OBJECT(layer_item), "toggled", G_CALLBACK(menu_cb_layers_toggle), rd->layers[i]);
+            default:
+                gtk_menu_append(_menu_layers_submenu, item = gtk_menu_item_new_with_label(rd->name));
+                for (i = 0; i < rd->layers->len; i++) {
+                    if (!submenu)
+                        submenu = gtk_menu_new();
+                    ts = g_ptr_array_index(rd->layers, i);
+                    gtk_menu_append(submenu, layer_item = gtk_check_menu_item_new_with_label(ts->name));
+                    gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(layer_item), ts->visible);
+                    g_signal_connect(G_OBJECT(layer_item), "toggled", G_CALLBACK(menu_cb_layers_toggle), ts);
+                }
+
+                if (submenu)
+                    gtk_menu_item_set_submenu(GTK_MENU_ITEM (item), submenu);
             }
-
-            if (submenu)
-                gtk_menu_item_set_submenu(GTK_MENU_ITEM (item), submenu);
         }
     }
 

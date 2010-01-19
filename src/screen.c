@@ -579,21 +579,23 @@ load_tiles_into_map(MapScreen *screen, Repository *repo, gint zoom,
             clutter_actor_show(tile);
 
             /* Handle layers */
-            for (layer = 0; layer < repo->layers_count; layer++)
-            {
-                tile = map_tile_cached(repo->layers[layer], zoom, tx, ty);
-                if (!tile)
+            if (repo->layers) {
+                for (layer = 0; layer < repo->layers->len; layer++)
                 {
-                    gboolean new_tile;
-                    tile = map_tile_load(repo->layers[layer], zoom, tx, ty, &new_tile);
-                    if (new_tile)
-                        clutter_container_add_actor(layers_group, tile);
-                }
+                    tile = map_tile_cached(g_ptr_array_index(repo->layers, layer), zoom, tx, ty);
+                    if (!tile)
+                    {
+                        gboolean new_tile;
+                        tile = map_tile_load(g_ptr_array_index(repo->layers, layer), zoom, tx, ty, &new_tile);
+                        if (new_tile)
+                            clutter_container_add_actor(layers_group, tile);
+                    }
 
-                clutter_actor_set_position(tile,
-                                           (tx - tx1) * TILE_SIZE_PIXELS,
-                                           (ty - ty1) * TILE_SIZE_PIXELS);
-                clutter_actor_show(tile);
+                    clutter_actor_set_position(tile,
+                                               (tx - tx1) * TILE_SIZE_PIXELS,
+                                               (ty - ty1) * TILE_SIZE_PIXELS);
+                    clutter_actor_show(tile);
+                }
             }
         }
     }

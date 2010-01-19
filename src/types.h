@@ -368,8 +368,7 @@ struct _Repository {
     gint max_zoom;
     gint zoom_step;
     TileSource *primary;
-    gint layers_count;
-    TileSource **layers;
+    GPtrArray *layers;
     GtkWidget *menu_item;
 };
 
