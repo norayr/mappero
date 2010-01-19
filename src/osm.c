@@ -401,3 +401,19 @@ map_osm_show(MapOsm *self)
     clutter_actor_show(CLUTTER_ACTOR(self));
 }
 
+void
+map_osm_set_reactive(MapOsm *self, gboolean reactive)
+{
+    MapOsmPrivate *priv;
+    gint i;
+
+    g_return_if_fail(MAP_IS_OSM(self));
+    priv = self->priv;
+
+    for (i = 0; i < N_BUTTONS; i++)
+    {
+        if (priv->btn.v[i])
+            clutter_actor_set_reactive(priv->btn.v[i], reactive);
+    }
+}
+

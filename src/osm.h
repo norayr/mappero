@@ -59,5 +59,7 @@ void map_osm_set_screen_size(MapOsm *self, gint width, gint height);
 void map_osm_hide(MapOsm *self);
 void map_osm_show(MapOsm *self);
 
+void map_osm_set_reactive(MapOsm *self, gboolean reactive);
+
 G_END_DECLS
 #endif /* MAP_OSM_H */
