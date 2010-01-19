@@ -533,9 +533,6 @@ map_controller_set_rotation(MapController *self, gint angle)
     g_return_if_fail(MAP_IS_CONTROLLER(self));
     priv = self->priv;
 
-    if (_center_mode > 0)
-        map_controller_set_auto_rotate(self, FALSE);
-
     angle = angle % 360;
     priv->rotation_angle = angle;
     map_screen_set_rotation(priv->screen, angle);
