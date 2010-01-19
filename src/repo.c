@@ -23,7 +23,7 @@
 
 
 /* Map between repotype and it's string reporesentation */
-static
+const static
 struct {
     const char* s;
     RepoType type;
