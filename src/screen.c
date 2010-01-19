@@ -1164,7 +1164,9 @@ map_screen_zoom_stop(MapScreen *self)
     g_return_if_fail(MAP_IS_SCREEN(self));
     priv = self->priv;
 
-    g_return_if_fail(clutter_timeline_is_playing(priv->zoom_tl));
+    if (!clutter_timeline_is_playing(priv->zoom_tl))
+        return;
+
     clutter_timeline_set_loop(priv->zoom_tl, FALSE);
 }
 
