@@ -69,7 +69,6 @@
 #define GCONF_KEY_CENTER_SENSITIVITY GCONF_KEY_PREFIX"/center_sensitivity"
 #define GCONF_KEY_ENABLE_ANNOUNCE GCONF_KEY_PREFIX"/enable_announce"
 #define GCONF_KEY_ANNOUNCE_NOTICE GCONF_KEY_PREFIX"/announce_notice"
-#define GCONF_KEY_ROTATE_SENSITIVITY GCONF_KEY_PREFIX"/rotate_sensitivity"
 #define GCONF_KEY_AC_MIN_SPEED GCONF_KEY_PREFIX"/autocenter_min_speed"
 #define GCONF_KEY_ROTATE_DIR GCONF_KEY_PREFIX"/rotate_direction"
 #define GCONF_KEY_DRAW_WIDTH GCONF_KEY_PREFIX"/draw_width"
@@ -226,10 +225,6 @@ settings_save()
     /* Save Auto-Center Lead Fixed flag. */
     gconf_client_set_bool(gconf_client,
             GCONF_KEY_LEAD_IS_FIXED, _lead_is_fixed, NULL);
-
-    /* Save Auto-Rotate Sensitivity. */
-    gconf_client_set_int(gconf_client,
-            GCONF_KEY_ROTATE_SENSITIVITY, _rotate_sens, NULL);
 
     /* Save Auto-Center/Rotate Minimum Speed. */
     gconf_client_set_int(gconf_client,
@@ -939,7 +934,6 @@ run_auto_center_dialog(GtkWindow *parent)
     GtkWidget *num_center_ratio;
     GtkWidget *num_lead_ratio;
     GtkWidget *num_ac_min_speed;
-    GtkWidget *num_rotate_sens;
     GtkWidget *rotate_dir;
     gint i;
 
@@ -1026,23 +1020,13 @@ run_auto_center_dialog(GtkWindow *parent)
                      "xalign", 0.0,
                      NULL);
     gtk_table_attach(GTK_TABLE(table), rotate_dir,
-                     0, 1, 3, 4, GTK_FILL | GTK_EXPAND, 0, 2, 4);
-    gtk_table_attach(GTK_TABLE(table),
-                     num_rotate_sens = hildon_gtk_hscale_new(),
-                     1, 2, 3, 4, GTK_FILL | GTK_EXPAND, 0, 2, 4);
-    adjustment = gtk_range_get_adjustment(GTK_RANGE(num_rotate_sens));
-    g_object_set(adjustment,
-                 "step-increment", 1.0,
-                 "lower", 1.0,
-                 "upper", 10.0,
-                 NULL);
+                     0, 2, 3, 4, GTK_FILL | GTK_EXPAND, 0, 2, 4);
 
     /* Initialize widgets */
     gtk_range_set_value(GTK_RANGE(num_center_ratio), _center_ratio);
     gtk_range_set_value(GTK_RANGE(num_lead_ratio), _lead_ratio);
     hildon_picker_button_set_active
         (HILDON_PICKER_BUTTON(lead_is_fixed), _lead_is_fixed);
-    gtk_range_set_value(GTK_RANGE(num_rotate_sens), _rotate_sens);
     hildon_picker_button_set_active(HILDON_PICKER_BUTTON(rotate_dir),
                                     _rotate_dir);
     hildon_picker_button_set_active
@@ -1057,8 +1041,6 @@ run_auto_center_dialog(GtkWindow *parent)
 
         _lead_is_fixed = hildon_picker_button_get_active
             (HILDON_PICKER_BUTTON(lead_is_fixed));
-
-        _rotate_sens = gtk_range_get_value(GTK_RANGE(num_rotate_sens));
 
         _ac_min_speed = hildon_picker_button_get_active(
                 HILDON_PICKER_BUTTON(num_ac_min_speed)) * 5;
@@ -1737,12 +1719,6 @@ settings_init()
     /* Get Lead Is Fixed flag - Default is FALSE. */
     _lead_is_fixed = gconf_client_get_bool(gconf_client,
             GCONF_KEY_LEAD_IS_FIXED, NULL);
-
-    /* Get Rotate Sensitivity - Default is 5. */
-    _rotate_sens = gconf_client_get_int(gconf_client,
-            GCONF_KEY_ROTATE_SENSITIVITY, NULL);
-    if(!_rotate_sens)
-        _rotate_sens = 5;
 
     /* Get Auto-Center/Rotate Minimum Speed - Default is 2. */
     value = gconf_client_get(gconf_client, GCONF_KEY_AC_MIN_SPEED, NULL);

@@ -904,9 +904,7 @@ map_refresh_mark(gboolean force_redraw)
                 > ((10 - _center_ratio) * _view_width_pixels / 10))
  || ((unsigned)(new_center_devy - (_view_height_pixels * _center_ratio / 20))
                 > ((10 - _center_ratio) * _view_height_pixels / 10))
-            || (_center_rotate &&
-              abs(_next_map_rotate_angle - _gps.heading)
-                  > (4*(10-_rotate_sens))))))
+            || _center_rotate)))
     {
         map_move_mark();
         map_controller_set_center(controller, new_center, -1);
