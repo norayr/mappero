@@ -230,7 +230,7 @@ settings_save()
     gconf_client_set_int(gconf_client,
             GCONF_KEY_AC_MIN_SPEED, _ac_min_speed, NULL);
 
-    /* Save Auto-Rotate Sensitivity. */
+    /* Save map orientation */
     gconf_client_set_string(gconf_client,
             GCONF_KEY_ROTATE_DIR, ROTATE_DIR_ENUM_TEXT[_rotate_dir], NULL);
 
@@ -1015,7 +1015,7 @@ run_auto_center_dialog(GtkWindow *parent)
         g_object_new(HILDON_TYPE_PICKER_BUTTON,
                      "arrangement", HILDON_BUTTON_ARRANGEMENT_VERTICAL,
                      "size", HILDON_SIZE_FINGER_HEIGHT,
-                     "title", _("Rotate Sensit."),
+                     "title", _("Map orientation"),
                      "touch-selector", selector,
                      "xalign", 0.0,
                      NULL);
