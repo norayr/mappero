@@ -32,7 +32,6 @@ icon_scalable_DATA = icons/scalable/maemo-mapper.png icons/scalable/maemo-mapper
 	icons/scalable/maemo-mapper-gps-enable.png \
 	icons/scalable/maemo-mapper-gps-disable.png \
 	icons/scalable/maemo-mapper-path.png \
-	icons/scalable/maemo-mapper-rotate.png \
 	icons/scalable/maemo-mapper-route.png \
 	icons/scalable/maemo-mapper-settings.png \
 	icons/scalable/maemo-mapper-view.png \
@@ -43,7 +42,6 @@ icon_svg = \
 	icons/scalable/svg/maemo-mapper-fullscreen.svg \
 	icons/scalable/svg/maemo-mapper-path.svg \
 	icons/scalable/svg/maemo-mapper-settings.svg \
-	icons/scalable/svg/maemo-mapper-rotate.svg \
 	icons/scalable/svg/maemo-mapper-route.svg \
 	icons/scalable/svg/maemo-mapper-zoom-in.svg \
 	icons/scalable/svg/maemo-mapper-zoom-out.svg

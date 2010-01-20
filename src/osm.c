@@ -101,7 +101,7 @@ static const gchar *btn_icons[N_BUTTONS] = {
     /* column 2 */
     "maemo-mapper-zoom-in",
     "maemo-mapper-zoom-out",
-    "maemo-mapper-rotate",
+    NULL,
     "maemo-mapper-fullscreen",
     /* bottom row */
     "maemo-mapper-settings",
