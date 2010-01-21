@@ -285,6 +285,8 @@ map_controller_set_auto_rotate(MapController *self, gboolean enable)
 
     if (enable == _center_rotate) return;
 
+    if (!enable)
+        map_controller_set_rotation(self, 0);
     _center_rotate = enable;
 }
 

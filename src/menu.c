@@ -1991,8 +1991,8 @@ map_menu_view()
         else
             _center_mode = 0;
 
-        _center_rotate =
-            gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(auto_rotate));
+        map_controller_set_auto_rotate(controller,
+            gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(auto_rotate)));
 
         if (_center_mode > 0)
             map_refresh_mark(TRUE);
