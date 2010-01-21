@@ -285,15 +285,6 @@ map_controller_set_auto_rotate(MapController *self, gboolean enable)
 
     if (enable == _center_rotate) return;
 
-    if (enable)
-    {
-        MACRO_BANNER_SHOW_INFO(_window, _("Auto-Rotate Enabled"));
-    }
-    else
-    {
-        MACRO_BANNER_SHOW_INFO(_window, _("Auto-Rotate Disabled"));
-    }
-
     _center_rotate = enable;
 }
 
