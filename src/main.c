@@ -113,10 +113,10 @@ conic_conn_event(ConIcConnection *connection, ConIcConnectionEvent *event)
         if (!_conic_is_connecting)
         {
             MapController *controller = map_controller_get_instance();
-            GtkWidget *screen;
+            MapScreen *screen;
 
-            screen = map_controller_get_screen_widget(controller);
-            map_screen_refresh_tiles(MAP_SCREEN(screen));
+            screen = map_controller_get_screen(controller);
+            map_screen_refresh_tiles(screen);
         }
     }
     else
@@ -513,7 +513,7 @@ maemo_mapper_init(gint argc, gchar **argv)
     gtk_box_pack_start(GTK_BOX(vbox), _heading_panel, TRUE, TRUE, 0);
 
     _controller = g_object_new(MAP_TYPE_CONTROLLER, NULL);
-    _w_map = map_controller_get_screen_widget(_controller);
+    _w_map = (GtkWidget *)map_controller_get_screen(_controller);
     gtk_box_pack_start(GTK_BOX(hbox), _w_map, TRUE, TRUE, 0);
 
     gtk_widget_show_all(hbox);

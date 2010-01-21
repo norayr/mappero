@@ -41,6 +41,7 @@ typedef struct _MapController MapController;
 typedef struct _MapControllerPrivate MapControllerPrivate;
 typedef struct _MapControllerClass MapControllerClass;
 
+#include "screen.h"
 
 struct _MapController
 {
@@ -58,7 +59,7 @@ GType map_controller_get_type (void);
 
 MapController *map_controller_get_instance();
 
-GtkWidget *map_controller_get_screen_widget(MapController *self);
+MapScreen *map_controller_get_screen(MapController *self);
 GtkWindow *map_controller_get_main_window(MapController *self);
 
 void map_controller_action_zoom_in(MapController *self);

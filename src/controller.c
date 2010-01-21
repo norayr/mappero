@@ -133,20 +133,17 @@ map_controller_get_instance()
     return instance;
 }
 
-GtkWidget *
-map_controller_get_screen_widget(MapController *self)
+MapScreen *
+map_controller_get_screen(MapController *self)
 {
     g_return_val_if_fail(MAP_IS_CONTROLLER(self), NULL);
-    return (GtkWidget *)self->priv->screen;
+    return self->priv->screen;
 }
 
 GtkWindow *
 map_controller_get_main_window(MapController *self)
 {
-    GtkWidget *screen;
-
-    screen = map_controller_get_screen_widget(self);
-    return GTK_WINDOW(gtk_widget_get_toplevel(screen));
+    return GTK_WINDOW(gtk_widget_get_toplevel((GtkWidget *)self->priv->screen));
 }
 
 void

@@ -782,9 +782,9 @@ track_add(time_t time, gboolean newly_fixed)
 
         if(_enable_tracking)
         {
-            GtkWidget *screen = map_controller_get_screen_widget(controller);
+            MapScreen *screen = map_controller_get_screen(controller);
 
-            map_screen_track_append(MAP_SCREEN(screen), _pos);
+            map_screen_track_append(screen, _pos);
             MACRO_PATH_INCREMENT_TAIL(_track);
             *_track.tail = _pos;
         }
