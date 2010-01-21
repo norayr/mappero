@@ -228,7 +228,7 @@ map_screen_pixel_to_screen_units(MapScreenPrivate *priv, gint px, gint py,
 
 static inline void
 map_screen_pixel_to_units(MapScreen *screen, gint px, gint py,
-                          gint *ux, gint *uy)
+                          Point *p)
 {
     MapScreenPrivate *priv = screen->priv;
     GtkAllocation *allocation = &(GTK_WIDGET(screen)->allocation);
@@ -237,8 +237,8 @@ map_screen_pixel_to_units(MapScreen *screen, gint px, gint py,
     px -= allocation->width / 2;
     py -= allocation->height / 2;
     map_screen_pixel_to_screen_units(priv, px, py, &usx, &usy);
-    *ux = usx + priv->map_center_ux;
-    *uy = usy + priv->map_center_uy;
+    p->unitx = usx + priv->map_center_ux;
+    p->unity = usy + priv->map_center_uy;
 }
 
 static void
@@ -279,13 +279,13 @@ static inline void
 activate_point_menu(MapScreen *screen, ClutterButtonEvent *event)
 {
     MapController *controller;
-    gint x, y;
+    Point p;
 
     /* Get the coordinates of the point, in units */
-    map_screen_pixel_to_units(screen, event->x, event->y, &x, &y);
+    map_screen_pixel_to_units(screen, event->x, event->y, &p);
 
     controller = map_controller_get_instance();
-    map_controller_activate_menu_point(controller, x, y);
+    map_controller_activate_menu_point(controller, &p);
 }
 
 static gboolean
@@ -1222,7 +1222,7 @@ map_screen_clear_pois(MapScreen *self)
 }
 
 void
-map_screen_get_tap_area_from_units(MapScreen *self, gint ux, gint uy,
+map_screen_get_tap_area_from_units(MapScreen *self, const Point *p,
                                    MapArea *area)
 {
     gint radius;
@@ -1230,10 +1230,10 @@ map_screen_get_tap_area_from_units(MapScreen *self, gint ux, gint uy,
     g_return_if_fail(MAP_IS_SCREEN(self));
 
     radius = pixel2zunit(TOUCH_RADIUS, self->priv->zoom);
-    area->x1 = ux - radius;
-    area->y1 = uy - radius;
-    area->y2 = uy + radius;
-    area->x2 = ux + radius;
+    area->x1 = p->unitx - radius;
+    area->y1 = p->unity - radius;
+    area->y2 = p->unity + radius;
+    area->x2 = p->unitx + radius;
 }
 
 void

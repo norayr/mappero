@@ -811,7 +811,7 @@ on_apply_correction_toggled(GtkToggleButton *button, Point *p)
 }
 
 void
-map_menu_point_map(Point *p)
+map_menu_point_map(const Point *p)
 {
     GtkWidget *dialog, *button;
     MapController *controller;
@@ -866,7 +866,7 @@ map_menu_point_map(Point *p)
     gtk_widget_show(button);
     map_dialog_add_widget(dlg, button);
     g_signal_connect(button, "toggled",
-                     G_CALLBACK(on_apply_correction_toggled), p);
+                     G_CALLBACK(on_apply_correction_toggled), (gpointer)p);
 
     response = gtk_dialog_run(GTK_DIALOG(dialog));
     gtk_widget_destroy(dialog);
@@ -1009,7 +1009,7 @@ map_menu_point_poi(PoiInfo *poi)
 }
 
 static void
-map_menu_point_select(Point *p, WayPoint *wp, GtkTreeModel *model)
+map_menu_point_select(const Point *p, WayPoint *wp, GtkTreeModel *model)
 {
     GtkWidget *dialog, *button;
     MapController *controller;
@@ -1054,7 +1054,7 @@ map_menu_point_select(Point *p, WayPoint *wp, GtkTreeModel *model)
 }
 
 void
-map_menu_point(Point *p, MapArea *area)
+map_menu_point(const Point *p, MapArea *area)
 {
     GtkTreeModel *model;
     WayPoint *way;
