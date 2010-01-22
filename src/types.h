@@ -172,16 +172,6 @@ typedef enum
     INFO_FONT_ENUM_COUNT
 } InfoFontSize;
 
-/** This enum defines the possible font sizes. */
-typedef enum
-{
-    ROTATE_DIR_UP,
-    ROTATE_DIR_RIGHT,
-    ROTATE_DIR_DOWN,
-    ROTATE_DIR_LEFT,
-    ROTATE_DIR_ENUM_COUNT
-} RotateDir;
-
 /** This enum defines all of the key-customizable actions. */
 typedef enum
 {

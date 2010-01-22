@@ -235,11 +235,6 @@ maemo_mapper_init(gint argc, gchar **argv)
     UNITS_ENUM_TEXT[UNITS_MI] = _("mi.");
     UNITS_ENUM_TEXT[UNITS_NM] = _("n.m.");
 
-    ROTATE_DIR_ENUM_TEXT[ROTATE_DIR_UP] = _("Up");
-    ROTATE_DIR_ENUM_TEXT[ROTATE_DIR_RIGHT] = _("Right");
-    ROTATE_DIR_ENUM_TEXT[ROTATE_DIR_DOWN] = _("Down");
-    ROTATE_DIR_ENUM_TEXT[ROTATE_DIR_LEFT] = _("Left");
-
     UNBLANK_ENUM_TEXT[UNBLANK_WITH_GPS] = _("When Receiving Any GPS Data");
     UNBLANK_ENUM_TEXT[UNBLANK_WHEN_MOVING] = _("When Moving");
     UNBLANK_ENUM_TEXT[UNBLANK_FULLSCREEN] = _("When Moving (Full Screen Only)");

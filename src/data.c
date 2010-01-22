@@ -44,8 +44,6 @@ gdouble UNITS_CONVERT[] =
 
 gchar *UNBLANK_ENUM_TEXT[UNBLANK_ENUM_COUNT];
 gchar *INFO_FONT_ENUM_TEXT[INFO_FONT_ENUM_COUNT];
-gchar *ROTATE_DIR_ENUM_TEXT[ROTATE_DIR_ENUM_COUNT];
-gint ROTATE_DIR_ENUM_DEGREES[ROTATE_DIR_ENUM_COUNT] = { 0, 90, 180, 270 };
 gchar *CUSTOM_ACTION_ENUM_TEXT[CUSTOM_ACTION_ENUM_COUNT];
 gchar *CUSTOM_KEY_GCONF[CUSTOM_KEY_ENUM_COUNT];
 gchar *CUSTOM_KEY_ICON[CUSTOM_KEY_ENUM_COUNT];
@@ -198,7 +196,6 @@ gint _center_ratio = 5;
 gint _draw_width = 5;
 gint _rotate_sens = 5;
 gint _ac_min_speed = 2;
-RotateDir _rotate_dir = ROTATE_DIR_UP;
 gboolean _enable_announce = TRUE;
 gint _announce_notice_ratio = 8;
 gboolean _enable_voice = TRUE;

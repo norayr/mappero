@@ -70,7 +70,6 @@
 #define GCONF_KEY_ENABLE_ANNOUNCE GCONF_KEY_PREFIX"/enable_announce"
 #define GCONF_KEY_ANNOUNCE_NOTICE GCONF_KEY_PREFIX"/announce_notice"
 #define GCONF_KEY_AC_MIN_SPEED GCONF_KEY_PREFIX"/autocenter_min_speed"
-#define GCONF_KEY_ROTATE_DIR GCONF_KEY_PREFIX"/rotate_direction"
 #define GCONF_KEY_DRAW_WIDTH GCONF_KEY_PREFIX"/draw_width"
 #define GCONF_KEY_ENABLE_VOICE GCONF_KEY_PREFIX"/enable_voice"
 #define GCONF_KEY_VOICE_SPEED GCONF_KEY_PREFIX"/voice_speed"
@@ -229,10 +228,6 @@ settings_save()
     /* Save Auto-Center/Rotate Minimum Speed. */
     gconf_client_set_int(gconf_client,
             GCONF_KEY_AC_MIN_SPEED, _ac_min_speed, NULL);
-
-    /* Save map orientation */
-    gconf_client_set_string(gconf_client,
-            GCONF_KEY_ROTATE_DIR, ROTATE_DIR_ENUM_TEXT[_rotate_dir], NULL);
 
     /* Save Draw Line Width. */
     gconf_client_set_int(gconf_client,
@@ -934,7 +929,6 @@ run_auto_center_dialog(GtkWindow *parent)
     GtkWidget *num_center_ratio;
     GtkWidget *num_lead_ratio;
     GtkWidget *num_ac_min_speed;
-    GtkWidget *rotate_dir;
     gint i;
 
     /* Auto-Center page. */
@@ -1007,28 +1001,11 @@ run_auto_center_dialog(GtkWindow *parent)
     gtk_table_attach(GTK_TABLE(table), num_ac_min_speed,
                      0, 2, 2, 3, GTK_FILL | GTK_EXPAND, 0, 2, 4);
 
-    /* Auto-Center Rotate Sensitivity. */
-    selector = HILDON_TOUCH_SELECTOR (hildon_touch_selector_new_text());
-    for (i = 0; i < ROTATE_DIR_ENUM_COUNT; i++)
-        hildon_touch_selector_append_text(selector, ROTATE_DIR_ENUM_TEXT[i]);
-    rotate_dir =
-        g_object_new(HILDON_TYPE_PICKER_BUTTON,
-                     "arrangement", HILDON_BUTTON_ARRANGEMENT_VERTICAL,
-                     "size", HILDON_SIZE_FINGER_HEIGHT,
-                     "title", _("Map orientation"),
-                     "touch-selector", selector,
-                     "xalign", 0.0,
-                     NULL);
-    gtk_table_attach(GTK_TABLE(table), rotate_dir,
-                     0, 2, 3, 4, GTK_FILL | GTK_EXPAND, 0, 2, 4);
-
     /* Initialize widgets */
     gtk_range_set_value(GTK_RANGE(num_center_ratio), _center_ratio);
     gtk_range_set_value(GTK_RANGE(num_lead_ratio), _lead_ratio);
     hildon_picker_button_set_active
         (HILDON_PICKER_BUTTON(lead_is_fixed), _lead_is_fixed);
-    hildon_picker_button_set_active(HILDON_PICKER_BUTTON(rotate_dir),
-                                    _rotate_dir);
     hildon_picker_button_set_active
         (HILDON_PICKER_BUTTON(num_ac_min_speed), _ac_min_speed / 5);
 
@@ -1044,9 +1021,6 @@ run_auto_center_dialog(GtkWindow *parent)
 
         _ac_min_speed = hildon_picker_button_get_active(
                 HILDON_PICKER_BUTTON(num_ac_min_speed)) * 5;
-
-        _rotate_dir = hildon_picker_button_get_active
-            (HILDON_PICKER_BUTTON(rotate_dir));
 
         settings_dialog_set_save(parent, TRUE);
     }
@@ -1730,20 +1704,6 @@ settings_init()
     else
         _ac_min_speed = 2;
 
-    /* Get Rotate Dir - Default is ROTATE_DIR_UP. */
-    {
-        gchar *rotate_dir_str = gconf_client_get_string(gconf_client,
-                GCONF_KEY_ROTATE_DIR, NULL);
-        gint i = -1;
-        if(rotate_dir_str)
-            for(i = ROTATE_DIR_ENUM_COUNT - 1; i >= 0; i--)
-                if(!strcmp(rotate_dir_str, ROTATE_DIR_ENUM_TEXT[i]))
-                    break;
-        if(i == -1)
-            i = ROTATE_DIR_UP;
-        _rotate_dir = i;
-    }
-
     /* Get Draw Line Width- Default is 5. */
     _draw_width = gconf_client_get_int(gconf_client,
             GCONF_KEY_DRAW_WIDTH, NULL);
@@ -1954,10 +1914,10 @@ settings_init()
             gconf_client, GCONF_KEY_CENTER_ANGLE, NULL);
     gdk_pixbuf_rotate_matrix_fill_for_rotation(
             _map_rotate_matrix,
-            deg2rad(ROTATE_DIR_ENUM_DEGREES[_rotate_dir] - _map_rotate_angle));
+            deg2rad(-_map_rotate_angle));
     gdk_pixbuf_rotate_matrix_fill_for_rotation(
             _map_reverse_matrix,
-            deg2rad(_map_rotate_angle - ROTATE_DIR_ENUM_DEGREES[_rotate_dir]));
+            deg2rad(_map_rotate_angle));
 
 
     /* Load the repositories. */

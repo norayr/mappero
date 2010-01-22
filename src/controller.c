@@ -570,7 +570,6 @@ map_controller_calc_best_center(MapController *self, Point *new_center)
                 + (((gint)_view_height_pixels
                             - (gint)_view_width_pixels)
                         * fabsf(cosf(deg2rad(
-                                ROTATE_DIR_ENUM_DEGREES[_rotate_dir] -
                                 (_center_rotate ? 0
                              : (_next_map_rotate_angle
                                  - (gint)(_gps.heading)))))));
