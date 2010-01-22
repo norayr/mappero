@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+<Repositories>
+  <Repository>
+    <name>OpenStreet</name>
+    <min_zoom>4</min_zoom>
+    <max_zoom>20</max_zoom>
+    <zoom_step>1</zoom_step>
+    <Layers>
+      <Primary>OpenStreet</Primary>
+    </Layers>
+  </Repository>
+  <Repository>
+    <name>Google Satellite</name>
+    <min_zoom>4</min_zoom>
+    <max_zoom>24</max_zoom>
+    <zoom_step>1</zoom_step>
+    <Layers>
+      <Primary>GoogleSatellite</Primary>
+      <Layer>GoogleTraffic</Layer>
+    </Layers>
+  </Repository>
+  <Repository>
+    <name>Google</name>
+    <min_zoom>4</min_zoom>
+    <max_zoom>24</max_zoom>
+    <zoom_step>1</zoom_step>
+    <Layers>
+      <Primary>GoogleVector</Primary>
+      <Layer>GoogleTraffic</Layer>
+    </Layers>
+  </Repository>
+</Repositories>
