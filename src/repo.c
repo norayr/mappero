@@ -5,7 +5,13 @@
 #include <libxml/parser.h>
 #include <libxml/tree.h>
 #include <string.h>
+#include <glib.h>
 
+#include <hildon/hildon-pannable-area.h>
+#include <hildon/hildon-touch-selector.h>
+
+
+#include "data.h"
 #include "types.h"
 #include "defines.h"
 #include "controller.h"
@@ -443,4 +449,106 @@ create_default_repo_lists(GList **tile_sources, GList **repositories)
     *repositories = g_list_append(*repositories, repo);
 
     return repo;
+}
+
+
+/* Show dialog with list of repositories */
+void
+repositories_dialog()
+{
+    GtkWidget *dialog, *edit_button, *delete_button;
+    HildonTouchSelector *repos_selector;
+    MapController *controller = map_controller_get_instance();
+    enum {
+        RESP_SYNC,
+        RESP_ADD,
+        RESP_EDIT,
+        RESP_DELETE,
+    };
+    gint response;
+    GList *repo_list;
+    Repository *repo, *active_repo = NULL;
+    gint active;
+
+    dialog = gtk_dialog_new_with_buttons(_("Repositories"), GTK_WINDOW(_window),
+                                         GTK_DIALOG_MODAL, NULL);
+    gtk_dialog_add_button(GTK_DIALOG(dialog), _("_Sync"), RESP_SYNC);
+    gtk_dialog_add_button(GTK_DIALOG(dialog), GTK_STOCK_ADD, RESP_ADD);
+    edit_button = gtk_dialog_add_button(GTK_DIALOG(dialog), GTK_STOCK_EDIT, RESP_EDIT);
+    delete_button = gtk_dialog_add_button(GTK_DIALOG(dialog), GTK_STOCK_DELETE, RESP_DELETE);
+
+    /* There is no way to edit/delete items in touch selector widget (Shame on you, Nokia!),
+       so, we must spin there to maintain our list in sync */
+    while (1) {
+        repos_selector = HILDON_TOUCH_SELECTOR(hildon_touch_selector_new_text());
+
+        /* Populate selector with repositories */
+        repo_list = map_controller_get_repo_list(controller);
+        if (!active_repo)
+            active_repo = map_controller_get_repository(controller);
+        active = 0;
+        while (repo_list) {
+            repo = (Repository*)repo_list->data;
+            hildon_touch_selector_append_text(repos_selector, repo->name);
+            if (repo == active_repo)
+                hildon_touch_selector_set_active(repos_selector, 0, active);
+            repo_list = repo_list->next;
+            active++;
+        }
+
+        /* These two buttons have meaning only if we have something in a list */
+        gtk_widget_set_sensitive(edit_button, active > 0);
+        gtk_widget_set_sensitive(delete_button, active > 0);
+
+        gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox), GTK_WIDGET(repos_selector), TRUE, TRUE, 0);
+
+        gtk_widget_show_all(dialog);
+        if ((response = gtk_dialog_run(GTK_DIALOG(dialog))) == GTK_RESPONSE_DELETE_EVENT)
+            break;
+
+        active = hildon_touch_selector_get_active(repos_selector, 0);
+        if (active >= 0)
+            active_repo = (Repository*)g_list_nth_data(map_controller_get_repo_list(controller), active);
+        else
+            active_repo = NULL;
+
+        switch (response) {
+        case RESP_SYNC:
+            printf ("Sync not implemented\n");
+            break;
+        case RESP_ADD:
+            printf ("Add not implemented\n");
+            break;
+        case RESP_EDIT:
+            printf ("Edit not implemented\n");
+            break;
+        case RESP_DELETE:
+            printf ("Delete not implemented\n");
+            break;
+        }
+        gtk_widget_destroy(GTK_WIDGET(repos_selector));
+    }
+    gtk_widget_destroy(dialog);
+}
+
+
+/*
+ * Show dialog to edit repository settings. Returns TRUE when
+ * user pressed 'save', FALSE on cancel
+ */
+gboolean
+repository_edit_dialog(Repository *repo)
+{
+    return FALSE;
+}
+
+
+/*
+ * Show dialog to edit tile source settings. Returns TRUE with
+ * when user pressed 'save', FALSE on cancel
+ */
+gboolean
+tile_source_edit_dialog(TileSource *ts)
+{
+    return FALSE;
 }
