@@ -69,6 +69,7 @@ Repository *map_controller_lookup_repository(MapController *self, gchar *name);
 void map_controller_set_repository(MapController *self, Repository *repo);
 GList *map_controller_get_repo_list(MapController *self);
 GList *map_controller_get_tile_sources_list(MapController *self);
+void map_controller_delete_repository(MapController *self, Repository *repo);
 
 void map_controller_action_zoom_in(MapController *self);
 void map_controller_action_zoom_out(MapController *self);

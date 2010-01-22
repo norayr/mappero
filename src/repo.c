@@ -9,6 +9,7 @@
 
 #include <hildon/hildon-pannable-area.h>
 #include <hildon/hildon-touch-selector.h>
+#include <hildon/hildon-note.h>
 
 
 #include "data.h"
@@ -299,6 +300,25 @@ tree_to_repository(xmlDocPtr doc, xmlNodePtr repo_node)
 }
 
 
+/* Ask about repository deletion and removes it, also removing menu entry */
+static void
+repository_delete_handler(GtkWindow* parent, Repository* repo)
+{
+    GtkWidget *dialog;
+    gchar *msg;
+    gint ret;
+
+    msg = g_strdup_printf(_("Do ou really want to delete repository\n%s?"), repo->name);
+
+    dialog = hildon_note_new_confirmation(parent, msg);
+    ret = gtk_dialog_run(GTK_DIALOG(dialog));
+    gtk_widget_destroy(dialog);
+
+    if (ret == GTK_RESPONSE_OK)
+        map_controller_delete_repository(map_controller_get_instance(), repo);
+}
+
+
 /* Parse XML data */
 GList* xml_to_tile_sources(const gchar *data)
 {
@@ -523,7 +543,8 @@ repositories_dialog()
             printf ("Edit not implemented\n");
             break;
         case RESP_DELETE:
-            printf ("Delete not implemented\n");
+            repository_delete_handler(GTK_WINDOW(dialog), active_repo);
+            active_repo = NULL;
             break;
         }
         gtk_widget_destroy(GTK_WIDGET(repos_selector));
