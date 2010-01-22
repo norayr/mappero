@@ -1531,10 +1531,11 @@ repoman_download()
         GnomeVFSResult vfs_result;
         printf("%s()\n", __PRETTY_FUNCTION__);
 
-        /* Get repo config file from www.gnuite.com. */
+        /* Get repo config file from the git repository */
         if(GNOME_VFS_OK != (vfs_result = gnome_vfs_read_entire_file(
-                    "http://www.gnuite.com/nokia770/maemo-mapper/"
-                    "repos-with-layers.txt",
+                    "http://vcs.maemo.org/git/maemo-mapper/?p=maemo-mapper;"
+                    "a=blob_plain;f=repos-with-layers.txt;"
+                    "hb=refs/heads/configurations",
                     &size, &bytes)))
         {
             popup_error(_window,
