@@ -211,10 +211,12 @@
 #define CONFIG_DIR_NAME "~/.maemo-mapper/"
 #define CONFIG_PATH_DB_FILE "paths.db"
 
+#define CACHE_BASE_DIR "~/MyDocs/.maps/"
+
 #define REPO_DEFAULT_NAME "OpenStreet"
 #define REPO_DEFAULT_TYPE "XYZ_INV"
-#define REPO_DEFAULT_CACHE_BASE "~/MyDocs/.documents/Maps/"
-#define REPO_DEFAULT_CACHE_DIR REPO_DEFAULT_CACHE_BASE"OpenStreet.db"
+#define REPO_DEFAULT_CACHE_DIR "OpenStreetMap I"
+#define REPO_DEFAULT_FILE_EXT "png"
 #define REPO_DEFAULT_MAP_URI "http://tile.openstreetmap.org/%0d/%d/%d.png"
 #define REPO_DEFAULT_DL_ZOOM_STEPS (2)
 #define REPO_DEFAULT_VIEW_ZOOM_STEPS (1)

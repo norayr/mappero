@@ -340,7 +340,7 @@ struct _RepoData {
     gchar *name;
     gchar *url;
     gchar *db_filename;
-    gchar *db_dirname;
+    gchar *db_file_ext;
     gint dl_zoom_steps;
     gint view_zoom_steps;
     gboolean double_size;

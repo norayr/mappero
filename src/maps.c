@@ -217,7 +217,7 @@ build_tile_path(gchar *buffer, gsize size,
 {
     g_snprintf(buffer, size,
                "/home/user/MyDocs/.maps/%s/%d/%d/",
-               repo->name, zoom, tilex);
+               repo->db_filename, 21 - zoom, tilex);
 }
 
 static void
@@ -225,8 +225,8 @@ build_tile_filename(gchar *buffer, gsize size,
                     RepoData *repo, gint zoom, gint tilex, gint tiley)
 {
     g_snprintf(buffer, size,
-               "/home/user/MyDocs/.maps/%s/%d/%d/%d.png",
-               repo->name, zoom, tilex, tiley);
+               "/home/user/MyDocs/.maps/%s/%d/%d/%d.%s",
+               repo->db_filename, 21 - zoom, tilex, tiley, repo->db_file_ext);
 }
 
 gboolean
@@ -316,6 +316,14 @@ set_repo_type(RepoData *repo)
             repo->type = find_repo_type_by_name("QUAD_ZERO");
         else
             repo->type = find_repo_type_by_name("XYZ");
+
+        /* temporary hack */
+        if (strstr(url, "google") ||
+            strstr(url, "jpeg") ||
+            strstr(url, "yimg"))
+            repo->db_file_ext = g_strdup("jpg");
+        else
+            repo->db_file_ext = g_strdup("png");
 
         g_free(url);
     }
@@ -1229,20 +1237,6 @@ repoman_dialog_add_repo(RepoManInfo *rmi, gchar *name, gboolean is_sqlite)
     gtk_box_pack_start(GTK_BOX(hbox),
             rei->btn_compact = gtk_button_new_with_label(_("Compact...")),
             FALSE, FALSE, 0);
-
-    /* Initialize cache dir */
-    {
-        gchar buffer[BUFFER_SIZE];
-        snprintf(buffer, sizeof(buffer), "%s.%s", name,
-                is_sqlite ? "sqlite" : "gdbm");
-        gchar *db_base = gnome_vfs_expand_initial_tilde(
-                REPO_DEFAULT_CACHE_BASE);
-        gchar *db_filename = gnome_vfs_uri_make_full_from_relative(
-                db_base, buffer);
-        gtk_entry_set_text(GTK_ENTRY(rei->txt_db_filename), db_filename);
-        g_free(db_filename);
-        g_free(db_base);
-    }
 
     gtk_box_pack_start(GTK_BOX(vbox),
             table = gtk_table_new(3, 2, FALSE),
@@ -3128,6 +3122,7 @@ create_default_repo()
 
     repo->db_filename = gnome_vfs_expand_initial_tilde(
             REPO_DEFAULT_CACHE_DIR);
+    repo->db_file_ext = g_strdup(REPO_DEFAULT_FILE_EXT);
     repo->url=g_strdup(REPO_DEFAULT_MAP_URI);
     repo->dl_zoom_steps = REPO_DEFAULT_DL_ZOOM_STEPS;
     repo->name = g_strdup(REPO_DEFAULT_NAME);

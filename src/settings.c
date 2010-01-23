@@ -146,6 +146,12 @@ struct _ColorsDialogInfo {
 };
 
 
+static gint
+repo_match_by_name(RepoData *rd, const gchar *repo_name)
+{
+    return strcmp(rd->name, repo_name);
+}
+
 /**
  * Save all configuration data to GCONF.
  */
@@ -1521,7 +1527,11 @@ settings_parse_repo(gchar *str)
     /* Parse cache dir. */
     token = strsep(&str, "\n\t");
     if(token)
+    {
         rd->db_filename = gnome_vfs_expand_initial_tilde(token);
+        if (rd->db_filename[0] == '/') /* old style repo, we don't want it */
+            return NULL; /* FIXME leaking memory */
+    }
 
     /* Parse download zoom steps. */
     token = strsep(&str, "\n\t");
@@ -1932,6 +1942,7 @@ settings_init()
         for(curr = list; curr != NULL; curr = curr->next)
         {
             RepoData *rd = settings_parse_repo(curr->data);
+            if (!rd) continue;
 
             if (rd->layer_level == 0) {
                 _repo_list = g_list_append(_repo_list, rd);
@@ -1949,7 +1960,8 @@ settings_init()
             repo_set_curr(curr_repo);
     }
 
-    if(_repo_list == NULL)
+    if (!g_list_find_custom(_repo_list, REPO_DEFAULT_NAME,
+                            (GCompareFunc)repo_match_by_name))
     {
         RepoData *repo = create_default_repo();
         _repo_list = g_list_append(_repo_list, repo);
@@ -2105,7 +2117,7 @@ settings_init()
     if(_poi_db_filename == NULL)
     {
         gchar *poi_base = gnome_vfs_expand_initial_tilde(
-                REPO_DEFAULT_CACHE_BASE);
+                CACHE_BASE_DIR);
         _poi_db_filename = gnome_vfs_uri_make_full_from_relative(
                 poi_base, "poi.db");
         g_free(poi_base);
