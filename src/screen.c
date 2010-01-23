@@ -947,14 +947,14 @@ map_screen_set_center(MapScreen *screen, gint x, gint y, gint zoom)
     area.y2 = y + diag_halflength_units + _map_correction_unity;
 
     start_tilex = unit2ztile(area.x1, new_zoom);
-    start_tilex = MAX(start_tilex - (cache_amount - 1), 0);
+    start_tilex = MAX(start_tilex - cache_amount, 0);
     start_tiley = unit2ztile(area.y1, new_zoom);
-    start_tiley = MAX(start_tiley - (cache_amount - 1), 0);
+    start_tiley = MAX(start_tiley - cache_amount, 0);
     stop_tilex = unit2ztile(area.x2, new_zoom);
-    stop_tilex = MIN(stop_tilex + (cache_amount - 1),
+    stop_tilex = MIN(stop_tilex + cache_amount,
                      unit2ztile(WORLD_SIZE_UNITS, new_zoom));
     stop_tiley = unit2ztile(area.y2, new_zoom);
-    stop_tiley = MIN(stop_tiley + (cache_amount - 1),
+    stop_tiley = MIN(stop_tiley + cache_amount,
                      unit2ztile(WORLD_SIZE_UNITS, new_zoom));
 
     /* create the tiles */

@@ -1682,11 +1682,11 @@ settings_init()
     _auto_download = gconf_client_get_bool(gconf_client,
             GCONF_KEY_AUTO_DOWNLOAD, NULL);
 
-    /* Get Auto-Download Pre-cache - Default is 2. */
+    /* Get Auto-Download Pre-cache - Default is 0. */
     _auto_download_precache = gconf_client_get_int(gconf_client,
             GCONF_KEY_AUTO_DOWNLOAD_PRECACHE, NULL);
     if(!_auto_download_precache)
-        _auto_download_precache = 2;
+        _auto_download_precache = 0;
 
     /* Get Center Ratio - Default is 5. */
     _center_ratio = gconf_client_get_int(gconf_client,
