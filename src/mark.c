@@ -111,7 +111,7 @@ map_uncertainty_paint(ClutterActor *actor)
     cogl_set_source_color4ub(color->red >> 8,
                              color->green >> 8,
                              color->blue >> 8,
-                             clutter_actor_get_paint_opacity(actor) / 3);
+                             clutter_actor_get_paint_opacity(actor) / 8);
 
     cogl_scale(width, height, 1);
     memset(vertices, 0, sizeof(vertices));
