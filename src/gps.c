@@ -175,16 +175,11 @@ on_gps_changed(LocationGPSDevice *device, MapController *controller)
         /* Add the point to the track only if it's not too inaccurate: if the
          * uncertainty is greater than 200m, don't add it (TODO: this should be
          * a configuration option). */
-        if (_gps.hdop < 200 &&
-            (track_add(_pos.time, newly_fixed) || newly_fixed))
-	{
-	    /* Move mark to new location. */
-	    map_refresh_mark(FALSE);
-	}
-	else
-	{
-	    map_move_mark();
-	}
+        if (_gps.hdop < 200)
+            track_add(_pos.time, newly_fixed);
+
+        /* Move mark to new location. */
+        map_refresh_mark(newly_fixed);
     } else {
         track_insert_break(FALSE);
         _gps.speed = 0;
