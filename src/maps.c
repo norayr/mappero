@@ -302,7 +302,7 @@ set_repo_type(RepoData *repo)
 
         /* Determine type of repository. */
         if(strstr(url, "service=wms"))
-            repo->type = REPOTYPE_WMS;
+            repo->type = REPOTYPE_NONE;
         else if(strstr(url, "%s"))
             repo->type = REPOTYPE_QUAD_QRST;
         else if(strstr(url, "%0d"))
@@ -345,82 +345,6 @@ gboolean repo_is_layer (RepoData* base, RepoData* layer)
     }
 
     return FALSE;
-}
-
-
-/**
- * Given a wms uri pattern, compute the coordinate transformation and
- * trimming.
- * 'proj' is used for the conversion
- */
-static gchar*
-map_convert_wms_to_wms(gint tilex, gint tiley, gint zoomlevel, gchar* uri)
-{
-    gint system_retcode;
-    gchar cmd[BUFFER_SIZE], srs[BUFFER_SIZE];
-    gchar *ret = NULL;
-    FILE* in;
-    gdouble lon1, lat1, lon2, lat2;
-
-    gchar *widthstr   = strcasestr(uri,"WIDTH=");
-    gchar *heightstr  = strcasestr(uri,"HEIGHT=");
-    gchar *srsstr     = strcasestr(uri,"SRS=EPSG");
-    gchar *srsstre    = strchr(srsstr,'&');
-    vprintf("%s()\n", __PRETTY_FUNCTION__);
-
-    /* missing: test if found */
-    strcpy(srs,"epsg");
-    strncpy(srs+4,srsstr+8,256);
-    /* missing: test srsstre-srsstr < 526 */
-    srs[srsstre-srsstr-4] = 0;
-    /* convert to lower, as WMC is EPSG and cs2cs is epsg */
-
-    gint dwidth  = widthstr ? atoi(widthstr+6) - TILE_SIZE_PIXELS : 0;
-    gint dheight = heightstr ? atoi(heightstr+7) - TILE_SIZE_PIXELS : 0;
-
-    unit2latlon(tile2zunit(tilex,zoomlevel)
-            - pixel2zunit(dwidth/2,zoomlevel),
-            tile2zunit(tiley+1,zoomlevel)
-            + pixel2zunit((dheight+1)/2,zoomlevel),
-            lat1, lon1);
-
-    unit2latlon(tile2zunit(tilex+1,zoomlevel)
-            + pixel2zunit((dwidth+1)/2,zoomlevel),
-            tile2zunit(tiley,zoomlevel)
-            - pixel2zunit(dheight/2,zoomlevel),
-            lat2, lon2);
-
-    setlocale(LC_NUMERIC, "C");
-
-    snprintf(cmd, sizeof(cmd),
-            "(echo \"%.6f %.6f\"; echo \"%.6f %.6f\") | "
-            "/usr/bin/cs2cs +proj=longlat +datum=WGS84 +to +init=%s -f %%.6f "
-            " > /tmp/tmpcs2cs ",
-            lon1, lat1, lon2, lat2, srs);
-    vprintf("Running command: %s\n", cmd);
-    system_retcode = system(cmd);
-
-    if(system_retcode)
-        g_printerr("cs2cs returned error code %d\n",
-                WEXITSTATUS(system_retcode));
-    else if(!(in = g_fopen("/tmp/tmpcs2cs","r")))
-        g_printerr("Cannot open results of conversion\n");
-    else if(5 != fscanf(in,"%lf %lf %s %lf %lf",
-                &lon1, &lat1, cmd, &lon2, &lat2))
-    {
-        g_printerr("Wrong conversion\n");
-        fclose(in);
-    }
-    else
-    {
-        fclose(in);
-        ret = g_strdup_printf(uri, lon1, lat1, lon2, lat2);
-    }
-
-    setlocale(LC_NUMERIC, "");
-
-    vprintf("%s(): return %s\n", __PRETTY_FUNCTION__, ret);
-    return ret;
 }
 
 
@@ -499,10 +423,6 @@ map_construct_url(RepoData *repo, gint zoom, gint tilex, gint tiley)
             retval = g_strdup_printf(repo->url, location);
             break;
         }
-
-        case REPOTYPE_WMS:
-            retval = map_convert_wms_to_wms(tilex, tiley, zoom, repo->url);
-            break;
 
         default:
             retval = g_strdup(repo->url);
