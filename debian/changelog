@@ -1,3 +1,9 @@
+maemo-mapper (3.0+alpha7) unstable; urgency=low
+
+  * Fix build issue. 
+
+ -- Alberto Mardegan <mardy@users.sourceforge.net>  Sat, 23 Jan 2010 16:09:18 +0200
+
 maemo-mapper (3.0+alpha6) unstable; urgency=low
 
   * Try to share the map repositories with Maep.
