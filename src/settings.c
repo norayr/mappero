@@ -1968,7 +1968,7 @@ settings_init()
         repo_set_curr(repo);
     }
 
-    /* Get last Zoom Level.  Default is 16. */
+    /* Get last Zoom Level.  Default is 10. */
     value = gconf_client_get(gconf_client, GCONF_KEY_ZOOM, NULL);
     if(value)
     {
@@ -1977,7 +1977,7 @@ settings_init()
         gconf_value_free(value);
     }
     else
-        _zoom = 16 / _curr_repo->view_zoom_steps
+        _zoom = 10 / _curr_repo->view_zoom_steps
             * _curr_repo->view_zoom_steps;
     BOUND(_zoom, 0, MAX_ZOOM);
     _next_zoom = _zoom;
@@ -1990,7 +1990,7 @@ settings_init()
     _track_file_uri = gconf_client_get_string(gconf_client,
             GCONF_KEY_TRACKFILE, NULL);
 
-    /* Get Auto-Center Mode.  Default is CENTER_LEAD. */
+    /* Get Auto-Center Mode.  Default is CENTER_LATLON. */
     value = gconf_client_get(gconf_client, GCONF_KEY_AUTOCENTER_MODE, NULL);
     if(value)
     {
@@ -1998,9 +1998,9 @@ settings_init()
         gconf_value_free(value);
     }
     else
-        _center_mode = CENTER_LEAD;
+        _center_mode = CENTER_LATLON;
 
-    /* Get Auto-Center Rotate Flag.  Default is TRUE. */
+    /* Get Auto-Center Rotate Flag.  Default is FALSE. */
     value = gconf_client_get(gconf_client, GCONF_KEY_AUTOCENTER_ROTATE, NULL);
     if(value)
     {
@@ -2008,7 +2008,7 @@ settings_init()
         gconf_value_free(value);
     }
     else
-        _center_rotate = TRUE;
+        _center_rotate = FALSE;
 
     /* Get Show Zoom Level flag.  Default is FALSE. */
     _show_zoomlevel = gconf_client_get_bool(gconf_client,
