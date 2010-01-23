@@ -934,10 +934,7 @@ map_screen_set_center(MapScreen *screen, gint x, gint y, gint zoom)
     clutter_actor_set_anchor_point(priv->map, px, py);
 
     /* Calculate cache amount */
-    if(repo->type != REPOTYPE_NONE && MAPDB_EXISTS(repo))
-        cache_amount = _auto_download_precache;
-    else
-        cache_amount = 1; /* No cache. */
+    cache_amount = _auto_download_precache;
 
     diag_halflength_units =
         pixel2zunit(TILE_HALFDIAG_PIXELS +
