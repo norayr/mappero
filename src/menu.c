@@ -541,7 +541,7 @@ menu_cb_maps_auto_download(GtkMenuItem *item)
     if((_auto_download = gtk_check_menu_item_get_active(
             GTK_CHECK_MENU_ITEM(_menu_maps_auto_download_item))))
     {
-        if(_curr_repo->url == REPOTYPE_NONE)
+        if(_curr_repo->url == NULL)
             popup_error(_window,
                 _("NOTE: You must set a Map URI in the current repository in "
                     "order to download maps."));
