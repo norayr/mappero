@@ -308,7 +308,7 @@ repository_delete_handler(GtkWindow* parent, Repository* repo)
     gchar *msg;
     gint ret;
 
-    msg = g_strdup_printf(_("Do ou really want to delete repository\n%s?"), repo->name);
+    msg = g_strdup_printf(_("Do you really want to delete repository\n%s?"), repo->name);
 
     dialog = hildon_note_new_confirmation(parent, msg);
     ret = gtk_dialog_run(GTK_DIALOG(dialog));
@@ -317,6 +317,131 @@ repository_delete_handler(GtkWindow* parent, Repository* repo)
     if (ret == GTK_RESPONSE_OK)
         map_controller_delete_repository(map_controller_get_instance(), repo);
 }
+
+
+/*
+ * Download XML data with repositories and tile sources and merge it into current configuration.
+ * Don't really sure what better: silently update user's repositories or ask about this?
+ * At this moment, just update.
+ */
+static void
+repository_sync_handler(GtkWindow *parent)
+{
+    GnomeVFSResult res;
+    gint size, i;
+    gchar *data;
+    GList *list, *list_head;
+    TileSource *ts, *ts_old;
+    Repository *repo, *repo_old;
+    MapController *controller = map_controller_get_instance();
+    gint ts_new, ts_mod, repo_new, repo_mod;
+
+    ts_new = ts_mod = repo_new = repo_mod = 0;
+
+    /* TileSources */
+    res = gnome_vfs_read_entire_file("http://git.maemo.org/git/maemo-mapper/?p=maemo-mapper;"
+                                     "a=blob_plain;f=data/tile_sources.xml;hb=refs/heads/new_repos",
+                                     &size, &data);
+    if (res != GNOME_VFS_OK)
+        return;
+
+    if (data && size > 0) {
+        list_head = list = xml_to_tile_sources(data);
+        while (list) {
+            ts = (TileSource*)list->data;
+
+            ts_old = map_controller_lookup_tile_source(controller, ts->id);
+            if (ts_old) {
+                if (!compare_tile_sources(ts, ts_old)) {
+                    /* Merge tile source */
+                    if (strcmp(ts->name, ts_old->name)) {
+                        g_free(ts_old->name);
+                        ts_old->name = g_strdup(ts->name);
+                    }
+                    if (strcmp(ts->url, ts_old->url)) {
+                        g_free(ts_old->url);
+                        ts_old->url = g_strdup(ts->url);
+                    }
+                    ts_old->type = ts->type;
+                    ts_mod++;
+                }
+                free_tile_source(ts);
+            }
+            else {
+                /* We don't ask about new tile sources, because new repository may depend on them,
+                 * so just silently add it */
+                map_controller_append_tile_source(controller, ts);
+                ts_new++;
+            }
+
+            list = list->next;
+        }
+    }
+
+    /* Repositories */
+    res = gnome_vfs_read_entire_file("http://git.maemo.org/git/maemo-mapper/?p=maemo-mapper;"
+                                     "a=blob_plain;f=data/repositories.xml;hb=refs/heads/new_repos",
+                                     &size, &data);
+    if (res != GNOME_VFS_OK)
+        return;
+
+    if (data && size > 0) {
+        list_head = list = xml_to_repositories(data);
+        while (list) {
+            repo = (Repository*)list->data;
+            repo_old = map_controller_lookup_repository(controller, repo->name);
+            if (repo_old) {
+                if (!compare_repositories(repo, repo_old)) {
+                    /* Merge repositories */
+                    if (strcmp(repo->name, repo_old->name)) {
+                        g_free(repo_old->name);
+                        repo_old->name = g_strdup(repo->name);
+                    }
+                    repo_old->min_zoom = repo->min_zoom;
+                    repo_old->max_zoom = repo->max_zoom;
+                    repo_old->zoom_step = repo->zoom_step;
+                    if (strcmp(repo_old->primary->id, repo->primary->id))
+                        repo_old->primary = map_controller_lookup_tile_source(controller, repo->primary->id);
+                    if (repo_old->layers) {
+                        g_ptr_array_free(repo_old->layers, TRUE);
+                        repo_old->layers = g_ptr_array_new();
+                        if (repo->layers)
+                            for (i = 0; i < repo->layers->len; i++)
+                                g_ptr_array_add(repo_old->layers, g_ptr_array_index(repo->layers, i));
+                    }
+                    repo_mod++;
+                }
+                free_repository(repo);
+            }
+            else {
+                map_controller_append_repository(controller, repo);
+                repo_new++;
+            }
+
+            list = list->next;
+        }
+    }
+
+    /* Show user statistics about sync */
+    {
+        GtkWidget *dialog;
+        gchar *msg;
+
+        if (!ts_new && !ts_mod && !repo_new && !repo_mod)
+            msg = g_strdup(_("Repositories are the same"));
+        else
+            msg = g_strdup_printf(_("Layers: %d new, %d updated\nRepositories: %d new, %d updated\n"),
+                                  ts_new, ts_mod, repo_new, repo_mod);
+
+        dialog = hildon_note_new_information(parent, msg);
+        gtk_dialog_run(GTK_DIALOG(dialog));
+        gtk_widget_destroy(dialog);
+        g_free(msg);
+    }
+
+    /* TODO: save settings */
+}
+
 
 
 /* Parse XML data */
@@ -472,6 +597,95 @@ create_default_repo_lists(GList **tile_sources, GList **repositories)
 }
 
 
+/*
+ * Free tile source structure.
+ * Warning: It's responsibility of caller that there are
+ * no references to this structure
+ */
+void
+free_tile_source(TileSource *ts)
+{
+    if (ts->name)
+        g_free(ts->name);
+    if (ts->id)
+        g_free(ts->id);
+    if (ts->cache_dir)
+        g_free(ts->cache_dir);
+    if (ts->url)
+        g_free(ts->url);
+    g_slice_free(TileSource, ts);
+}
+
+
+/*
+ * Free repository structure
+ */
+void
+free_repository(Repository *repo)
+{
+    if (repo->name)
+        g_free(repo->name);
+    if (repo->layers)
+        g_ptr_array_free(repo->layers, TRUE);
+    if (repo->menu_item)
+        gtk_widget_destroy(repo->menu_item);
+    g_slice_free(Repository, repo);
+}
+
+
+/*
+ * Compare tile sources using fields, which are not
+ * supposed to be customized by user. Return TRUE if
+ * they are equal.
+ */
+gboolean
+compare_tile_sources(TileSource *ts1, TileSource *ts2)
+{
+    if (strcmp(ts1->name, ts2->name))
+        return FALSE;
+    if (strcmp(ts1->url, ts2->url))
+        return FALSE;
+    if (ts1->type != ts2->type)
+        return FALSE;
+    return TRUE;
+}
+
+
+/*
+ * Compare repositories using fields, which are not
+ * supposed to be customized by user. Return TRUE if
+ * they are equal.
+ */
+gboolean
+compare_repositories(Repository *repo1, Repository *repo2)
+{
+    gint layer;
+    if (strcmp(repo1->name, repo2->name))
+        return FALSE;
+    if (repo1->min_zoom != repo2->min_zoom ||
+        repo1->max_zoom != repo2->max_zoom ||
+        repo1->zoom_step != repo2->zoom_step)
+    {
+        return FALSE;
+    }
+    if (strcmp(repo1->primary->id, repo2->primary->id))
+        return FALSE;
+    if (repo1->layers || repo2->layers) {
+        if (!repo1->layers || !repo2->layers)
+            return FALSE;
+        if (repo1->layers->len != repo2->layers->len)
+            return FALSE;
+        for (layer = 0; layer < repo1->layers->len; layer++)
+            if (strcmp(((TileSource*)g_ptr_array_index(repo1->layers, layer))->id, 
+                       ((TileSource*)g_ptr_array_index(repo2->layers, layer))->id))
+                return FALSE;
+    }
+    return TRUE;
+}
+
+
+
+
 /* Show dialog with list of repositories */
 void
 repositories_dialog()
@@ -534,7 +748,7 @@ repositories_dialog()
 
         switch (response) {
         case RESP_SYNC:
-            printf ("Sync not implemented\n");
+            repository_sync_handler(GTK_WINDOW(dialog));
             break;
         case RESP_ADD:
             printf ("Add not implemented\n");
@@ -573,3 +787,4 @@ tile_source_edit_dialog(TileSource *ts)
 {
     return FALSE;
 }
+

@@ -827,9 +827,25 @@ map_controller_delete_repository(MapController *self, Repository *repo)
         }
     }
 
-    /* We are ready to remove repository data. */
-    g_free(repo->name);
-    g_ptr_array_free(repo->layers, TRUE);
-    gtk_widget_destroy(repo->menu_item);
-    g_slice_free(Repository, repo);
+    free_repository(repo);
+}
+
+
+void
+map_controller_append_tile_source(MapController *self, TileSource *ts)
+{
+    MapControllerPrivate *priv;
+
+    g_return_if_fail(MAP_IS_CONTROLLER(self));
+    self->priv->tile_sources_list = g_list_append(self->priv->tile_sources_list, ts);
+}
+
+
+void
+map_controller_append_repository(MapController *self, Repository *repo)
+{
+    MapControllerPrivate *priv;
+
+    g_return_if_fail(MAP_IS_CONTROLLER(self));
+    self->priv->repositories_list = g_list_append(self->priv->repositories_list, repo);
 }

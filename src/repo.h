@@ -10,6 +10,12 @@ GList* xml_to_repositories(const gchar *data);
 Repository* create_default_repo_lists(GList **tile_sources,
                                       GList **repositories);
 
+gboolean compare_tile_sources(TileSource *ts1, TileSource *ts2);
+gboolean compare_repositories(Repository *repo1, Repository *repo2);
+
+void free_tile_source(TileSource *ts);
+void free_repository(Repository *repo);
+
 void delete_repository(Repository *repo);
 
 void repositories_dialog();
