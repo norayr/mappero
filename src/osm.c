@@ -365,9 +365,9 @@ map_osm_set_screen_size(MapOsm *self, gint width, gint height)
         for (i = 0; i < N_BUTTONS_COLUMN; i++)
         {
             button = priv->btn.v[col * N_BUTTONS_COLUMN + i];
-            if (!button) continue;
 
-            clutter_actor_set_position(button, x, y);
+            if (button)
+                clutter_actor_set_position(button, x, y);
             y += dy;
         }
     }
@@ -379,9 +379,9 @@ map_osm_set_screen_size(MapOsm *self, gint width, gint height)
     for (i = 0; i < N_BUTTONS_BOTTOM; i++)
     {
         button = priv->btn.v[IDX_BUTTON0_BOTTOM + i];
-        if (!button) continue;
 
-        clutter_actor_set_position(button, x, y);
+        if (button)
+            clutter_actor_set_position(button, x, y);
         x += dx;
     }
 }
