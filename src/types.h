@@ -82,18 +82,6 @@ typedef enum
     RCVR_FIXED
 } ConnState;
 
-/** This enumerated type defines the supported types of repositories. */
-typedef enum
-{
-    REPOTYPE_NONE, /* No URL set. */
-    REPOTYPE_XYZ, /* x=%d, y=%d, and zoom=%d */
-    REPOTYPE_XYZ_SIGNED, /* x=%d, y=%d, and zoom=%d-2 */
-    REPOTYPE_XYZ_INV, /* zoom=%0d, x=%d, y=%d */
-    REPOTYPE_QUAD_QRST, /* t=%s   (%s = {qrst}*) */
-    REPOTYPE_QUAD_ZERO, /* t=%0s  (%0s = {0123}*) */
-    REPOTYPE_WMS        /* "service=wms" */
-} RepoType;
-
 /** Possible center modes.  The "WAS" modes imply no current center mode;
  * they only hint at what the last center mode was, so that it can be
  * recalled. */
@@ -335,8 +323,19 @@ struct _PoiInfo {
     gchar *clabel;
 };
 
-/** Data regarding a map repository. */
 typedef struct _RepoData RepoData;
+
+typedef gint (*RepoStringFunc)(RepoData *repo, gchar *buffer, gint len,
+                               gint zoom, gint tilex, gint tiley);
+
+/** This enumerated type defines the supported types of repositories. */
+typedef struct
+{
+    const gchar *name;
+    RepoStringFunc get_url; /* compose the URL of the tile do dowload */
+} RepoType;
+
+/** Data regarding a map repository. */
 struct _RepoData {
     gchar *name;
     gchar *url;
@@ -348,7 +347,7 @@ struct _RepoData {
     gboolean nextable;
     gint min_zoom;
     gint max_zoom;
-    RepoType type;
+    const RepoType *type;
     RepoData *layers;
     gint8 layer_level;
     gboolean layer_enabled;

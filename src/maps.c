@@ -209,6 +209,8 @@ struct _MapCache {
 
 const gchar* layer_timestamp_key = "tEXt::mm_ts";
 
+static const RepoType *find_repo_type_by_name(const gchar *name);
+
 static void
 build_tile_path(gchar *buffer, gsize size,
                 RepoData *repo, gint zoom, gint tilex, gint tiley)
@@ -291,6 +293,7 @@ mapdb_delete(RepoData *repo, gint zoom, gint tilex, gint tiley)
     return success;
 }
 
+/* TODO: remove this function, once the repo type is made explicit */
 void
 set_repo_type(RepoData *repo)
 {
@@ -302,22 +305,22 @@ set_repo_type(RepoData *repo)
 
         /* Determine type of repository. */
         if(strstr(url, "service=wms"))
-            repo->type = REPOTYPE_NONE;
+            repo->type = NULL;
         else if(strstr(url, "%s"))
-            repo->type = REPOTYPE_QUAD_QRST;
+            repo->type = find_repo_type_by_name("QUAD_QRST");
         else if(strstr(url, "%0d"))
-            repo->type = REPOTYPE_XYZ_INV;
+            repo->type = find_repo_type_by_name("XYZ_INV");
         else if(strstr(url, "%-d"))
-            repo->type = REPOTYPE_XYZ_SIGNED;
+            repo->type = find_repo_type_by_name("XYZ_SIGNED");
         else if(strstr(url, "%0s"))
-            repo->type = REPOTYPE_QUAD_ZERO;
+            repo->type = find_repo_type_by_name("QUAD_ZERO");
         else
-            repo->type = REPOTYPE_XYZ;
+            repo->type = find_repo_type_by_name("XYZ");
 
         g_free(url);
     }
     else
-        repo->type = REPOTYPE_NONE;
+        repo->type = NULL;
 
     vprintf("%s(): return\n", __PRETTY_FUNCTION__);
 }
@@ -374,62 +377,87 @@ map_convert_coords_to_quadtree_string(gint x, gint y, gint zoomlevel,
     vprintf("%s(): return\n", __PRETTY_FUNCTION__);
 }
 
+static gint
+xyz_get_url(RepoData *repo, gchar *buffer, gint len,
+            gint zoom, gint tilex, gint tiley)
+{
+    return g_snprintf(buffer, len, repo->url,
+                      tilex, tiley,  zoom - (MAX_ZOOM - 16));
+}
+
+static gint
+xyz_inv_get_url(RepoData *repo, gchar *buffer, gint len,
+                gint zoom, gint tilex, gint tiley)
+{
+    return g_snprintf(buffer, len, repo->url,
+                      MAX_ZOOM + 1 - zoom, tilex, tiley);
+}
+
+static gint
+xyz_signed_get_url(RepoData *repo, gchar *buffer, gint len,
+                   gint zoom, gint tilex, gint tiley)
+{
+    return g_snprintf(buffer, len, repo->url,
+                      tilex,
+                      (1 << (MAX_ZOOM - zoom)) - tiley - 1,
+                      zoom - (MAX_ZOOM - 17));
+}
+
+static gint
+quad_qrst_get_url(RepoData *repo, gchar *buffer, gint len,
+                  gint zoom, gint tilex, gint tiley)
+{
+    gchar location[MAX_ZOOM + 2];
+    map_convert_coords_to_quadtree_string(tilex, tiley, zoom,
+                                          location, 't', "qrts");
+    return g_snprintf(buffer, len, repo->url, location);
+}
+
+static gint
+quad_zero_get_url(RepoData *repo, gchar *buffer, gint len,
+                  gint zoom, gint tilex, gint tiley)
+{
+    gchar location[MAX_ZOOM + 2];
+    map_convert_coords_to_quadtree_string(tilex, tiley, zoom,
+                                          location, '\0', "0123");
+    return g_snprintf(buffer, len, repo->url, location);
+}
+
+static const RepoType repo_types[] = {
+    { "XYZ", xyz_get_url, },
+    { "XYZ_SIGNED", xyz_signed_get_url, },
+    { "XYZ_INV", xyz_inv_get_url, },
+    { "QUAD_QRST", quad_qrst_get_url, },
+    { "QUAD_ZERO", quad_zero_get_url, },
+    { NULL, }
+};
+
+static const RepoType *
+find_repo_type_by_name(const gchar *name)
+{
+    const RepoType *type;
+
+    g_return_val_if_fail(name != NULL, NULL);
+    for (type = repo_types; type->name != NULL; type++)
+        if (strcmp(name, type->name) == 0)
+            return type;
+
+    return NULL;
+}
+
 /**
  * Construct the URL that we should fetch, based on the current URI format.
  * This method works differently depending on if a "%s" string is present in
  * the URI format, since that would indicate a quadtree-based map coordinate
  * system.
  */
-static gchar*
-map_construct_url(RepoData *repo, gint zoom, gint tilex, gint tiley)
+static gint
+map_construct_url(gchar *buffer, gint len, RepoData *repo,
+                  gint zoom, gint tilex, gint tiley)
 {
-    gchar *retval;
-    vprintf("%s(%p, %d, %d, %d)\n", __PRETTY_FUNCTION__,
-            repo, zoom, tilex, tiley);
-    switch(repo->type)
-    {
-        case REPOTYPE_XYZ:
-            retval = g_strdup_printf(repo->url,
-                    tilex, tiley,  zoom - (MAX_ZOOM - 16));
-            break;
+    g_return_val_if_fail(repo->type != NULL, -1);
 
-        case REPOTYPE_XYZ_INV:
-            retval = g_strdup_printf(repo->url,
-                    MAX_ZOOM + 1 - zoom, tilex, tiley);
-            break;
-
-        case REPOTYPE_XYZ_SIGNED:
-            retval = g_strdup_printf(repo->url,
-                    tilex,
-                    (1 << (MAX_ZOOM - zoom)) - tiley - 1,
-                    zoom - (MAX_ZOOM - 17));
-            break;
-
-        case REPOTYPE_QUAD_QRST:
-        {
-            gchar location[MAX_ZOOM + 2];
-            map_convert_coords_to_quadtree_string(
-                    tilex, tiley, zoom, location, 't', "qrts");
-            retval = g_strdup_printf(repo->url, location);
-            break;
-        }
-
-        case REPOTYPE_QUAD_ZERO:
-        {
-            /* This is a zero-based quadtree URI. */
-            gchar location[MAX_ZOOM + 2];
-            map_convert_coords_to_quadtree_string(
-                    tilex, tiley, zoom, location, '\0', "0123");
-            retval = g_strdup_printf(repo->url, location);
-            break;
-        }
-
-        default:
-            retval = g_strdup(repo->url);
-            break;
-    }
-    vprintf("%s(): return \"%s\"\n", __PRETTY_FUNCTION__, retval);
-    return retval;
+    return repo->type->get_url(repo, buffer, len, zoom, tilex, tiley);
 }
 
 static gboolean
@@ -615,20 +643,21 @@ static void
 download_tile(MapTileSpec *tile, gchar **bytes, gint *size,
               GdkPixbuf **pixbuf, GError **error)
 {
-    gchar *src_url;
+    gchar src_url[256];
     GnomeVFSResult vfs_result;
     GdkPixbufLoader *loader = NULL;
+    gint ret;
 
     g_debug("%s (%s, %d, %d, %d)", G_STRFUNC,
             tile->repo->name, tile->zoom, tile->tilex, tile->tiley);
 
     /* First, construct the URL from which we will get the data. */
-    src_url = map_construct_url(tile->repo, tile->zoom,
-                                tile->tilex, tile->tiley);
+    ret = map_construct_url(src_url, sizeof(src_url), tile->repo,
+                            tile->zoom, tile->tilex, tile->tiley);
+    if (ret < 0) src_url[0] = 0; /* download will fail */
 
     /* Now, attempt to read the entire contents of the URL. */
     vfs_result = gnome_vfs_read_entire_file(src_url, size, bytes);
-    g_free(src_url);
 
     if (vfs_result != GNOME_VFS_OK || *bytes == NULL)
     {
@@ -2977,7 +3006,7 @@ mapman_dialog()
 
     mapman_update_state(NULL, &mapman_info);
 
-    if(_curr_repo->type != REPOTYPE_NONE)
+    if(_curr_repo->type != NULL)
     {
         gtk_widget_set_sensitive(mapman_info.rad_download, TRUE);
     }
@@ -3110,7 +3139,7 @@ create_default_repo()
     repo->layers = NULL;
     repo->layer_level = 0;
     repo->is_sqlite = TRUE;
-    set_repo_type(repo);
+    repo->type = find_repo_type_by_name(REPO_DEFAULT_TYPE);
 
     return repo;
 }
