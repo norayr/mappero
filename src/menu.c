@@ -46,7 +46,6 @@
 #include "dialog.h"
 #include "display.h"
 #include "gps.h"
-#include "gdk-pixbuf-rotate.h"
 #include "gpx.h"
 #include "maps.h"
 #include "menu.h"
@@ -699,6 +698,7 @@ menu_cb_view_rotate_auto(GtkMenuItem *item)
 static gboolean
 menu_cb_view_pan_up(GtkMenuItem *item)
 {
+#if 0 /* TODO: remove */
     gfloat panx_adj, pany_adj;
     printf("%s()\n", __PRETTY_FUNCTION__);
 
@@ -710,12 +710,14 @@ menu_cb_view_pan_up(GtkMenuItem *item)
                 pixel2unit((gint)(pany_adj + 0.5f)));
 
     vprintf("%s(): return TRUE\n", __PRETTY_FUNCTION__);
+#endif
     return TRUE;
 }
 
 static gboolean
 menu_cb_view_pan_down(GtkMenuItem *item)
 {
+#if 0 /* TODO: remove */
     gfloat panx_adj, pany_adj;
     printf("%s()\n", __PRETTY_FUNCTION__);
 
@@ -727,12 +729,14 @@ menu_cb_view_pan_down(GtkMenuItem *item)
                 pixel2unit((gint)(pany_adj + 0.5f)));
 
     vprintf("%s(): return TRUE\n", __PRETTY_FUNCTION__);
+#endif
     return TRUE;
 }
 
 static gboolean
 menu_cb_view_pan_left(GtkMenuItem *item)
 {
+#if 0 /* TODO: remove */
     gfloat panx_adj, pany_adj;
     printf("%s()\n", __PRETTY_FUNCTION__);
 
@@ -744,12 +748,14 @@ menu_cb_view_pan_left(GtkMenuItem *item)
                 pixel2unit((gint)(pany_adj + 0.5f)));
 
     vprintf("%s(): return TRUE\n", __PRETTY_FUNCTION__);
+#endif
     return TRUE;
 }
 
 static gboolean
 menu_cb_view_pan_right(GtkMenuItem *item)
 {
+#if 0 /* TODO: remove */
     gfloat panx_adj, pany_adj;
     printf("%s()\n", __PRETTY_FUNCTION__);
 
@@ -761,6 +767,7 @@ menu_cb_view_pan_right(GtkMenuItem *item)
                 pixel2unit((gint)(pany_adj + 0.5f)));
 
     vprintf("%s(): return TRUE\n", __PRETTY_FUNCTION__);
+#endif
     return TRUE;
 }
 

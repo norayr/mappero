@@ -45,7 +45,6 @@
 #include "defines.h"
 #include "dialog.h"
 #include "display.h"
-#include "gdk-pixbuf-rotate.h"
 #include "gpx.h"
 #include "main.h"
 #include "path.h"
@@ -999,9 +998,6 @@ track_insert_break(gboolean temporary)
 
     if(_track.tail->unity)
     {
-        gint x1, y1;
-        unit2screen(_track.tail->unitx, _track.tail->unity, x1, y1);
-
         MACRO_PATH_INCREMENT_TAIL(_track);
         *_track.tail = _point_null;
 

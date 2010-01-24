@@ -42,7 +42,6 @@ maemo_mapper_SOURCES = \
 	dbus-ifc.c \
 	dialog.c \
 	display.c \
-	gdk-pixbuf-rotate.c \
 	gps.c \
 	gpsbt.c \
 	gpx.c \

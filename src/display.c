@@ -45,7 +45,6 @@
 
 #include "dbus-ifc.h"
 #include "display.h"
-#include "gdk-pixbuf-rotate.h"
 #include "gps.h"
 #include "path.h"
 #include "poi.h"

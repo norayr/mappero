@@ -62,9 +62,6 @@ void map_set_zoom(gint new_zoom);
 
 gboolean thread_render_map(MapRenderTask *mrt);
 
-gboolean map_cb_configure(GtkWidget *widget, GdkEventConfigure *event);
-gboolean map_cb_expose(GtkWidget *widget, GdkEventExpose *event);
-
 gboolean latlon_dialog(gdouble lat, gdouble lon);
 
 gboolean display_open_file(GtkWindow *parent, gchar **bytes_out,

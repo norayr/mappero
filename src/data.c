@@ -85,8 +85,6 @@ gint _map_offset_devx;
 gint _map_offset_devy;
 
 gint _map_rotate_angle = 0;
-gfloat _map_rotate_matrix[4] = { 1.f, 0.f, 0.f, 1.f };
-gfloat _map_reverse_matrix[4] = { 1.f, 0.f, 0.f, 1.f };
 
 GtkWidget *_gps_widget = NULL;
 GtkWidget *_text_lat = NULL;

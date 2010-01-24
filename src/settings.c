@@ -50,7 +50,6 @@
 
 #include "gps.h"
 #include "display.h"
-#include "gdk-pixbuf-rotate.h"
 #include "maps.h"
 #include "marshal.h"
 #include "poi.h"
@@ -1908,13 +1907,6 @@ settings_init()
     /* Get last viewing angle.  Default is 0. */
     _map_rotate_angle = _next_map_rotate_angle = gconf_client_get_int(
             gconf_client, GCONF_KEY_CENTER_ANGLE, NULL);
-    gdk_pixbuf_rotate_matrix_fill_for_rotation(
-            _map_rotate_matrix,
-            deg2rad(-_map_rotate_angle));
-    gdk_pixbuf_rotate_matrix_fill_for_rotation(
-            _map_reverse_matrix,
-            deg2rad(_map_rotate_angle));
-
 
     /* Load the repositories. */
     {

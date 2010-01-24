@@ -51,7 +51,6 @@
 #include "defines.h"
 
 #include "display.h"
-#include "gdk-pixbuf-rotate.h"
 #include "gpx.h"
 #include "main.h"
 #include "poi.h"

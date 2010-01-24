@@ -47,7 +47,6 @@
 
 #include "cmenu.h"
 #include "display.h"
-#include "gdk-pixbuf-rotate.h"
 #include "menu.h"
 #include "path.h"
 #include "poi.h"
