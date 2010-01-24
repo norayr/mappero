@@ -162,8 +162,8 @@ cmenu_add_route(gint unitx, gint unity)
 
     printf("%s()\n", __PRETTY_FUNCTION__);
     MACRO_PATH_INCREMENT_TAIL(_route);
-    _route.tail->unitx = _cmenu_unitx;
-    _route.tail->unity = _cmenu_unity;
+    _route.tail->unit.x = _cmenu_unitx;
+    _route.tail->unit.y = _cmenu_unity;
     route_find_nearest_point();
     map_controller_refresh_paths(controller);
     vprintf("%s(): return\n", __PRETTY_FUNCTION__);
@@ -265,9 +265,9 @@ cmenu_cb_loc_set_gps(GtkMenuItem *item)
 {
     printf("%s()\n", __PRETTY_FUNCTION__);
 
-    _pos.unitx = _cmenu_unitx;
-    _pos.unity = _cmenu_unity;
-    unit2latlon(_pos.unitx, _pos.unity, _gps.lat, _gps.lon);
+    _pos.unit.x = _cmenu_unitx;
+    _pos.unit.y = _cmenu_unity;
+    unit2latlon(_pos.unit.x, _pos.unit.y, _gps.lat, _gps.lon);
 
     /* Move mark to new location. */
     map_refresh_mark(_center_mode > 0);
@@ -293,7 +293,7 @@ cmenu_cb_way_show_latlon(GtkMenuItem *item)
     printf("%s()\n", __PRETTY_FUNCTION__);
 
     if((way = find_nearest_waypoint(_cmenu_unitx, _cmenu_unity)))
-        cmenu_show_latlon(way->point->unitx, way->point->unity);
+        cmenu_show_latlon(way->point->unit.x, way->point->unit.y);
     else
     {
         MACRO_BANNER_SHOW_INFO(_window, _("There are no waypoints."));
@@ -330,7 +330,7 @@ cmenu_cb_way_clip_latlon(GtkMenuItem *item)
     printf("%s()\n", __PRETTY_FUNCTION__);
 
     if((way = find_nearest_waypoint(_cmenu_unitx, _cmenu_unity)))
-        cmenu_clip_latlon(way->point->unitx, way->point->unity);
+        cmenu_clip_latlon(way->point->unit.x, way->point->unit.y);
     else
     {
         MACRO_BANNER_SHOW_INFO(_window, _("There are no waypoints."));
@@ -365,7 +365,7 @@ cmenu_cb_way_route_to(GtkMenuItem *item)
     printf("%s()\n", __PRETTY_FUNCTION__);
 
     if((way = find_nearest_waypoint(_cmenu_unitx, _cmenu_unity)))
-        cmenu_route_to(way->point->unitx, way->point->unity);
+        cmenu_route_to(way->point->unit.x, way->point->unit.y);
     else
     {
         MACRO_BANNER_SHOW_INFO(_window, _("There are no waypoints."));
@@ -421,17 +421,17 @@ cmenu_way_delete(WayPoint *way)
 
         /* Find largest continuous segment around the waypoint, EXCLUDING
          * pdel_min and pdel_max. */
-        for(pdel_start = way->point - 1; pdel_start->unity
+        for(pdel_start = way->point - 1; pdel_start->unit.y
             && pdel_start > pdel_min; pdel_start--) { }
-        for(pdel_end = way->point + 1; pdel_end->unity
+        for(pdel_end = way->point + 1; pdel_end->unit.y
             && pdel_end < pdel_max; pdel_end++) { }
 
         /* If pdel_end is set to _route.tail, and if _route.tail is a
          * non-zero point, then delete _route.tail. */
-        if(pdel_end == _route.tail && pdel_end->unity)
+        if(pdel_end == _route.tail && pdel_end->unit.y)
             pdel_end++; /* delete _route.tail too */
         /* else, if *both* endpoints are zero points, delete one. */
-        else if(!pdel_start->unity && !pdel_end->unity)
+        else if(!pdel_start->unit.y && !pdel_end->unit.y)
             pdel_start--;
 
         /* Delete BETWEEN pdel_start and pdel_end, exclusive. */
@@ -482,7 +482,7 @@ cmenu_cb_way_add_poi(GtkMenuItem *item)
     printf("%s()\n", __PRETTY_FUNCTION__);
 
     if((way = find_nearest_waypoint(_cmenu_unitx, _cmenu_unity)))
-        poi_add_dialog(_window, way->point->unitx, way->point->unity);
+        poi_add_dialog(_window, way->point->unit.x, way->point->unit.y);
     else
     {
         MACRO_BANNER_SHOW_INFO(_window, _("There are no waypoints."));
@@ -746,7 +746,7 @@ void cmenu_init()
 }
 
 void
-map_menu_point_map(const Point *p)
+map_menu_point_map(const MapPoint *p)
 {
     GtkWidget *dialog, *button;
     MapController *controller;
@@ -771,8 +771,8 @@ map_menu_point_map(const Point *p)
     dlg = (MapDialog *)dialog;
 
     /* TODO: rewrite these handlers to use the Point */
-    _cmenu_unitx = p->unitx;
-    _cmenu_unity = p->unity;
+    _cmenu_unitx = p->x;
+    _cmenu_unity = p->y;
 
     button = map_dialog_create_button(dlg, _("Show Position"), SHOW_LATLON);
 
@@ -863,23 +863,23 @@ map_menu_point_waypoint(WayPoint *way)
     switch (response)
     {
     case SHOW_LATLON:
-        cmenu_show_latlon(way->point->unitx, way->point->unity); break;
+        cmenu_show_latlon(way->point->unit.x, way->point->unit.y); break;
     case SHOW_DESC:
         MACRO_BANNER_SHOW_INFO(_window, way->desc); break;
     case CLIP_LATLON:
-        cmenu_clip_latlon(way->point->unitx, way->point->unity); break;
+        cmenu_clip_latlon(way->point->unit.x, way->point->unit.y); break;
     case CLIP_DESC:
         gtk_clipboard_set_text(
                 gtk_clipboard_get(GDK_SELECTION_CLIPBOARD), way->desc, -1);
         break;
     case ROUTE_TO:
-        cmenu_route_to(way->point->unitx, way->point->unity); break;
+        cmenu_route_to(way->point->unit.x, way->point->unit.y); break;
     case DISTANCE_TO:
         route_show_distance_to(way->point); break;
     case DELETE:
         cmenu_way_delete(way); break;
     case ADD_POI:
-        poi_add_dialog(_window, way->point->unitx, way->point->unity); break;
+        poi_add_dialog(_window, way->point->unit.x, way->point->unit.y); break;
     }
 }
 
@@ -934,7 +934,7 @@ map_menu_point_poi(PoiInfo *poi)
 }
 
 static void
-map_menu_point_select(const Point *p, WayPoint *wp, GtkTreeModel *model)
+map_menu_point_select(const MapPoint *p, WayPoint *wp, GtkTreeModel *model)
 {
     GtkWidget *dialog, *button;
     MapController *controller;
@@ -979,13 +979,13 @@ map_menu_point_select(const Point *p, WayPoint *wp, GtkTreeModel *model)
 }
 
 void
-map_menu_point(const Point *p, MapArea *area)
+map_menu_point(const MapPoint *p, MapArea *area)
 {
     GtkTreeModel *model;
     WayPoint *way;
 
     /* check whether a waypoint is nearby */
-    way = find_nearest_waypoint(p->unitx, p->unity);
+    way = find_nearest_waypoint(p->x, p->y);
 
     /* check whether some POI is nearby */
     model = poi_get_model_for_area(area);

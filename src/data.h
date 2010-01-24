@@ -92,10 +92,10 @@ extern gboolean _is_first_time;
 /** The "zoom" level defines the resolution of a pixel, from 0 to MAX_ZOOM.
  * Each pixel in the current view is exactly (1 << _zoom) "units" wide. */
 extern gint _zoom; /* zoom level, from 0 to MAX_ZOOM. */
-extern Point _center; /* current center location, X. */
+extern MapPoint _center; /* current center location, X. */
 
 extern gint _next_zoom;
-extern Point _next_center;
+extern MapPoint _next_center;
 extern gint _next_map_rotate_angle;
 extern GdkPixbuf *_redraw_wait_icon;
 extern GdkRectangle _redraw_wait_bounds;

@@ -812,11 +812,11 @@ map_force_redraw()
 {
 }
 
-Point
+MapPoint
 map_calc_new_center(gint zoom)
 {
     MapController *controller;
-    Point new_center;
+    MapPoint new_center;
 
     /* TODO: remove this function */
     controller = map_controller_get_instance();
@@ -828,7 +828,7 @@ map_calc_new_center(gint zoom)
  * Center the view on the given unitx/unity.
  */
 void
-map_center_unit_full(Point new_center,
+map_center_unit_full(MapPoint new_center,
         gint zoom, gint rotate_angle)
 {
 }
@@ -847,14 +847,14 @@ map_rotate(gint rotate_angle)
 void
 map_pan(gint delta_unitx, gint delta_unity)
 {
-    Point new_center;
+    MapPoint new_center;
     MapController *controller = map_controller_get_instance();
 
     printf("%s(%d, %d)\n", __PRETTY_FUNCTION__, delta_unitx, delta_unity);
 
     map_controller_disable_auto_center(controller);
-    new_center.unitx = _center.unitx + delta_unitx;
-    new_center.unity = _center.unity + delta_unity;
+    new_center.x = _center.x + delta_unitx;
+    new_center.y = _center.y + delta_unity;
     map_center_unit_full(new_center, _next_zoom,
             _center_mode > 0 && _center_rotate
             ? _gps.heading : _next_map_rotate_angle);

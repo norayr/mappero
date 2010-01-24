@@ -2072,14 +2072,14 @@ poi_list_goto(GtkWidget *widget, PoiListInfo *pli)
     {
         MapController *controller = map_controller_get_instance();
         gdouble lat, lon;
-        Point unit;
+        MapPoint unit;
 
         gtk_tree_model_get(GTK_TREE_MODEL(store), &iter,
                 POI_LAT, &lat,
                 POI_LON, &lon,
                 -1);
 
-        latlon2unit(lat, lon, unit.unitx, unit.unity);
+        latlon2unit(lat, lon, unit.x, unit.y);
 
         map_controller_disable_auto_center(controller);
         map_controller_set_center(controller, unit, -1);
@@ -2817,11 +2817,11 @@ poi_download_dialog(gint unitx, gint unity)
             gdouble lat, lon;
 
             /* Use last non-zero route point. */
-            for(p = _route.tail; !p->unity; p--) { }
+            for(p = _route.tail; !p->unit.y; p--) { }
 
-            unitx = p->unitx;
-            unity = p->unity;
-            unit2latlon(p->unitx, p->unity, lat, lon);
+            unitx = p->unit.x;
+            unity = p->unit.y;
+            unit2latlon(p->unit.x, p->unit.y, lat, lon);
             g_ascii_formatd(strlat, 32, "%.06f", lat);
             g_ascii_formatd(strlon, 32, "%.06f", lon);
             snprintf(origin_buffer, sizeof(origin_buffer),
@@ -2830,12 +2830,12 @@ poi_download_dialog(gint unitx, gint unity)
         }
         else
         {
-            Point porig;
+            MapPoint porig;
             origin = gtk_entry_get_text(GTK_ENTRY(oti.txt_origin));
             if(*origin)
             {
                 porig = locate_address(dialog, origin);
-                if(!porig.unity)
+                if(!porig.y)
                     continue;
             }
         }
@@ -3118,11 +3118,11 @@ poi_browse_dialog(gint unitx, gint unity)
             gdouble lat, lon;
 
             /* Use last non-zero route point. */
-            for(p = _route.tail; !p->unity; p--) { }
+            for(p = _route.tail; !p->unit.y; p--) { }
 
-            unitx = p->unitx;
-            unity = p->unity;
-            unit2latlon(p->unitx, p->unity, lat, lon);
+            unitx = p->unit.x;
+            unity = p->unit.y;
+            unit2latlon(p->unit.x, p->unit.y, lat, lon);
             g_ascii_formatd(strlat, 32, "%.06f", lat);
             g_ascii_formatd(strlon, 32, "%.06f", lon);
             snprintf(buffer, sizeof(buffer), "%s, %s", strlat, strlon);
@@ -3130,10 +3130,10 @@ poi_browse_dialog(gint unitx, gint unity)
         }
         else
         {
-            Point porig;
+            MapPoint porig;
             origin = gtk_entry_get_text(GTK_ENTRY(oti.txt_origin));
             porig = locate_address(dialog, origin);
-            if(!porig.unity)
+            if(!porig.y)
                 continue;
         }
 
@@ -3229,7 +3229,7 @@ poi_browse_dialog(gint unitx, gint unity)
 void
 map_poi_render(MapArea *area, MapPoiRenderCb callback, gpointer user_data)
 {
-    Point p;
+    MapPoint p;
     gdouble lat1, lat2, lon1, lon2;
     gchar buffer[100];
     GdkPixbuf *pixbuf;
@@ -3255,7 +3255,7 @@ map_poi_render(MapArea *area, MapPoiRenderCb callback, gpointer user_data)
         gchar *poi_label = g_utf8_strdown(sqlite3_column_str(
                 _stmt_select_poi, 3), -1);
 
-        latlon2unit(lat1, lon1, p.unitx, p.unity);
+        latlon2unit(lat1, lon1, p.x, p.y);
 
         /* Try to get icon for specific POI first. */
         snprintf(buffer, sizeof(buffer), "%s/%s.jpg",

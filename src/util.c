@@ -132,10 +132,10 @@ deg_format(gdouble coor, gchar *scoor, gchar neg_char, gchar pos_char)
 
 /** Return the location (in units) of the given string address.  This function
   * makes a call to the internet, so it may take some time. */
-Point locate_address(GtkWidget *parent, const gchar *addr)
+MapPoint locate_address(GtkWidget *parent, const gchar *addr)
 {
     Path temp;
-    Point retval = _point_null;
+    MapPoint retval = _point_null.unit;
     GnomeVFSResult vfs_result;
     gint size;
     gchar *bytes = NULL;
@@ -154,7 +154,7 @@ Point locate_address(GtkWidget *parent, const gchar *addr)
         g_free(buffer);
         g_free(bytes);
         popup_error(parent, _("Failed to connect to GPX Directions server"));
-        return _point_null;
+        return retval;
     }
 
     g_free(buffer);
@@ -167,7 +167,7 @@ Point locate_address(GtkWidget *parent, const gchar *addr)
         popup_error(parent, _("Invalid address."));
     }
     /* Else, if GPS is enabled, replace the route, otherwise append it. */
-    else if(!gpx_path_parse(&temp, bytes, size, 0) || !temp.head[1].unity)
+    else if(!gpx_path_parse(&temp, bytes, size, 0) || !temp.head[1].unit.y)
     {
         popup_error(parent, _("Unknown error while locating address."));
     }
@@ -182,14 +182,14 @@ Point locate_address(GtkWidget *parent, const gchar *addr)
                     INT_MAX, 0, addr, -1);
         }
 
-        retval = temp.head[1];
+        retval = temp.head[1].unit;
     }
 
     MACRO_PATH_FREE(temp);
     g_free(bytes);
 
     vprintf("%s(): return (%d, %d)\n", __PRETTY_FUNCTION__,
-            retval.unitx, retval.unity);
+            retval.x, retval.y);
     return retval;
 }
 

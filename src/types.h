@@ -286,10 +286,16 @@ typedef enum
 } GpsRcvrType;
 
 /** A general definition of a point in the Maemo Mapper unit system. */
+typedef struct _MapPoint MapPoint;
+struct _MapPoint {
+    gint x;
+    gint y;
+};
+
+/* definition of a track/route point */
 typedef struct _Point Point;
 struct _Point {
-    gint unitx;
-    gint unity;
+    MapPoint unit;
     time_t time;
     gint altitude;
 };

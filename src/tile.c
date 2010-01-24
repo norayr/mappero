@@ -102,7 +102,7 @@ map_tile_download(MapTile *tile)
     MapController *controller;
     MapTile **p_tile;
     gint priority, zoom;
-    Point center;
+    MapPoint center;
 
     /* The priority is lower (that is, higher number) when we walk away
      * from the center of the map */
@@ -110,8 +110,8 @@ map_tile_download(MapTile *tile)
     map_controller_get_center(controller, &center);
     zoom = tile->ts.zoom;
     priority =
-        abs(tile->ts.tilex - unit2ztile(center.unitx, zoom)) +
-        abs(tile->ts.tiley - unit2ztile(center.unity, zoom));
+        abs(tile->ts.tilex - unit2ztile(center.x, zoom)) +
+        abs(tile->ts.tiley - unit2ztile(center.y, zoom));
 
     /* weak pointer trick to prevent crashes if the callback is invoked
      * after the tile is destroyed. */

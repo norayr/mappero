@@ -291,8 +291,8 @@ gpx_path_start_element(PathSaxData *data,
                 {
                     MACRO_PATH_INCREMENT_TAIL(data->path);
                     latlon2unit(lat, lon,
-                            data->path.tail->unitx,
-                            data->path.tail->unity);
+                            data->path.tail->unit.x,
+                            data->path.tail->unit.y);
                     data->path.tail->time = 0;
                     data->path.tail->altitude = 0;
                     data->sax_data.state = INSIDE_PATH_POINT;
@@ -549,7 +549,7 @@ gpx_path_parse(Path *to_replace, gchar *buffer, gint size, gint policy_old)
         if(policy_old > 0)
         {
             /* Append to current path. Make sure last path point is zero. */
-            if(to_replace->tail->unity != 0)
+            if(to_replace->tail->unit.y != 0)
             {
                 MACRO_PATH_INCREMENT_TAIL((*to_replace));
                 *to_replace->tail = _point_null;
@@ -566,7 +566,7 @@ gpx_path_parse(Path *to_replace, gchar *buffer, gint size, gint policy_old)
 
         /* Find src_first non-zero point. */
         for(src_first = src->head - 1; src_first++ != src->tail; )
-            if(src_first->unity)
+            if(src_first->unit.y)
                 break;
 
         /* Append route points from src to dest. */
@@ -639,7 +639,7 @@ gpx_path_write(Path *path, GnomeVFSHandle *handle)
     /* Find first non-zero point. */
     for(curr = path->head - 1, wcurr = path->whead; curr++ != path->tail; )
     {
-        if(curr->unity)
+        if(curr->unit.y)
             break;
         else if(wcurr <= path->wtail && curr == wcurr->point)
             wcurr++;
@@ -657,7 +657,7 @@ gpx_path_write(Path *path, GnomeVFSHandle *handle)
     for(curr--; curr++ != path->tail; )
     {
         gdouble lat, lon;
-        if(curr->unity)
+        if(curr->unit.y)
         {
             gchar buffer[80];
             gboolean first_sub = TRUE;
@@ -668,7 +668,7 @@ gpx_path_write(Path *path, GnomeVFSHandle *handle)
                              "    <trkseg>\n");
                 trkseg_break = FALSE;
             }
-            unit2latlon(curr->unitx, curr->unity, lat, lon);
+            unit2latlon(curr->unit.x, curr->unit.y, lat, lon);
             gpx_write_string(handle, "      <trkpt lat=\"");
             g_ascii_formatd(buffer, sizeof(buffer), "%.06f", lat);
             gpx_write_string(handle, buffer);

@@ -322,7 +322,7 @@ settings_save()
         gint zoom;
 
         map_controller_get_center(controller, &_center);
-        unit2latlon(_center.unitx, _center.unity, center_lat, center_lon);
+        unit2latlon(_center.x, _center.y, center_lat, center_lon);
 
         /* Save last center latitude. */
         gconf_client_set_float(gconf_client,
@@ -1900,7 +1900,7 @@ settings_init()
         else
             center_lon = _gps.lon;
 
-        latlon2unit(center_lat, center_lon, _center.unitx, _center.unity);
+        latlon2unit(center_lat, center_lon, _center.x, _center.y);
         _next_center = _center;
     }
 

@@ -158,7 +158,7 @@ on_gps_changed(LocationGPSDevice *device, MapController *controller)
     _gps.vdop = device->fix->epv;
 
     /* Translate data into integers. */
-    latlon2unit(_gps.lat, _gps.lon, _pos.unitx, _pos.unity);
+    latlon2unit(_gps.lat, _gps.lon, _pos.unit.x, _pos.unit.y);
 
     /* We consider a fix only if the geocoordinates are given */
     if (device->status >= LOCATION_GPS_DEVICE_STATUS_FIX)

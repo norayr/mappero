@@ -73,7 +73,7 @@ void map_controller_action_track(MapController *self);
 void map_controller_action_view(MapController *self);
 void map_controller_action_go_to(MapController *self);
 
-void map_controller_activate_menu_point(MapController *self, const Point *p);
+void map_controller_activate_menu_point(MapController *self, const MapPoint *p);
 
 void map_controller_set_gps_enabled(MapController *self, gboolean enabled);
 gboolean map_controller_get_gps_enabled(MapController *self);
@@ -109,13 +109,13 @@ gboolean map_controller_get_show_velocity(MapController *self);
 void map_controller_set_show_zoom(MapController *self, gboolean show);
 gboolean map_controller_get_show_zoom(MapController *self);
 
-void map_controller_set_center(MapController *self, Point center, gint zoom);
-void map_controller_get_center(MapController *self, Point *center);
+void map_controller_set_center(MapController *self, MapPoint center, gint zoom);
+void map_controller_get_center(MapController *self, MapPoint *center);
 void map_controller_set_rotation(MapController *self, gint angle);
 void map_controller_rotate(MapController *self, gint angle);
 void map_controller_set_zoom(MapController *self, gint zoom);
 gint map_controller_get_zoom(MapController *self);
-void map_controller_calc_best_center(MapController *self, Point *new_center);
+void map_controller_calc_best_center(MapController *self, MapPoint *new_center);
 
 void map_controller_refresh_paths(MapController *controller);
 

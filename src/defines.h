@@ -200,8 +200,8 @@
 }
 
 #define DISTANCE_SQUARED(a, b) \
-   ((guint64)((((gint64)(b).unitx)-(a).unitx)*(((gint64)(b).unitx)-(a).unitx))\
-  + (guint64)((((gint64)(b).unity)-(a).unity)*(((gint64)(b).unity)-(a).unity)))
+   ((guint64)((((gint64)(b).x)-(a).x)*(((gint64)(b).x)-(a).x))\
+  + (guint64)((((gint64)(b).y)-(a).y)*(((gint64)(b).y)-(a).y)))
 
 #define MACRO_QUEUE_DRAW_AREA()
 

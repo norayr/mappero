@@ -96,8 +96,8 @@ GtkWidget *_text_time = NULL;
 GtkWidget *_heading_panel = NULL;
 
 /** GPS data. */
-Point _pos = { 0, 0, 0, INT_MIN};
-const Point _point_null = { 0, 0, 0, 0};
+Point _pos = { { 0, 0 }, 0, INT_MIN};
+const Point _point_null = { { 0, 0 }, 0, 0};
 
 GpsData _gps;
 GpsSatelliteData _gps_sat[MAX_SATELLITES];
@@ -111,10 +111,10 @@ gboolean _is_first_time = FALSE;
 /** The "zoom" level defines the resolution of a pixel, from 0 to MAX_ZOOM.
  * Each pixel in the current view is exactly (1 << _zoom) "units" wide. */
 gint _zoom = 3; /* zoom level, from 0 to MAX_ZOOM. */
-Point _center = {-1, -1}; /* current center location, X. */
+MapPoint _center = {-1, -1}; /* current center location, X. */
 
 gint _next_zoom = 3;
-Point _next_center = {-1, -1};
+MapPoint _next_center = {-1, -1};
 gint _next_map_rotate_angle = 0;
 GdkPixbuf *_redraw_wait_icon = NULL;
 GdkRectangle _redraw_wait_bounds = { 0, 0, 0, 0};

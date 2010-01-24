@@ -142,8 +142,8 @@ read_path_from_db(Path *path, sqlite3_stmt *select_stmt)
         const gchar *desc;
 
         MACRO_PATH_INCREMENT_TAIL(*path);
-        path->tail->unitx = sqlite3_column_int(select_stmt, 0);
-        path->tail->unity = sqlite3_column_int(select_stmt, 1);
+        path->tail->unit.x = sqlite3_column_int(select_stmt, 0);
+        path->tail->unit.y = sqlite3_column_int(select_stmt, 1);
         path->tail->time = sqlite3_column_int(select_stmt, 2);
         path->tail->altitude = sqlite3_column_int(select_stmt, 3);
 
@@ -158,7 +158,7 @@ read_path_from_db(Path *path, sqlite3_stmt *select_stmt)
     sqlite3_reset(select_stmt);
 
     /* If the last point isn't null, then add another null point. */
-    if(path->tail->unity)
+    if(path->tail->unit.y)
     {
         MACRO_PATH_INCREMENT_TAIL(*path);
         *path->tail = _point_null;
@@ -208,12 +208,12 @@ write_path_to_db(Path *path,
             success && ++curr <= path->tail; ++num)
     {
         /* If this is the last point, and it is null, don't write it. */
-        if(curr == path->tail && !curr->unity)
+        if(curr == path->tail && !curr->unit.y)
             break;
 
         /* Insert the path point. */
-        if(SQLITE_OK != sqlite3_bind_int(insert_path_stmt, 1, curr->unitx)
-        || SQLITE_OK != sqlite3_bind_int(insert_path_stmt, 2, curr->unity)
+        if(SQLITE_OK != sqlite3_bind_int(insert_path_stmt, 1, curr->unit.x)
+        || SQLITE_OK != sqlite3_bind_int(insert_path_stmt, 2, curr->unit.y)
         || SQLITE_OK != sqlite3_bind_int(insert_path_stmt, 3, curr->time)
         || SQLITE_OK != sqlite3_bind_int(insert_path_stmt, 4, curr->altitude)
         || SQLITE_DONE != sqlite3_step(insert_path_stmt))
@@ -331,16 +331,16 @@ route_update_nears(gboolean quick)
         /* First, set near_dist_squared with the new distance from
          * _near_point. */
         near = _near_point;
-        near_dist_squared = DISTANCE_SQUARED(_pos, *near);
+        near_dist_squared = DISTANCE_SQUARED(_pos.unit, near->unit);
 
         /* Now, search _route for a closer point.  If quick is TRUE, then we'll
          * only search forward, only as long as we keep finding closer points.
          */
         for(curr = _near_point; curr++ != _route.tail; )
         {
-            if(curr->unity)
+            if(curr->unit.y)
             {
-                gint64 dist_squared = DISTANCE_SQUARED(_pos, *curr);
+                gint64 dist_squared = DISTANCE_SQUARED(_pos.unit, curr->unit);
                 if(dist_squared <= near_dist_squared)
                 {
                     near = curr;
@@ -367,8 +367,9 @@ route_update_nears(gboolean quick)
              * there is no next waypoint, so we do not skip it in that case. */
                 || (wcurr->point == near && quick
                     && (_next_wpt
-                     && (DISTANCE_SQUARED(_pos, *near) > _next_way_dist_squared
-                      && DISTANCE_SQUARED(_pos, *_next_wpt)
+                     && (DISTANCE_SQUARED(_pos.unit, near->unit) >
+                                                     _next_way_dist_squared &&
+                         DISTANCE_SQUARED(_pos.unit, _next_wpt->unit)
                                                    < _next_wpt_dist_squared))))
             {
                 wnext = wcurr + 1;
@@ -380,8 +381,9 @@ route_update_nears(gboolean quick)
         if(wnext == _route.wtail && (wnext->point < near
                 || (wnext->point == near && quick
                     && (_next_wpt
-                     && (DISTANCE_SQUARED(_pos, *near) > _next_way_dist_squared
-                      &&DISTANCE_SQUARED(_pos, *_next_wpt)
+                     && (DISTANCE_SQUARED(_pos.unit, near->unit) >
+                                                     _next_way_dist_squared &&
+                         DISTANCE_SQUARED(_pos.unit, _next_wpt->unit)
                                                  < _next_wpt_dist_squared)))))
         {
             _next_way = NULL;
@@ -402,7 +404,7 @@ route_update_nears(gboolean quick)
                     _next_wpt = NULL;
                 else
                 {
-                    while(!(++_next_wpt)->unity)
+                    while(!(++_next_wpt)->unit.y)
                     {
                         if(_next_wpt == _route.tail)
                         {
@@ -413,9 +415,11 @@ route_update_nears(gboolean quick)
                 }
                 ret = TRUE;
             }
-            _next_way_dist_squared = DISTANCE_SQUARED(_pos, *wnext->point);
+            _next_way_dist_squared =
+                DISTANCE_SQUARED(_pos.unit, wnext->point->unit);
             if(_next_wpt)
-                _next_wpt_dist_squared = DISTANCE_SQUARED(_pos, *_next_wpt);
+                _next_wpt_dist_squared =
+                    DISTANCE_SQUARED(_pos.unit, _next_wpt->unit);
         }
     }
 
@@ -434,7 +438,7 @@ route_find_nearest_point()
 
     /* Initialize _near_point to first non-zero point. */
     _near_point = _route.head;
-    while(!_near_point->unity && _near_point != _route.tail)
+    while(!_near_point->unit.y && _near_point != _route.tail)
         _near_point++;
 
     /* Initialize _next_way. */
@@ -479,16 +483,16 @@ route_show_distance_to(Point *point)
         return FALSE;
     }
 
-    unit2latlon(_pos.unitx, _pos.unity, lat1, lon1);
+    unit2latlon(_pos.unit.x, _pos.unit.y, lat1, lon1);
     if(point > _near_point)
     {
         Point *curr;
         /* Skip _near_point in case we have already passed it. */
         for(curr = _near_point + 1; curr <= point; ++curr)
         {
-            if(curr->unity)
+            if(curr->unit.y)
             {
-                unit2latlon(curr->unitx, curr->unity, lat2, lon2);
+                unit2latlon(curr->unit.x, curr->unit.y, lat2, lon2);
                 sum += calculate_distance(lat1, lon1, lat2, lon2);
                 lat1 = lat2;
                 lon1 = lon2;
@@ -501,9 +505,9 @@ route_show_distance_to(Point *point)
         /* Skip _near_point in case we have already passed it. */
         for(curr = _near_point - 1; curr >= point; --curr)
         {
-            if(curr->unity)
+            if(curr->unit.y)
             {
-                unit2latlon(curr->unitx, curr->unity, lat2, lon2);
+                unit2latlon(curr->unit.x, curr->unit.y, lat2, lon2);
                 sum += calculate_distance(lat1, lon1, lat2, lon2);
                 lat1 = lat2;
                 lon1 = lon2;
@@ -513,7 +517,7 @@ route_show_distance_to(Point *point)
     else
     {
         /* Waypoint _is_ the nearest point. */
-        unit2latlon(_near_point->unitx, _near_point->unity, lat2, lon2);
+        unit2latlon(_near_point->unit.x, _near_point->unit.y, lat2, lon2);
         sum += calculate_distance(lat1, lon1, lat2, lon2);
     }
 
@@ -546,7 +550,7 @@ route_show_distance_to_last()
     {
         /* Find last non-zero point. */
         Point *p;
-        for(p = _route.tail; !p->unity; p--) { }
+        for(p = _route.tail; !p->unit.y; p--) { }
         route_show_distance_to(p);
     }
     else
@@ -563,14 +567,14 @@ track_show_distance_from(Point *point)
     gdouble lat1, lon1, lat2, lon2;
     gdouble sum = 0.0;
     Point *curr;
-    unit2latlon(_pos.unitx, _pos.unity, lat1, lon1);
+    unit2latlon(_pos.unit.x, _pos.unit.y, lat1, lon1);
 
     /* Skip _track.tail because that should be _pos. */
     for(curr = _track.tail; curr > point; --curr)
     {
-        if(curr->unity)
+        if(curr->unit.y)
         {
-            unit2latlon(curr->unitx, curr->unity, lat2, lon2);
+            unit2latlon(curr->unit.x, curr->unit.y, lat2, lon2);
             sum += calculate_distance(lat1, lon1, lat2, lon2);
             lat1 = lat2;
             lon1 = lon2;
@@ -592,7 +596,7 @@ track_show_distance_from_last()
     {
         Point *point;
         /* Find last zero point. */
-        for(point = _track.tail; point->unity; point--) { }
+        for(point = _track.tail; point->unit.y; point--) { }
         track_show_distance_from(point);
     }
     else
@@ -743,7 +747,7 @@ track_add(time_t time, gboolean newly_fixed)
     gint announce_thres_unsquared;
     gboolean ret = FALSE;
     printf("%s(%d, %d, %d, %d)\n", __PRETTY_FUNCTION__,
-            (guint)time, newly_fixed, _pos.unitx, _pos.unity);
+            (guint)time, newly_fixed, _pos.unit.x, _pos.unit.y);
 
     gboolean moving = FALSE;
     gboolean approaching_waypoint = FALSE;
@@ -751,9 +755,9 @@ track_add(time_t time, gboolean newly_fixed)
 
     announce_thres_unsquared = (20+_gps.speed) * _announce_notice_ratio*32;
 
-    if(!_track.tail->unity
-            || ((xdiff = _pos.unitx - _track.tail->unitx), /* comma op */
-                (ydiff = _pos.unity - _track.tail->unity), /* comma op */
+    if(!_track.tail->unit.y
+            || ((xdiff = _pos.unit.x - _track.tail->unit.x), /* comma op */
+                (ydiff = _pos.unit.y - _track.tail->unit.y), /* comma op */
                 /* Check if xdiff or ydiff are huge. */
                 ((abs(xdiff) >> 12) || (abs(ydiff) >> 12)
                 /* Okay, let's see if we've moved enough to justify adding
@@ -783,7 +787,7 @@ track_add(time_t time, gboolean newly_fixed)
         {
             MapScreen *screen = map_controller_get_screen(controller);
 
-            map_screen_track_append(screen, _pos);
+            map_screen_track_append(screen, &_pos);
             MACRO_PATH_INCREMENT_TAIL(_track);
             *_track.tail = _pos;
         }
@@ -796,49 +800,49 @@ track_add(time_t time, gboolean newly_fixed)
             gint64 route_dist_squared_2 = INT64_MAX;
             gfloat slope;
 
-            route_x1 = _near_point->unitx;
-            route_y1 = _near_point->unity;
+            route_x1 = _near_point->unit.x;
+            route_y1 = _near_point->unit.y;
 
             /* Try previous point first. */
-            if(_near_point != _route.head && _near_point[-1].unity)
+            if(_near_point != _route.head && _near_point[-1].unit.y)
             {
-                route_x2 = _near_point[-1].unitx;
-                route_y2 = _near_point[-1].unity;
+                route_x2 = _near_point[-1].unit.x;
+                route_y2 = _near_point[-1].unit.y;
                 slope = (gfloat)(route_y2 - route_y1)
                     / (gfloat)(route_x2 - route_x1);
 
                 if(route_x1 == route_x2)
                 {
                     /* Vertical line special case. */
-                    route_dist_squared_1 = (_pos.unitx - route_x1)
-                        * (_pos.unitx - route_x1);
+                    route_dist_squared_1 = (_pos.unit.x - route_x1)
+                        * (_pos.unit.x - route_x1);
                 }
                 else
                 {
-                    route_dist_squared_1 = abs((slope * _pos.unitx)
-                        - _pos.unity + (route_y1 - (slope * route_x1)));
+                    route_dist_squared_1 = abs((slope * _pos.unit.x)
+                        - _pos.unit.y + (route_y1 - (slope * route_x1)));
                     route_dist_squared_1 =
                         route_dist_squared_1 * route_dist_squared_1
                         / ((slope * slope) + 1);
                 }
             }
-            if(_near_point != _route.tail && _near_point[1].unity)
+            if(_near_point != _route.tail && _near_point[1].unit.y)
             {
-                route_x2 = _near_point[1].unitx;
-                route_y2 = _near_point[1].unity;
+                route_x2 = _near_point[1].unit.x;
+                route_y2 = _near_point[1].unit.y;
                 slope = (gfloat)(route_y2 - route_y1)
                     / (gfloat)(route_x2 - route_x1);
 
                 if(route_x1 == route_x2)
                 {
                     /* Vertical line special case. */
-                    route_dist_squared_2 = (_pos.unitx - route_x1)
-                        * (_pos.unitx - route_x1);
+                    route_dist_squared_2 = (_pos.unit.x - route_x1)
+                        * (_pos.unit.x - route_x1);
                 }
                 else
                 {
-                    route_dist_squared_2 = abs((slope * _pos.unitx)
-                        - _pos.unity + (route_y1 - (slope * route_x1)));
+                    route_dist_squared_2 = abs((slope * _pos.unit.x)
+                        - _pos.unit.y + (route_y1 - (slope * route_x1)));
                     route_dist_squared_2 =
                         route_dist_squared_2 * route_dist_squared_2
                         / ((slope * slope) + 1);
@@ -924,7 +928,7 @@ track_add(time_t time, gboolean newly_fixed)
                 _initial_distance_from_waypoint
                     = sqrtf(_next_way_dist_squared);
                 _initial_distance_waypoint = _next_way;
-                if(_next_wpt && _next_wpt->unity != 0)
+                if(_next_wpt && _next_wpt->unit.y != 0)
                 {
                     /* Create a banner for us the show progress. */
                     _waypoint_banner = hildon_banner_show_progress(
@@ -996,7 +1000,7 @@ track_insert_break(gboolean temporary)
 {
     printf("%s()\n", __PRETTY_FUNCTION__);
 
-    if(_track.tail->unity)
+    if(_track.tail->unit.y)
     {
         MACRO_PATH_INCREMENT_TAIL(_track);
         *_track.tail = _point_null;
@@ -1043,18 +1047,18 @@ find_nearest_waypoint(gint unitx, gint unity)
     WayPoint *wcurr;
     WayPoint *wnear;
     gint64 nearest_squared;
-    Point pos = { unitx, unity, 0, INT_MIN };
+    MapPoint pos = { unitx, unity };
     printf("%s()\n", __PRETTY_FUNCTION__);
 
     wcurr = wnear = _route.whead;
     if(wcurr && wcurr <= _route.wtail)
     {
-        nearest_squared = DISTANCE_SQUARED(pos, *(wcurr->point));
+        nearest_squared = DISTANCE_SQUARED(pos, wcurr->point->unit);
 
         wnear = _route.whead;
         while(++wcurr <=  _route.wtail)
         {
-            gint64 test_squared = DISTANCE_SQUARED(pos, *(wcurr->point));
+            gint64 test_squared = DISTANCE_SQUARED(pos, wcurr->point->unit);
             if(test_squared < nearest_squared)
             {
                 wnear = wcurr;
@@ -1064,8 +1068,8 @@ find_nearest_waypoint(gint unitx, gint unity)
 
         /* Only use the waypoint if it is within a 6*_draw_width square drawn
          * around the position. This is consistent with select_poi(). */
-        if(abs(unitx - wnear->point->unitx) < pixel2unit(3 * _draw_width)
-            && abs(unity - wnear->point->unity) < pixel2unit(3 * _draw_width))
+        if(abs(unitx - wnear->point->unit.x) < pixel2unit(3 * _draw_width)
+            && abs(unity - wnear->point->unit.y) < pixel2unit(3 * _draw_width))
             return wnear;
     }
 
@@ -1193,7 +1197,7 @@ route_download(gchar *to)
     {
         rdi.origin_row_other = row++;
         rdi.origin_row_route = -1;
-        active_origin_row = (_pos.unitx != 0 && _pos.unity != 0) ? rdi.origin_row_gps : rdi.origin_row_other;
+        active_origin_row = (_pos.unit.x != 0 && _pos.unit.y != 0) ? rdi.origin_row_gps : rdi.origin_row_other;
     }
     hildon_touch_selector_append_text(origin_selector, _("Other..."));
     hildon_touch_selector_set_active(origin_selector, 0, active_origin_row);
@@ -1296,9 +1300,9 @@ route_download(gchar *to)
             gdouble lat, lon;
 
             /* Use last non-zero route point. */
-            for(p = _route.tail; !p->unity; p--) { }
+            for(p = _route.tail; !p->unit.y; p--) { }
 
-            unit2latlon(p->unitx, p->unity, lat, lon);
+            unit2latlon(p->unit.x, p->unit.y, lat, lon);
             g_ascii_formatd(strlat, 32, "%.06f", lat);
             g_ascii_formatd(strlon, 32, "%.06f", lon);
             snprintf(buffer, sizeof(buffer), "%s, %s", strlat, strlon);
@@ -1502,8 +1506,8 @@ route_add_way_dialog(gint unitx, gint unity)
         {
             /* There's a description.  Add a waypoint. */
             MACRO_PATH_INCREMENT_TAIL(_route);
-            _route.tail->unitx = unitx;
-            _route.tail->unity = unity;
+            _route.tail->unit.x = unitx;
+            _route.tail->unit.y = unity;
             _route.tail->time = 0;
             _route.tail->altitude = 0;
 
@@ -1526,15 +1530,15 @@ route_add_way_dialog(gint unitx, gint unity)
             {
                 /* There's no description.  Add a break by adding a (0, 0)
                  * point (if necessary), and then the ordinary route point. */
-                if(_route.tail->unity)
+                if(_route.tail->unit.y)
                 {
                     MACRO_PATH_INCREMENT_TAIL(_route);
                     *_route.tail = _point_null;
                 }
 
                 MACRO_PATH_INCREMENT_TAIL(_route);
-                _route.tail->unitx = unitx;
-                _route.tail->unity = unity;
+                _route.tail->unit.x = unitx;
+                _route.tail->unit.y = unity;
                 _route.tail->time = 0;
                 _route.tail->altitude = 0;
 
@@ -1687,7 +1691,7 @@ path_destroy()
     printf("%s()\n", __PRETTY_FUNCTION__);
 
     /* Save paths. */
-    if(_track.tail->unity)
+    if(_track.tail->unit.y)
         track_insert_break(FALSE);
     path_update_track_in_db();
     path_save_route_to_db();

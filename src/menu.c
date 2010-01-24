@@ -301,7 +301,7 @@ menu_cb_track_insert_mark(GtkMenuItem *item)
         gtk_widget_set_size_request(GTK_WIDGET(txt_scroll), 400, 60);
     }
 
-    unit2latlon(_pos.unitx, _pos.unity, lat, lon);
+    unit2latlon(_pos.unit.x, _pos.unit.y, lat, lon);
     
     format_lat_lon(lat, lon, tmp1, tmp2);
     //lat_format(lat, tmp1);
@@ -438,7 +438,7 @@ menu_cb_poi_import(GtkMenuItem *item)
 {
     printf("%s()\n", __PRETTY_FUNCTION__);
 
-    if(poi_import_dialog(_center.unitx, _center.unity))
+    if(poi_import_dialog(_center.x, _center.y))
         map_force_redraw();
 
     vprintf("%s(): return TRUE\n", __PRETTY_FUNCTION__);
@@ -892,7 +892,7 @@ menu_cb_view_goto_latlon(GtkMenuItem *item)
         gchar buffer1[32];
         gchar buffer2[32];
         gdouble lat, lon;
-        unit2latlon(_center.unitx, _center.unity, lat, lon);
+        unit2latlon(_center.x, _center.y, lat, lon);
         //lat_format(lat, buffer1);
         //lon_format(lon, buffer2);
         format_lat_lon(lat, lon, buffer1, buffer2);
@@ -907,7 +907,7 @@ menu_cb_view_goto_latlon(GtkMenuItem *item)
         const gchar *text;
         gchar *error_check;
         gdouble lat, lon;
-        Point sel_unit;
+        MapPoint sel_unit;
         MapController *controller = map_controller_get_instance();
 
         text = gtk_entry_get_text(GTK_ENTRY(txt_lat));
@@ -924,7 +924,7 @@ menu_cb_view_goto_latlon(GtkMenuItem *item)
             continue;
         }
 
-        latlon2unit(lat, lon, sel_unit.unitx, sel_unit.unity);
+        latlon2unit(lat, lon, sel_unit.x, sel_unit.y);
         map_controller_disable_auto_center(controller);
         map_controller_set_center(controller, sel_unit, -1);
         break;
@@ -977,9 +977,9 @@ menu_cb_view_goto_address(GtkMenuItem *item)
 
     while(GTK_RESPONSE_ACCEPT == gtk_dialog_run(GTK_DIALOG(dialog)))
     {
-        Point origin = locate_address(dialog,
+        MapPoint origin = locate_address(dialog,
                 gtk_entry_get_text(GTK_ENTRY(txt_addr)));
-        if(origin.unity)
+        if(origin.y)
         {
             MapController *controller = map_controller_get_instance();
 
@@ -1005,7 +1005,7 @@ menu_cb_view_goto_gps(GtkMenuItem *item)
     printf("%s()\n", __PRETTY_FUNCTION__);
 
     map_controller_disable_auto_center(controller);
-    map_controller_set_center(controller, _pos, -1);
+    map_controller_set_center(controller, _pos.unit, -1);
 
     vprintf("%s(): return TRUE\n", __PRETTY_FUNCTION__);
     return TRUE;
@@ -1021,10 +1021,10 @@ menu_cb_view_goto_nextway(GtkMenuItem *item)
 
     next_way = path_get_next_way();
 
-    if(next_way && next_way->point->unity)
+    if(next_way && next_way->point->unit.y)
     {
         map_controller_disable_auto_center(controller);
-        map_controller_set_center(controller, *next_way->point, -1);
+        map_controller_set_center(controller, next_way->point->unit, -1);
     }
     else
     {
@@ -1045,13 +1045,13 @@ menu_cb_view_goto_nearpoi(GtkMenuItem *item)
         PoiInfo poi;
         gchar *banner;
 
-        if((_center_mode > 0 ? get_nearest_poi(_pos.unitx, _pos.unity, &poi)
-                    : get_nearest_poi(_center.unitx, _center.unity, &poi) ))
+        if((_center_mode > 0 ? get_nearest_poi(_pos.unit.x, _pos.unit.y, &poi)
+                    : get_nearest_poi(_center.x, _center.y, &poi) ))
         {
             /* Auto-Center is enabled - use the GPS position. */
-            Point unit;
+            MapPoint unit;
             MapController *controller = map_controller_get_instance();
-            latlon2unit(poi.lat, poi.lon, unit.unitx, unit.unity);
+            latlon2unit(poi.lat, poi.lon, unit.x, unit.y);
             banner = g_strdup_printf("%s (%s)", poi.label, poi.clabel);
             MACRO_BANNER_SHOW_INFO(_window, banner);
             g_free(banner);

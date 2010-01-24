@@ -73,7 +73,7 @@ struct _ViewPositionChangedArgs
     gdouble new_viewing_angle; /* i.e. rotation */
 };
 void dbus_ifc_fire_view_position_changed(
-        Point new_center, gint new_zoom, gdouble new_viewing_angle);
+        MapPoint new_center, gint new_zoom, gdouble new_viewing_angle);
 
 /**
  * Occurs whenever the dimensions (width and height) of the map change.  The

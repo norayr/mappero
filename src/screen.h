@@ -78,14 +78,14 @@ void map_screen_action_point(MapScreen *screen);
 void map_screen_show_pois(MapScreen *self, gboolean show);
 void map_screen_clear_pois(MapScreen *self);
 
-void map_screen_get_tap_area_from_units(MapScreen *self, const Point *p,
+void map_screen_get_tap_area_from_units(MapScreen *self, const MapPoint *p,
                                         MapArea *area);
 
 void map_screen_redraw_overlays(MapScreen *self);
 void map_screen_refresh_tiles(MapScreen *self);
 void map_screen_refresh_pois(MapScreen *self, MapArea *poi_area);
 
-void map_screen_track_append(MapScreen *self, Point p);
+void map_screen_track_append(MapScreen *self, const Point *p);
 
 G_END_DECLS
 #endif /* MAP_SCREEN_H */

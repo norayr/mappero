@@ -2396,8 +2396,8 @@ mapman_by_area(gdouble start_lat, gdouble start_lon,
                                     || (rd->layer_enabled && MAPDB_EXISTS(rd)))
                                 mapdb_initiate_update(rd, z, tilex, tiley,
                                   update_type, download_batch_id,
-                                  (abs(tilex - unit2tile(_next_center.unitx))
-                                   +abs(tiley - unit2tile(_next_center.unity))),
+                                  (abs(tilex - unit2tile(_next_center.x))
+                                   +abs(tiley - unit2tile(_next_center.y))),
                                   NULL);
                             rd = rd->layers;
                         }
@@ -2435,10 +2435,10 @@ mapman_by_route(MapmanInfo *mapman_info, MapUpdateType update_type,
             prev_tiley = 0;
             for(curr = _route.head - 1; curr++ != _route.tail; )
             {
-                if(curr->unity)
+                if(curr->unit.y)
                 {
-                    gint tilex = unit2ztile(curr->unitx, z);
-                    gint tiley = unit2ztile(curr->unity, z);
+                    gint tilex = unit2ztile(curr->unit.x, z);
+                    gint tiley = unit2ztile(curr->unit.y, z);
                     if(tilex != prev_tilex || tiley != prev_tiley)
                     {
                         if(prev_tiley)
@@ -2488,10 +2488,10 @@ mapman_by_route(MapmanInfo *mapman_info, MapUpdateType update_type,
             prev_tiley = 0;
             for(curr = _route.head - 1; curr++ != _route.tail; )
             {
-                if(curr->unity)
+                if(curr->unit.y)
                 {
-                    gint tilex = unit2ztile(curr->unitx, z);
-                    gint tiley = unit2ztile(curr->unity, z);
+                    gint tilex = unit2ztile(curr->unit.x, z);
+                    gint tiley = unit2ztile(curr->unit.y, z);
                     if(tilex != prev_tilex || tiley != prev_tiley)
                     {
                         gint minx, miny, maxx, maxy, x, y;
@@ -2522,9 +2522,9 @@ mapman_by_route(MapmanInfo *mapman_info, MapUpdateType update_type,
                                     mapdb_initiate_update(_curr_repo, z, x, y,
                                         update_type, download_batch_id,
                                         (abs(tilex - unit2tile(
-                                                 _next_center.unitx))
+                                                 _next_center.x))
                                          + abs(tiley - unit2tile(
-                                                 _next_center.unity))),
+                                                 _next_center.y))),
                                         NULL);
                                 }
                             }
@@ -2621,9 +2621,9 @@ mapman_dialog()
     
     /* Initialize to the bounds of the screen. */
     unit2latlon(
-            _center.unitx - pixel2unit(MAX(_view_width_pixels,
+            _center.x - pixel2unit(MAX(_view_width_pixels,
                     _view_height_pixels) / 2),
-            _center.unity - pixel2unit(MAX(_view_width_pixels,
+            _center.y - pixel2unit(MAX(_view_width_pixels,
                     _view_height_pixels) / 2), top_left_lat, top_left_lon);
     
     BOUND(top_left_lat, -90.f, 90.f);
@@ -2631,9 +2631,9 @@ mapman_dialog()
 
         
     unit2latlon(
-            _center.unitx + pixel2unit(MAX(_view_width_pixels,
+            _center.x + pixel2unit(MAX(_view_width_pixels,
                     _view_height_pixels) / 2),
-            _center.unity + pixel2unit(MAX(_view_width_pixels,
+            _center.y + pixel2unit(MAX(_view_width_pixels,
                     _view_height_pixels) / 2), bottom_right_lat, bottom_right_lon);
     BOUND(bottom_right_lat, -90.f, 90.f);
     BOUND(bottom_right_lon, -180.f, 180.f);
@@ -2960,7 +2960,7 @@ mapman_dialog()
     if(DEG_FORMAT_ENUM_TEXT[_degformat].field_2_in_use)
     	gtk_label_set_text(GTK_LABEL(lbl_gps_lon), buffer2);
     
-    unit2latlon(_center.unitx, _center.unity, lat, lon);
+    unit2latlon(_center.x, _center.y, lat, lon);
     
     format_lat_lon(lat, lon, buffer1, buffer2);
     //lat_format(lat, buffer);

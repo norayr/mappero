@@ -228,7 +228,7 @@ map_screen_pixel_to_screen_units(MapScreenPrivate *priv, gint px, gint py,
 
 static inline void
 map_screen_pixel_to_units(MapScreen *screen, gint px, gint py,
-                          Point *p)
+                          MapPoint *p)
 {
     MapScreenPrivate *priv = screen->priv;
     GtkAllocation *allocation = &(GTK_WIDGET(screen)->allocation);
@@ -237,12 +237,12 @@ map_screen_pixel_to_units(MapScreen *screen, gint px, gint py,
     px -= allocation->width / 2;
     py -= allocation->height / 2;
     map_screen_pixel_to_screen_units(priv, px, py, &usx, &usy);
-    p->unitx = usx + priv->map_center_ux;
-    p->unity = usy + priv->map_center_uy;
+    p->x = usx + priv->map_center_ux;
+    p->y = usy + priv->map_center_uy;
 }
 
 static void
-map_screen_add_poi(const Point *p, GdkPixbuf *pixbuf, MapScreen *self)
+map_screen_add_poi(const MapPoint *p, GdkPixbuf *pixbuf, MapScreen *self)
 {
     MapScreenPrivate *priv;
     ClutterActor *poi;
@@ -269,8 +269,8 @@ map_screen_add_poi(const Point *p, GdkPixbuf *pixbuf, MapScreen *self)
                                        NULL, NULL, NULL);
     clutter_actor_set_rotation(poi, CLUTTER_Z_AXIS, -angle, 0, 0, 0);
     clutter_actor_set_anchor_point_from_gravity(poi, CLUTTER_GRAVITY_CENTER);
-    x = unit2zpixel(p->unitx, priv->zoom);
-    y = unit2zpixel(p->unity, priv->zoom);
+    x = unit2zpixel(p->x, priv->zoom);
+    y = unit2zpixel(p->y, priv->zoom);
     clutter_actor_set_position(poi, x, y);
     clutter_container_add_actor(CLUTTER_CONTAINER(priv->poi_group), poi);
 }
@@ -279,7 +279,7 @@ static inline void
 activate_point_menu(MapScreen *screen, ClutterButtonEvent *event)
 {
     MapController *controller;
-    Point p;
+    MapPoint p;
 
     /* Get the coordinates of the point, in units */
     map_screen_pixel_to_units(screen, event->x, event->y, &p);
@@ -331,14 +331,14 @@ on_stage_event(ClutterActor *actor, ClutterEvent *event, MapScreen *screen)
         if (priv->is_dragging)
         {
             MapController *controller;
-            Point p;
+            MapPoint p;
 
             map_screen_pixel_to_screen_units(priv,
                                              be->x - priv->btn_press_screen_x,
                                              be->y - priv->btn_press_screen_y,
                                              &dx, &dy);
-            p.unitx = priv->map_center_ux - dx;
-            p.unity = priv->map_center_uy - dy;
+            p.x = priv->map_center_ux - dx;
+            p.y = priv->map_center_uy - dy;
             controller = map_controller_get_instance();
             map_controller_disable_auto_center(controller);
             map_controller_set_center(controller, p, -1);
@@ -391,10 +391,10 @@ on_stage_event(ClutterActor *actor, ClutterEvent *event, MapScreen *screen)
 }
 
 static inline void
-point_to_pixels(MapScreenPrivate *priv, Point *p, gint *x, gint *y)
+point_to_pixels(MapScreenPrivate *priv, const MapPoint p, gint *x, gint *y)
 {
-    *x = unit2zpixel(p->unitx, priv->zoom) - priv->overlay_start_px;
-    *y = unit2zpixel(p->unity, priv->zoom) - priv->overlay_start_py;
+    *x = unit2zpixel(p.x, priv->zoom) - priv->overlay_start_px;
+    *y = unit2zpixel(p.y, priv->zoom) - priv->overlay_start_py;
 }
 
 static inline void
@@ -434,7 +434,7 @@ draw_path(MapScreen *screen, cairo_t *cr, Path *path, Colorable base)
     cairo_set_line_join(cr, CAIRO_LINE_JOIN_BEVEL);
     for (curr = path->head, wcurr = path->whead; curr <= path->tail; curr++)
     {
-        if (G_UNLIKELY(curr->unity == 0))
+        if (G_UNLIKELY(curr->unit.y == 0))
         {
             if (segment_open)
             {
@@ -446,7 +446,7 @@ draw_path(MapScreen *screen, cairo_t *cr, Path *path, Colorable base)
         }
         else
         {
-            point_to_pixels(priv, curr, &x, &y);
+            point_to_pixels(priv, curr->unit, &x, &y);
             if (G_UNLIKELY(!segment_open))
             {
                 draw_break(cr, &_color[base + 2], x, y);
@@ -460,7 +460,7 @@ draw_path(MapScreen *screen, cairo_t *cr, Path *path, Colorable base)
         if (wcurr->point == curr)
         {
             gint x1, y1;
-            point_to_pixels(priv, wcurr->point, &x1, &y1);
+            point_to_pixels(priv, wcurr->point->unit, &x1, &y1);
             draw_break(cr, &_color[base + 1], x1, y1);
             cairo_move_to(cr, x1, y1);
             if (wcurr <= path->wtail)
@@ -484,7 +484,7 @@ draw_paths(MapScreen *screen, cairo_t *cr)
         if (next_way)
         {
             gint x1, y1;
-            point_to_pixels(screen->priv, next_way->point, &x1, &y1);
+            point_to_pixels(screen->priv, next_way->point->unit, &x1, &y1);
             draw_break(cr, &_color[COLORABLE_ROUTE_BREAK], x1, y1);
         }
     }
@@ -631,10 +631,10 @@ compute_scale_text(gchar *buffer, gsize len, gint zoom)
     gfloat distance;
     gdouble lat1, lon1, lat2, lon2;
 
-    unit2latlon(_center.unitx - pixel2zunit(SCALE_WIDTH / 2 - 4, zoom),
-                _center.unity, lat1, lon1);
-    unit2latlon(_center.unitx + pixel2zunit(SCALE_WIDTH / 2 - 4, zoom),
-                _center.unity, lat2, lon2);
+    unit2latlon(_center.x - pixel2zunit(SCALE_WIDTH / 2 - 4, zoom),
+                _center.y, lat1, lon1);
+    unit2latlon(_center.x + pixel2zunit(SCALE_WIDTH / 2 - 4, zoom),
+                _center.y, lat2, lon2);
     distance = calculate_distance(lat1, lon1, lat2, lon2) *
         UNITS_CONVERT[_units];
 
@@ -1219,7 +1219,7 @@ map_screen_clear_pois(MapScreen *self)
 }
 
 void
-map_screen_get_tap_area_from_units(MapScreen *self, const Point *p,
+map_screen_get_tap_area_from_units(MapScreen *self, const MapPoint *p,
                                    MapArea *area)
 {
     gint radius;
@@ -1227,10 +1227,10 @@ map_screen_get_tap_area_from_units(MapScreen *self, const Point *p,
     g_return_if_fail(MAP_IS_SCREEN(self));
 
     radius = pixel2zunit(TOUCH_RADIUS, self->priv->zoom);
-    area->x1 = p->unitx - radius;
-    area->y1 = p->unity - radius;
-    area->y2 = p->unity + radius;
-    area->x2 = p->unitx + radius;
+    area->x1 = p->x - radius;
+    area->y1 = p->y - radius;
+    area->y2 = p->y + radius;
+    area->x2 = p->x + radius;
 }
 
 void
@@ -1251,7 +1251,7 @@ map_screen_refresh_tiles(MapScreen *self)
 }
 
 void
-map_screen_track_append(MapScreen *self, Point p)
+map_screen_track_append(MapScreen *self, const Point *p)
 {
     MapScreenPrivate *priv;
     gint x, y;
@@ -1274,16 +1274,16 @@ map_screen_track_append(MapScreen *self, Point p)
     set_source_color(cr, &_color[COLORABLE_TRACK]);
     cairo_set_line_width(cr, _draw_width);
     cairo_set_line_join(cr, CAIRO_LINE_JOIN_BEVEL);
-    if (_track.tail->unity)
+    if (_track.tail->unit.y)
     {
-        point_to_pixels(priv, _track.tail, &x, &y);
+        point_to_pixels(priv, _track.tail->unit, &x, &y);
         cairo_move_to(cr, x, y);
-        point_to_pixels(priv, &p, &x, &y);
+        point_to_pixels(priv, p->unit, &x, &y);
         cairo_line_to(cr, x, y);
     }
     else
     {
-        point_to_pixels(priv, &p, &x, &y);
+        point_to_pixels(priv, p->unit, &x, &y);
         draw_break(cr, &_color[COLORABLE_TRACK_BREAK], x, y);
     }
 
@@ -1335,7 +1335,7 @@ map_screen_set_best_center(MapScreen *self)
     MapController *controller = map_controller_get_instance();
     GtkAllocation *allocation;
     MapScreenPrivate *priv;
-    Point new_center;
+    MapPoint new_center;
     gint max_distance, dx, dy;
 
     g_return_if_fail(MAP_IS_SCREEN(self));
@@ -1350,8 +1350,8 @@ map_screen_set_best_center(MapScreen *self)
     allocation = &(GTK_WIDGET(self)->allocation);
     max_distance = (allocation->width + allocation->height) / 16;
 
-    dx = unit2zpixel(priv->map_center_ux - new_center.unitx, priv->zoom);
-    dy = unit2zpixel(priv->map_center_uy - new_center.unity, priv->zoom);
+    dx = unit2zpixel(priv->map_center_ux - new_center.x, priv->zoom);
+    dy = unit2zpixel(priv->map_center_uy - new_center.y, priv->zoom);
 
     if (ABS(dx) > max_distance || ABS(dy) > max_distance)
     {

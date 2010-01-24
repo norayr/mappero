@@ -257,8 +257,8 @@ map_mark_update(MapMark *self)
 
     /* set position and angle */
     clutter_actor_set_position(CLUTTER_ACTOR(self),
-                               unit2zpixel(_pos.unitx, zoom),
-                               unit2zpixel(_pos.unity, zoom));
+                               unit2zpixel(_pos.unit.x, zoom),
+                               unit2zpixel(_pos.unit.y, zoom));
     clutter_actor_set_rotation(priv->dot,
                                CLUTTER_Z_AXIS, _gps.heading, 0, 0, 0);
 

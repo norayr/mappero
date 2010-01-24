@@ -61,7 +61,7 @@ dbus_ifc_cb_default(const gchar *interface, const gchar *method,
 static gboolean
 dbus_ifc_set_view_position_idle(SetViewPositionArgs *args)
 {
-    Point center;
+    MapPoint center;
     printf("%s(%f, %f, %d, %f)\n", __PRETTY_FUNCTION__, args->new_lat,
             args->new_lon, args->new_zoom, args->new_viewing_angle);
 
@@ -70,7 +70,7 @@ dbus_ifc_set_view_position_idle(SetViewPositionArgs *args)
         MapController *controller = map_controller_get_instance();
         map_controller_disable_auto_center(controller);
 
-        latlon2unit(args->new_lat, args->new_lon, center.unitx, center.unity);
+        latlon2unit(args->new_lat, args->new_lon, center.x, center.y);
 
         map_center_unit_full(center, args->new_zoom, args->new_viewing_angle);
     }
@@ -101,8 +101,8 @@ dbus_ifc_handle_set_view_center(GArray *args, osso_rpc_t *retval)
     if(args->len < 2)
     {
         /* Latitude and/or Longitude are not defined.  Calculate next. */
-        Point new_center = map_calc_new_center(svca->new_zoom);
-        unit2latlon(new_center.unitx, new_center.unity,
+        MapPoint new_center = map_calc_new_center(svca->new_zoom);
+        unit2latlon(new_center.x, new_center.y,
                 svca->new_lat, svca->new_lon);
     }
 
@@ -165,14 +165,14 @@ dbus_ifc_controller(const gchar *interface, const gchar *method,
 
 void
 dbus_ifc_fire_view_position_changed(
-        Point new_center, gint new_zoom, gdouble new_viewing_angle)
+        MapPoint new_center, gint new_zoom, gdouble new_viewing_angle)
 {
     DBusMessage *message = NULL;
     gdouble new_lat, new_lon;
-    printf("%s(%d, %d, %d, %f)\n", __PRETTY_FUNCTION__, new_center.unitx,
-            new_center.unity, new_zoom, new_viewing_angle);
+    printf("%s(%d, %d, %d, %f)\n", __PRETTY_FUNCTION__, new_center.x,
+            new_center.y, new_zoom, new_viewing_angle);
 
-    unit2latlon(new_center.unitx, new_center.unity, new_lat, new_lon);
+    unit2latlon(new_center.x, new_center.y, new_lat, new_lon);
 
     if(NULL == (message = dbus_message_new_signal(MM_DBUS_PATH,
                     MM_DBUS_INTERFACE, MM_DBUS_SIGNAL_VIEW_POSITION_CHANGED))

@@ -36,7 +36,7 @@
 
 void popup_error(GtkWidget *window, const gchar *error);
 
-Point locate_address(GtkWidget *parent, const gchar *address);
+MapPoint locate_address(GtkWidget *parent, const gchar *address);
 
 gdouble calculate_distance(gdouble lat1, gdouble lon1,
         gdouble lat2, gdouble lon2);

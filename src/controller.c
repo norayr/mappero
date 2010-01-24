@@ -40,7 +40,7 @@
 struct _MapControllerPrivate
 {
     MapScreen *screen;
-    Point center;
+    MapPoint center;
     gint rotation_angle;
     gint zoom;
 
@@ -69,7 +69,7 @@ set_center_real(MapController *self)
     MapControllerPrivate *priv = self->priv;
 
     map_screen_set_center(priv->screen,
-                          priv->center.unitx, priv->center.unity, priv->zoom);
+                          priv->center.x, priv->center.y, priv->zoom);
     priv->source_map_center = 0;
     return FALSE;
 }
@@ -223,7 +223,7 @@ map_controller_action_go_to(MapController *self)
 }
 
 void
-map_controller_activate_menu_point(MapController *self, const Point *p)
+map_controller_activate_menu_point(MapController *self, const MapPoint *p)
 {
     MapArea area;
 
@@ -486,7 +486,7 @@ map_controller_get_show_zoom(MapController *self)
 }
 
 void
-map_controller_set_center(MapController *self, Point center, gint zoom)
+map_controller_set_center(MapController *self, MapPoint center, gint zoom)
 {
     MapControllerPrivate *priv;
 
@@ -505,7 +505,7 @@ map_controller_set_center(MapController *self, Point center, gint zoom)
 }
 
 void
-map_controller_get_center(MapController *self, Point *center)
+map_controller_get_center(MapController *self, MapPoint *center)
 {
     MapControllerPrivate *priv;
 
@@ -541,7 +541,7 @@ void
 map_controller_set_zoom(MapController *self, gint zoom)
 {
     MapControllerPrivate *priv;
-    Point center;
+    MapPoint center;
 
     g_return_if_fail(MAP_IS_CONTROLLER(self));
     priv = self->priv;
@@ -562,7 +562,7 @@ map_controller_get_zoom(MapController *self)
 }
 
 void
-map_controller_calc_best_center(MapController *self, Point *new_center)
+map_controller_calc_best_center(MapController *self, MapPoint *new_center)
 {
     MapControllerPrivate *priv;
 
@@ -587,12 +587,12 @@ map_controller_calc_best_center(MapController *self, Point *new_center)
                 * VELVEC_SIZE_FACTOR
                 * (_lead_is_fixed ? 7 : sqrtf(_gps.speed));
 
-            new_center->unitx = _pos.unitx + (gint)(lead_pixels * sinf(tmp));
-            new_center->unity = _pos.unity - (gint)(lead_pixels * cosf(tmp));
+            new_center->x = _pos.unit.x + (gint)(lead_pixels * sinf(tmp));
+            new_center->y = _pos.unit.y - (gint)(lead_pixels * cosf(tmp));
             break;
         }
     case CENTER_LATLON:
-        *new_center = _pos;
+        *new_center = _pos.unit;
         break;
     default:
         *new_center = priv->center;
