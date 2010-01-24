@@ -102,9 +102,6 @@ extern gint _next_map_rotate_angle;
 extern GdkPixbuf *_redraw_wait_icon;
 extern GdkRectangle _redraw_wait_bounds;
 
-extern gint _map_correction_unitx;
-extern gint _map_correction_unity;
-
 /** CACHED SCREEN INFORMATION THAT IS DEPENDENT ON THE CURRENT VIEW. */
 extern gint _view_width_pixels;
 extern gint _view_height_pixels;
@@ -308,7 +305,6 @@ extern GtkWidget *_cmenu_loc_add_route_item;
 extern GtkWidget *_cmenu_loc_add_way_item;
 extern GtkWidget *_cmenu_loc_add_poi_item;
 extern GtkWidget *_cmenu_loc_set_gps_item;
-extern GtkWidget *_cmenu_loc_apply_correction_item;
 
 /* Menu items for the "Waypoint" context menu. */
 extern GtkWidget *_cmenu_way_show_latlon_item;

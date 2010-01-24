@@ -288,34 +288,6 @@ cmenu_cb_loc_set_gps(GtkMenuItem *item)
 }
 
 static gboolean
-cmenu_cb_loc_apply_correction(GtkMenuItem *item)
-{
-    printf("%s()\n", __PRETTY_FUNCTION__);
-
-    if(gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(item)))
-    {
-        /* Get difference between tap point and GPS location. */
-        _map_correction_unitx = _cmenu_unitx - _pos.unitx;
-        _map_correction_unity = _cmenu_unity - _pos.unity;
-        map_refresh_mark(TRUE);
-        MACRO_BANNER_SHOW_INFO(_window, _("Map correction applied."));
-    }
-    else
-    {
-        _map_correction_unitx = 0;
-        _map_correction_unity = 0;
-        map_refresh_mark(TRUE);
-        MACRO_BANNER_SHOW_INFO(_window, _("Map correction removed."));
-    }
-
-    g_debug("Map correction now set to: %d, %d",
-            _map_correction_unitx, _map_correction_unity);
-
-    vprintf("%s(): return TRUE\n", __PRETTY_FUNCTION__);
-    return TRUE;
-}
-
-static gboolean
 cmenu_cb_way_show_latlon(GtkMenuItem *item)
 {
     WayPoint *way;
@@ -661,12 +633,6 @@ void cmenu_init()
     gtk_menu_append(submenu, gtk_separator_menu_item_new());
     gtk_menu_append(submenu, _cmenu_loc_set_gps_item
                 = gtk_menu_item_new_with_label(_("Set as GPS Location")));
-    gtk_menu_append(submenu, _cmenu_loc_apply_correction_item
-                = gtk_check_menu_item_new_with_label(
-                    _("Apply Map Correction")));
-    gtk_check_menu_item_set_active(
-            GTK_CHECK_MENU_ITEM(_cmenu_loc_apply_correction_item),
-            _map_correction_unitx != 0 || _map_correction_unity != 0);
 
     /* Setup the waypoint context menu. */
     gtk_menu_append(_map_cmenu, menu_item
@@ -737,8 +703,6 @@ void cmenu_init()
                         G_CALLBACK(cmenu_cb_loc_add_poi), NULL);
     g_signal_connect(G_OBJECT(_cmenu_loc_set_gps_item), "activate",
                         G_CALLBACK(cmenu_cb_loc_set_gps), NULL);
-    g_signal_connect(G_OBJECT(_cmenu_loc_apply_correction_item), "toggled",
-                        G_CALLBACK(cmenu_cb_loc_apply_correction), NULL);
 
     g_signal_connect(G_OBJECT(_cmenu_way_show_latlon_item), "activate",
                       G_CALLBACK(cmenu_cb_way_show_latlon), NULL);
@@ -780,34 +744,6 @@ void cmenu_init()
             G_CALLBACK(cmenu_cb_hide), NULL);
 
     vprintf("%s(): return\n", __PRETTY_FUNCTION__);
-}
-
-static void
-on_apply_correction_toggled(GtkToggleButton *button, Point *p)
-{
-    GtkWidget *dialog;
-
-    if (gtk_toggle_button_get_active(button))
-    {
-        /* Get difference between tap point and GPS location. */
-        _map_correction_unitx = p->unitx - _pos.unitx;
-        _map_correction_unity = p->unity - _pos.unity;
-        map_refresh_mark(TRUE);
-        MACRO_BANNER_SHOW_INFO(_window, _("Map correction applied."));
-    }
-    else
-    {
-        _map_correction_unitx = 0;
-        _map_correction_unity = 0;
-        map_refresh_mark(TRUE);
-        MACRO_BANNER_SHOW_INFO(_window, _("Map correction removed."));
-    }
-
-    g_debug("Map correction now set to: %d, %d",
-            _map_correction_unitx, _map_correction_unity);
-    /* close the dialog */
-    dialog = gtk_widget_get_toplevel((GtkWidget *)button);
-    gtk_dialog_response(GTK_DIALOG(dialog), GTK_RESPONSE_CLOSE);
 }
 
 void
@@ -857,16 +793,6 @@ map_menu_point_map(const Point *p)
 
     button = map_dialog_create_button(dlg, _("Set as GPS Location"),
                                       GPS_LOCATION);
-
-    button = gtk_toggle_button_new_with_label(_("Apply Map Correction"));
-    hildon_gtk_widget_set_theme_size(button, HILDON_SIZE_FINGER_HEIGHT);
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button),
-                                 _map_correction_unitx != 0 ||
-                                 _map_correction_unity != 0);
-    gtk_widget_show(button);
-    map_dialog_add_widget(dlg, button);
-    g_signal_connect(button, "toggled",
-                     G_CALLBACK(on_apply_correction_toggled), (gpointer)p);
 
     response = gtk_dialog_run(GTK_DIALOG(dialog));
     gtk_widget_destroy(dialog);

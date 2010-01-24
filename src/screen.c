@@ -941,10 +941,10 @@ map_screen_set_center(MapScreen *screen, gint x, gint y, gint zoom)
                     MAX(allocation->width, allocation->height) / 2,
                     new_zoom);
 
-    area.x1 = x - diag_halflength_units + _map_correction_unitx;
-    area.y1 = y - diag_halflength_units + _map_correction_unity;
-    area.x2 = x + diag_halflength_units + _map_correction_unitx;
-    area.y2 = y + diag_halflength_units + _map_correction_unity;
+    area.x1 = x - diag_halflength_units;
+    area.y1 = y - diag_halflength_units;
+    area.x2 = x + diag_halflength_units;
+    area.y2 = y + diag_halflength_units;
 
     start_tilex = unit2ztile(area.x1, new_zoom);
     start_tilex = MAX(start_tilex - cache_amount, 0);
@@ -1317,10 +1317,10 @@ map_screen_refresh_pois(MapScreen *self, MapArea *poi_area)
                             MAX(allocation->width, allocation->height) / 2,
                             priv->zoom);
 
-            area.x1 = x - diag_halflength_units + _map_correction_unitx;
-            area.y1 = y - diag_halflength_units + _map_correction_unity;
-            area.x2 = x + diag_halflength_units + _map_correction_unitx;
-            area.y2 = y + diag_halflength_units + _map_correction_unity;
+            area.x1 = x - diag_halflength_units;
+            area.y1 = y - diag_halflength_units;
+            area.x2 = x + diag_halflength_units;
+            area.y2 = y + diag_halflength_units;
 
             poi_area = &area;
         }
