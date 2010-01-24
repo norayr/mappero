@@ -1937,6 +1937,7 @@ map_menu_view()
     GtkWidget *auto_rotate;
     GtkWidget *auto_center;
     gint auto_center_value;
+    CenterMode center_mode;
 
     controller = map_controller_get_instance();
     parent = map_controller_get_main_window(controller);
@@ -1961,9 +1962,10 @@ map_menu_view()
                      NULL);
     gtk_box_pack_start(GTK_BOX(vbox), auto_center, FALSE, TRUE, 0);
 
-    if (_center_mode == CENTER_LATLON)
+    center_mode = map_controller_get_center_mode(controller);
+    if (center_mode == CENTER_LATLON)
         auto_center_value = 0;
-    else if (_center_mode == CENTER_LEAD)
+    else if (center_mode == CENTER_LEAD)
         auto_center_value = 1;
     else
         auto_center_value = 2;
@@ -1985,17 +1987,15 @@ map_menu_view()
         auto_center_value =
             hildon_picker_button_get_active(HILDON_PICKER_BUTTON(auto_center));
         if (auto_center_value == 0)
-            _center_mode = CENTER_LATLON;
+            center_mode = CENTER_LATLON;
         else if (auto_center_value == 1)
-            _center_mode = CENTER_LEAD;
+            center_mode = CENTER_LEAD;
         else
-            _center_mode = 0;
+            center_mode = CENTER_MANUAL;
+        map_controller_set_center_mode(controller, center_mode);
 
         map_controller_set_auto_rotate(controller,
             gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(auto_rotate)));
-
-        if (_center_mode > 0)
-            map_refresh_mark(TRUE);
     }
     gtk_widget_destroy(dialog);
 }
