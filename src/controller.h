@@ -118,5 +118,7 @@ void map_controller_calc_best_center(MapController *self, Point *new_center);
 
 void map_controller_refresh_paths(MapController *controller);
 
+void map_controller_update_gps(MapController *self);
+
 G_END_DECLS
 #endif /* MAP_CONTROLLER_H */

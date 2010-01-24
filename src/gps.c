@@ -179,7 +179,7 @@ on_gps_changed(LocationGPSDevice *device, MapController *controller)
             track_add(_pos.time, newly_fixed);
 
         /* Move mark to new location. */
-        map_refresh_mark(newly_fixed);
+        map_controller_update_gps(controller);
     } else {
         track_insert_break(FALSE);
         _gps.speed = 0;

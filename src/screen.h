@@ -71,6 +71,7 @@ void map_screen_show_zoom_box(MapScreen *screen, gboolean show);
 void map_screen_show_message(MapScreen *screen, const gchar *text);
 
 void map_screen_update_mark(MapScreen *screen);
+void map_screen_set_best_center(MapScreen *self);
 
 void map_screen_action_point(MapScreen *screen);
 

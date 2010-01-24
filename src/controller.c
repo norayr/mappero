@@ -598,3 +598,22 @@ map_controller_refresh_paths(MapController *self)
 
     map_screen_redraw_overlays(self->priv->screen);
 }
+
+/*
+ * map_controller_update_gps:
+ * @self: the MapController
+ *
+ * Call this method when the GPS position changes.
+ */
+void
+map_controller_update_gps(MapController *self)
+{
+    MapControllerPrivate *priv;
+
+    g_return_if_fail(MAP_IS_CONTROLLER(self));
+    priv = self->priv;
+
+    map_screen_update_mark(priv->screen);
+    map_screen_set_best_center(priv->screen);
+}
+

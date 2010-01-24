@@ -1329,4 +1329,33 @@ map_screen_refresh_pois(MapScreen *self, MapArea *poi_area)
     }
 }
 
+void
+map_screen_set_best_center(MapScreen *self)
+{
+    MapController *controller = map_controller_get_instance();
+    GtkAllocation *allocation;
+    MapScreenPrivate *priv;
+    Point new_center;
+    gint max_distance, dx, dy;
+
+    g_return_if_fail(MAP_IS_SCREEN(self));
+    priv = self->priv;
+
+    map_controller_calc_best_center(controller, &new_center);
+
+    /* If the new center doesn't fall near the center of the screen, we move
+     * the map.  In computing this, we don't care about being too precise. We
+     * ignore the map rotation, too.
+     */
+    allocation = &(GTK_WIDGET(self)->allocation);
+    max_distance = (allocation->width + allocation->height) / 16;
+
+    dx = unit2zpixel(priv->map_center_ux - new_center.unitx, priv->zoom);
+    dy = unit2zpixel(priv->map_center_uy - new_center.unity, priv->zoom);
+
+    if (ABS(dx) > max_distance || ABS(dy) > max_distance)
+    {
+        map_controller_set_center(controller, new_center, -1);
+    }
+}
 
