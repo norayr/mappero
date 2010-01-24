@@ -89,6 +89,7 @@ typedef enum
 {
     CENTER_WAS_LATLON = -2,
     CENTER_WAS_LEAD = -1,
+    CENTER_MANUAL = 0,
     CENTER_LEAD = 1,
     CENTER_LATLON = 2
 } CenterMode;

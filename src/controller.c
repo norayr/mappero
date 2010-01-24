@@ -262,6 +262,14 @@ map_controller_set_center_mode(MapController *self, CenterMode mode)
         map_refresh_mark(TRUE);
 }
 
+CenterMode
+map_controller_get_center_mode(MapController *self)
+{
+    g_return_val_if_fail(MAP_IS_CONTROLLER(self), CENTER_MANUAL);
+
+    return _center_mode;
+}
+
 void
 map_controller_disable_auto_center(MapController *self)
 {
