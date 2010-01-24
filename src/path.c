@@ -52,6 +52,14 @@
 #include "util.h"
 #include "screen.h"
 
+typedef union {
+    gint field;
+    struct {
+        gchar zoom;
+        gint16 altitude;
+    } s;
+} FieldMix;
+
 typedef struct {
     GtkWindow *dialog;
     GtkWidget *autoroute;
@@ -140,12 +148,15 @@ read_path_from_db(Path *path, sqlite3_stmt *select_stmt)
     while(SQLITE_ROW == sqlite3_step(select_stmt))
     {
         const gchar *desc;
+        FieldMix mix;
 
         MACRO_PATH_INCREMENT_TAIL(*path);
         path->tail->unit.x = sqlite3_column_int(select_stmt, 0);
         path->tail->unit.y = sqlite3_column_int(select_stmt, 1);
         path->tail->time = sqlite3_column_int(select_stmt, 2);
-        path->tail->altitude = sqlite3_column_int(select_stmt, 3);
+        mix.field = sqlite3_column_int(select_stmt, 3);
+        path->tail->zoom = mix.s.zoom;
+        path->tail->altitude = mix.s.altitude;
 
         desc = (const gchar *)sqlite3_column_text(select_stmt, 4);
         if(desc)
@@ -164,7 +175,6 @@ read_path_from_db(Path *path, sqlite3_stmt *select_stmt)
         *path->tail = _point_null;
     }
 
-    map_path_optimize(path);
     vprintf("%s(): return\n", __PRETTY_FUNCTION__);
 }
 
@@ -208,15 +218,21 @@ write_path_to_db(Path *path,
     for(num = index_last_saved, curr = path->head + num, wcurr = path->whead;
             success && ++curr <= path->tail; ++num)
     {
+        FieldMix mix;
+
         /* If this is the last point, and it is null, don't write it. */
         if(curr == path->tail && !curr->unit.y)
             break;
+
+        mix.field = 0;
+        mix.s.altitude = curr->altitude;
+        mix.s.zoom = curr->zoom;
 
         /* Insert the path point. */
         if(SQLITE_OK != sqlite3_bind_int(insert_path_stmt, 1, curr->unit.x)
         || SQLITE_OK != sqlite3_bind_int(insert_path_stmt, 2, curr->unit.y)
         || SQLITE_OK != sqlite3_bind_int(insert_path_stmt, 3, curr->time)
-        || SQLITE_OK != sqlite3_bind_int(insert_path_stmt, 4, curr->altitude)
+        || SQLITE_OK != sqlite3_bind_int(insert_path_stmt, 4, mix.field)
         || SQLITE_DONE != sqlite3_step(insert_path_stmt))
         {
             gchar buffer[BUFFER_SIZE];
