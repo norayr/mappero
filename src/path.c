@@ -164,6 +164,7 @@ read_path_from_db(Path *path, sqlite3_stmt *select_stmt)
         *path->tail = _point_null;
     }
 
+    map_path_optimize(path);
     vprintf("%s(): return\n", __PRETTY_FUNCTION__);
 }
 
@@ -1707,3 +1708,55 @@ path_destroy()
 
     vprintf("%s(): return\n", __PRETTY_FUNCTION__);
 }
+
+void
+map_path_optimize(Path *path)
+{
+    Point *curr, *prev;
+    gint tolerance = 3 + _draw_width;
+
+    /* for every point, set the zoom level at which the point must be rendered
+     */
+
+    if (path->head != path->tail)
+        path->head->zoom = SCHAR_MAX;
+
+    for (curr = path->head + 1; curr < path->tail; curr++)
+    {
+        gint dx, dy, dmax, zoom;
+
+        prev = curr - 1;
+
+        dx = curr->unit.x - prev->unit.x;
+        dy = curr->unit.y - prev->unit.y;
+        dmax = MAX(ABS(dx), ABS(dy));
+
+        for (zoom = 0; dmax > tolerance << zoom; zoom++);
+
+        /* We got the zoom level for this point, supposing that the previous
+         * one is always drawn.
+         * But we need go back in the path to find the last point which is
+         * _surely_ drawn when this point is; that is, we look for the last
+         * point having a zoom value bigger than that of the current point. */
+
+        while (zoom >= prev->zoom)
+        {
+            Point *prev_before;
+            /* going back is safe (we don't risk going past the head) because
+             * the first point will always have zoom set to 127 */
+            for (prev_before = prev; prev->zoom <= zoom; prev--);
+
+            if (prev == prev_before) break;
+
+            /* now, find the distance between these two points */
+            dx = curr->unit.x - prev->unit.x;
+            dy = curr->unit.y - prev->unit.y;
+            dmax = MAX(ABS(dx), ABS(dy));
+
+            for (; dmax > tolerance << zoom; zoom++);
+        }
+
+        curr->zoom = zoom;
+    }
+}
+

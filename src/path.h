@@ -55,4 +55,6 @@ WayPoint* path_get_next_way(void);
 void path_init(void);
 void path_destroy(void);
 
+void map_path_optimize(Path *path);
+
 #endif /* ifndef MAEMO_MAPPER_PATH_H */

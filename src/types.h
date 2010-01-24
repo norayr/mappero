@@ -297,7 +297,8 @@ typedef struct _Point Point;
 struct _Point {
     MapPoint unit;
     time_t time;
-    gint altitude;
+    gchar zoom; /* zoom level at which this point becomes visible */
+    gint16 altitude;
 };
 
 /** A WayPoint, which is a Point with a description. */

@@ -426,6 +426,9 @@ draw_path(MapScreen *screen, cairo_t *cr, Path *path, Colorable base)
     WayPoint *wcurr;
     gint x = 0, y = 0;
     gboolean segment_open = FALSE;
+#ifdef DEBUG
+    gint segment_count = 0;
+#endif
 
     g_debug ("%s", G_STRFUNC);
 
@@ -444,8 +447,11 @@ draw_path(MapScreen *screen, cairo_t *cr, Path *path, Colorable base)
                 segment_open = FALSE;
             }
         }
-        else
+        else if (curr->zoom > priv->zoom)
         {
+#ifdef DEBUG
+            segment_count++;
+#endif
             point_to_pixels(priv, curr->unit, &x, &y);
             if (G_UNLIKELY(!segment_open))
             {
@@ -468,6 +474,9 @@ draw_path(MapScreen *screen, cairo_t *cr, Path *path, Colorable base)
         }
     }
     cairo_stroke(cr);
+#ifdef DEBUG
+    g_debug("Drawn %d segments", segment_count);
+#endif
 }
 
 static void

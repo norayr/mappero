@@ -541,6 +541,8 @@ gpx_path_parse(Path *to_replace, gchar *buffer, gint size, gint policy_old)
         return FALSE;
     }
 
+    map_path_optimize(&data.path);
+
     if(policy_old && to_replace->head != to_replace->tail)
     {
         Point *src_first;
