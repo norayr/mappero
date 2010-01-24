@@ -89,11 +89,6 @@ PangoLayout *_sat_info_layout = NULL;
 PangoLayout *_sat_details_layout = NULL;
 PangoLayout *_sat_details_expose_layout = NULL;
 
-static void
-speed_limit(void)
-{
-}
-
 gboolean
 gps_display_details(void)
 {
@@ -887,39 +882,7 @@ map_move_mark()
 void
 map_refresh_mark(gboolean force_redraw)
 {
-    MapController *controller;
-    gint new_center_devx, new_center_devy;
-    Point new_center;
-
-    printf("%s()\n", __PRETTY_FUNCTION__);
-
-    controller = map_controller_get_instance();
-    map_controller_calc_best_center(controller, &new_center);
-
-    unit2buf(new_center.unitx, new_center.unity,
-            new_center_devx, new_center_devy);
-    if(force_redraw || (_center_mode > 0
-                && (UNITS_CONVERT[_units] * _gps.speed) >= _ac_min_speed &&
-    (((unsigned)(new_center_devx - (_view_width_pixels * _center_ratio / 20))
-                > ((10 - _center_ratio) * _view_width_pixels / 10))
- || ((unsigned)(new_center_devy - (_view_height_pixels * _center_ratio / 20))
-                > ((10 - _center_ratio) * _view_height_pixels / 10))
-            || _center_rotate)))
-    {
-        map_move_mark();
-        map_controller_set_center(controller, new_center, -1);
-    }
-    else
-    {
-        /* We're not changing the view - just move the mark. */
-        map_move_mark();
-    }
-
-    /* Draw speed info */
-    if(_speed_limit_on)
-        speed_limit();
-
-    vprintf("%s(): return\n", __PRETTY_FUNCTION__);
+    /* TODO: remove this function, when the related menu items are removed. */
 }
 
 void
@@ -951,12 +914,6 @@ map_download_refresh_idle(MapTileSpec *tile, GdkPixbuf *pixbuf,
                 MACRO_BANNER_SHOW_INFO(_window, buffer);
             }
             _dl_errors = 0;
-        }
-
-        if (update_type != MAP_UPDATE_AUTO || _refresh_map_after_download)
-        {
-            /* Update the map. */
-            map_refresh_mark(TRUE);
         }
     }
     else if(_download_banner)

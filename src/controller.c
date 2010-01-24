@@ -259,7 +259,7 @@ map_controller_set_center_mode(MapController *self, CenterMode mode)
 
     _center_mode = mode;
     if (mode > 0)
-        map_refresh_mark(TRUE);
+        map_screen_set_best_center(self->priv->screen);
 }
 
 CenterMode
