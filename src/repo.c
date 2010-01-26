@@ -575,8 +575,8 @@ create_default_repo_lists(GList **tile_sources, GList **repositories)
 
     repo = g_slice_new0(Repository);
     repo->name = g_strdup("Google Satellite");
-    repo->min_zoom = 4;
-    repo->max_zoom = 24;
+    repo->min_zoom = REPO_DEFAULT_MIN_ZOOM;
+    repo->max_zoom = REPO_DEFAULT_MAX_ZOOM;
     repo->zoom_step = 1;
     repo->primary = satellite;
     repo->layers = g_ptr_array_new();
@@ -585,8 +585,8 @@ create_default_repo_lists(GList **tile_sources, GList **repositories)
 
     repo = g_slice_new0(Repository);
     repo->name = g_strdup("Google");
-    repo->min_zoom = 4;
-    repo->max_zoom = 24;
+    repo->min_zoom = REPO_DEFAULT_MIN_ZOOM;
+    repo->max_zoom = REPO_DEFAULT_MAX_ZOOM;
     repo->zoom_step = 1;
     repo->primary = google;
     repo->layers = g_ptr_array_new();

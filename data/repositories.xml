@@ -12,7 +12,7 @@
   <Repository>
     <name>Google Satellite</name>
     <min_zoom>4</min_zoom>
-    <max_zoom>24</max_zoom>
+    <max_zoom>20</max_zoom>
     <zoom_step>1</zoom_step>
     <Layers>
       <Primary>GoogleSatellite</Primary>
@@ -22,7 +22,7 @@
   <Repository>
     <name>Google</name>
     <min_zoom>4</min_zoom>
-    <max_zoom>24</max_zoom>
+    <max_zoom>20</max_zoom>
     <zoom_step>1</zoom_step>
     <Layers>
       <Primary>GoogleVector</Primary>
