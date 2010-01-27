@@ -10,7 +10,9 @@
 #include <hildon/hildon-pannable-area.h>
 #include <hildon/hildon-touch-selector.h>
 #include <hildon/hildon-note.h>
-
+#include <hildon/hildon-entry.h>
+#include <hildon/hildon-picker-button.h>
+#include <hildon/hildon-button.h>
 
 #include "data.h"
 #include "types.h"
@@ -443,6 +445,76 @@ repository_sync_handler(GtkWindow *parent)
 }
 
 
+/*
+ * Fill selector with names of tile sources, filtered by transparency.
+ * If active is non-null, this entry will be activated.
+ */
+static void
+fill_selector_with_tile_sources(HildonTouchSelector *selector, gboolean transparent, TileSource *active)
+{
+    GList *ts_list = map_controller_get_tile_sources_list(map_controller_get_instance());
+    TileSource *ts;
+    gint act = -1, index = 0;
+
+    while (ts_list) {
+        ts = (TileSource*)ts_list->data;
+        if (ts->transparent == transparent) {
+            hildon_touch_selector_append_text(selector, ts->name);
+            if (ts == active)
+                act = index;
+        }
+        ts_list = ts_list->next;
+        index++;
+    }
+
+    if (act >= 0)
+        hildon_touch_selector_set_active(selector, 0, act);
+}
+
+
+/*
+ * Assign a HildonButton instance value of a comma-separated
+ * list of layers' names.
+ */
+static void
+update_layers_button_value(HildonButton *button, GPtrArray *layers)
+{
+    gint i;
+    gchar **titles;
+    gchar *title;
+
+    if (layers && layers->len) {
+        titles = g_malloc0(sizeof (gchar*) * (layers->len+1));
+
+        for (i = 0; i < layers->len; i++)
+            titles[i] = ((TileSource*)g_ptr_array_index(layers, i))->name;
+
+        title = g_strjoinv(", ", titles);
+        hildon_button_set_value(button, title);
+        g_free(title);
+        g_free(titles);
+    }
+    else
+        hildon_button_set_value(button, _("None"));
+}
+
+
+/*
+ * Layers selector dialog context
+ */
+struct RepositoryLayersDialogContext {
+    GPtrArray *layers;          /* List of TileSource references */
+    HildonButton *button;       /* Button with list of layer's names */
+};
+
+
+static gboolean
+select_layers_button_clicked(GtkWidget *widget, struct RepositoryLayersDialogContext *ctx)
+{
+    printf ("Selection of layers not implemented\n");
+    return TRUE;
+}
+
 
 /* Parse XML data */
 GList* xml_to_tile_sources(const gchar *data)
@@ -754,7 +826,10 @@ repositories_dialog()
             printf ("Add not implemented\n");
             break;
         case RESP_EDIT:
-            printf ("Edit not implemented\n");
+            if (active_repo)
+                if (repository_edit_dialog(GTK_WINDOW(dialog), active_repo))
+                    if (active_repo == map_controller_get_repository(controller))
+                        map_refresh_mark(TRUE);
             break;
         case RESP_DELETE:
             repository_delete_handler(GTK_WINDOW(dialog), active_repo);
@@ -772,9 +847,164 @@ repositories_dialog()
  * user pressed 'save', FALSE on cancel
  */
 gboolean
-repository_edit_dialog(Repository *repo)
+repository_edit_dialog(GtkWindow *parent, Repository *repo)
 {
-    return FALSE;
+    GtkWidget *dialog;
+    GtkWidget *table;
+    GtkWidget *label;
+    GtkWidget *name_entry;
+    GtkWidget *min_zoom, *max_zoom, *zoom_step;
+    HildonTouchSelector *min_zoom_selector, *max_zoom_selector;
+    HildonTouchSelector *zoom_step_selector;
+    GtkWidget *primary_layer;
+    HildonTouchSelector *primary_selector;
+    GtkWidget *layers;
+    gint i;
+    gchar buf[10];
+    struct RepositoryLayersDialogContext layers_context;
+    gboolean res = FALSE;
+    MapController *controller = map_controller_get_instance();
+
+    dialog = gtk_dialog_new_with_buttons(_("Repository"), parent, GTK_DIALOG_MODAL,
+                                         GTK_STOCK_SAVE, GTK_RESPONSE_ACCEPT, NULL);
+    table = gtk_table_new(4, 3, TRUE);
+    gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox), table, TRUE, TRUE, 0);
+
+    label = gtk_label_new(_("Name"));
+    gtk_table_attach(GTK_TABLE(table), label, 0, 1, 0, 1, GTK_FILL | GTK_EXPAND, 0, 2, 4);
+
+    name_entry = hildon_entry_new(HILDON_SIZE_FINGER_HEIGHT);
+    gtk_table_attach(GTK_TABLE(table), name_entry, 1, 3, 0, 1, GTK_FILL | GTK_EXPAND, 0, 2, 4);
+
+    /* Zoom selectors are used to otain zoom levels */
+    min_zoom_selector = HILDON_TOUCH_SELECTOR(hildon_touch_selector_new_text());
+    max_zoom_selector = HILDON_TOUCH_SELECTOR(hildon_touch_selector_new_text());
+    zoom_step_selector = HILDON_TOUCH_SELECTOR(hildon_touch_selector_new_text());
+
+    for (i = MIN_ZOOM; i <= MAX_ZOOM; i++) {
+        g_snprintf(buf, sizeof(buf), "%d", i);
+        hildon_touch_selector_append_text(min_zoom_selector, buf);
+        hildon_touch_selector_append_text(max_zoom_selector, buf);
+    }
+
+    for (i = 1; i <= 4; i++) {
+        g_snprintf(buf, sizeof(buf), "%d", i);
+        hildon_touch_selector_append_text(zoom_step_selector, buf);
+    }
+
+    min_zoom = g_object_new(HILDON_TYPE_PICKER_BUTTON,
+                            "size", HILDON_SIZE_FINGER_HEIGHT,
+                            "title", _("Min zoom"),
+                            "touch-selector", min_zoom_selector,
+                            NULL);
+    gtk_table_attach(GTK_TABLE(table), min_zoom, 0, 1, 1, 2, GTK_FILL | GTK_EXPAND, 0, 2, 4);
+
+    max_zoom = g_object_new(HILDON_TYPE_PICKER_BUTTON,
+                            "size", HILDON_SIZE_FINGER_HEIGHT,
+                            "title", _("Max zoom"),
+                            "touch-selector", max_zoom_selector,
+                            NULL);
+    gtk_table_attach(GTK_TABLE(table), max_zoom, 1, 2, 1, 2, GTK_FILL | GTK_EXPAND, 0, 2, 4);
+
+    zoom_step = g_object_new(HILDON_TYPE_PICKER_BUTTON,
+                            "size", HILDON_SIZE_FINGER_HEIGHT,
+                            "title", _("Zoom step"),
+                            "touch-selector", zoom_step_selector,
+                            NULL);
+    gtk_table_attach(GTK_TABLE(table), zoom_step, 2, 3, 1, 2,
+                     GTK_FILL | GTK_EXPAND, 0, 2, 4);
+
+    /* Primary layer */
+    primary_selector = HILDON_TOUCH_SELECTOR(hildon_touch_selector_new_text());
+
+    /* In this selector, we allow to choose from non-transparent tile sources only */
+    fill_selector_with_tile_sources(primary_selector, FALSE, repo->primary);
+
+    primary_layer = g_object_new(HILDON_TYPE_PICKER_BUTTON,
+                            "size", HILDON_SIZE_FINGER_HEIGHT,
+                            "title", _("Tiles"),
+                            "touch-selector", primary_selector,
+                            NULL);
+    gtk_table_attach(GTK_TABLE(table), primary_layer, 0, 3, 2, 3,
+                     GTK_FILL | GTK_EXPAND, 0, 2, 4);
+
+    /* Layers */
+    layers = hildon_button_new_with_text(HILDON_SIZE_FINGER_HEIGHT,
+                                         ((repo->layers) && (repo->layers->len > 3)) ?
+                                         HILDON_BUTTON_ARRANGEMENT_VERTICAL :
+                                         HILDON_BUTTON_ARRANGEMENT_HORIZONTAL,
+                                         _("Layers"), NULL);
+    gtk_table_attach(GTK_TABLE(table), layers, 0, 3, 3, 4,
+                     GTK_FILL | GTK_EXPAND, 0, 2, 4);
+
+    /* Fill with data */
+    hildon_entry_set_text(HILDON_ENTRY(name_entry), repo->name);
+    hildon_touch_selector_set_active(min_zoom_selector, 0, repo->min_zoom - MIN_ZOOM);
+    hildon_touch_selector_set_active(max_zoom_selector, 0, repo->max_zoom - MIN_ZOOM);
+    hildon_touch_selector_set_active(zoom_step_selector, 0, repo->zoom_step - 1);
+
+    update_layers_button_value(HILDON_BUTTON(layers), repo->layers);
+
+    layers_context.button = HILDON_BUTTON(layers);
+    layers_context.layers = g_ptr_array_new();
+
+    if (repo->layers && repo->layers->len) {
+        for (i = 0; i < repo->layers->len; i++)
+            g_ptr_array_add(layers_context.layers, g_ptr_array_index(repo->layers, i));
+    }
+
+    g_signal_connect(G_OBJECT(layers), "clicked", G_CALLBACK(select_layers_button_clicked), &layers_context);
+
+    gtk_widget_show_all(dialog);
+    res = FALSE;
+
+    while (gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_ACCEPT) {
+        gint index;
+        TileSource *ts;
+
+        /* Check for primary tile source. If not specified or not valid,
+         * show notice and spin again. */
+        ts = map_controller_lookup_tile_source_by_name(
+            controller, hildon_button_get_value(HILDON_BUTTON(primary_layer)));
+
+        if (ts)
+            repo->primary = ts;
+        else {
+            GtkWidget *note = hildon_note_new_information(GTK_WINDOW(dialog),
+                                                          _("Tile source is required"));
+            gtk_dialog_run(GTK_DIALOG(note));
+            gtk_widget_destroy(note);
+            continue;
+        }
+
+        if (gtk_entry_get_text_length (GTK_ENTRY(name_entry)) &&
+            strcmp(gtk_entry_get_text(GTK_ENTRY(name_entry)), repo->name))
+        {
+            g_free(repo->name);
+            repo->name = g_strdup(gtk_entry_get_text(GTK_ENTRY(name_entry)));
+        }
+
+        index = hildon_touch_selector_get_active(min_zoom_selector, 0);
+        if (index >= 0)
+            repo->min_zoom = index + MIN_ZOOM;
+        index = hildon_touch_selector_get_active(max_zoom_selector, 0);
+        if (index >= 0)
+            repo->max_zoom = index + MIN_ZOOM;
+        index = hildon_touch_selector_get_active(zoom_step_selector, 0);
+        if (index >= 0)
+            repo->zoom_step = index + 1;
+
+        /* Layers */
+        if (repo->layers)
+            g_ptr_array_free(repo->layers, TRUE);
+        repo->layers = layers_context.layers;
+        res = TRUE;
+        break;
+    }
+
+    gtk_widget_destroy(dialog);
+
+    return res;
 }
 
 

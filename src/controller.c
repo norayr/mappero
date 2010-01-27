@@ -760,7 +760,7 @@ map_controller_get_tile_sources_list(MapController *self)
 
 /* Return TileSource reference with this ID. If not found, return NULL */
 TileSource *
-map_controller_lookup_tile_source(MapController *self, gchar *id)
+map_controller_lookup_tile_source(MapController *self, const gchar *id)
 {
     GList *ts_list;
     TileSource *ts;
@@ -783,9 +783,33 @@ map_controller_lookup_tile_source(MapController *self, gchar *id)
 }
 
 
+/* Return TileSource reference with this name. If not found, return NULL */
+TileSource *
+map_controller_lookup_tile_source_by_name(MapController *self, const gchar *name)
+{
+    GList *ts_list;
+    TileSource *ts;
+
+    g_return_val_if_fail(MAP_IS_CONTROLLER(self), NULL);
+
+    if (!name)
+        return NULL;
+
+    ts_list = self->priv->tile_sources_list;
+    while (ts_list)
+    {
+        ts = (TileSource*)ts_list->data;
+        if (ts && ts->name && !strcmp(ts->name, name))
+            return ts;
+        ts_list = g_list_next(ts_list);
+    }
+
+    return NULL;
+}
+
 
 Repository *
-map_controller_lookup_repository(MapController *self, gchar *name)
+map_controller_lookup_repository(MapController *self, const gchar *name)
 {
     GList *repo_list;
     Repository *repo;

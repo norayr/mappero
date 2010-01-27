@@ -19,7 +19,7 @@ void free_repository(Repository *repo);
 void delete_repository(Repository *repo);
 
 void repositories_dialog();
-gboolean repository_edit_dialog(Repository *repo);
+gboolean repository_edit_dialog(GtkWindow *parent, Repository *repo);
 gboolean tile_source_dialog(TileSource *ts);
 
 #endif /* __REPO_H__ */
