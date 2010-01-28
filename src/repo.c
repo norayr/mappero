@@ -18,6 +18,7 @@
 #include "data.h"
 #include "defines.h"
 #include "display.h"
+#include "menu.h"
 #include "types.h"
 #include "repo.h"
 #include "settings.h"
@@ -326,9 +327,9 @@ repository_delete_handler(GtkWindow* parent, Repository* repo)
 /*
  * Download XML data with repositories and tile sources and merge it into current configuration.
  * Don't really sure what better: silently update user's repositories or ask about this?
- * At this moment, just update.
+ * At this moment, just update. Return TRUE if configuration changed by sync.
  */
-static void
+static gboolean
 repository_sync_handler(GtkWindow *parent)
 {
     GnomeVFSResult res;
@@ -347,7 +348,7 @@ repository_sync_handler(GtkWindow *parent)
                                      "a=blob_plain;f=data/tile_sources.xml;hb=refs/heads/new_repos",
                                      &size, &data);
     if (res != GNOME_VFS_OK)
-        return;
+        return FALSE;
 
     if (data && size > 0) {
         list_head = list = xml_to_tile_sources(data);
@@ -387,7 +388,7 @@ repository_sync_handler(GtkWindow *parent)
                                      "a=blob_plain;f=data/repositories.xml;hb=refs/heads/new_repos",
                                      &size, &data);
     if (res != GNOME_VFS_OK)
-        return;
+        return ts_mod || ts_new;
 
     if (data && size > 0) {
         list_head = list = xml_to_repositories(data);
@@ -442,6 +443,8 @@ repository_sync_handler(GtkWindow *parent)
         gtk_widget_destroy(dialog);
         g_free(msg);
     }
+
+    return ts_mod || ts_new || repo_new || repo_mod;
 }
 
 
@@ -775,6 +778,7 @@ repositories_dialog()
     GList *repo_list;
     Repository *repo, *active_repo = NULL;
     gint active;
+    gboolean update_menus = FALSE;
 
     dialog = gtk_dialog_new_with_buttons(_("Repositories"), GTK_WINDOW(_window),
                                          GTK_DIALOG_MODAL, NULL);
@@ -820,7 +824,7 @@ repositories_dialog()
 
         switch (response) {
         case RESP_SYNC:
-            repository_sync_handler(GTK_WINDOW(dialog));
+            update_menus = repository_sync_handler(GTK_WINDOW(dialog));
             break;
         case RESP_ADD:
             active_repo = g_slice_new0(Repository);
@@ -829,17 +833,21 @@ repositories_dialog()
             active_repo->max_zoom = REPO_DEFAULT_MAX_ZOOM;
             active_repo->zoom_step = 1;
 
-            if (repository_edit_dialog(GTK_WINDOW(dialog), active_repo))
+            if (repository_edit_dialog(GTK_WINDOW(dialog), active_repo)) {
                 map_controller_append_repository(controller, active_repo);
+                update_menus = TRUE;
+            }
             else
                 free_repository(active_repo);
             active_repo = NULL;
             break;
         case RESP_EDIT:
             if (active_repo)
-                if (repository_edit_dialog(GTK_WINDOW(dialog), active_repo))
+                if (repository_edit_dialog(GTK_WINDOW(dialog), active_repo)) {
                     if (active_repo == map_controller_get_repository(controller))
                         map_refresh_mark(TRUE);
+                    update_menus = TRUE;
+                }
             break;
         case RESP_DELETE:
             repository_delete_handler(GTK_WINDOW(dialog), active_repo);
@@ -847,6 +855,9 @@ repositories_dialog()
             break;
         }
         gtk_widget_destroy(GTK_WIDGET(repos_selector));
+        /* We need to sync menu entries with repository list */
+        if (update_menus)
+            menu_maps_add_repos();
     }
     gtk_widget_destroy(dialog);
     settings_save();
