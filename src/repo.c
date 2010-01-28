@@ -15,6 +15,7 @@
 #include <hildon/hildon-button.h>
 
 #include "data.h"
+#include "display.h"
 #include "types.h"
 #include "defines.h"
 #include "controller.h"
@@ -495,7 +496,7 @@ update_layers_button_value(HildonButton *button, GPtrArray *layers)
         g_free(titles);
     }
     else
-        hildon_button_set_value(button, _("None"));
+        hildon_button_set_value(button, NULL);
 }
 
 
