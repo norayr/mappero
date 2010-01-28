@@ -16,8 +16,6 @@ gboolean compare_repositories(Repository *repo1, Repository *repo2);
 void free_tile_source(TileSource *ts);
 void free_repository(Repository *repo);
 
-void delete_repository(Repository *repo);
-
 void repositories_dialog();
 gboolean repository_edit_dialog(GtkWindow *parent, Repository *repo);
 gboolean tile_source_dialog(TileSource *ts);
