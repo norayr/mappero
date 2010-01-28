@@ -20,6 +20,7 @@
 #include "display.h"
 #include "types.h"
 #include "repo.h"
+#include "settings.h"
 
 /* Tag names. Used in XML generator and parser. */
 #define TS_ROOT  "TileSources"
@@ -441,8 +442,6 @@ repository_sync_handler(GtkWindow *parent)
         gtk_widget_destroy(dialog);
         g_free(msg);
     }
-
-    /* TODO: save settings */
 }
 
 
@@ -850,6 +849,7 @@ repositories_dialog()
         gtk_widget_destroy(GTK_WIDGET(repos_selector));
     }
     gtk_widget_destroy(dialog);
+    settings_save();
 }
 
 
