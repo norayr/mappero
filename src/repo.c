@@ -824,7 +824,17 @@ repositories_dialog()
             repository_sync_handler(GTK_WINDOW(dialog));
             break;
         case RESP_ADD:
-            printf ("Add not implemented\n");
+            active_repo = g_slice_new0(Repository);
+            active_repo->name = g_strdup(_("New repository"));
+            active_repo->min_zoom = REPO_DEFAULT_MIN_ZOOM;
+            active_repo->max_zoom = REPO_DEFAULT_MAX_ZOOM;
+            active_repo->zoom_step = 1;
+
+            if (repository_edit_dialog(GTK_WINDOW(dialog), active_repo))
+                map_controller_append_repository(controller, active_repo);
+            else
+                free_repository(active_repo);
+            active_repo = NULL;
             break;
         case RESP_EDIT:
             if (active_repo)
