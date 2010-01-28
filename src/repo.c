@@ -14,11 +14,11 @@
 #include <hildon/hildon-picker-button.h>
 #include <hildon/hildon-button.h>
 
+#include "controller.h"
 #include "data.h"
+#include "defines.h"
 #include "display.h"
 #include "types.h"
-#include "defines.h"
-#include "controller.h"
 #include "repo.h"
 
 /* Tag names. Used in XML generator and parser. */
