@@ -1292,6 +1292,8 @@ menu_maps_add_repos()
         }
         gtk_check_menu_item_set_active(
                 GTK_CHECK_MENU_ITEM(menu_item), rd == cur_repo);
+        if (rd->menu_item)
+            gtk_widget_destroy(rd->menu_item);
         rd->menu_item = menu_item;
     }
 
@@ -1319,6 +1321,8 @@ menu_layers_add_repos()
     GList *curr;
 
     printf("%s()\n", __PRETTY_FUNCTION__);
+
+    menu_layers_remove_repos();
 
     for(curr = map_controller_get_repo_list(map_controller_get_instance()); curr; curr = curr->next)
     {
