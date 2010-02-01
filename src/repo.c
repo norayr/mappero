@@ -13,6 +13,7 @@
 #include <hildon/hildon-entry.h>
 #include <hildon/hildon-picker-button.h>
 #include <hildon/hildon-button.h>
+#include <hildon/hildon-picker-dialog.h>
 
 #include "controller.h"
 #include "data.h"
@@ -506,16 +507,138 @@ update_layers_button_value(HildonButton *button, GPtrArray *layers)
  * Layers selector dialog context
  */
 struct RepositoryLayersDialogContext {
-    GPtrArray *layers;          /* List of TileSource references */
+    GPtrArray *layers;          /* List of TileSource references. Modified only on save clicked. */
     HildonButton *button;       /* Button with list of layer's names */
 };
 
 
+/*
+ * Show dialog to select tile source from the list. Show only transprent layers.
+ */
+static TileSource*
+select_tile_source_dialog(GtkWindow *parent, gboolean transparent)
+{
+    GtkWidget *dialog;
+    HildonTouchSelector *selector;
+    gint ret, index;
+
+    selector = HILDON_TOUCH_SELECTOR(hildon_touch_selector_new_text());
+    fill_selector_with_tile_sources(selector, transparent, NULL);
+
+    dialog = hildon_picker_dialog_new(parent);
+    gtk_window_set_title(GTK_WINDOW(dialog), _("Select layer"));
+    hildon_picker_dialog_set_selector(HILDON_PICKER_DIALOG(dialog), selector);
+    ret = gtk_dialog_run(GTK_DIALOG(dialog));
+
+    if (ret == GTK_RESPONSE_DELETE_EVENT) {
+        gtk_widget_destroy(dialog);
+        return NULL;
+    }
+
+    index = hildon_touch_selector_get_active(selector, 0);
+    gtk_widget_destroy(dialog);
+
+    if (index >= 0) {
+        /* Iterate over tile sources and find N'th */
+        GList *ts_list = map_controller_get_tile_sources_list(map_controller_get_instance());
+
+        while (ts_list) {
+            if (((TileSource*)ts_list->data)->transparent == transparent)
+                break;
+            ts_list = ts_list->next;
+        }
+
+        while (ts_list && index > 0) {
+            if (((TileSource*)ts_list->data)->transparent == transparent)
+                index--;
+            ts_list = ts_list->next;
+        }
+
+        if (ts_list)
+            return (TileSource*)ts_list->data;
+        else
+            return NULL;
+    }
+    return NULL;
+}
+
+
+/*
+ * Show dialog with list of layers
+ */
 static gboolean
 select_layers_button_clicked(GtkWidget *widget, struct RepositoryLayersDialogContext *ctx)
 {
-    printf ("Selection of layers not implemented\n");
-    return TRUE;
+    GtkWidget *dialog;
+    HildonTouchSelector *layers_selector;
+    TileSource *ts;
+    gint resp, i;
+    gboolean ret = FALSE;
+    GPtrArray *layers = g_ptr_array_new();;
+    enum {
+        RESP_ADD,
+        RESP_DELETE,
+        RESP_SAVE,
+    };
+
+    /* Create copy of context's layers list. */
+    if (ctx->layers && ctx->layers->len) {
+        for (i = 0; i < ctx->layers->len; i++)
+            g_ptr_array_add(layers, g_ptr_array_index(ctx->layers, i));
+    }
+
+    dialog = gtk_dialog_new_with_buttons(_("Layers"), NULL, GTK_DIALOG_MODAL, NULL);
+    gtk_dialog_add_button(GTK_DIALOG(dialog), GTK_STOCK_ADD, RESP_ADD);
+    gtk_dialog_add_button(GTK_DIALOG(dialog), GTK_STOCK_DELETE, RESP_DELETE);
+    gtk_dialog_add_button(GTK_DIALOG(dialog), GTK_STOCK_SAVE, RESP_SAVE);
+    while (1) {
+        layers_selector = HILDON_TOUCH_SELECTOR(hildon_touch_selector_new_text());
+
+        /* Populate selector with layers */
+        for (i = 0; i < layers->len; i++) {
+            ts = (TileSource*)g_ptr_array_index(layers, i);
+            hildon_touch_selector_append_text(layers_selector, ts->name);
+        }
+
+        gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox),
+                           GTK_WIDGET(layers_selector), TRUE, TRUE, 0);
+        gtk_widget_show_all(dialog);
+        resp = gtk_dialog_run(GTK_DIALOG(dialog));
+
+        if (resp == RESP_SAVE || resp == GTK_RESPONSE_DELETE_EVENT)
+            break;
+
+        i = hildon_touch_selector_get_active(layers_selector, 0);
+        if (i < 0)
+            ts = NULL;
+        else
+            ts = g_ptr_array_index(layers, i);
+
+        switch (resp) {
+        case RESP_ADD:
+            ts = select_tile_source_dialog(GTK_WINDOW(dialog), TRUE);
+            if (ts)
+                g_ptr_array_add(layers, ts);
+            break;
+        case RESP_DELETE:
+            g_ptr_array_remove(layers, ts);
+            break;
+        }
+        gtk_widget_destroy(GTK_WIDGET(layers_selector));
+     }
+
+    gtk_widget_destroy(dialog);
+    if (resp == RESP_SAVE) {
+        update_layers_button_value(ctx->button, layers);
+        if (ctx->layers)
+            g_ptr_array_free(ctx->layers, TRUE);
+        ctx->layers = layers;
+        return TRUE;
+    }
+    else {
+        return FALSE;
+        g_ptr_array_free(layers, TRUE);
+    }
 }
 
 
@@ -1026,6 +1149,9 @@ repository_edit_dialog(GtkWindow *parent, Repository *repo)
 
     gtk_widget_destroy(dialog);
 
+    if (!res)
+        g_ptr_array_free(layers_context.layers, TRUE);
+
     return res;
 }
 
@@ -1037,6 +1163,8 @@ repository_edit_dialog(GtkWindow *parent, Repository *repo)
 gboolean
 tile_source_edit_dialog(TileSource *ts)
 {
+    if (!ts)
+        return FALSE;
     return FALSE;
 }
 
