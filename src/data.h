@@ -238,6 +238,7 @@ extern GtkWidget *_menu_layers_submenu;
 extern GtkWidget *_menu_maps_mapman_item;
 extern GtkWidget *_menu_maps_auto_download_item;
 extern GtkWidget *_menu_maps_repoman_item;
+extern GtkWidget *_menu_maps_tile_sources_item;
 extern GtkWidget *_menu_maps_repodown_item;
 
 /* Menu items for the "View" submenu. */

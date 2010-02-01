@@ -501,6 +501,16 @@ menu_cb_maps_repoman(GtkMenuItem *item)
 
 
 static gboolean
+menu_cb_maps_tile_sources(GtkMenuItem *item)
+{
+    printf("%s()\n", __PRETTY_FUNCTION__);
+    tile_sources_dialog();
+    vprintf("%s(): return TRUE\n", __PRETTY_FUNCTION__);
+    return TRUE;
+}
+
+
+static gboolean
 menu_cb_maps_select(GtkMenuItem *item, gpointer new_repo)
 {
     printf("%s()\n", __PRETTY_FUNCTION__);
@@ -1461,6 +1471,8 @@ menu_init()
     gtk_menu_append(_menu_maps_submenu, gtk_separator_menu_item_new());
     gtk_menu_append(_menu_maps_submenu, _menu_maps_repoman_item
             = gtk_menu_item_new_with_label(_("Manage Repositories...")));
+    gtk_menu_append(_menu_maps_submenu, _menu_maps_tile_sources_item
+            = gtk_menu_item_new_with_label(_("Manage Tiles/Layers...")));
     menu_maps_add_repos();
 
     gtk_menu_append(menu, gtk_separator_menu_item_new());
@@ -1665,6 +1677,8 @@ menu_init()
     /* Connect the "Maps" signals. */
     g_signal_connect(G_OBJECT(_menu_maps_repoman_item), "activate",
                       G_CALLBACK(menu_cb_maps_repoman), NULL);
+    g_signal_connect(G_OBJECT(_menu_maps_tile_sources_item), "activate",
+                      G_CALLBACK(menu_cb_maps_tile_sources), NULL);
     g_signal_connect(G_OBJECT(_menu_maps_mapman_item), "activate",
                       G_CALLBACK(menu_cb_maps_mapman), NULL);
     g_signal_connect(G_OBJECT(_menu_maps_auto_download_item), "toggled",

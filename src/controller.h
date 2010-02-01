@@ -71,6 +71,7 @@ void map_controller_set_repository(MapController *self, Repository *repo);
 GList *map_controller_get_repo_list(MapController *self);
 GList *map_controller_get_tile_sources_list(MapController *self);
 void map_controller_delete_repository(MapController *self, Repository *repo);
+void map_controller_delete_tile_source(MapController *self, TileSource *ts);
 void map_controller_append_tile_source(MapController *self, TileSource *ts);
 void map_controller_append_repository(MapController *self, Repository *repo);
 

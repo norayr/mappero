@@ -325,6 +325,25 @@ repository_delete_handler(GtkWindow* parent, Repository* repo)
 }
 
 
+/* Ask about tile source deletion and remove it from all repositories it referenced */
+static void
+tile_sources_delete_handler(GtkWindow* parent, TileSource* ts)
+{
+    GtkWidget *dialog;
+    gchar *msg;
+    gint ret;
+
+    msg = g_strdup_printf(_("Do you really want to delete tile source\n%s?"), ts->name);
+
+    dialog = hildon_note_new_confirmation(parent, msg);
+    ret = gtk_dialog_run(GTK_DIALOG(dialog));
+    gtk_widget_destroy(dialog);
+
+    if (ret == GTK_RESPONSE_OK)
+        map_controller_delete_tile_source(map_controller_get_instance(), ts);
+}
+
+
 /*
  * Download XML data with repositories and tile sources and merge it into current configuration.
  * Don't really sure what better: silently update user's repositories or ask about this?
@@ -406,7 +425,7 @@ repository_sync_handler(GtkWindow *parent)
                     repo_old->min_zoom = repo->min_zoom;
                     repo_old->max_zoom = repo->max_zoom;
                     repo_old->zoom_step = repo->zoom_step;
-                    if (strcmp(repo_old->primary->id, repo->primary->id))
+                    if (!repo_old->primary || strcmp(repo_old->primary->id, repo->primary->id))
                         repo_old->primary = map_controller_lookup_tile_source(controller, repo->primary->id);
                     if (repo_old->layers) {
                         g_ptr_array_free(repo_old->layers, TRUE);
@@ -866,7 +885,7 @@ compare_repositories(Repository *repo1, Repository *repo2)
     {
         return FALSE;
     }
-    if (strcmp(repo1->primary->id, repo2->primary->id))
+    if (!repo1->primary || !repo2->primary || strcmp(repo1->primary->id, repo2->primary->id))
         return FALSE;
     if (repo1->layers || repo2->layers) {
         if (!repo1->layers || !repo2->layers)
@@ -880,8 +899,6 @@ compare_repositories(Repository *repo1, Repository *repo2)
     }
     return TRUE;
 }
-
-
 
 
 /* Show dialog with list of repositories */
@@ -984,6 +1001,72 @@ repositories_dialog()
     }
     gtk_widget_destroy(dialog);
     settings_save();
+}
+
+
+/* Dialog with list of tile sources */
+void
+tile_sources_dialog()
+{
+    GtkWidget *dialog, *edit_button, *delete_button;
+    HildonTouchSelector *ts_selector;
+    MapController *controller = map_controller_get_instance();
+    GList *ts_list;
+    TileSource *ts;
+    gint response, active;
+    enum {
+        RESP_ADD,
+        RESP_EDIT,
+        RESP_DELETE,
+    };
+
+    dialog = gtk_dialog_new_with_buttons(_("Tiles and layers"), GTK_WINDOW(_window),
+                                         GTK_DIALOG_MODAL, NULL);
+    gtk_dialog_add_button(GTK_DIALOG(dialog), GTK_STOCK_ADD, RESP_ADD);
+    edit_button = gtk_dialog_add_button(GTK_DIALOG(dialog), GTK_STOCK_EDIT, RESP_EDIT);
+    delete_button = gtk_dialog_add_button(GTK_DIALOG(dialog), GTK_STOCK_DELETE, RESP_DELETE);
+
+    while (1) {
+        ts_selector = HILDON_TOUCH_SELECTOR(hildon_touch_selector_new_text());
+
+        ts_list = map_controller_get_tile_sources_list(controller);
+
+        /* These two buttons have meaning only if we have something in a list */
+        gtk_widget_set_sensitive(edit_button, ts_list != NULL);
+        gtk_widget_set_sensitive(delete_button, ts_list != NULL);
+
+        while (ts_list) {
+            ts = (TileSource*)ts_list->data;
+            hildon_touch_selector_append_text(ts_selector, ts->name);
+            ts_list = ts_list->next;
+        }
+
+        gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox), GTK_WIDGET(ts_selector), TRUE, TRUE, 0);
+
+        gtk_widget_show_all(dialog);
+        if ((response = gtk_dialog_run(GTK_DIALOG(dialog))) == GTK_RESPONSE_DELETE_EVENT)
+            break;
+
+        active = hildon_touch_selector_get_active(ts_selector, 0);
+        if (active >= 0)
+            ts = (TileSource*)g_list_nth_data(map_controller_get_tile_sources_list(controller), active);
+        else
+            ts = NULL;
+
+        switch (response) {
+        case RESP_ADD:
+            break;
+        case RESP_EDIT:
+            break;
+        case RESP_DELETE:
+            tile_sources_delete_handler(GTK_WINDOW(dialog), ts);
+            ts = NULL;
+            break;
+        }
+        gtk_widget_destroy(GTK_WIDGET(ts_selector));
+    }
+
+    gtk_widget_destroy(dialog);
 }
 
 
@@ -1167,4 +1250,3 @@ tile_source_edit_dialog(TileSource *ts)
         return FALSE;
     return FALSE;
 }
-

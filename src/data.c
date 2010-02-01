@@ -262,6 +262,7 @@ GtkWidget *_menu_layers_submenu = NULL;
 GtkWidget *_menu_maps_mapman_item = NULL;
 GtkWidget *_menu_maps_auto_download_item = NULL;
 GtkWidget *_menu_maps_repoman_item = NULL;
+GtkWidget *_menu_maps_tile_sources_item = NULL;
 GtkWidget *_menu_maps_repodown_item = NULL;
 
 /* Menu items for the "View" submenu. */

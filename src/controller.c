@@ -856,6 +856,32 @@ map_controller_delete_repository(MapController *self, Repository *repo)
 
 
 void
+map_controller_delete_tile_source(MapController *self, TileSource *ts)
+{
+    MapControllerPrivate *priv;
+    GList *repo_list;
+    Repository *repo;
+
+    g_return_if_fail(MAP_IS_CONTROLLER(self));
+    priv = self->priv;
+
+    priv->tile_sources_list = g_list_remove(priv->tile_sources_list, ts);
+
+    repo_list = priv->repositories_list;
+    while (repo_list) {
+        repo = (Repository*)repo_list->data;
+        if (repo->primary == ts)
+            repo->primary = NULL;
+        if (repo->layers)
+            while (g_ptr_array_remove(repo->layers, ts));
+        repo_list = repo_list->next;
+    }
+
+    free_tile_source(ts);
+}
+
+
+void
 map_controller_append_tile_source(MapController *self, TileSource *ts)
 {
     MapControllerPrivate *priv;

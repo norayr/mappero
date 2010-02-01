@@ -17,6 +17,7 @@ void free_tile_source(TileSource *ts);
 void free_repository(Repository *repo);
 
 void repositories_dialog();
+void tile_sources_dialog();
 gboolean repository_edit_dialog(GtkWindow *parent, Repository *repo);
 gboolean tile_source_edit_dialog(TileSource *ts);
 
