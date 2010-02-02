@@ -14,15 +14,18 @@
 #include <hildon/hildon-picker-button.h>
 #include <hildon/hildon-button.h>
 #include <hildon/hildon-picker-dialog.h>
+#include <hildon/hildon-pannable-area.h>
+#include <hildon/hildon-check-button.h>
 
 #include "controller.h"
 #include "data.h"
 #include "defines.h"
 #include "display.h"
 #include "menu.h"
-#include "types.h"
 #include "repo.h"
 #include "settings.h"
+#include "types.h"
+#include "util.h"
 
 /* Tag names. Used in XML generator and parser. */
 #define TS_ROOT  "TileSources"
@@ -101,6 +104,21 @@ str_to_repotype(const char* s)
     }
 
     return repotype_map[i].type;
+}
+
+
+static void
+fill_selector_with_repotypes(HildonTouchSelector *selector, RepoType active)
+{
+    gint i = 0;
+
+    while (repotype_map[i].s) {
+        hildon_touch_selector_append_text(selector, repotype_map[i].s);
+
+        if (repotype_map[i].type == active)
+            hildon_touch_selector_set_active(selector, 0, i);
+        i++;
+    }
 }
 
 
@@ -560,23 +578,18 @@ select_tile_source_dialog(GtkWindow *parent, gboolean transparent)
     if (index >= 0) {
         /* Iterate over tile sources and find N'th */
         GList *ts_list = map_controller_get_tile_sources_list(map_controller_get_instance());
+        TileSource *ts = NULL;
 
         while (ts_list) {
-            if (((TileSource*)ts_list->data)->transparent == transparent)
-                break;
-            ts_list = ts_list->next;
-        }
-
-        while (ts_list && index > 0) {
-            if (((TileSource*)ts_list->data)->transparent == transparent)
+            if (((TileSource*)ts_list->data)->transparent == transparent) {
+                if (!index)
+                    ts = (TileSource*)ts_list->data;
                 index--;
+            }
             ts_list = ts_list->next;
         }
 
-        if (ts_list)
-            return (TileSource*)ts_list->data;
-        else
-            return NULL;
+        return ts;
     }
     return NULL;
 }
@@ -606,7 +619,7 @@ select_layers_button_clicked(GtkWidget *widget, struct RepositoryLayersDialogCon
             g_ptr_array_add(layers, g_ptr_array_index(ctx->layers, i));
     }
 
-    dialog = gtk_dialog_new_with_buttons(_("Layers"), NULL, GTK_DIALOG_MODAL, NULL);
+    dialog = gtk_dialog_new_with_buttons(_("Repository's layers"), NULL, GTK_DIALOG_MODAL, NULL);
     gtk_dialog_add_button(GTK_DIALOG(dialog), GTK_STOCK_ADD, RESP_ADD);
     gtk_dialog_add_button(GTK_DIALOG(dialog), GTK_STOCK_DELETE, RESP_DELETE);
     gtk_dialog_add_button(GTK_DIALOG(dialog), GTK_STOCK_SAVE, RESP_SAVE);
@@ -1012,7 +1025,7 @@ tile_sources_dialog()
     HildonTouchSelector *ts_selector;
     MapController *controller = map_controller_get_instance();
     GList *ts_list;
-    TileSource *ts;
+    TileSource *ts, *active_ts = NULL;
     gint response, active;
     enum {
         RESP_ADD,
@@ -1029,16 +1042,21 @@ tile_sources_dialog()
     while (1) {
         ts_selector = HILDON_TOUCH_SELECTOR(hildon_touch_selector_new_text());
 
+        gtk_widget_set_size_request(GTK_WIDGET(ts_selector), -1, 300);
         ts_list = map_controller_get_tile_sources_list(controller);
 
         /* These two buttons have meaning only if we have something in a list */
         gtk_widget_set_sensitive(edit_button, ts_list != NULL);
         gtk_widget_set_sensitive(delete_button, ts_list != NULL);
+        active = 0;
 
         while (ts_list) {
             ts = (TileSource*)ts_list->data;
             hildon_touch_selector_append_text(ts_selector, ts->name);
+            if (ts == active_ts)
+                hildon_touch_selector_set_active(ts_selector, 0, active);
             ts_list = ts_list->next;
+            active++;
         }
 
         gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox), GTK_WIDGET(ts_selector), TRUE, TRUE, 0);
@@ -1049,18 +1067,29 @@ tile_sources_dialog()
 
         active = hildon_touch_selector_get_active(ts_selector, 0);
         if (active >= 0)
-            ts = (TileSource*)g_list_nth_data(map_controller_get_tile_sources_list(controller), active);
+            active_ts = (TileSource*)g_list_nth_data(map_controller_get_tile_sources_list(controller), active);
         else
-            ts = NULL;
+            active_ts = NULL;
 
         switch (response) {
         case RESP_ADD:
+            ts = g_slice_new0(TileSource);
+            ts->name = g_strdup("New tile source");
+            ts->id = g_strdup("New tile source ID");
+            ts->type = REPOTYPE_NONE;
+            if (tile_source_edit_dialog(GTK_WINDOW(dialog), ts)) {
+                map_controller_append_tile_source(controller, ts);
+                active_ts = ts;
+            }
+            else
+                free_tile_source(ts);
             break;
         case RESP_EDIT:
+            tile_source_edit_dialog(GTK_WINDOW(dialog), active_ts);
             break;
         case RESP_DELETE:
-            tile_sources_delete_handler(GTK_WINDOW(dialog), ts);
-            ts = NULL;
+            tile_sources_delete_handler(GTK_WINDOW(dialog), active_ts);
+            active_ts = NULL;
             break;
         }
         gtk_widget_destroy(GTK_WIDGET(ts_selector));
@@ -1197,13 +1226,8 @@ repository_edit_dialog(GtkWindow *parent, Repository *repo)
 
         if (ts)
             repo->primary = ts;
-        else {
-            GtkWidget *note = hildon_note_new_information(GTK_WINDOW(dialog),
-                                                          _("Tile source is required"));
-            gtk_dialog_run(GTK_DIALOG(note));
-            gtk_widget_destroy(note);
-            continue;
-        }
+        else
+            popup_error(dialog, _("Tile source is required"));
 
         if (gtk_entry_get_text_length (GTK_ENTRY(name_entry)) &&
             strcmp(gtk_entry_get_text(GTK_ENTRY(name_entry)), repo->name))
@@ -1244,9 +1268,161 @@ repository_edit_dialog(GtkWindow *parent, Repository *repo)
  * when user pressed 'save', FALSE on cancel
  */
 gboolean
-tile_source_edit_dialog(TileSource *ts)
+tile_source_edit_dialog(GtkWindow *parent, TileSource *ts)
 {
+    GtkWidget *dialog, *label;
+    GtkWidget *name_entry, *id_entry, *cache_entry, *url_entry;
+    GtkTable *table;
+    GtkWidget *pannable;
+    HildonTouchSelector *type_selector;
+    GtkWidget *type_button;
+    GtkWidget *visible_button, *transparent_button;
+    HildonTouchSelector *refresh_selector;
+    GtkWidget *refresh_button;
+    gint i;
+    gchar buf[10];
+    MapController *controller = map_controller_get_instance();
+    gboolean res = FALSE;
+
     if (!ts)
         return FALSE;
-    return FALSE;
+
+    dialog = gtk_dialog_new_with_buttons(_("Tile source"), parent, GTK_DIALOG_MODAL,
+                                         GTK_STOCK_SAVE, GTK_RESPONSE_ACCEPT, NULL);
+    table = GTK_TABLE(gtk_table_new(6, 4, TRUE));
+    pannable = hildon_pannable_area_new();
+    gtk_widget_set_size_request(pannable, -1, 300);
+    hildon_pannable_area_add_with_viewport(HILDON_PANNABLE_AREA(pannable), GTK_WIDGET(table));
+    gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox), pannable, TRUE, TRUE, 0);
+
+    /* Name */
+    label = gtk_label_new(_("Name"));
+    gtk_table_attach(table, label, 0, 1, 0, 1, GTK_FILL | GTK_EXPAND, 0, 2, 4);
+    name_entry = hildon_entry_new(HILDON_SIZE_FINGER_HEIGHT);
+    gtk_table_attach(table, name_entry, 1, 4, 0, 1, GTK_FILL | GTK_EXPAND, 0, 2, 4);
+
+    /* ID */
+    label = gtk_label_new(_("UniqID"));
+    gtk_table_attach(table, label, 0, 1, 1, 2, GTK_FILL | GTK_EXPAND, 0, 2, 4);
+    id_entry = hildon_entry_new(HILDON_SIZE_FINGER_HEIGHT);
+    gtk_table_attach(table, id_entry, 1, 4, 1, 2, GTK_FILL | GTK_EXPAND, 0, 2, 4);
+
+    /* Cache dir */
+    label = gtk_label_new(_("Cache dir"));
+    gtk_table_attach(table, label, 0, 1, 2, 3, GTK_FILL | GTK_EXPAND, 0, 2, 4);
+    cache_entry = hildon_entry_new(HILDON_SIZE_FINGER_HEIGHT);
+    gtk_table_attach(table, cache_entry, 1, 4, 2, 3, GTK_FILL | GTK_EXPAND, 0, 2, 4);
+
+    /* URL */
+    label = gtk_label_new(_("URL"));
+    gtk_table_attach(table, label, 0, 1, 3, 4, GTK_FILL | GTK_EXPAND, 0, 2, 4);
+    url_entry = hildon_entry_new(HILDON_SIZE_FINGER_HEIGHT);
+    gtk_table_attach(table, url_entry, 1, 4, 3, 4, GTK_FILL | GTK_EXPAND, 0, 2, 4);
+
+    /* Repository type */
+    type_selector = HILDON_TOUCH_SELECTOR(hildon_touch_selector_new_text());
+    fill_selector_with_repotypes(type_selector, ts->type);
+    type_button = g_object_new(HILDON_TYPE_PICKER_BUTTON,
+                               "size", HILDON_SIZE_FINGER_HEIGHT,
+                               "title", _("Type"),
+                               "touch-selector", type_selector,
+                               NULL);
+    gtk_table_attach(table, type_button, 0, 2, 4, 5, GTK_FILL | GTK_EXPAND, 0, 2, 4);
+
+    /* visible */
+    visible_button = hildon_check_button_new(HILDON_SIZE_FINGER_HEIGHT);
+    gtk_button_set_label(GTK_BUTTON(visible_button), _("Visible"));
+    gtk_table_attach(table, visible_button, 2, 4, 4, 5, GTK_FILL | GTK_EXPAND, 0, 2, 4);
+
+    /* transparent */
+    transparent_button = hildon_check_button_new(HILDON_SIZE_FINGER_HEIGHT);
+    gtk_button_set_label(GTK_BUTTON(transparent_button), _("Layer"));
+    gtk_table_attach(table, transparent_button, 0, 2, 5, 6, GTK_FILL | GTK_EXPAND, 0, 2, 4);
+
+    /* refresh */
+    refresh_selector = HILDON_TOUCH_SELECTOR(hildon_touch_selector_new_text());
+    for (i = 0; i <= 30; i++) {
+        g_snprintf(buf, sizeof(buf), "%d", i);
+        hildon_touch_selector_append_text(refresh_selector, buf);
+    }
+    refresh_button = g_object_new(HILDON_TYPE_PICKER_BUTTON,
+                                  "size", HILDON_SIZE_FINGER_HEIGHT,
+                                  "title", _("Refresh, min"),
+                                  "touch-selector", refresh_selector,
+                                  NULL);
+    gtk_table_attach(table, refresh_button, 2, 4, 5, 6, GTK_FILL | GTK_EXPAND, 0, 2, 4);
+
+    /* Fill with data */
+    hildon_entry_set_text(HILDON_ENTRY(name_entry), ts->name);
+    hildon_entry_set_text(HILDON_ENTRY(id_entry), ts->id);
+    hildon_entry_set_text(HILDON_ENTRY(cache_entry), ts->cache_dir);
+    hildon_entry_set_text(HILDON_ENTRY(url_entry), ts->url);
+    hildon_check_button_set_active(HILDON_CHECK_BUTTON(visible_button), ts->visible);
+    hildon_check_button_set_active(HILDON_CHECK_BUTTON(transparent_button), ts->transparent);
+    hildon_touch_selector_set_active(refresh_selector, 0, ts->refresh);
+
+    gtk_widget_show_all(dialog);
+
+    while (gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_ACCEPT) {
+        TileSource *ts_ref;
+        const gchar *str;
+
+        /* Check dialog data */
+        if (!gtk_entry_get_text_length(GTK_ENTRY(name_entry))) {
+            popup_error(dialog, _("Name is required"));
+            continue;
+        }
+        if (!gtk_entry_get_text_length(GTK_ENTRY(id_entry))) {
+            popup_error(dialog, _("ID is required"));
+            continue;
+        }
+        str = gtk_entry_get_text(GTK_ENTRY(id_entry));
+        ts_ref = map_controller_lookup_tile_source(controller, str);
+        if (ts_ref && ts_ref != ts) {
+            popup_error(dialog, _("ID is not unique"));
+            continue;
+        }
+        if (!gtk_entry_get_text_length(GTK_ENTRY(cache_entry))) {
+            popup_error(dialog, _("Cache dir is required"));
+            continue;
+        }
+        if (!gtk_entry_get_text_length(GTK_ENTRY(url_entry))) {
+            popup_error(dialog, _("URL is required"));
+            continue;
+        }
+
+        /* All seems valid, update tile source record */
+        str = gtk_entry_get_text(GTK_ENTRY(name_entry));
+        if (g_strcmp0 (ts->name, str)) {
+            g_free(ts->name);
+            ts->name = g_strdup(str);
+        }
+        str = gtk_entry_get_text(GTK_ENTRY(id_entry));
+        if (g_strcmp0 (ts->id, str)) {
+            g_free(ts->id);
+            ts->id = g_strdup(str);
+        }
+        str = gtk_entry_get_text(GTK_ENTRY(cache_entry));
+        if (g_strcmp0 (ts->cache_dir, str)) {
+            g_free(ts->cache_dir);
+            ts->cache_dir = g_strdup(str);
+        }
+        str = gtk_entry_get_text(GTK_ENTRY(url_entry));
+        if (g_strcmp0 (ts->url, str)) {
+            g_free(ts->url);
+            ts->url = g_strdup(str);
+        }
+
+        ts->type = repotype_map[hildon_touch_selector_get_active(type_selector, 0)].type;
+        ts->visible = hildon_check_button_get_active(HILDON_CHECK_BUTTON(visible_button));
+        ts->transparent = hildon_check_button_get_active(HILDON_CHECK_BUTTON(transparent_button));
+        ts->refresh = hildon_touch_selector_get_active(refresh_selector, 0);
+
+        res = TRUE;
+        break;
+    }
+
+    gtk_widget_destroy(dialog);
+
+    return res;
 }
