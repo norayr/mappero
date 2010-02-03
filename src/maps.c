@@ -179,16 +179,32 @@ build_tile_filename(gchar *buffer, gsize size,
                source->cache_dir, zoom, tilex, tiley);
 }
 
+static gboolean
+is_tile_expired(const gchar *tile_path, gint mins_to_expire)
+{
+    struct stat st;
+
+    if (!mins_to_expire)
+        return FALSE;
+
+    if (!g_stat (tile_path, &st))
+        return st.st_mtime < (time(NULL) - mins_to_expire * 60);
+    else
+        return TRUE;
+}
+
+
 gboolean
 mapdb_exists(TileSource *source, gint zoom, gint tilex, gint tiley)
 {
     gchar filename[200];
-    gboolean exists;
+    gboolean exists = FALSE;
     vprintf("%s(%s, %d, %d, %d)\n", __PRETTY_FUNCTION__,
             source->name, zoom, tilex, tiley);
 
     build_tile_filename(filename, sizeof(filename), source, zoom, tilex, tiley);
-    exists = g_file_test(filename, G_FILE_TEST_EXISTS);
+    if (!is_tile_expired(filename, source->refresh))
+        exists = g_file_test(filename, G_FILE_TEST_EXISTS);
 
     g_debug("%s(): return %d", __PRETTY_FUNCTION__, exists);
     return exists;
@@ -198,12 +214,13 @@ GdkPixbuf*
 mapdb_get(TileSource *source, gint zoom, gint tilex, gint tiley)
 {
     gchar filename[200];
-    GdkPixbuf *pixbuf;
+    GdkPixbuf *pixbuf = NULL;
     vprintf("%s(%s, %d, %d, %d)\n", __PRETTY_FUNCTION__,
             source->name, zoom, tilex, tiley);
 
     build_tile_filename(filename, sizeof(filename), source, zoom, tilex, tiley);
-    pixbuf = gdk_pixbuf_new_from_file(filename, NULL);
+    if (!is_tile_expired(filename, source->refresh))
+        pixbuf = gdk_pixbuf_new_from_file(filename, NULL);
 
     g_debug("%s(%s, %d, %d, %d): return %p", __PRETTY_FUNCTION__,
            source->name, zoom, tilex, tiley, pixbuf);
