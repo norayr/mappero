@@ -33,6 +33,7 @@
 #include "repo.h"
 #include "screen.h"
 #include "settings.h"
+#include "tile.h"
 
 #include <gconf/gconf-client.h>
 #include <hildon/hildon-banner.h>
@@ -69,6 +70,48 @@ activate_gps()
         rcvr_connect();
     return FALSE;
 }
+
+
+static void
+reset_tile_sources_countdown()
+{
+    GList *ts_list = map_controller_get_tile_sources_list(map_controller_get_instance());
+    TileSource *ts;
+
+    while (ts_list) {
+        ts = (TileSource*)ts_list->data;
+        if (ts->refresh && ts->countdown < 0)
+            ts->countdown = ts->refresh-1;
+        ts_list = ts_list->next;
+    }
+}
+
+
+static gboolean
+expired_tiles_housekeeper(gpointer data)
+{
+    GList *ts_list = map_controller_get_tile_sources_list(map_controller_get_instance());
+    TileSource *ts;
+    gboolean expired = FALSE;
+
+    /* Iterate over all tile sources and if they have refresh turned on, decrement coundown */
+    while (ts_list) {
+        ts = (TileSource*)ts_list->data;
+        if (ts->refresh) {
+            ts->countdown--;
+            if (ts->countdown < 0)
+                expired = TRUE;
+        }
+        ts_list = ts_list->next;
+    }
+
+    if (expired) {
+        refresh_expired_tiles();
+        reset_tile_sources_countdown();
+    }
+    return TRUE;
+}
+
 
 static gboolean
 set_center_real(MapController *self)
@@ -131,6 +174,9 @@ map_controller_init(MapController *controller)
 
     gconf_client_clear_cache(gconf_client);
     g_object_unref(gconf_client);
+
+    /* create periodical timer which wipes expired tiles from cache */
+    g_timeout_add_seconds(60, expired_tiles_housekeeper, NULL);
 }
 
 static void
@@ -690,6 +736,8 @@ map_controller_load_repositories(MapController *self, GConfClient *gconf_client)
         if (!priv->repository)
             priv->repository = priv->repositories_list->data;
     }
+
+    reset_tile_sources_countdown();
 }
 
 /*

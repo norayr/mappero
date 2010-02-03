@@ -62,6 +62,7 @@ ClutterActor *map_tile_load(TileSource *source, gint zoom, gint x, gint y,
                             gboolean *new_tile);
 ClutterActor *map_tile_cached(TileSource *source, gint zoom, gint x, gint y);
 void map_tile_refresh(MapTile *tile);
+void refresh_expired_tiles();
 
 G_END_DECLS
 #endif /* MAP_TILE_H */

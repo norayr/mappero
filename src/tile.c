@@ -21,6 +21,7 @@
 #ifdef HAVE_CONFIG_H
 #   include "config.h"
 #endif
+#include "screen.h"
 #include "tile.h"
 
 #include "controller.h"
@@ -300,3 +301,19 @@ map_tile_refresh(MapTile *tile)
     map_tile_download(tile);
 }
 
+/*
+ * Iterate over cache and request redownload of expired tiles.
+ */
+void
+refresh_expired_tiles()
+{
+    GList *iter = tile_cache;
+    MapTile *mt;
+
+    while (iter) {
+        mt = MAP_TILE(iter->data);
+        if (mt->ts.source->countdown < 0)
+            map_tile_download(mt);
+        iter = iter->next;
+    }
+}
