@@ -730,7 +730,7 @@ thread_proc_mut()
                 gchar *bytes = NULL;
                 gint size;
 
-                for (retries = INITIAL_DOWNLOAD_RETRIES; retries > 0; --retries)
+                for (retries = source->transparent ? 1 : INITIAL_DOWNLOAD_RETRIES; retries > 0; --retries)
                 {
                     g_clear_error(&mut->error);
                     download_tile(tile, &bytes, &size,
