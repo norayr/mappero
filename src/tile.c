@@ -237,6 +237,12 @@ map_tile_load(TileSource *source, gint zoom, gint x, gint y, gboolean *new_tile)
             g_object_unref(pixbuf);
             break;
         }
+
+        /* For faster load, we don't scale transparent layers */
+        if (source->transparent) {
+            zoff = 1;
+            break;
+        }
     }
 
     if (zoff != 0)
