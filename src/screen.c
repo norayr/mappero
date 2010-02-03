@@ -159,6 +159,7 @@ on_zoom_tl_frame(ClutterTimeline *zoom_tl, gint elapsed, MapScreen *self)
         exponent = -exponent;
     scale = exp2f(exponent);
     clutter_actor_set_scale(priv->tile_group, scale, scale);
+    clutter_actor_set_scale(priv->layers_group, scale, scale);
 }
 
 static void
@@ -543,6 +544,7 @@ load_tiles_into_map(MapScreen *screen, Repository *repo, gint zoom,
     layers_group = CLUTTER_CONTAINER(screen->priv->layers_group);
 
     clutter_actor_set_scale(priv->tile_group, 1, 1);
+    clutter_actor_set_scale(priv->layers_group, 1, 1);
     /* hide all the existing tiles */
     clutter_container_foreach(tile_group,
                               (ClutterCallback)clutter_actor_hide, NULL);
