@@ -317,6 +317,7 @@ struct _Path {
     WayPoint *whead; /* points to first element in array; NULL if empty. */
     WayPoint *wtail; /* points to last element in array. */
     WayPoint *wcap; /* points after last slot in array. */
+    gint points_optimized;
 };
 
 /** Data to describe a POI. */

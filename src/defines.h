@@ -176,6 +176,7 @@
     (path).whead = g_new(WayPoint, ARRAY_CHUNK_SIZE); \
     (path).wtail = (path).whead - 1; \
     (path).wcap = (path).whead + ARRAY_CHUNK_SIZE; \
+    (path).points_optimized = 0; \
 }
 
 #define MACRO_PATH_FREE(path) if((path).head) { \

@@ -428,6 +428,7 @@ draw_path(MapScreen *screen, cairo_t *cr, Path *path, Colorable base)
     gboolean segment_open = FALSE;
 #ifdef DEBUG
     gint segment_count = 0;
+    gint waypoint_count = 0;
 #endif
 
     g_debug ("%s", G_STRFUNC);
@@ -435,8 +436,11 @@ draw_path(MapScreen *screen, cairo_t *cr, Path *path, Colorable base)
     set_source_color(cr, &_color[base]);
     cairo_set_line_width(cr, _draw_width);
     cairo_set_line_join(cr, CAIRO_LINE_JOIN_BEVEL);
-    for (curr = path->head, wcurr = path->whead; curr <= path->tail; curr++)
+    for (curr = path->head; curr <= path->tail; curr++)
     {
+
+        if (curr->zoom <= priv->zoom) continue;
+
         if (G_UNLIKELY(curr->unit.y == 0))
         {
             if (segment_open)
@@ -447,7 +451,7 @@ draw_path(MapScreen *screen, cairo_t *cr, Path *path, Colorable base)
                 segment_open = FALSE;
             }
         }
-        else if (curr->zoom > priv->zoom)
+        else
         {
 #ifdef DEBUG
             segment_count++;
@@ -462,20 +466,27 @@ draw_path(MapScreen *screen, cairo_t *cr, Path *path, Colorable base)
             else
                 cairo_line_to(cr, x, y);
         }
-
-        if (wcurr->point == curr)
-        {
-            gint x1, y1;
-            point_to_pixels(priv, wcurr->point->unit, &x1, &y1);
-            draw_break(cr, &_color[base + 1], x1, y1);
-            cairo_move_to(cr, x1, y1);
-            if (wcurr <= path->wtail)
-                wcurr++;
-        }
     }
     cairo_stroke(cr);
+
+    for (wcurr = path->whead; wcurr <= path->wtail; wcurr++)
+    {
+        gint x1, y1;
+
+        /* since waypoints are bigger, let's give them one zoom level more
+         * (instead of comparing with "<=", we use "<") */
+        if (wcurr->point->zoom < priv->zoom) continue;
+
+        point_to_pixels(priv, wcurr->point->unit, &x1, &y1);
+        draw_break(cr, &_color[base + 1], x1, y1);
+        cairo_move_to(cr, x1, y1);
 #ifdef DEBUG
-    g_debug("Drawn %d segments", segment_count);
+        waypoint_count++;
+#endif
+    }
+
+#ifdef DEBUG
+    g_debug("Drawn %d segments, %d waypoints", segment_count, waypoint_count);
 #endif
 }
 

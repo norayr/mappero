@@ -175,6 +175,7 @@ read_path_from_db(Path *path, sqlite3_stmt *select_stmt)
         *path->tail = _point_null;
     }
 
+    map_path_optimize(path);
     vprintf("%s(): return\n", __PRETTY_FUNCTION__);
 }
 
@@ -807,6 +808,7 @@ track_add(time_t time, gboolean newly_fixed)
             map_screen_track_append(screen, &_pos);
             MACRO_PATH_INCREMENT_TAIL(_track);
             *_track.tail = _pos;
+            map_path_optimize(&_track);
         }
 
         /* Calculate distance to route. (point to line) */
@@ -1734,14 +1736,23 @@ map_path_optimize(Path *path)
     /* for every point, set the zoom level at which the point must be rendered
      */
 
-    if (path->head != path->tail)
+    if (path->points_optimized == 0 && path->head != path->tail)
+    {
         path->head->zoom = SCHAR_MAX;
+        path->points_optimized = 1;
+    }
 
-    for (curr = path->head + 1; curr < path->tail; curr++)
+    for (curr = path->head + path->points_optimized;
+         curr <= path->tail; curr++)
     {
         gint dx, dy, dmax, zoom;
 
         prev = curr - 1;
+        if (curr->unit.y == 0 || prev->unit.y == 0)
+        {
+            curr->zoom = MAX_ZOOM;
+            continue;
+        }
 
         dx = curr->unit.x - prev->unit.x;
         dy = curr->unit.y - prev->unit.y;
@@ -1774,5 +1785,7 @@ map_path_optimize(Path *path)
 
         curr->zoom = zoom;
     }
+
+    path->points_optimized = path->tail - path->head;
 }
 
