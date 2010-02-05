@@ -199,14 +199,14 @@ mapdb_exists(TileSource *source, gint zoom, gint tilex, gint tiley)
 {
     gchar filename[200];
     gboolean exists = FALSE;
-    vprintf("%s(%s, %d, %d, %d)\n", __PRETTY_FUNCTION__,
+    printf("%s(%s, %d, %d, %d)\n", __PRETTY_FUNCTION__,
             source->name, zoom, tilex, tiley);
 
     build_tile_filename(filename, sizeof(filename), source, zoom, tilex, tiley);
     if (!is_tile_expired(filename, source->refresh))
         exists = g_file_test(filename, G_FILE_TEST_EXISTS);
 
-    g_debug("%s(): return %d", __PRETTY_FUNCTION__, exists);
+    vprintf("%s(): return %d", __PRETTY_FUNCTION__, exists);
     return exists;
 }
 
@@ -215,14 +215,14 @@ mapdb_get(TileSource *source, gint zoom, gint tilex, gint tiley)
 {
     gchar filename[200];
     GdkPixbuf *pixbuf = NULL;
-    vprintf("%s(%s, %d, %d, %d)\n", __PRETTY_FUNCTION__,
+    printf("%s(%s, %d, %d, %d)\n", __PRETTY_FUNCTION__,
             source->name, zoom, tilex, tiley);
 
     build_tile_filename(filename, sizeof(filename), source, zoom, tilex, tiley);
     if (!is_tile_expired(filename, source->refresh))
         pixbuf = gdk_pixbuf_new_from_file(filename, NULL);
 
-    g_debug("%s(%s, %d, %d, %d): return %p", __PRETTY_FUNCTION__,
+    vprintf("%s(%s, %d, %d, %d): return %p", __PRETTY_FUNCTION__,
            source->name, zoom, tilex, tiley, pixbuf);
     return pixbuf;
 }
@@ -233,7 +233,7 @@ mapdb_update(TileSource *source, gint zoom, gint tilex, gint tiley,
 {
     gint success = TRUE;
     gchar filename[200], path[200];
-    vprintf("%s(%s, %d, %d, %d)\n", __PRETTY_FUNCTION__,
+    printf("%s(%s, %d, %d, %d)\n", __PRETTY_FUNCTION__,
             source->name, zoom, tilex, tiley);
 
     build_tile_path(path, sizeof(path), source, zoom, tilex, tiley);
@@ -241,7 +241,7 @@ mapdb_update(TileSource *source, gint zoom, gint tilex, gint tiley,
     build_tile_filename(filename, sizeof(filename), source, zoom, tilex, tiley);
     success = g_file_set_contents(filename, bytes, size, NULL);
 
-    g_debug("%s(): return %d", __PRETTY_FUNCTION__, success);
+    vprintf("%s(): return %d", __PRETTY_FUNCTION__, success);
     return success;
 }
 
@@ -250,7 +250,7 @@ mapdb_delete(TileSource *source, gint zoom, gint tilex, gint tiley)
 {
     gchar filename[200];
     gint success = FALSE;
-    vprintf("%s(%s, %d, %d, %d)\n", __PRETTY_FUNCTION__,
+    printf("%s(%s, %d, %d, %d)\n", __PRETTY_FUNCTION__,
             source->name, zoom, tilex, tiley);
 
     build_tile_filename(filename, sizeof(filename), source, zoom, tilex, tiley);
@@ -279,7 +279,7 @@ map_convert_wms_to_wms(gint tilex, gint tiley, gint zoomlevel, gchar* uri)
     gchar *heightstr  = strcasestr(uri,"HEIGHT=");
     gchar *srsstr     = strcasestr(uri,"SRS=EPSG");
     gchar *srsstre    = strchr(srsstr,'&');
-    vprintf("%s()\n", __PRETTY_FUNCTION__);
+    printf("%s()\n", __PRETTY_FUNCTION__);
 
     /* missing: test if found */
     strcpy(srs,"epsg");
@@ -310,7 +310,7 @@ map_convert_wms_to_wms(gint tilex, gint tiley, gint zoomlevel, gchar* uri)
             "/usr/bin/cs2cs +proj=longlat +datum=WGS84 +to +init=%s -f %%.6f "
             " > /tmp/tmpcs2cs ",
             lon1, lat1, lon2, lat2, srs);
-    vprintf("Running command: %s\n", cmd);
+    printf("Running command: %s\n", cmd);
     system_retcode = system(cmd);
 
     if(system_retcode)
@@ -348,7 +348,7 @@ map_convert_coords_to_quadtree_string(gint x, gint y, gint zoomlevel,
 {
     gchar *ptr = buffer;
     gint n;
-    vprintf("%s()\n", __PRETTY_FUNCTION__);
+    printf("%s()\n", __PRETTY_FUNCTION__);
 
     if (initial)
         *ptr++ = initial;
@@ -373,7 +373,7 @@ static gchar*
 map_construct_url(TileSource *source, gint zoom, gint tilex, gint tiley)
 {
     gchar *retval;
-    vprintf("%s(%p, %d, %d, %d)\n", __PRETTY_FUNCTION__,
+    printf("%s(%p, %d, %d, %d)\n", __PRETTY_FUNCTION__,
             source, zoom, tilex, tiley);
     switch(source->type)
     {
@@ -448,7 +448,7 @@ map_update_tile_int(MapTileSpec *tile, gint priority, MapUpdateType update_type,
     MapUpdateTask *old_mut;
     MapUpdateCbData *cb_data = NULL;
 
-    g_debug("%s(%s, %d, %d, %d, %d)", G_STRFUNC,
+    printf("%s(%s, %d, %d, %d, %d)", G_STRFUNC,
             tile->source->name, tile->zoom, tile->tilex, tile->tiley, update_type);
 
     mut = g_slice_new0(MapUpdateTask);
@@ -473,7 +473,7 @@ map_update_tile_int(MapTileSpec *tile, gint priority, MapUpdateType update_type,
     old_mut = g_hash_table_lookup(_mut_exists_table, mut);
     if (old_mut)
     {
-        g_debug("Task already queued, adding listener");
+        printf("Task already queued, adding listener");
 
         if (cb_data)
             old_mut->callbacks = g_slist_prepend(old_mut->callbacks, cb_data);
@@ -481,7 +481,7 @@ map_update_tile_int(MapTileSpec *tile, gint priority, MapUpdateType update_type,
         /* Check if the priority of the new task is higher */
         if (old_mut->priority > mut->priority && !old_mut->downloading)
         {
-            g_debug("re-insert, old priority = %d", old_mut->priority);
+            printf("re-insert, old priority = %d", old_mut->priority);
             /* It is, so remove the task from the tree, update its priority and
              * re-insert it with the new one */
             g_tree_remove(_mut_priority_tree, old_mut);
@@ -562,7 +562,7 @@ map_update_task_completed(MapUpdateTask *mut)
 {
     MapTileSpec *tile = &mut->tile;
 
-    g_debug("%s(%s, %d, %d, %d)", G_STRFUNC,
+    printf("%s(%s, %d, %d, %d)", G_STRFUNC,
             tile->source->name, tile->zoom, tile->tilex, tile->tiley);
 
     g_mutex_lock(_mut_priority_mutex);
@@ -611,7 +611,7 @@ download_tile(MapTileSpec *tile, gchar **bytes, gint *size,
     GnomeVFSResult vfs_result;
     GdkPixbufLoader *loader = NULL;
 
-    g_debug("%s (%s, %d, %d, %d)", G_STRFUNC,
+    printf("%s (%s, %d, %d, %d)", G_STRFUNC,
             tile->source->name, tile->zoom, tile->tilex, tile->tiley);
 
     /* First, construct the URL from which we will get the data. */
@@ -657,7 +657,7 @@ l_error:
 static void
 map_update_task_remove_all(const GError *error)
 {
-    g_debug("%s", G_STRFUNC);
+    printf("%s", G_STRFUNC);
 
     while (1)
     {
@@ -713,7 +713,7 @@ thread_proc_mut()
         g_tree_remove(_mut_priority_tree, mut);
         g_mutex_unlock(_mut_priority_mutex);
 
-        g_debug("%s %p (%s, %d, %d, %d)", G_STRFUNC, mut,
+        printf("%s %p (%s, %d, %d, %d)", G_STRFUNC, mut,
                 tile->source->name, tile->zoom, tile->tilex, tile->tiley);
 
         mut->pixbuf = NULL;
@@ -754,7 +754,7 @@ thread_proc_mut()
                                   &mut->pixbuf, &mut->error);
                     if (mut->pixbuf) break;
 
-                    g_debug("Download failed, retrying");
+                    printf("Download failed, retrying");
                 }
 
                 /* Copy database-relevant mut data before we release it. */
@@ -763,7 +763,7 @@ thread_proc_mut()
                 tilex = tile->tilex;
                 tiley = tile->tiley;
 
-                g_debug("%s(%s, %d, %d, %d): %s", G_STRFUNC,
+                printf("%s(%s, %d, %d, %d): %s", G_STRFUNC,
                         tile->source->name, tile->zoom, tile->tilex, tile->tiley,
                         mut->pixbuf ? "Success" : "Failed");
                 g_idle_add_full(G_PRIORITY_HIGH_IDLE,

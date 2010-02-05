@@ -308,7 +308,7 @@ cmenu_cb_loc_apply_correction(GtkMenuItem *item)
         MACRO_BANNER_SHOW_INFO(_window, _("Map correction removed."));
     }
 
-    g_debug("Map correction now set to: %d, %d",
+    printf("Map correction now set to: %d, %d",
             _map_correction_unitx, _map_correction_unity);
 
     vprintf("%s(): return TRUE\n", __PRETTY_FUNCTION__);
@@ -809,7 +809,7 @@ on_apply_correction_toggled(GtkToggleButton *button, Point *p)
         MACRO_BANNER_SHOW_INFO(_window, _("Map correction removed."));
     }
 
-    g_debug("Map correction now set to: %d, %d",
+    printf("Map correction now set to: %d, %d",
             _map_correction_unitx, _map_correction_unity);
     /* close the dialog */
     dialog = gtk_widget_get_toplevel((GtkWidget *)button);

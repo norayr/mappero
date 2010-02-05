@@ -68,15 +68,12 @@ download_tile_cb(MapTileSpec *ts, GdkPixbuf *pixbuf, const GError *error,
 {
     MapTile *tile, **p_tile;
 
-    g_debug("%s", G_STRFUNC);
+    printf("%s", G_STRFUNC);
     p_tile = user_data;
     tile = *p_tile;
     g_slice_free(MapTile *, p_tile);
     if (!tile)
-    {
-        g_debug("Object destroyed");
         return;
-    }
 
     g_object_remove_weak_pointer(G_OBJECT(tile), user_data);
 

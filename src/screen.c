@@ -420,7 +420,7 @@ draw_path(MapScreen *screen, cairo_t *cr, Path *path, Colorable base)
     gint x = 0, y = 0;
     gboolean segment_open = FALSE;
 
-    g_debug ("%s", G_STRFUNC);
+    printf ("%s", G_STRFUNC);
 
     set_source_color(cr, &_color[base]);
     cairo_set_line_width(cr, _draw_width);
@@ -950,7 +950,7 @@ map_screen_set_center(MapScreen *screen, gint x, gint y, gint zoom)
     g_return_if_fail(MAP_IS_SCREEN(screen));
     priv = screen->priv;
 
-    g_debug("%s, zoom %d", G_STRFUNC, zoom);
+    printf("%s, zoom %d", G_STRFUNC, zoom);
     allocation = &(GTK_WIDGET(screen)->allocation);
     clutter_actor_set_position(priv->map,
                                allocation->width / 2,

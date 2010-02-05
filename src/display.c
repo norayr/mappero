@@ -930,7 +930,7 @@ map_download_refresh_idle(MapTileSpec *tile, GdkPixbuf *pixbuf,
 {
     MapUpdateType update_type;
 
-    g_debug("%s(%p, %d, %d, %d)", G_STRFUNC, tile,
+    printf("%s(%p, %d, %d, %d)", G_STRFUNC, tile,
             tile->zoom, tile->tilex, tile->tiley);
 
     update_type = GPOINTER_TO_INT(user_data);
@@ -965,7 +965,7 @@ map_download_refresh_idle(MapTileSpec *tile, GdkPixbuf *pixbuf,
                 _curr_download / (double)_num_downloads);
     }
 
-    g_debug("%s(): return", G_STRFUNC);
+    vprintf("%s(): return", G_STRFUNC);
 }
 
 /**
