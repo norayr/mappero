@@ -16,6 +16,7 @@ Description: Geographical mapping and driving directions.
  interacting with maps, GPX data (including driving directions), and other
  geo-related information.  It focuses in part on in-car navigation and
  usability.  Home page: http://www.gnuite.com/nokia770/maemo-mapper
+XSBC-Maemo-Display-Name: Mapper
 XB-Maemo-Upgrade-Description: Usability improvements
  Rework zoom feature, add animation.
  .
