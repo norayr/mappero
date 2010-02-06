@@ -34,6 +34,7 @@ XB-Maemo-Upgrade-Description: Usability improvements
  Reorder items in "Download route" dialog.
  .
  Don't add to track those fixes whose inaccuracy is bigger then 200m.
+XSBC-Bugtracker: https://garage.maemo.org/tracker/?group_id=29
 XB-Maemo-Icon-26:
  iVBORw0KGgoAAAANSUhEUgAAABoAAAAaCAYAAACpSkzOAAAF/ElEQVRIS42WyXMbxxXGf92z
  YidgkCAkrrCokCLDRLJLsSwvB1duLl9S5UMcl33Vxf9LDi5Xbr6lUpWDqnxKVeJYthbLUUm2
