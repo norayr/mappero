@@ -837,6 +837,9 @@ mut_priority_comparefunc(gconstpointer _a, gconstpointer _b)
         return diff;
 
     /* At this point, we don't care, so just pick arbitrarily. */
+    diff = (a->tile.source - b->tile.source);
+    if(diff)
+        return diff;
     diff = (a->tile.tilex - b->tile.tilex);
     if(diff)
         return diff;
