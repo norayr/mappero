@@ -426,7 +426,7 @@ map_construct_url(TileSource *source, gint zoom, gint tilex, gint tiley)
 }
 
 static gboolean
-mapdb_initiate_update_banner_idle()
+mapdb_initiate_update_banner()
 {
     if (!_download_banner)
     {
@@ -437,7 +437,6 @@ mapdb_initiate_update_banner_idle()
         if(!_conic_is_connected)
             gtk_widget_hide(_download_banner);
     }
-    return FALSE;
 }
 
 static void
@@ -505,7 +504,7 @@ map_update_tile_int(MapTileSpec *tile, gint priority, MapUpdateType update_type,
 
     /* Increment download count and (possibly) display banner. */
     if (g_hash_table_size(_mut_exists_table) >= 20 && !_download_banner)
-        g_idle_add((GSourceFunc)mapdb_initiate_update_banner_idle, NULL);
+        mapdb_initiate_update_banner();
 
     /* This doesn't need to be thread-safe.  Extras in the pool don't
      * really make a difference. */
