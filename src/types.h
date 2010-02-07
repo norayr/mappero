@@ -292,6 +292,14 @@ struct _MapPoint {
     gint y;
 };
 
+/**
+ * Definiton of a location in either geographic coordinates or as an address.
+ * If the @address field is not %NULL, it has priority over the coordinates. */
+typedef struct {
+    MapPoint point;
+    gchar *address;
+} MapLocation;
+
 /* definition of a track/route point */
 typedef struct _Point Point;
 struct _Point {

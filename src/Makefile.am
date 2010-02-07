@@ -55,6 +55,7 @@ maemo_mapper_SOURCES = \
 	osm.c \
 	path.c \
 	poi.c \
+	router.c \
 	settings.c \
 	screen.c \
 	tile.c \
