@@ -122,6 +122,28 @@ fill_selector_with_repotypes(HildonTouchSelector *selector, RepoType active)
 }
 
 
+static void
+fill_selector_with_repositories(HildonTouchSelector *selector, Repository *active)
+{
+    MapController *controller = map_controller_get_instance();
+    GList *repo_list = map_controller_get_repo_list(controller);
+    gint index = 0;
+    Repository *repo;
+
+    if (!active)
+        active = map_controller_get_repository(controller);
+
+    while (repo_list) {
+        repo = (Repository*)repo_list->data;
+        hildon_touch_selector_append_text(selector, repo->name);
+        if (repo == active)
+            hildon_touch_selector_set_active(selector, 0, index);
+        repo_list = repo_list->next;
+        index++;
+    }
+}
+
+
 gchar*
 tile_sources_to_xml(GList *tile_sources)
 {
@@ -921,6 +943,8 @@ repositories_dialog()
     GtkWidget *dialog, *edit_button, *delete_button;
     HildonTouchSelector *repos_selector;
     MapController *controller = map_controller_get_instance();
+    GtkTreeModel *list_model;
+    GtkListStore *list_store;
     enum {
         RESP_SYNC,
         RESP_ADD,
@@ -928,10 +952,9 @@ repositories_dialog()
         RESP_DELETE,
     };
     gint response;
-    GList *repo_list;
-    Repository *repo, *active_repo = NULL;
-    gint active;
-    gboolean update_menus = FALSE;
+    Repository *active_repo = NULL;
+    gint active, rows_count;
+    gboolean update_menus = FALSE, update_list = FALSE;
 
     dialog = gtk_dialog_new_with_buttons(_("Repositories"), GTK_WINDOW(_window),
                                          GTK_DIALOG_MODAL, NULL);
@@ -939,33 +962,21 @@ repositories_dialog()
     gtk_dialog_add_button(GTK_DIALOG(dialog), GTK_STOCK_ADD, RESP_ADD);
     edit_button = gtk_dialog_add_button(GTK_DIALOG(dialog), GTK_STOCK_EDIT, RESP_EDIT);
     delete_button = gtk_dialog_add_button(GTK_DIALOG(dialog), GTK_STOCK_DELETE, RESP_DELETE);
+    repos_selector = HILDON_TOUCH_SELECTOR(hildon_touch_selector_new_text());
+    list_model = hildon_touch_selector_get_model(repos_selector, 0);
+    list_store = GTK_LIST_STORE(list_model);
+    gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox), GTK_WIDGET(repos_selector), TRUE, TRUE, 0);
+    gtk_widget_show_all(dialog);
 
-    /* There is no way to edit/delete items in touch selector widget (Shame on you, Nokia!),
-       so, we must spin there to maintain our list in sync */
+    fill_selector_with_repositories(repos_selector, NULL);
+
     while (1) {
-        repos_selector = HILDON_TOUCH_SELECTOR(hildon_touch_selector_new_text());
-
-        /* Populate selector with repositories */
-        repo_list = map_controller_get_repo_list(controller);
-        if (!active_repo)
-            active_repo = map_controller_get_repository(controller);
-        active = 0;
-        while (repo_list) {
-            repo = (Repository*)repo_list->data;
-            hildon_touch_selector_append_text(repos_selector, repo->name);
-            if (repo == active_repo)
-                hildon_touch_selector_set_active(repos_selector, 0, active);
-            repo_list = repo_list->next;
-            active++;
-        }
+        rows_count = gtk_tree_model_iter_n_children(list_model, NULL);
 
         /* These two buttons have meaning only if we have something in a list */
-        gtk_widget_set_sensitive(edit_button, active > 0);
-        gtk_widget_set_sensitive(delete_button, active > 0);
+        gtk_widget_set_sensitive(edit_button, rows_count > 0);
+        gtk_widget_set_sensitive(delete_button, rows_count > 0);
 
-        gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox), GTK_WIDGET(repos_selector), TRUE, TRUE, 0);
-
-        gtk_widget_show_all(dialog);
         if ((response = gtk_dialog_run(GTK_DIALOG(dialog))) == GTK_RESPONSE_DELETE_EVENT)
             break;
 
@@ -977,7 +988,7 @@ repositories_dialog()
 
         switch (response) {
         case RESP_SYNC:
-            update_menus = repository_sync_handler(GTK_WINDOW(dialog));
+            update_list = update_menus = repository_sync_handler(GTK_WINDOW(dialog));
             break;
         case RESP_ADD:
             active_repo = g_slice_new0(Repository);
@@ -988,7 +999,7 @@ repositories_dialog()
 
             if (repository_edit_dialog(GTK_WINDOW(dialog), active_repo)) {
                 map_controller_append_repository(controller, active_repo);
-                update_menus = TRUE;
+                update_list = update_menus = TRUE;
             }
             else
                 free_repository(active_repo);
@@ -999,19 +1010,28 @@ repositories_dialog()
                 if (repository_edit_dialog(GTK_WINDOW(dialog), active_repo)) {
                     if (active_repo == map_controller_get_repository(controller))
                         map_refresh_mark(TRUE);
-                    update_menus = TRUE;
+                    update_list = update_menus = TRUE;
                 }
             break;
         case RESP_DELETE:
             repository_delete_handler(GTK_WINDOW(dialog), active_repo);
             active_repo = NULL;
+            update_list = TRUE;
             break;
         }
-        gtk_widget_destroy(GTK_WIDGET(repos_selector));
+
         /* We need to sync menu entries with repository list */
         if (update_menus)
             menu_maps_add_repos();
+
+        if (update_list) {
+            /* populate list with repositories */
+            gtk_list_store_clear(list_store);
+            fill_selector_with_repositories(repos_selector, active_repo);
+        }
+        update_menus = update_list = FALSE;
     }
+    g_object_unref(list_model);
     gtk_widget_destroy(dialog);
     settings_save();
 }
