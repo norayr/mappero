@@ -1226,8 +1226,10 @@ repository_edit_dialog(GtkWindow *parent, Repository *repo)
 
         if (ts)
             repo->primary = ts;
-        else
+        else {
             popup_error(dialog, _("Tile source is required"));
+            continue;
+        }
 
         if (gtk_entry_get_text_length (GTK_ENTRY(name_entry)) &&
             strcmp(gtk_entry_get_text(GTK_ENTRY(name_entry)), repo->name))
