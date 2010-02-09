@@ -821,7 +821,7 @@ map_controller_lookup_tile_source(MapController *self, const gchar *id)
     while (ts_list)
     {
         ts = (TileSource*)ts_list->data;
-        if (ts && ts->id && !strcmp(ts->id, id))
+        if (ts && ts->id && strcmp(ts->id, id) == 0)
             return ts;
         ts_list = g_list_next(ts_list);
     }
@@ -846,7 +846,7 @@ map_controller_lookup_tile_source_by_name(MapController *self, const gchar *name
     while (ts_list)
     {
         ts = (TileSource*)ts_list->data;
-        if (ts && ts->name && !strcmp(ts->name, name))
+        if (ts && ts->name && strcmp(ts->name, name) == 0)
             return ts;
         ts_list = g_list_next(ts_list);
     }
@@ -870,7 +870,7 @@ map_controller_lookup_repository(MapController *self, const gchar *name)
     while (repo_list)
     {
         repo = (Repository*)repo_list->data;
-        if (repo && repo->name && !strcmp(repo->name, name))
+        if (repo && repo->name && strcmp(repo->name, name) == 0)
             return repo;
         repo_list = g_list_next(repo_list);
     }

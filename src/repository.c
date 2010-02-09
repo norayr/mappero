@@ -98,7 +98,7 @@ str_to_repotype(const char* s)
     int i = 0;
 
     while (repotype_map[i].s) {
-        if (!strcmp(repotype_map[i].s, s))
+        if (strcmp(repotype_map[i].s, s) == 0)
             return repotype_map[i].type;
         i++;
     }
@@ -296,21 +296,21 @@ tree_to_tile_source(xmlDocPtr doc, xmlNodePtr ts_node)
         s = xmlNodeListGetString(doc, n->children, 1);
         val_valid = sscanf(s, "%d", &val) > 0;
 
-        if (!strcmp(n->name, "name"))
+        if (strcmp(n->name, "name") == 0)
             ts->name = g_strdup(s);
-        else if (!strcmp(n->name, "id"))
+        else if (strcmp(n->name, "id") == 0)
             ts->id = g_strdup(s);
-        else if (!strcmp(n->name, "cache_dir"))
+        else if (strcmp(n->name, "cache_dir") == 0)
             ts->cache_dir = g_strdup(s);
-        else if (!strcmp(n->name, "type"))
+        else if (strcmp(n->name, "type") == 0)
             ts->type = str_to_repotype(s);
-        else if (!strcmp(n->name, "url"))
+        else if (strcmp(n->name, "url") == 0)
             ts->url = g_strdup(s);
-        else if (!strcmp(n->name, "visible") && val_valid)
+        else if (strcmp(n->name, "visible") == 0 && val_valid)
             ts->visible = val != 0;
-        else if (!strcmp(n->name, "transparent") && val_valid)
+        else if (strcmp(n->name, "transparent") == 0 && val_valid)
             ts->transparent = val != 0;
-        else if (!strcmp(n->name, "refresh") && val_valid)
+        else if (strcmp(n->name, "refresh") == 0 && val_valid)
             ts->refresh = val;
         xmlFree(s);
     }
@@ -340,26 +340,26 @@ tree_to_repository(xmlDocPtr doc, xmlNodePtr repo_node)
         s = xmlNodeListGetString(doc, n->children, 1);
         val_valid = sscanf(s, "%d", &val) > 0;
 
-        if (!strcmp(n->name, "name"))
+        if (strcmp(n->name, "name") == 0)
             repo->name = g_strdup(s);
-        if (!strcmp(n->name, "min_zoom") && val_valid)
+        if (strcmp(n->name, "min_zoom") == 0 && val_valid)
             repo->min_zoom = val;
-        if (!strcmp(n->name, "max_zoom") && val_valid)
+        if (strcmp(n->name, "max_zoom") == 0 && val_valid)
             repo->max_zoom = val;
-        if (!strcmp(n->name, "zoom_step") && val_valid)
+        if (strcmp(n->name, "zoom_step") == 0 && val_valid)
             repo->zoom_step = val;
-        else if (!strcmp(n->name, REPO_LAYERS_GROUP)) {
+        else if (strcmp(n->name, REPO_LAYERS_GROUP) == 0) {
             repo->layers = g_ptr_array_new();
 
             for (nn = n->children; nn; nn = nn->next) {
                 ss = xmlNodeListGetString(doc, nn->children, 1);
-                if (!strcmp(nn->name, REPO_LAYER_ENTRY)) {
+                if (strcmp(nn->name, REPO_LAYER_ENTRY) == 0) {
                     ts = map_controller_lookup_tile_source(controller, ss);
 
                     if (ts)
                         g_ptr_array_add(repo->layers, ts);
                 }
-                else if (!strcmp(nn->name, REPO_PRIMARY_ENTRY)) {
+                else if (strcmp(nn->name, REPO_PRIMARY_ENTRY) == 0) {
                     ts = map_controller_lookup_tile_source(controller, ss);
                     if (ts)
                         repo->primary = ts;
@@ -446,11 +446,11 @@ repository_sync_handler(GtkWindow *parent)
             if (ts_old) {
                 if (!compare_tile_sources(ts, ts_old)) {
                     /* Merge tile source */
-                    if (strcmp(ts->name, ts_old->name)) {
+                    if (strcmp(ts->name, ts_old->name) != 0) {
                         g_free(ts_old->name);
                         ts_old->name = g_strdup(ts->name);
                     }
-                    if (strcmp(ts->url, ts_old->url)) {
+                    if (strcmp(ts->url, ts_old->url) != 0) {
                         g_free(ts_old->url);
                         ts_old->url = g_strdup(ts->url);
                     }
@@ -485,14 +485,14 @@ repository_sync_handler(GtkWindow *parent)
             if (repo_old) {
                 if (!compare_repositories(repo, repo_old)) {
                     /* Merge repositories */
-                    if (strcmp(repo->name, repo_old->name)) {
+                    if (strcmp(repo->name, repo_old->name) != 0) {
                         g_free(repo_old->name);
                         repo_old->name = g_strdup(repo->name);
                     }
                     repo_old->min_zoom = repo->min_zoom;
                     repo_old->max_zoom = repo->max_zoom;
                     repo_old->zoom_step = repo->zoom_step;
-                    if (!repo_old->primary || strcmp(repo_old->primary->id, repo->primary->id))
+                    if (!repo_old->primary || strcmp(repo_old->primary->id, repo->primary->id) != 0)
                         repo_old->primary = map_controller_lookup_tile_source(controller, repo->primary->id);
                     if (repo_old->layers) {
                         g_ptr_array_free(repo_old->layers, TRUE);
@@ -712,13 +712,13 @@ GList* xml_to_tile_sources(const gchar *data)
         return NULL;
 
     n = xmlDocGetRootElement(doc);
-    if (!n || strcmp(n->name, TS_ROOT)) {
+    if (!n || strcmp(n->name, TS_ROOT) != 0) {
         xmlFreeDoc(doc);
         return res;
     }
 
     for (n = n->children; n; n = n->next) {
-        if (n->type == XML_ELEMENT_NODE && !strcmp(n->name, TS_ENTRY)) {
+        if (n->type == XML_ELEMENT_NODE && strcmp(n->name, TS_ENTRY) == 0) {
             TileSource *ts = tree_to_tile_source(doc, n);
             if (ts)
                 res = g_list_append(res, ts);
@@ -747,13 +747,13 @@ GList* xml_to_repositories(const gchar *data)
         return NULL;
 
     n = xmlDocGetRootElement(doc);
-    if(!n || strcmp(n->name, REPO_ROOT)) {
+    if(!n || strcmp(n->name, REPO_ROOT) != 0) {
         xmlFreeDoc(doc);
         return res;
     }
 
     for (n = n->children; n; n = n->next) {
-        if (n->type == XML_ELEMENT_NODE && !strcmp(n->name, REPO_ENTRY)) {
+        if (n->type == XML_ELEMENT_NODE && strcmp(n->name, REPO_ENTRY) == 0) {
             Repository *repo = tree_to_repository(doc, n);
             if (repo)
                 res = g_list_append(res, repo);
@@ -893,9 +893,9 @@ free_repository(Repository *repo)
 gboolean
 compare_tile_sources(TileSource *ts1, TileSource *ts2)
 {
-    if (strcmp(ts1->name, ts2->name))
+    if (strcmp(ts1->name, ts2->name) != 0)
         return FALSE;
-    if (strcmp(ts1->url, ts2->url))
+    if (strcmp(ts1->url, ts2->url) != 0)
         return FALSE;
     if (ts1->type != ts2->type)
         return FALSE;
@@ -912,7 +912,7 @@ gboolean
 compare_repositories(Repository *repo1, Repository *repo2)
 {
     gint layer;
-    if (strcmp(repo1->name, repo2->name))
+    if (strcmp(repo1->name, repo2->name) != 0)
         return FALSE;
     if (repo1->min_zoom != repo2->min_zoom ||
         repo1->max_zoom != repo2->max_zoom ||
@@ -920,7 +920,7 @@ compare_repositories(Repository *repo1, Repository *repo2)
     {
         return FALSE;
     }
-    if (!repo1->primary || !repo2->primary || strcmp(repo1->primary->id, repo2->primary->id))
+    if (!repo1->primary || !repo2->primary || strcmp(repo1->primary->id, repo2->primary->id) != 0)
         return FALSE;
     if (repo1->layers || repo2->layers) {
         if (!repo1->layers || !repo2->layers)
@@ -929,7 +929,7 @@ compare_repositories(Repository *repo1, Repository *repo2)
             return FALSE;
         for (layer = 0; layer < repo1->layers->len; layer++)
             if (strcmp(((TileSource*)g_ptr_array_index(repo1->layers, layer))->id, 
-                       ((TileSource*)g_ptr_array_index(repo2->layers, layer))->id))
+                       ((TileSource*)g_ptr_array_index(repo2->layers, layer))->id) != 0)
                 return FALSE;
     }
     return TRUE;
@@ -1253,7 +1253,7 @@ repository_edit_dialog(GtkWindow *parent, Repository *repo)
         }
 
         if (gtk_entry_get_text_length (GTK_ENTRY(name_entry)) &&
-            strcmp(gtk_entry_get_text(GTK_ENTRY(name_entry)), repo->name))
+            strcmp(gtk_entry_get_text(GTK_ENTRY(name_entry)), repo->name) != 0)
         {
             g_free(repo->name);
             repo->name = g_strdup(gtk_entry_get_text(GTK_ENTRY(name_entry)));
@@ -1416,22 +1416,22 @@ tile_source_edit_dialog(GtkWindow *parent, TileSource *ts)
 
         /* All seems valid, update tile source record */
         str = gtk_entry_get_text(GTK_ENTRY(name_entry));
-        if (g_strcmp0 (ts->name, str)) {
+        if (g_strcmp0 (ts->name, str) != 0) {
             g_free(ts->name);
             ts->name = g_strdup(str);
         }
         str = gtk_entry_get_text(GTK_ENTRY(id_entry));
-        if (g_strcmp0 (ts->id, str)) {
+        if (g_strcmp0 (ts->id, str) != 0) {
             g_free(ts->id);
             ts->id = g_strdup(str);
         }
         str = gtk_entry_get_text(GTK_ENTRY(cache_entry));
-        if (g_strcmp0 (ts->cache_dir, str)) {
+        if (g_strcmp0 (ts->cache_dir, str) != 0) {
             g_free(ts->cache_dir);
             ts->cache_dir = g_strdup(str);
         }
         str = gtk_entry_get_text(GTK_ENTRY(url_entry));
-        if (g_strcmp0 (ts->url, str)) {
+        if (g_strcmp0 (ts->url, str) != 0) {
             g_free(ts->url);
             ts->url = g_strdup(str);
         }
