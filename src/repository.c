@@ -520,7 +520,7 @@ repository_sync_handler(GtkWindow *parent)
         gchar *msg;
 
         if (!ts_new && !ts_mod && !repo_new && !repo_mod)
-            msg = g_strdup(_("Repositories are the same"));
+            msg = g_strdup(_("No changes in repositories"));
         else
             msg = g_strdup_printf(_("Layers: %d new, %d updated\nRepositories: %d new, %d updated\n"),
                                   ts_new, ts_mod, repo_new, repo_mod);
