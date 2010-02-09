@@ -1789,3 +1789,85 @@ map_path_optimize(Path *path)
     path->points_optimized = path->tail - path->head;
 }
 
+void
+map_path_merge(Path *src_path, Path *dest_path, MapPathMergePolicy policy)
+{
+    map_path_optimize(src_path);
+
+    if (policy != MAP_PATH_MERGE_POLICY_REPLACE
+        && dest_path->head != dest_path->tail)
+    {
+        Point *src_first;
+        Path *src, *dest;
+
+        if (policy == MAP_PATH_MERGE_POLICY_APPEND)
+        {
+            /* Append to current path. Make sure last path point is zero. */
+            if(dest_path->tail->unit.y != 0)
+            {
+                MACRO_PATH_INCREMENT_TAIL((*dest_path));
+                *dest_path->tail = _point_null;
+            }
+            src = src_path;
+            dest = dest_path;
+        }
+        else
+        {
+            /* Prepend to current route. */
+            src = dest_path;
+            dest = src_path;
+        }
+
+        /* Find src_first non-zero point. */
+        for(src_first = src->head - 1; src_first++ != src->tail; )
+            if(src_first->unit.y)
+                break;
+
+        /* Append route points from src to dest. */
+        if(src->tail >= src_first)
+        {
+            WayPoint *curr;
+            gint num_dest_points = dest->tail - dest->head + 1;
+            gint num_src_points = src->tail - src_first + 1;
+
+            /* Adjust dest->tail to be able to fit src route data
+             * plus room for more route data. */
+            path_resize(dest,
+                    num_dest_points + num_src_points + ARRAY_CHUNK_SIZE);
+
+            memcpy(dest->tail + 1, src_first,
+                    num_src_points * sizeof(Point));
+
+            dest->tail += num_src_points;
+
+            /* Append waypoints from src to dest->. */
+            path_wresize(dest, (dest->wtail - dest->whead)
+                    + (src->wtail - src->whead) + 2 + ARRAY_CHUNK_SIZE);
+            for(curr = src->whead - 1; curr++ != src->wtail; )
+            {
+                (++(dest->wtail))->point = dest->head + num_dest_points
+                    + (curr->point - src_first);
+                dest->wtail->desc = curr->desc;
+            }
+
+        }
+
+        /* Kill old route - don't use MACRO_PATH_FREE(), because that
+         * would free the string desc's that we just moved to data.route. */
+        g_free(src->head);
+        g_free(src->whead);
+        if (policy == MAP_PATH_MERGE_POLICY_PREPEND)
+            (*dest_path) = *dest;
+    }
+    else
+    {
+        MACRO_PATH_FREE((*dest_path));
+        /* Overwrite with data.route. */
+        (*dest_path) = *src_path;
+        path_resize(dest_path,
+                dest_path->tail - dest_path->head + 1 + ARRAY_CHUNK_SIZE);
+        path_wresize(dest_path,
+                dest_path->wtail - dest_path->whead + 1 + ARRAY_CHUNK_SIZE);
+    }
+}
+

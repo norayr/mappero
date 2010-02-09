@@ -57,4 +57,12 @@ void path_destroy(void);
 
 void map_path_optimize(Path *path);
 
+typedef enum {
+    MAP_PATH_MERGE_POLICY_REPLACE = 0,
+    MAP_PATH_MERGE_POLICY_APPEND,
+    MAP_PATH_MERGE_POLICY_PREPEND,
+} MapPathMergePolicy;
+
+void map_path_merge(Path *src_path, Path *dest_path, MapPathMergePolicy policy);
+
 #endif /* ifndef MAEMO_MAPPER_PATH_H */

@@ -518,6 +518,7 @@ gpx_path_parse(Path *to_replace, gchar *buffer, gint size, gint policy_old)
     PathSaxData data;
     xmlSAXHandler sax_handler;
     printf("%s()\n", __PRETTY_FUNCTION__);
+    MapPathMergePolicy policy;
 
     MACRO_PATH_INIT(data.path);
     data.sax_data.state = START;
@@ -541,82 +542,13 @@ gpx_path_parse(Path *to_replace, gchar *buffer, gint size, gint policy_old)
         return FALSE;
     }
 
-    map_path_optimize(&data.path);
-
-    if(policy_old && to_replace->head != to_replace->tail)
-    {
-        Point *src_first;
-        Path *src, *dest;
-
-        if(policy_old > 0)
-        {
-            /* Append to current path. Make sure last path point is zero. */
-            if(to_replace->tail->unit.y != 0)
-            {
-                MACRO_PATH_INCREMENT_TAIL((*to_replace));
-                *to_replace->tail = _point_null;
-            }
-            src = &data.path;
-            dest = to_replace;
-        }
-        else
-        {
-            /* Prepend to current route. */
-            src = to_replace;
-            dest = &data.path;
-        }
-
-        /* Find src_first non-zero point. */
-        for(src_first = src->head - 1; src_first++ != src->tail; )
-            if(src_first->unit.y)
-                break;
-
-        /* Append route points from src to dest. */
-        if(src->tail >= src_first)
-        {
-            WayPoint *curr;
-            gint num_dest_points = dest->tail - dest->head + 1;
-            gint num_src_points = src->tail - src_first + 1;
-
-            /* Adjust dest->tail to be able to fit src route data
-             * plus room for more route data. */
-            path_resize(dest,
-                    num_dest_points + num_src_points + ARRAY_CHUNK_SIZE);
-
-            memcpy(dest->tail + 1, src_first,
-                    num_src_points * sizeof(Point));
-
-            dest->tail += num_src_points;
-
-            /* Append waypoints from src to dest->. */
-            path_wresize(dest, (dest->wtail - dest->whead)
-                    + (src->wtail - src->whead) + 2 + ARRAY_CHUNK_SIZE);
-            for(curr = src->whead - 1; curr++ != src->wtail; )
-            {
-                (++(dest->wtail))->point = dest->head + num_dest_points
-                    + (curr->point - src_first);
-                dest->wtail->desc = curr->desc;
-            }
-
-        }
-
-        /* Kill old route - don't use MACRO_PATH_FREE(), because that
-         * would free the string desc's that we just moved to data.route. */
-        g_free(src->head);
-        g_free(src->whead);
-        if(policy_old < 0)
-            (*to_replace) = *dest;
-    }
+    if (policy_old == 1)
+        policy = MAP_PATH_MERGE_POLICY_REPLACE;
+    else if (policy_old == 0)
+        policy = MAP_PATH_MERGE_POLICY_APPEND;
     else
-    {
-        MACRO_PATH_FREE((*to_replace));
-        /* Overwrite with data.route. */
-        (*to_replace) = data.path;
-        path_resize(to_replace,
-                to_replace->tail - to_replace->head + 1 + ARRAY_CHUNK_SIZE);
-        path_wresize(to_replace,
-                to_replace->wtail - to_replace->whead + 1 + ARRAY_CHUNK_SIZE);
-    }
+        policy = MAP_PATH_MERGE_POLICY_PREPEND;
+    map_path_merge(&data.path, to_replace, policy);
 
     vprintf("%s(): return TRUE\n", __PRETTY_FUNCTION__);
     return TRUE;
