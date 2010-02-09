@@ -30,7 +30,7 @@
 #include "gps.h"
 #include "menu.h"
 #include "path.h"
-#include "repo.h"
+#include "repository.h"
 #include "screen.h"
 #include "settings.h"
 #include "tile.h"

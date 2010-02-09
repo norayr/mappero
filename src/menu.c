@@ -52,7 +52,7 @@
 #include "menu.h"
 #include "path.h"
 #include "poi.h"
-#include "repo.h"
+#include "repository.h"
 #include "screen.h"
 #include "settings.h"
 #include "util.h"

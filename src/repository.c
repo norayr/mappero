@@ -22,7 +22,7 @@
 #include "defines.h"
 #include "display.h"
 #include "menu.h"
-#include "repo.h"
+#include "repository.h"
 #include "settings.h"
 #include "types.h"
 #include "util.h"
