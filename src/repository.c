@@ -431,8 +431,8 @@ repository_sync_handler(GtkWindow *parent)
     ts_new = ts_mod = repo_new = repo_mod = 0;
 
     /* TileSources */
-    res = gnome_vfs_read_entire_file("http://git.maemo.org/git/maemo-mapper/?p=maemo-mapper;"
-                                     "a=blob_plain;f=data/tile_sources.xml;hb=refs/heads/new_repos",
+    res = gnome_vfs_read_entire_file("http://vcs.maemo.org/git/maemo-mapper/?p=maemo-mapper;"
+                                     "a=blob_plain;f=tile_sources.xml;hb=refs/heads/configurations",
                                      &size, &data);
     if (res != GNOME_VFS_OK)
         return FALSE;
@@ -471,8 +471,8 @@ repository_sync_handler(GtkWindow *parent)
     }
 
     /* Repositories */
-    res = gnome_vfs_read_entire_file("http://git.maemo.org/git/maemo-mapper/?p=maemo-mapper;"
-                                     "a=blob_plain;f=data/repositories.xml;hb=refs/heads/new_repos",
+    res = gnome_vfs_read_entire_file("http://vcs.maemo.org/git/maemo-mapper/?p=maemo-mapper;"
+                                     "a=blob_plain;f=repositories.xml;hb=refs/heads/configurations",
                                      &size, &data);
     if (res != GNOME_VFS_OK)
         return ts_mod || ts_new;
