@@ -7,15 +7,15 @@
 #include <string.h>
 #include <glib.h>
 
-#include <hildon/hildon-pannable-area.h>
-#include <hildon/hildon-touch-selector.h>
-#include <hildon/hildon-note.h>
-#include <hildon/hildon-entry.h>
-#include <hildon/hildon-picker-button.h>
 #include <hildon/hildon-button.h>
-#include <hildon/hildon-picker-dialog.h>
-#include <hildon/hildon-pannable-area.h>
 #include <hildon/hildon-check-button.h>
+#include <hildon/hildon-entry.h>
+#include <hildon/hildon-note.h>
+#include <hildon/hildon-pannable-area.h>
+#include <hildon/hildon-pannable-area.h>
+#include <hildon/hildon-picker-button.h>
+#include <hildon/hildon-picker-dialog.h>
+#include <hildon/hildon-touch-selector.h>
 
 #include "controller.h"
 #include "data.h"
