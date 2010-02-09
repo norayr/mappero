@@ -144,6 +144,33 @@ fill_selector_with_repositories(HildonTouchSelector *selector, Repository *activ
 }
 
 
+/*
+ * Fill selector with names of tile sources, filtered by transparency (only if filter is TRUE).
+ * If active is non-null, this entry will be activated.
+ */
+static void
+fill_selector_with_tile_sources(HildonTouchSelector *selector, gboolean filter, gboolean transparent, TileSource *active)
+{
+    GList *ts_list = map_controller_get_tile_sources_list(map_controller_get_instance());
+    TileSource *ts;
+    gint act = -1, index = 0;
+
+    while (ts_list) {
+        ts = (TileSource*)ts_list->data;
+        if (!filter || ts->transparent == transparent) {
+            hildon_touch_selector_append_text(selector, ts->name);
+            if (ts == active)
+                act = index;
+        }
+        ts_list = ts_list->next;
+        index++;
+    }
+
+    if (act >= 0)
+        hildon_touch_selector_set_active(selector, 0, act);
+}
+
+
 gchar*
 tile_sources_to_xml(GList *tile_sources)
 {
@@ -509,33 +536,6 @@ repository_sync_handler(GtkWindow *parent)
 
 
 /*
- * Fill selector with names of tile sources, filtered by transparency.
- * If active is non-null, this entry will be activated.
- */
-static void
-fill_selector_with_tile_sources(HildonTouchSelector *selector, gboolean transparent, TileSource *active)
-{
-    GList *ts_list = map_controller_get_tile_sources_list(map_controller_get_instance());
-    TileSource *ts;
-    gint act = -1, index = 0;
-
-    while (ts_list) {
-        ts = (TileSource*)ts_list->data;
-        if (ts->transparent == transparent) {
-            hildon_touch_selector_append_text(selector, ts->name);
-            if (ts == active)
-                act = index;
-        }
-        ts_list = ts_list->next;
-        index++;
-    }
-
-    if (act >= 0)
-        hildon_touch_selector_set_active(selector, 0, act);
-}
-
-
-/*
  * Assign a HildonButton instance value of a comma-separated
  * list of layers' names.
  */
@@ -582,7 +582,7 @@ select_tile_source_dialog(GtkWindow *parent, gboolean transparent)
     gint ret, index;
 
     selector = HILDON_TOUCH_SELECTOR(hildon_touch_selector_new_text());
-    fill_selector_with_tile_sources(selector, transparent, NULL);
+    fill_selector_with_tile_sources(selector, TRUE, transparent, NULL);
 
     dialog = hildon_picker_dialog_new(parent);
     gtk_window_set_title(GTK_WINDOW(dialog), _("Select layer"));
@@ -1031,7 +1031,6 @@ repositories_dialog()
         }
         update_menus = update_list = FALSE;
     }
-    g_object_unref(list_model);
     gtk_widget_destroy(dialog);
     settings_save();
 }
@@ -1044,9 +1043,11 @@ tile_sources_dialog()
     GtkWidget *dialog, *edit_button, *delete_button;
     HildonTouchSelector *ts_selector;
     MapController *controller = map_controller_get_instance();
-    GList *ts_list;
     TileSource *ts, *active_ts = NULL;
-    gint response, active;
+    gint response, active, rows_count;
+    GtkTreeModel *list_model;
+    GtkListStore *list_store;
+    gboolean update_items = FALSE;
     enum {
         RESP_ADD,
         RESP_EDIT,
@@ -1058,30 +1059,23 @@ tile_sources_dialog()
     gtk_dialog_add_button(GTK_DIALOG(dialog), GTK_STOCK_ADD, RESP_ADD);
     edit_button = gtk_dialog_add_button(GTK_DIALOG(dialog), GTK_STOCK_EDIT, RESP_EDIT);
     delete_button = gtk_dialog_add_button(GTK_DIALOG(dialog), GTK_STOCK_DELETE, RESP_DELETE);
+    ts_selector = HILDON_TOUCH_SELECTOR(hildon_touch_selector_new_text());
+    gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox), GTK_WIDGET(ts_selector), TRUE, TRUE, 0);
+
+    list_model = hildon_touch_selector_get_model(ts_selector, 0);
+    list_store = GTK_LIST_STORE(list_model);
+    gtk_widget_set_size_request(GTK_WIDGET(ts_selector), -1, 300);
+
+    fill_selector_with_tile_sources(ts_selector, FALSE, FALSE, active_ts);
+    gtk_widget_show_all(dialog);
 
     while (1) {
-        ts_selector = HILDON_TOUCH_SELECTOR(hildon_touch_selector_new_text());
-
-        gtk_widget_set_size_request(GTK_WIDGET(ts_selector), -1, 300);
-        ts_list = map_controller_get_tile_sources_list(controller);
+        rows_count = gtk_tree_model_iter_n_children(list_model, NULL);
 
         /* These two buttons have meaning only if we have something in a list */
-        gtk_widget_set_sensitive(edit_button, ts_list != NULL);
-        gtk_widget_set_sensitive(delete_button, ts_list != NULL);
-        active = 0;
+        gtk_widget_set_sensitive(edit_button, rows_count > 0);
+        gtk_widget_set_sensitive(delete_button, rows_count > 0);
 
-        while (ts_list) {
-            ts = (TileSource*)ts_list->data;
-            hildon_touch_selector_append_text(ts_selector, ts->name);
-            if (ts == active_ts)
-                hildon_touch_selector_set_active(ts_selector, 0, active);
-            ts_list = ts_list->next;
-            active++;
-        }
-
-        gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox), GTK_WIDGET(ts_selector), TRUE, TRUE, 0);
-
-        gtk_widget_show_all(dialog);
         if ((response = gtk_dialog_run(GTK_DIALOG(dialog))) == GTK_RESPONSE_DELETE_EVENT)
             break;
 
@@ -1100,19 +1094,26 @@ tile_sources_dialog()
             if (tile_source_edit_dialog(GTK_WINDOW(dialog), ts)) {
                 map_controller_append_tile_source(controller, ts);
                 active_ts = ts;
+                update_items = TRUE;
             }
             else
                 free_tile_source(ts);
             break;
         case RESP_EDIT:
             tile_source_edit_dialog(GTK_WINDOW(dialog), active_ts);
+            update_items = TRUE;
             break;
         case RESP_DELETE:
             tile_sources_delete_handler(GTK_WINDOW(dialog), active_ts);
+            update_items = TRUE;
             active_ts = NULL;
             break;
         }
-        gtk_widget_destroy(GTK_WIDGET(ts_selector));
+
+        if (update_items) {
+            gtk_list_store_clear(list_store);
+            fill_selector_with_tile_sources(ts_selector, FALSE, FALSE, active_ts);
+        }
     }
 
     gtk_widget_destroy(dialog);
@@ -1195,7 +1196,7 @@ repository_edit_dialog(GtkWindow *parent, Repository *repo)
     primary_selector = HILDON_TOUCH_SELECTOR(hildon_touch_selector_new_text());
 
     /* In this selector, we allow to choose from non-transparent tile sources only */
-    fill_selector_with_tile_sources(primary_selector, FALSE, repo->primary);
+    fill_selector_with_tile_sources(primary_selector, TRUE, FALSE, repo->primary);
 
     primary_layer = g_object_new(HILDON_TYPE_PICKER_BUTTON,
                             "size", HILDON_SIZE_FINGER_HEIGHT,
