@@ -887,17 +887,11 @@ map_controller_delete_repository(MapController *self, Repository *repo)
     g_return_if_fail(MAP_IS_CONTROLLER(self));
     priv = self->priv;
 
-    priv->repositories_list = g_list_remove(priv->repositories_list, repo);
-    if (repo == priv->repository) {
-        /* It's active repository, switch. */
-        if (!priv->repositories_list)
-            priv->repository = NULL;
-        else {
-            priv->repository = (Repository*)priv->repositories_list->data;
-            gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(priv->repository->menu_item), TRUE);
-        }
-    }
+    /* Do not allow to delete active repository */
+    if (repo == priv->repository)
+        return;
 
+    priv->repositories_list = g_list_remove(priv->repositories_list, repo);
     free_repository(repo);
 }
 
