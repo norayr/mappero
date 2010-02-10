@@ -58,19 +58,6 @@
 #include "util.h"
 
 
-typedef struct _ScanInfo ScanInfo;
-struct _ScanInfo {
-    GtkWidget *settings_dialog;
-    GtkWidget *txt_gps_bt_mac;
-    GtkWidget *scan_dialog;
-    GtkWidget *banner;
-    GtkListStore *store;
-    gint sid;
-    DBusGConnection *bus;
-    DBusGProxy *req_proxy;
-    DBusGProxy *sig_proxy;
-};
-
 typedef struct _KeysDialogInfo KeysDialogInfo;
 struct _KeysDialogInfo {
     GtkWidget *cmb[CUSTOM_KEY_ENUM_COUNT];
