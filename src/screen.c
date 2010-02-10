@@ -979,7 +979,7 @@ map_screen_set_center(MapScreen *screen, gint x, gint y, gint zoom)
     g_return_if_fail(MAP_IS_SCREEN(screen));
     priv = screen->priv;
 
-    printf("%s, zoom %d", G_STRFUNC, zoom);
+    g_debug("%s, (%u, %u) zoom %d", G_STRFUNC, x, y, zoom);
     allocation = &(GTK_WIDGET(screen)->allocation);
     clutter_actor_set_position(priv->map,
                                allocation->width / 2,

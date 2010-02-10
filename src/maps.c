@@ -223,8 +223,6 @@ mapdb_get(TileSource *source, gint zoom, gint tilex, gint tiley)
     if (!is_tile_expired(filename, source->refresh))
         pixbuf = gdk_pixbuf_new_from_file(filename, NULL);
 
-    vprintf("%s(%s, %d, %d, %d): return %p\n", __PRETTY_FUNCTION__,
-           source->name, zoom, tilex, tiley, pixbuf);
     return pixbuf;
 }
 
