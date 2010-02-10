@@ -34,6 +34,7 @@
 #include "screen.h"
 #include "settings.h"
 #include "tile.h"
+#include "tile_source.h"
 
 #include <gconf/gconf-client.h>
 #include <hildon/hildon-banner.h>
@@ -710,7 +711,7 @@ map_controller_load_repositories(MapController *self, GConfClient *gconf_client)
     /* tile sources */
     value = gconf_client_get(gconf_client, GCONF_KEY_TILE_SOURCES, NULL);
     if (value) {
-        priv->tile_sources_list = xml_to_tile_sources(gconf_value_get_string(value));
+        priv->tile_sources_list = tile_source_xml_to_list(gconf_value_get_string(value));
         gconf_value_free(value);
     }
 
@@ -718,14 +719,14 @@ map_controller_load_repositories(MapController *self, GConfClient *gconf_client)
      * lookup in tile sources list */
     value = gconf_client_get(gconf_client, GCONF_KEY_REPOSITORIES, NULL);
     if (value) {
-        priv->repositories_list = xml_to_repositories(gconf_value_get_string(value));
+        priv->repositories_list = repository_xml_to_list(gconf_value_get_string(value));
         gconf_value_free(value);
     }
 
     /* if some data failed to load, switch to defaults */
     if (!priv->tile_sources_list || !priv->repositories_list)
-        priv->repository = create_default_repo_lists(&priv->tile_sources_list,
-                                                     &priv->repositories_list);
+        priv->repository = repository_create_default_lists(&priv->tile_sources_list,
+                                                           &priv->repositories_list);
     else {
         /* current repository */
         value = gconf_client_get(gconf_client, GCONF_KEY_ACTIVE_REPOSITORY, NULL);
@@ -756,7 +757,7 @@ map_controller_save_repositories(MapController *self, GConfClient *gconf_client)
     priv = self->priv;
 
     /* Repositories */
-    xml = repositories_to_xml(priv->repositories_list);
+    xml = repository_list_to_xml(priv->repositories_list);
     if (xml) {
         gconf_client_set_string(gconf_client, GCONF_KEY_REPOSITORIES, xml, NULL);
         g_free(xml);
@@ -765,7 +766,7 @@ map_controller_save_repositories(MapController *self, GConfClient *gconf_client)
         gconf_client_unset(gconf_client, GCONF_KEY_REPOSITORIES, NULL);
 
     /* Tile sources */
-    xml = tile_sources_to_xml(priv->tile_sources_list);
+    xml = tile_source_list_to_xml(priv->tile_sources_list);
     if (xml) {
         gconf_client_set_string(gconf_client, GCONF_KEY_TILE_SOURCES, xml, NULL);
         g_free(xml);
@@ -896,7 +897,7 @@ map_controller_delete_repository(MapController *self, Repository *repo)
         return;
 
     priv->repositories_list = g_list_remove(priv->repositories_list, repo);
-    free_repository(repo);
+    repository_free(repo);
 }
 
 
@@ -922,7 +923,7 @@ map_controller_delete_tile_source(MapController *self, TileSource *ts)
         repo_list = repo_list->next;
     }
 
-    free_tile_source(ts);
+    tile_source_free(ts);
 }
 
 

@@ -1,24 +1,15 @@
-#ifndef __REPO_H__
-#define __REPO_H__
+#ifndef __REPOSITORY_H__
+#define __REPOSITORY_H__
 
-gchar* tile_sources_to_xml(GList *tile_sources);
-gchar* repositories_to_xml(GList *repositories);
+#include "types.h"
 
-GList* xml_to_tile_sources(const gchar *data);
-GList* xml_to_repositories(const gchar *data);
+gchar* repository_list_to_xml(GList *repositories);
+GList* repository_xml_to_list(const gchar *data);
 
-Repository* create_default_repo_lists(GList **tile_sources,
-                                      GList **repositories);
-
-gboolean compare_tile_sources(TileSource *ts1, TileSource *ts2);
-gboolean compare_repositories(Repository *repo1, Repository *repo2);
-
-void free_tile_source(TileSource *ts);
-void free_repository(Repository *repo);
-
-void repositories_dialog();
-void tile_sources_dialog();
+Repository* repository_create_default_lists(GList **tile_sources,
+                                            GList **repositories);
+void repository_free(Repository *repo);
+void repository_list_edit_dialog();
 gboolean repository_edit_dialog(GtkWindow *parent, Repository *repo);
-gboolean tile_source_edit_dialog(GtkWindow *parent, TileSource *ts);
 
-#endif /* __REPO_H__ */
+#endif /* __REPOSITORY_H__ */

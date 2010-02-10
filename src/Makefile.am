@@ -47,7 +47,8 @@ maemo_mapper_SOURCES = \
 	screen.c \
 	tile.c \
 	util.c \
-	repository.c
+	repository.c \
+	tile_source.c
 
 # bin_SCRIPTS = maemo-mapper.sh
 run: all

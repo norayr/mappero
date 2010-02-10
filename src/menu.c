@@ -53,6 +53,7 @@
 #include "path.h"
 #include "poi.h"
 #include "repository.h"
+#include "tile_source.h"
 #include "screen.h"
 #include "settings.h"
 #include "util.h"
@@ -494,7 +495,7 @@ static gboolean
 menu_cb_maps_repoman(GtkMenuItem *item)
 {
     printf("%s()\n", __PRETTY_FUNCTION__);
-    repositories_dialog();
+    repository_list_edit_dialog();
     vprintf("%s(): return TRUE\n", __PRETTY_FUNCTION__);
     return TRUE;
 }
@@ -504,7 +505,7 @@ static gboolean
 menu_cb_maps_tile_sources(GtkMenuItem *item)
 {
     printf("%s()\n", __PRETTY_FUNCTION__);
-    tile_sources_dialog();
+    tile_source_list_edit_dialog();
     vprintf("%s(): return TRUE\n", __PRETTY_FUNCTION__);
     return TRUE;
 }
