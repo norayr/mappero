@@ -1177,7 +1177,7 @@ route_download(gchar *to)
     gint i;
     gint active_origin_row, row;
 
-    g_debug("%s", G_STRFUNC);
+    printf("%s", G_STRFUNC);
     conic_recommend_connected();
 
     dialog = map_dialog_new(_("Download Route"), GTK_WINDOW(_window), TRUE);

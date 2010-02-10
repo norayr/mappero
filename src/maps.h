@@ -24,16 +24,10 @@
 #ifndef MAEMO_MAPPER_MAPS_H
 #define MAEMO_MAPPER_MAPS_H
 
-RepoData *create_default_repo();
+gboolean mapdb_exists(TileSource *source, gint zoom, gint tilex, gint tiley);
+GdkPixbuf* mapdb_get(TileSource *source, gint zoom, gint tilex, gint tiley);
 
-gboolean mapdb_exists(RepoData *repo, gint zoom, gint tilex, gint tiley);
-GdkPixbuf* mapdb_get(RepoData *repo, gint zoom, gint tilex, gint tiley);
-
-void set_repo_type(RepoData *repo);
-gboolean repo_set_curr(RepoData *rd);
-gboolean repo_is_layer (RepoData* base, RepoData* layer);
-
-gboolean mapdb_initiate_update(RepoData *repo, gint zoom, gint tilex,
+gboolean mapdb_initiate_update(TileSource *repo, gint zoom, gint tilex,
         gint tiley, gint update_type, gint batch_id, gint priority,
         ThreadLatch *refresh_latch);
 
@@ -41,10 +35,6 @@ guint mut_exists_hashfunc(gconstpointer);
 gboolean mut_exists_equalfunc(gconstpointer a, gconstpointer b);
 gint mut_priority_comparefunc(gconstpointer a, gconstpointer b);
 gboolean thread_proc_mut(void);
-
-gboolean repoman_dialog(void);
-
-gboolean repoman_download(void);
 
 gboolean mapman_dialog(void);
 
@@ -56,7 +46,7 @@ void maps_toggle_visible_layers ();
 gint get_tile_age (GdkPixbuf* pixbuf);
 
 typedef struct {
-    RepoData *repo;
+    TileSource *source;
     gint tilex;
     gint tiley;
     gint8 zoom;

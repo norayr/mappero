@@ -105,6 +105,9 @@ gboolean _satdetails_on = FALSE;
 
 gboolean _is_first_time = FALSE;
 
+/* Current state of device (active/inactive). Used in layers to refresh timeout routine.
+ * Updated in OSSO HW state callback routine. */
+gboolean _device_is_active = TRUE;
 
 /** VARIABLES FOR MAINTAINING STATE OF THE CURRENT VIEW. */
 
@@ -205,9 +208,6 @@ gboolean _speed_excess = FALSE;
 SpeedLocation _speed_location = SPEED_LOCATION_TOP_RIGHT;
 UnblankOption _unblank_option = UNBLANK_FULLSCREEN;
 InfoFontSize _info_font_size = INFO_FONT_MEDIUM;
-
-GList *_repo_list = NULL;
-RepoData *_curr_repo = NULL;
 //----------------------
 
 
@@ -257,6 +257,7 @@ GtkWidget *_menu_layers_submenu = NULL;
 GtkWidget *_menu_maps_mapman_item = NULL;
 GtkWidget *_menu_maps_auto_download_item = NULL;
 GtkWidget *_menu_maps_repoman_item = NULL;
+GtkWidget *_menu_maps_tile_sources_item = NULL;
 GtkWidget *_menu_maps_repodown_item = NULL;
 
 /* Menu items for the "View" submenu. */

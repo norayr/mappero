@@ -54,11 +54,15 @@
 #include "data.h"
 #include "defines.h"
 
+#include "controller.h"
 #include "display.h"
 #include "main.h"
 #include "maps.h"
 #include "menu.h"
+#include "repository.h"
+#include "screen.h"
 #include "settings.h"
+#include "tile_source.h"
 #include "util.h"
 
 typedef struct
@@ -72,7 +76,6 @@ typedef struct
     MapTileSpec tile;
     gint priority;
     gint8 update_type;
-    gint8 layer_level;
     guint downloading : 1;
     /* list of MapUpdateCbData */
     GSList *callbacks;
@@ -81,55 +84,6 @@ typedef struct
     GdkPixbuf *pixbuf;
     GError *error;
 } MapUpdateTask;
-
-typedef struct _RepoManInfo RepoManInfo;
-struct _RepoManInfo {
-    GtkWidget *dialog;
-    GtkWidget *notebook;
-    GtkWidget *cmb_repos;
-    GList *repo_edits;
-};
-
-typedef struct _RepoEditInfo RepoEditInfo;
-struct _RepoEditInfo {
-    gchar *name;
-    gboolean is_sqlite;
-    GtkWidget *txt_url;
-    GtkWidget *txt_db_filename;
-    GtkWidget *num_dl_zoom_steps;
-    GtkWidget *num_view_zoom_steps;
-    GtkWidget *chk_double_size;
-    GtkWidget *chk_nextable;
-    GtkWidget *btn_browse;
-    GtkWidget *btn_compact;
-    GtkWidget *num_min_zoom;
-    GtkWidget *num_max_zoom;
-    BrowseInfo browse_info;
-    RepoData *repo;
-};
-
-
-typedef struct _RepoLayersInfo RepoLayersInfo;
-struct _RepoLayersInfo {
-    GtkWidget *dialog;
-    GtkWidget *notebook;
-    GtkListStore *layers_store;
-    GtkWidget *layers_list;
-    GList *layer_edits;
-};
-
-
-typedef struct _LayerEditInfo LayerEditInfo;
-struct _LayerEditInfo {
-    RepoLayersInfo *rli;
-
-    GtkWidget *txt_name;
-    GtkWidget *txt_url;
-    GtkWidget *txt_db;
-    GtkWidget *num_autofetch;
-    GtkWidget *chk_visible;
-    GtkWidget *vbox;
-};
 
 
 
@@ -170,7 +124,7 @@ struct _CompactInfo {
 
 typedef struct _MapCacheKey MapCacheKey;
 struct _MapCacheKey {
-    RepoData      *repo;
+    TileSource     *source;
     gint           zoom;
     gint           tilex;
     gint           tiley;
@@ -207,251 +161,105 @@ struct _MapCache {
     GHashTable   *entries;
 };
 
-const gchar* layer_timestamp_key = "tEXt::mm_ts";
-
-static const RepoType *find_repo_type_by_name(const gchar *name);
-
 static void
 build_tile_path(gchar *buffer, gsize size,
-                RepoData *repo, gint zoom, gint tilex, gint tiley)
+                TileSource *source, gint zoom, gint tilex, gint tiley)
 {
     g_snprintf(buffer, size,
                "/home/user/MyDocs/.maps/%s/%d/%d/",
-               repo->db_filename, 21 - zoom, tilex);
+               source->cache_dir, 21 - zoom, tilex);
 }
 
 static void
 build_tile_filename(gchar *buffer, gsize size,
-                    RepoData *repo, gint zoom, gint tilex, gint tiley)
+                    TileSource *source, gint zoom, gint tilex, gint tiley)
 {
     g_snprintf(buffer, size,
-               "/home/user/MyDocs/.maps/%s/%d/%d/%d.%s",
-               repo->db_filename, 21 - zoom, tilex, tiley, repo->db_file_ext);
+               "/home/user/MyDocs/.maps/%s/%d/%d/%d.png", /* TODO: new field in tile source with tile format */
+               source->cache_dir, 21 - zoom, tilex, tiley);
 }
 
+static gboolean
+is_tile_expired(const gchar *tile_path, gint mins_to_expire)
+{
+    struct stat st;
+
+    if (!mins_to_expire)
+        return FALSE;
+
+    if (!g_stat (tile_path, &st))
+        return st.st_mtime < (time(NULL) - mins_to_expire * 60);
+    else
+        return TRUE;
+}
+
+
 gboolean
-mapdb_exists(RepoData *repo, gint zoom, gint tilex, gint tiley)
+mapdb_exists(TileSource *source, gint zoom, gint tilex, gint tiley)
 {
     gchar filename[200];
-    gboolean exists;
-    vprintf("%s(%s, %d, %d, %d)\n", __PRETTY_FUNCTION__,
-            repo->name, zoom, tilex, tiley);
+    gboolean exists = FALSE;
+    printf("%s(%s, %d, %d, %d)\n", __PRETTY_FUNCTION__,
+            source->name, zoom, tilex, tiley);
 
-    build_tile_filename(filename, sizeof(filename), repo, zoom, tilex, tiley);
-    exists = g_file_test(filename, G_FILE_TEST_EXISTS);
+    build_tile_filename(filename, sizeof(filename), source, zoom, tilex, tiley);
+    if (!is_tile_expired(filename, source->refresh))
+        exists = g_file_test(filename, G_FILE_TEST_EXISTS);
 
-    g_debug("%s(): return %d", __PRETTY_FUNCTION__, exists);
+    vprintf("%s(): return %d", __PRETTY_FUNCTION__, exists);
     return exists;
 }
 
 GdkPixbuf*
-mapdb_get(RepoData *repo, gint zoom, gint tilex, gint tiley)
+mapdb_get(TileSource *source, gint zoom, gint tilex, gint tiley)
 {
     gchar filename[200];
-    GdkPixbuf *pixbuf;
-    vprintf("%s(%s, %d, %d, %d)\n", __PRETTY_FUNCTION__,
-            repo->name, zoom, tilex, tiley);
+    GdkPixbuf *pixbuf = NULL;
+    printf("%s(%s, %d, %d, %d)\n", __PRETTY_FUNCTION__,
+            source->name, zoom, tilex, tiley);
 
-    build_tile_filename(filename, sizeof(filename), repo, zoom, tilex, tiley);
-    pixbuf = gdk_pixbuf_new_from_file(filename, NULL);
+    build_tile_filename(filename, sizeof(filename), source, zoom, tilex, tiley);
+    if (!is_tile_expired(filename, source->refresh))
+        pixbuf = gdk_pixbuf_new_from_file(filename, NULL);
 
-    g_debug("%s(%s, %d, %d, %d): return %p", __PRETTY_FUNCTION__,
-           repo->name, zoom, tilex, tiley, pixbuf);
+    vprintf("%s(%s, %d, %d, %d): return %p", __PRETTY_FUNCTION__,
+           source->name, zoom, tilex, tiley, pixbuf);
     return pixbuf;
 }
 
 static gboolean
-mapdb_update(RepoData *repo, gint zoom, gint tilex, gint tiley,
+mapdb_update(TileSource *source, gint zoom, gint tilex, gint tiley,
         void *bytes, gint size)
 {
     gint success = TRUE;
     gchar filename[200], path[200];
-    vprintf("%s(%s, %d, %d, %d)\n", __PRETTY_FUNCTION__,
-            repo->name, zoom, tilex, tiley);
+    printf("%s(%s, %d, %d, %d)\n", __PRETTY_FUNCTION__,
+            source->name, zoom, tilex, tiley);
 
-    build_tile_path(path, sizeof(path), repo, zoom, tilex, tiley);
+    build_tile_path(path, sizeof(path), source, zoom, tilex, tiley);
     g_mkdir_with_parents(path, 0766);
-    build_tile_filename(filename, sizeof(filename), repo, zoom, tilex, tiley);
+    build_tile_filename(filename, sizeof(filename), source, zoom, tilex, tiley);
     success = g_file_set_contents(filename, bytes, size, NULL);
 
-    g_debug("%s(): return %d", __PRETTY_FUNCTION__, success);
+    vprintf("%s(): return %d", __PRETTY_FUNCTION__, success);
     return success;
 }
 
 static gboolean
-mapdb_delete(RepoData *repo, gint zoom, gint tilex, gint tiley)
+mapdb_delete(TileSource *source, gint zoom, gint tilex, gint tiley)
 {
     gchar filename[200];
     gint success = FALSE;
-    vprintf("%s(%s, %d, %d, %d)\n", __PRETTY_FUNCTION__,
-            repo->name, zoom, tilex, tiley);
+    printf("%s(%s, %d, %d, %d)\n", __PRETTY_FUNCTION__,
+            source->name, zoom, tilex, tiley);
 
-    build_tile_filename(filename, sizeof(filename), repo, zoom, tilex, tiley);
+    build_tile_filename(filename, sizeof(filename), source, zoom, tilex, tiley);
     g_remove(filename);
 
     vprintf("%s(): return %d\n", __PRETTY_FUNCTION__, success);
     return success;
 }
 
-/* TODO: remove this function, once the repo type is made explicit */
-void
-set_repo_type(RepoData *repo)
-{
-    printf("%s(%s)\n", __PRETTY_FUNCTION__, repo->url);
-
-    if(repo->url && *repo->url)
-    {
-        gchar *url = g_utf8_strdown(repo->url, -1);
-
-        /* Determine type of repository. */
-        if(strstr(url, "service=wms"))
-            repo->type = NULL;
-        else if(strstr(url, "%s"))
-            repo->type = find_repo_type_by_name("QUAD_QRST");
-        else if(strstr(url, "%0d"))
-            repo->type = find_repo_type_by_name("XYZ_INV");
-        else if(strstr(url, "%-d"))
-            repo->type = find_repo_type_by_name("XYZ_SIGNED");
-        else if(strstr(url, "%0s"))
-            repo->type = find_repo_type_by_name("QUAD_ZERO");
-        else
-            repo->type = find_repo_type_by_name("XYZ");
-
-        /* temporary hack */
-        if (strstr(url, "google") ||
-            strstr(url, "jpeg") ||
-            strstr(url, "yimg"))
-            repo->db_file_ext = g_strdup("jpg");
-        else
-            repo->db_file_ext = g_strdup("png");
-
-        g_free(url);
-    }
-    else
-        repo->type = NULL;
-
-    vprintf("%s(): return\n", __PRETTY_FUNCTION__);
-}
-
-gboolean
-repo_set_curr(RepoData *rd)
-{
-    /* Set the current repository */
-    _curr_repo = rd;
-    return TRUE;
-}
-
-
-/**
- * Returns true if:
- * 1. base == layer, or
- * 2. layer is sublayer of base
- */
-gboolean repo_is_layer (RepoData* base, RepoData* layer)
-{
-    while (base) {
-        if (base == layer)
-            return TRUE;
-        base = base->layers;
-    }
-
-    return FALSE;
-}
-
-
-/**
- * Given the xyz coordinates of our map coordinate system, write the qrst
- * quadtree coordinates to buffer.
- */
-static void
-map_convert_coords_to_quadtree_string(gint x, gint y, gint zoomlevel,
-                                      gchar *buffer, const gchar initial,
-                                      const gchar *const quadrant)
-{
-    gchar *ptr = buffer;
-    gint n;
-    vprintf("%s()\n", __PRETTY_FUNCTION__);
-
-    if (initial)
-        *ptr++ = initial;
-
-    for(n = MAX_ZOOM - zoomlevel; n >= 0; n--)
-    {
-        gint xbit = (x >> n) & 1;
-        gint ybit = (y >> n) & 1;
-        *ptr++ = quadrant[xbit + 2 * ybit];
-    }
-    *ptr++ = '\0';
-    vprintf("%s(): return\n", __PRETTY_FUNCTION__);
-}
-
-static gint
-xyz_get_url(RepoData *repo, gchar *buffer, gint len,
-            gint zoom, gint tilex, gint tiley)
-{
-    return g_snprintf(buffer, len, repo->url,
-                      tilex, tiley,  zoom - (MAX_ZOOM - 16));
-}
-
-static gint
-xyz_inv_get_url(RepoData *repo, gchar *buffer, gint len,
-                gint zoom, gint tilex, gint tiley)
-{
-    return g_snprintf(buffer, len, repo->url,
-                      MAX_ZOOM + 1 - zoom, tilex, tiley);
-}
-
-static gint
-xyz_signed_get_url(RepoData *repo, gchar *buffer, gint len,
-                   gint zoom, gint tilex, gint tiley)
-{
-    return g_snprintf(buffer, len, repo->url,
-                      tilex,
-                      (1 << (MAX_ZOOM - zoom)) - tiley - 1,
-                      zoom - (MAX_ZOOM - 17));
-}
-
-static gint
-quad_qrst_get_url(RepoData *repo, gchar *buffer, gint len,
-                  gint zoom, gint tilex, gint tiley)
-{
-    gchar location[MAX_ZOOM + 2];
-    map_convert_coords_to_quadtree_string(tilex, tiley, zoom,
-                                          location, 't', "qrts");
-    return g_snprintf(buffer, len, repo->url, location);
-}
-
-static gint
-quad_zero_get_url(RepoData *repo, gchar *buffer, gint len,
-                  gint zoom, gint tilex, gint tiley)
-{
-    gchar location[MAX_ZOOM + 2];
-    map_convert_coords_to_quadtree_string(tilex, tiley, zoom,
-                                          location, '\0', "0123");
-    return g_snprintf(buffer, len, repo->url, location);
-}
-
-static const RepoType repo_types[] = {
-    { "XYZ", xyz_get_url, },
-    { "XYZ_SIGNED", xyz_signed_get_url, },
-    { "XYZ_INV", xyz_inv_get_url, },
-    { "QUAD_QRST", quad_qrst_get_url, },
-    { "QUAD_ZERO", quad_zero_get_url, },
-    { NULL, }
-};
-
-static const RepoType *
-find_repo_type_by_name(const gchar *name)
-{
-    const RepoType *type;
-
-    g_return_val_if_fail(name != NULL, NULL);
-    for (type = repo_types; type->name != NULL; type++)
-        if (strcmp(name, type->name) == 0)
-            return type;
-
-    return NULL;
-}
 
 /**
  * Construct the URL that we should fetch, based on the current URI format.
@@ -460,16 +268,15 @@ find_repo_type_by_name(const gchar *name)
  * system.
  */
 static gint
-map_construct_url(gchar *buffer, gint len, RepoData *repo,
-                  gint zoom, gint tilex, gint tiley)
+map_construct_url(gchar *buffer, gint len, TileSource *source, gint zoom, gint tilex, gint tiley)
 {
-    g_return_val_if_fail(repo->type != NULL, -1);
+    g_return_val_if_fail(source->type != NULL, -1);
 
-    return repo->type->get_url(repo, buffer, len, zoom, tilex, tiley);
+    return source->type->get_url(source, buffer, len, zoom, tilex, tiley);
 }
 
-static gboolean
-mapdb_initiate_update_banner_idle()
+static void
+mapdb_initiate_update_banner()
 {
     if (!_download_banner)
     {
@@ -480,7 +287,6 @@ mapdb_initiate_update_banner_idle()
         if(!_conic_is_connected)
             gtk_widget_hide(_download_banner);
     }
-    return FALSE;
 }
 
 static void
@@ -491,8 +297,8 @@ map_update_tile_int(MapTileSpec *tile, gint priority, MapUpdateType update_type,
     MapUpdateTask *old_mut;
     MapUpdateCbData *cb_data = NULL;
 
-    g_debug("%s(%s, %d, %d, %d, %d)", G_STRFUNC,
-            tile->repo->name, tile->zoom, tile->tilex, tile->tiley, update_type);
+    printf("%s(%s, %d, %d, %d, %d)", G_STRFUNC,
+            tile->source->name, tile->zoom, tile->tilex, tile->tiley, update_type);
 
     mut = g_slice_new0(MapUpdateTask);
     if (!mut)
@@ -502,7 +308,6 @@ map_update_tile_int(MapTileSpec *tile, gint priority, MapUpdateType update_type,
         return;
     }
     memcpy(&mut->tile, tile, sizeof(MapTileSpec));
-    mut->layer_level = tile->repo->layer_level;
     mut->priority = priority;
     mut->update_type = update_type;
 
@@ -517,7 +322,7 @@ map_update_tile_int(MapTileSpec *tile, gint priority, MapUpdateType update_type,
     old_mut = g_hash_table_lookup(_mut_exists_table, mut);
     if (old_mut)
     {
-        g_debug("Task already queued, adding listener");
+        printf("Task already queued, adding listener");
 
         if (cb_data)
             old_mut->callbacks = g_slist_prepend(old_mut->callbacks, cb_data);
@@ -525,7 +330,7 @@ map_update_tile_int(MapTileSpec *tile, gint priority, MapUpdateType update_type,
         /* Check if the priority of the new task is higher */
         if (old_mut->priority > mut->priority && !old_mut->downloading)
         {
-            g_debug("re-insert, old priority = %d", old_mut->priority);
+            printf("re-insert, old priority = %d", old_mut->priority);
             /* It is, so remove the task from the tree, update its priority and
              * re-insert it with the new one */
             g_tree_remove(_mut_priority_tree, old_mut);
@@ -549,7 +354,7 @@ map_update_tile_int(MapTileSpec *tile, gint priority, MapUpdateType update_type,
 
     /* Increment download count and (possibly) display banner. */
     if (g_hash_table_size(_mut_exists_table) >= 20 && !_download_banner)
-        g_idle_add((GSourceFunc)mapdb_initiate_update_banner_idle, NULL);
+        mapdb_initiate_update_banner();
 
     /* This doesn't need to be thread-safe.  Extras in the pool don't
      * really make a difference. */
@@ -571,13 +376,13 @@ map_download_tile(MapTileSpec *tile, gint priority,
  * downloading the map, then this method does nothing.
  */
 gboolean
-mapdb_initiate_update(RepoData *repo, gint zoom, gint tilex, gint tiley,
+mapdb_initiate_update(TileSource *source, gint zoom, gint tilex, gint tiley,
         gint update_type, gint batch_id, gint priority,
         ThreadLatch *refresh_latch)
 {
     MapTileSpec tile;
 
-    tile.repo = repo;
+    tile.source = source;
     tile.zoom = zoom;
     tile.tilex = tilex;
     tile.tiley = tiley;
@@ -606,8 +411,8 @@ map_update_task_completed(MapUpdateTask *mut)
 {
     MapTileSpec *tile = &mut->tile;
 
-    g_debug("%s(%s, %d, %d, %d)", G_STRFUNC,
-            tile->repo->name, tile->zoom, tile->tilex, tile->tiley);
+    printf("%s(%s, %d, %d, %d)", G_STRFUNC,
+            tile->source->name, tile->zoom, tile->tilex, tile->tiley);
 
     g_mutex_lock(_mut_priority_mutex);
     g_hash_table_remove(_mut_exists_table, mut);
@@ -651,16 +456,16 @@ static void
 download_tile(MapTileSpec *tile, gchar **bytes, gint *size,
               GdkPixbuf **pixbuf, GError **error)
 {
-    gchar src_url[256];
+    gchar src_url[256];         /* 256 may become too little, somtetimes, I guess */
     GnomeVFSResult vfs_result;
     GdkPixbufLoader *loader = NULL;
     gint ret;
 
-    g_debug("%s (%s, %d, %d, %d)", G_STRFUNC,
-            tile->repo->name, tile->zoom, tile->tilex, tile->tiley);
+    printf("%s (%s, %d, %d, %d)", G_STRFUNC,
+            tile->source->name, tile->zoom, tile->tilex, tile->tiley);
 
     /* First, construct the URL from which we will get the data. */
-    ret = map_construct_url(src_url, sizeof(src_url), tile->repo,
+    ret = map_construct_url(src_url, sizeof(src_url), tile->source,
                             tile->zoom, tile->tilex, tile->tiley);
     if (ret < 0) src_url[0] = 0; /* download will fail */
 
@@ -702,7 +507,7 @@ l_error:
 static void
 map_update_task_remove_all(const GError *error)
 {
-    g_debug("%s", G_STRFUNC);
+    printf("%s", G_STRFUNC);
 
     while (1)
     {
@@ -738,7 +543,7 @@ thread_proc_mut()
     while(conic_ensure_connected())
     {
         gint retries;
-        gboolean notification_sent = FALSE, layer_tile;
+        gboolean notification_sent = FALSE;
         MapUpdateTask *mut = NULL;
         MapTileSpec *tile;
 
@@ -758,25 +563,17 @@ thread_proc_mut()
         g_tree_remove(_mut_priority_tree, mut);
         g_mutex_unlock(_mut_priority_mutex);
 
-        g_debug("%s %p (%s, %d, %d, %d)", G_STRFUNC, mut,
-                tile->repo->name, tile->zoom, tile->tilex, tile->tiley);
-
-        layer_tile = tile->repo != _curr_repo &&
-            repo_is_layer(_curr_repo, tile->repo);
+        printf("%s %p (%s, %d, %d, %d)", G_STRFUNC, mut,
+                tile->source->name, tile->zoom, tile->tilex, tile->tiley);
 
         mut->pixbuf = NULL;
         mut->error = NULL;
 
-        if (tile->repo != _curr_repo && !layer_tile)
-        {
-            /* Do nothing, except report that there is no error. */
-        }
-        else if (mut->update_type == MAP_UPDATE_DELETE)
+        if (mut->update_type == MAP_UPDATE_DELETE)
         {
             /* Easy - just delete the entry from the database.  We don't care
              * about failures (sorry). */
-            if (MAPDB_EXISTS(tile->repo))
-                mapdb_delete(tile->repo, tile->zoom, tile->tilex, tile->tiley);
+            mapdb_delete(tile->source, tile->zoom, tile->tilex, tile->tiley);
         }
         else
         {
@@ -787,7 +584,7 @@ thread_proc_mut()
             {
                 /* We don't want to overwrite, so check for existence. */
                 /* Map already exists, and we're not going to overwrite. */
-                if (mapdb_exists(tile->repo, tile->zoom, tile->tilex, tile->tiley))
+                if (mapdb_exists(tile->source, tile->zoom, tile->tilex, tile->tiley))
                 {
                     download_needed = FALSE;
                 }
@@ -795,30 +592,29 @@ thread_proc_mut()
 
             if (download_needed)
             {
-                RepoData *repo;
+                TileSource *source;
                 gint zoom, tilex, tiley;
                 gchar *bytes = NULL;
                 gint size;
 
-                for (retries = tile->repo->layer_level
-                     ? 1 : INITIAL_DOWNLOAD_RETRIES; retries > 0; --retries)
+                for (retries = source->transparent ? 1 : INITIAL_DOWNLOAD_RETRIES; retries > 0; --retries)
                 {
                     g_clear_error(&mut->error);
                     download_tile(tile, &bytes, &size,
                                   &mut->pixbuf, &mut->error);
                     if (mut->pixbuf) break;
 
-                    g_debug("Download failed, retrying");
+                    printf("Download failed, retrying");
                 }
 
                 /* Copy database-relevant mut data before we release it. */
-                repo = tile->repo;
+                source = tile->source;
                 zoom = tile->zoom;
                 tilex = tile->tilex;
                 tiley = tile->tiley;
 
-                g_debug("%s(%s, %d, %d, %d): %s", G_STRFUNC,
-                        tile->repo->name, tile->zoom, tile->tilex, tile->tiley,
+                printf("%s(%s, %d, %d, %d): %s", G_STRFUNC,
+                        tile->source->name, tile->zoom, tile->tilex, tile->tiley,
                         mut->pixbuf ? "Success" : "Failed");
                 g_idle_add_full(G_PRIORITY_HIGH_IDLE,
                                 (GSourceFunc)map_update_task_completed, mut,
@@ -829,7 +625,7 @@ thread_proc_mut()
 
                 /* Also attempt to add to the database. */
                 if (bytes &&
-                    !mapdb_update(repo, zoom, tilex, tiley, bytes, size)) {
+                    !mapdb_update(source, zoom, tilex, tiley, bytes, size)) {
                     g_idle_add((GSourceFunc)map_handle_error,
                                _("Error saving map to disk - disk full?"));
                 }
@@ -862,7 +658,7 @@ mut_exists_hashfunc(gconstpointer a)
 {
     const MapUpdateTask *t = a;
     const MapTileSpec *r = &t->tile;
-    return r->zoom + r->tilex + r->tiley + t->update_type + t->layer_level;
+    return r->zoom + r->tilex + r->tiley + t->update_type;
 }
 
 gboolean
@@ -874,7 +670,7 @@ mut_exists_equalfunc(gconstpointer a, gconstpointer b)
             && t1->tile.tiley == t2->tile.tiley
             && t1->tile.zoom == t2->tile.zoom
             && t1->update_type == t2->update_type
-            && t1->layer_level == t2->layer_level);
+            && t1->tile.source == t2->tile.source);
 }
 
 gint
@@ -889,11 +685,11 @@ mut_priority_comparefunc(gconstpointer _a, gconstpointer _b)
     diff = (a->priority - b->priority); /* Lower priority numbers first. */
     if(diff)
         return diff;
-    diff = (a->layer_level - b->layer_level); /* Lower layers first. */
-    if(diff)
-        return diff;
 
     /* At this point, we don't care, so just pick arbitrarily. */
+    diff = (a->tile.source - b->tile.source);
+    if(diff)
+        return diff;
     diff = (a->tile.tilex - b->tile.tilex);
     if(diff)
         return diff;
@@ -903,1402 +699,6 @@ mut_priority_comparefunc(gconstpointer _a, gconstpointer _b)
     return (a->tile.zoom - b->tile.zoom);
 }
 
-static gboolean
-repoman_dialog_select(GtkWidget *widget, RepoManInfo *rmi)
-{
-    printf("%s()\n", __PRETTY_FUNCTION__);
-    gint curr_index = gtk_combo_box_get_active(GTK_COMBO_BOX(rmi->cmb_repos));
-    gtk_notebook_set_current_page(GTK_NOTEBOOK(rmi->notebook), curr_index);
-    vprintf("%s(): return TRUE\n", __PRETTY_FUNCTION__);
-    return TRUE;
-}
-
-static gboolean
-repoman_dialog_browse(GtkWidget *widget, BrowseInfo *browse_info)
-{
-    GtkWidget *dialog;
-    gchar *basename;
-    printf("%s()\n", __PRETTY_FUNCTION__);
-
-    dialog = GTK_WIDGET(
-            hildon_file_chooser_dialog_new(GTK_WINDOW(browse_info->dialog),
-            GTK_FILE_CHOOSER_ACTION_SAVE));
-
-    gtk_file_chooser_set_uri(GTK_FILE_CHOOSER(dialog),
-            gtk_entry_get_text(GTK_ENTRY(browse_info->txt)));
-
-    /* Work around a bug in HildonFileChooserDialog. */
-    basename = g_path_get_basename(
-            gtk_entry_get_text(GTK_ENTRY(browse_info->txt)));
-    g_object_set(G_OBJECT(dialog), "autonaming", FALSE, NULL);
-    gtk_file_chooser_set_current_name(GTK_FILE_CHOOSER(dialog), basename);
-
-    if(GTK_RESPONSE_OK == gtk_dialog_run(GTK_DIALOG(dialog)))
-    {
-        gchar *filename = gtk_file_chooser_get_filename(
-                GTK_FILE_CHOOSER(dialog));
-        gtk_entry_set_text(GTK_ENTRY(browse_info->txt), filename);
-        g_free(filename);
-    }
-
-    gtk_widget_destroy(dialog);
-
-    vprintf("%s(): return TRUE\n", __PRETTY_FUNCTION__);
-    return TRUE;
-}
-
-static gboolean
-repoman_compact_complete_idle(CompactInfo *ci)
-{
-    printf("%s()\n", __PRETTY_FUNCTION__);
-
-    gtk_widget_destroy(GTK_WIDGET(ci->banner));
-    popup_error(ci->dialog, ci->status_msg);
-    gtk_widget_destroy(ci->dialog);
-    g_free(ci);
-
-    vprintf("%s(): return FALSE\n", __PRETTY_FUNCTION__);
-    return FALSE;
-}
-
-static void
-thread_repoman_compact(CompactInfo *ci)
-{
-    printf("%s()\n", __PRETTY_FUNCTION__);
-
-    if(ci->is_sqlite)
-    {
-        sqlite3 *db;
-        if(SQLITE_OK != (sqlite3_open(ci->db_filename, &db)))
-            ci->status_msg = _("Failed to open map database for compacting.");
-        else
-        {
-            if(SQLITE_OK != sqlite3_exec(db, "vacuum;", NULL, NULL, NULL))
-                ci->status_msg = _("An error occurred while trying to "
-                            "compact the database.");
-            else
-                ci->status_msg = _("Successfully compacted database.");
-            sqlite3_close(db);
-        }
-    }
-    else
-    {
-        GDBM_FILE db;
-        if(!(db = gdbm_open((gchar*)ci->db_filename, 0, GDBM_WRITER | GDBM_FAST,
-                        0644, NULL)))
-            ci->status_msg = _("Failed to open map database for compacting.");
-        else
-        {
-            if(gdbm_reorganize(db))
-                ci->status_msg = _("An error occurred while trying to "
-                            "compact the database.");
-            else
-                ci->status_msg = _("Successfully compacted database.");
-            gdbm_close(db);
-        }
-    }
-
-    g_idle_add((GSourceFunc)repoman_compact_complete_idle, ci);
-
-    vprintf("%s(): return\n", __PRETTY_FUNCTION__);
-}
-
-static void
-repoman_dialog_compact(GtkWidget *widget, RepoEditInfo *rei)
-{
-    CompactInfo *ci;
-    GtkWidget *sw;
-    printf("%s()\n", __PRETTY_FUNCTION__);
-
-    ci = g_new0(CompactInfo, 1);
-
-    ci->dialog = gtk_dialog_new_with_buttons(_("Compact Database"),
-            GTK_WINDOW(rei->browse_info.dialog), GTK_DIALOG_MODAL,
-            GTK_STOCK_OK, GTK_RESPONSE_ACCEPT,
-            GTK_STOCK_CANCEL, GTK_RESPONSE_REJECT,
-            NULL);
-
-    sw = gtk_scrolled_window_new (NULL, NULL);
-    gtk_scrolled_window_set_shadow_type (GTK_SCROLLED_WINDOW (sw),
-            GTK_SHADOW_ETCHED_IN);
-    gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (sw),
-            GTK_POLICY_NEVER,
-            GTK_POLICY_ALWAYS);
-    gtk_box_pack_start(GTK_BOX(GTK_DIALOG(ci->dialog)->vbox),
-            sw, TRUE, TRUE, 0);
-
-    gtk_container_add(GTK_CONTAINER(sw), ci->txt = gtk_text_view_new());
-    gtk_text_view_set_editable(GTK_TEXT_VIEW(ci->txt), FALSE);
-    gtk_text_view_set_cursor_visible(GTK_TEXT_VIEW(ci->txt), FALSE);
-    gtk_text_buffer_set_text(
-            gtk_text_view_get_buffer(GTK_TEXT_VIEW(ci->txt)),
-            _("Generally, deleted maps create an empty space in the "
-                "database that is later reused when downloading new maps.  "
-                "Compacting the database reorganizes it such that all "
-                "that blank space is eliminated.  This is the only way "
-                "that the size of the database can decrease.\n"
-                "This reorganization requires creating a new file and "
-                "inserting all the maps in the old database file into the "
-                "new file. The new file is then renamed to the same name "
-                "as the old file and dbf is updated to contain all the "
-                "correct information about the new file.  Note that this "
-                "can require free space on disk of an amount up to the size "
-                "of the map database.\n"
-                "This process may take several minutes, especially if "
-                "your map database is large.  As a rough estimate, you can "
-                "expect to wait approximately 2-5 seconds per megabyte of "
-                "map data (34-85 minutes per gigabyte).  There is no progress "
-                "indicator, although you can watch the new file grow in any "
-                "file manager.  Do not attempt to close Maemo Mapper while "
-                "the compacting operation is in progress."),
-            -1);
-    {
-        GtkTextIter iter;
-        gtk_text_buffer_get_iter_at_offset(
-                gtk_text_view_get_buffer(GTK_TEXT_VIEW(ci->txt)),
-                &iter, 0);
-        gtk_text_view_scroll_to_iter(GTK_TEXT_VIEW(ci->txt),
-                &iter, 0.0, FALSE, 0, 0);
-    }
-
-    gtk_widget_set_size_request(GTK_WIDGET(sw), 600, 200);
-    gtk_text_view_set_wrap_mode(GTK_TEXT_VIEW(ci->txt), GTK_WRAP_WORD);
-
-    gtk_widget_show_all(ci->dialog);
-
-    if(GTK_RESPONSE_ACCEPT == gtk_dialog_run(GTK_DIALOG(ci->dialog)))
-    {
-        gtk_widget_set_sensitive(GTK_DIALOG(ci->dialog)->action_area, FALSE);
-        ci->db_filename = gtk_entry_get_text(GTK_ENTRY(rei->txt_db_filename));
-        ci->is_sqlite = rei->is_sqlite;
-        ci->banner = hildon_banner_show_animation(ci->dialog, NULL,
-                _("Compacting database..."));
-
-        g_thread_create((GThreadFunc)thread_repoman_compact, ci, FALSE, NULL);
-    }
-    else
-    {
-        gtk_widget_destroy(ci->dialog);
-    }
-
-    vprintf("%s(): return\n", __PRETTY_FUNCTION__);
-}
-
-static gboolean
-repoman_dialog_rename(GtkWidget *widget, RepoManInfo *rmi)
-{
-    static GtkWidget *hbox = NULL;
-    static GtkWidget *label = NULL;
-    static GtkWidget *txt_name = NULL;
-    static GtkWidget *dialog = NULL;
-    printf("%s()\n", __PRETTY_FUNCTION__);
-
-    if(dialog == NULL)
-    {
-        dialog = gtk_dialog_new_with_buttons(_("New Name"),
-                GTK_WINDOW(rmi->dialog), GTK_DIALOG_MODAL,
-                GTK_STOCK_OK, GTK_RESPONSE_ACCEPT,
-                GTK_STOCK_CANCEL, GTK_RESPONSE_REJECT,
-                NULL);
-
-        gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox),
-                hbox = gtk_hbox_new(FALSE, 4), FALSE, FALSE, 4);
-
-        gtk_box_pack_start(GTK_BOX(hbox),
-                label = gtk_label_new(_("Name")),
-                FALSE, FALSE, 0);
-        gtk_box_pack_start(GTK_BOX(hbox),
-                txt_name = gtk_entry_new(),
-                TRUE, TRUE, 0);
-    }
-
-    {
-        gint active = gtk_combo_box_get_active(GTK_COMBO_BOX(rmi->cmb_repos));
-        RepoEditInfo *rei = g_list_nth_data(rmi->repo_edits, active);
-        gtk_entry_set_text(GTK_ENTRY(txt_name), rei->name);
-    }
-
-    gtk_widget_show_all(dialog);
-
-    while(GTK_RESPONSE_ACCEPT == gtk_dialog_run(GTK_DIALOG(dialog)))
-    {
-        gint active = gtk_combo_box_get_active(GTK_COMBO_BOX(rmi->cmb_repos));
-        RepoEditInfo *rei = g_list_nth_data(rmi->repo_edits, active);
-        g_free(rei->name);
-        rei->name = g_strdup(gtk_entry_get_text(GTK_ENTRY(txt_name)));
-        gtk_combo_box_insert_text(GTK_COMBO_BOX(rmi->cmb_repos),
-                active, g_strdup(rei->name));
-        gtk_combo_box_set_active(GTK_COMBO_BOX(rmi->cmb_repos), active);
-        gtk_combo_box_remove_text(GTK_COMBO_BOX(rmi->cmb_repos), active + 1);
-        break;
-    }
-
-    gtk_widget_hide(dialog);
-
-    vprintf("%s(): return TRUE\n", __PRETTY_FUNCTION__);
-    return TRUE;
-}
-
-static void
-repoman_delete(RepoManInfo *rmi, gint index)
-{
-    gtk_combo_box_remove_text(GTK_COMBO_BOX(rmi->cmb_repos), index);
-    gtk_notebook_remove_page(GTK_NOTEBOOK(rmi->notebook), index);
-    rmi->repo_edits = g_list_remove_link(
-            rmi->repo_edits,
-            g_list_nth(rmi->repo_edits, index));
-}
-
-static gboolean
-repoman_dialog_delete(GtkWidget *widget, RepoManInfo *rmi, gint index)
-{
-    gchar buffer[100];
-    GtkWidget *confirm;
-    printf("%s()\n", __PRETTY_FUNCTION__);
-
-    if(gtk_tree_model_iter_n_children(GTK_TREE_MODEL(
-                    gtk_combo_box_get_model(GTK_COMBO_BOX(rmi->cmb_repos))),
-                                NULL) <= 1)
-    {
-        popup_error(rmi->dialog,
-                _("Cannot delete the last repository - there must be at"
-                " lease one repository."));
-        vprintf("%s(): return TRUE\n", __PRETTY_FUNCTION__);
-        return TRUE;
-    }
-
-    snprintf(buffer, sizeof(buffer), "%s:\n%s\n",
-            _("Confirm delete of repository"),
-            gtk_combo_box_get_active_text(GTK_COMBO_BOX(rmi->cmb_repos)));
-
-    confirm = hildon_note_new_confirmation(GTK_WINDOW(rmi->dialog),buffer);
-
-    if(GTK_RESPONSE_OK == gtk_dialog_run(GTK_DIALOG(confirm)))
-    {
-        gint active = gtk_combo_box_get_active(GTK_COMBO_BOX(rmi->cmb_repos));
-        repoman_delete(rmi, active);
-        gtk_combo_box_set_active(GTK_COMBO_BOX(rmi->cmb_repos),
-                MAX(0, index - 1));
-    }
-
-    gtk_widget_destroy(confirm);
-
-    return TRUE;
-}
-
-static RepoEditInfo*
-repoman_dialog_add_repo(RepoManInfo *rmi, gchar *name, gboolean is_sqlite)
-{
-    GtkWidget *vbox;
-    GtkWidget *table;
-    GtkWidget *label;
-    GtkWidget *hbox;
-    RepoEditInfo *rei = g_new0(RepoEditInfo, 1);
-    printf("%s(%s, %d)\n", __PRETTY_FUNCTION__, name, is_sqlite);
-
-    rei->name = name;
-    rei->is_sqlite = is_sqlite;
-
-    /* Maps page. */
-    gtk_notebook_append_page(GTK_NOTEBOOK(rmi->notebook),
-            vbox = gtk_vbox_new(FALSE, 4),
-            gtk_label_new(name));
-
-    /* Prevent destruction of notebook page, because the destruction causes
-     * a seg fault (!?!?) */
-    gtk_object_ref(GTK_OBJECT(vbox));
-
-    gtk_box_pack_start(GTK_BOX(vbox),
-            table = gtk_table_new(2, 2, FALSE),
-            FALSE, FALSE, 0);
-    /* Map download URI. */
-    gtk_table_attach(GTK_TABLE(table),
-            label = gtk_label_new(_("URL Format")),
-            0, 1, 0, 1, GTK_FILL, 0, 2, 0);
-    gtk_misc_set_alignment(GTK_MISC(label), 1.f, 0.5f);
-    gtk_table_attach(GTK_TABLE(table),
-            rei->txt_url = gtk_entry_new(),
-            1, 2, 0, 1, GTK_EXPAND | GTK_FILL, 0, 2, 0);
-
-    /* Map Directory. */
-    gtk_table_attach(GTK_TABLE(table),
-            label = gtk_label_new(_("Cache DB")),
-            0, 1, 1, 2, GTK_FILL, 0, 2, 0);
-    gtk_misc_set_alignment(GTK_MISC(label), 1.f, 0.5f);
-    gtk_table_attach(GTK_TABLE(table),
-            hbox = gtk_hbox_new(FALSE, 4),
-            1, 2, 1, 2, GTK_EXPAND | GTK_FILL, 0, 2, 0);
-    gtk_box_pack_start(GTK_BOX(hbox),
-            rei->txt_db_filename = gtk_entry_new(),
-            TRUE, TRUE, 0);
-    gtk_box_pack_start(GTK_BOX(hbox),
-            rei->btn_browse = gtk_button_new_with_label(_("Browse...")),
-            FALSE, FALSE, 0);
-    gtk_box_pack_start(GTK_BOX(hbox),
-            rei->btn_compact = gtk_button_new_with_label(_("Compact...")),
-            FALSE, FALSE, 0);
-
-    gtk_box_pack_start(GTK_BOX(vbox),
-            table = gtk_table_new(3, 2, FALSE),
-            FALSE, FALSE, 0);
-
-    /* Download Zoom Steps. */
-    gtk_table_attach(GTK_TABLE(table),
-            label = gtk_label_new(_("Download Zoom Steps")),
-            0, 1, 0, 1, GTK_FILL, 0, 2, 0);
-    gtk_misc_set_alignment(GTK_MISC(label), 1.f, 0.5f);
-    gtk_table_attach(GTK_TABLE(table),
-            label = gtk_alignment_new(0.f, 0.5f, 0.f, 0.f),
-            1, 2, 0, 1, GTK_FILL, 0, 2, 0);
-    gtk_container_add(GTK_CONTAINER(label),
-            rei->num_dl_zoom_steps = hildon_controlbar_new());
-    hildon_controlbar_set_range(
-            HILDON_CONTROLBAR(rei->num_dl_zoom_steps), 1, 4);
-    hildon_controlbar_set_value(HILDON_CONTROLBAR(rei->num_dl_zoom_steps),
-            REPO_DEFAULT_DL_ZOOM_STEPS);
-    force_min_visible_bars(HILDON_CONTROLBAR(rei->num_dl_zoom_steps), 1);
-
-    /* Download Zoom Steps. */
-    gtk_table_attach(GTK_TABLE(table),
-            label = gtk_label_new(_("View Zoom Steps")),
-            0, 1, 1, 2, GTK_FILL, 0, 2, 0);
-    gtk_misc_set_alignment(GTK_MISC(label), 1.f, 0.5f);
-    gtk_table_attach(GTK_TABLE(table),
-            label = gtk_alignment_new(0.f, 0.5f, 0.f, 0.f),
-            1, 2, 1, 2, GTK_FILL, 0, 2, 0);
-    gtk_container_add(GTK_CONTAINER(label),
-            rei->num_view_zoom_steps = hildon_controlbar_new());
-    hildon_controlbar_set_range(
-            HILDON_CONTROLBAR(rei->num_view_zoom_steps), 1, 4);
-    hildon_controlbar_set_value(HILDON_CONTROLBAR(rei->num_view_zoom_steps),
-            REPO_DEFAULT_VIEW_ZOOM_STEPS);
-    force_min_visible_bars(HILDON_CONTROLBAR(rei->num_view_zoom_steps), 1);
-
-    gtk_table_attach(GTK_TABLE(table),
-            label = gtk_vseparator_new(),
-            2, 3, 0, 2, GTK_FILL, GTK_FILL, 4, 0);
-
-    /* Double-size. */
-    gtk_table_attach(GTK_TABLE(table),
-            rei->chk_double_size = gtk_check_button_new_with_label(
-                _("Double Pixels")),
-            3, 4, 0, 1, GTK_FILL, GTK_FILL, 0, 0);
-    gtk_toggle_button_set_active(
-            GTK_TOGGLE_BUTTON(rei->chk_double_size), FALSE);
-
-    /* Next-able */
-    gtk_table_attach(GTK_TABLE(table),
-            rei->chk_nextable = gtk_check_button_new_with_label(
-                _("Next-able")),
-            3, 4, 1, 2, GTK_FILL, GTK_FILL, 0, 0);
-    gtk_toggle_button_set_active(
-            GTK_TOGGLE_BUTTON(rei->chk_nextable), TRUE);
-
-    /* Downloadable Zoom Levels. */
-    gtk_table_attach(GTK_TABLE(table),
-            label = gtk_label_new(_("Downloadable Zooms:")),
-            0, 1, 2, 3, GTK_FILL, 0, 2, 0);
-    gtk_misc_set_alignment(GTK_MISC(label), 1.f, 0.5f);
-    gtk_table_attach(GTK_TABLE(table),
-            label = gtk_alignment_new(0.f, 0.5f, 0.f, 0.f),
-            1, 4, 2, 3, GTK_FILL, 0, 2, 0);
-    gtk_container_add(GTK_CONTAINER(label),
-            hbox = gtk_hbox_new(FALSE, 4));
-    gtk_box_pack_start(GTK_BOX(hbox),
-            label = gtk_label_new(_("Min.")),
-            TRUE, TRUE, 0);
-    gtk_misc_set_alignment(GTK_MISC(label), 1.f, 0.5f);
-    gtk_box_pack_start(GTK_BOX(hbox),
-            rei->num_min_zoom = hildon_number_editor_new(MIN_ZOOM, MAX_ZOOM),
-            FALSE, FALSE, 0);
-    hildon_number_editor_set_value(HILDON_NUMBER_EDITOR(rei->num_min_zoom), 4);
-    gtk_box_pack_start(GTK_BOX(hbox),
-            label = gtk_label_new(""),
-            TRUE, TRUE, 4);
-    gtk_box_pack_start(GTK_BOX(hbox),
-            label = gtk_label_new(_("Max.")),
-            TRUE, TRUE, 0);
-    gtk_misc_set_alignment(GTK_MISC(label), 1.f, 0.5f);
-    gtk_box_pack_start(GTK_BOX(hbox),
-            rei->num_max_zoom = hildon_number_editor_new(MIN_ZOOM, MAX_ZOOM),
-            FALSE, FALSE, 0);
-    hildon_number_editor_set_value(HILDON_NUMBER_EDITOR(rei->num_max_zoom),20);
-
-    rmi->repo_edits = g_list_append(rmi->repo_edits, rei);
-
-    /* Connect signals. */
-    rei->browse_info.dialog = rmi->dialog;
-    rei->browse_info.txt = rei->txt_db_filename;
-    g_signal_connect(G_OBJECT(rei->btn_browse), "clicked",
-                      G_CALLBACK(repoman_dialog_browse),
-                      &rei->browse_info);
-    g_signal_connect(G_OBJECT(rei->btn_compact), "clicked",
-                      G_CALLBACK(repoman_dialog_compact),
-                      rei);
-
-    gtk_widget_show_all(vbox);
-
-    gtk_combo_box_append_text(GTK_COMBO_BOX(rmi->cmb_repos), name);
-    gtk_combo_box_set_active(GTK_COMBO_BOX(rmi->cmb_repos),
-            gtk_tree_model_iter_n_children(GTK_TREE_MODEL(
-                    gtk_combo_box_get_model(GTK_COMBO_BOX(rmi->cmb_repos))),
-                NULL) - 1);
-
-    /* newly created repos keep this NULL in rei, indicating
-       that layes cannot be added so far */
-    rei->repo = NULL;
-
-    vprintf("%s(): return TRUE\n", __PRETTY_FUNCTION__);
-    return rei;
-}
-
-static gboolean
-repoman_dialog_new(GtkWidget *widget, RepoManInfo *rmi)
-{
-    static GtkWidget *table = NULL;
-    static GtkWidget *label = NULL;
-    static GtkWidget *txt_name = NULL;
-    static GtkWidget *cmb_type = NULL;
-    static GtkWidget *dialog = NULL;
-    printf("%s()\n", __PRETTY_FUNCTION__);
-
-    if(dialog == NULL)
-    {
-        dialog = gtk_dialog_new_with_buttons(_("New Repository"),
-                GTK_WINDOW(rmi->dialog), GTK_DIALOG_MODAL,
-                GTK_STOCK_OK, GTK_RESPONSE_ACCEPT,
-                GTK_STOCK_CANCEL, GTK_RESPONSE_REJECT,
-                NULL);
-
-        /* Enable the help button. */
-#ifndef LEGACY
-#else
-        ossohelp_dialog_help_enable(
-                GTK_DIALOG(dialog), HELP_ID_NEWREPO, _osso);
-#endif
-
-        gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox),
-                table = gtk_table_new(2, 2, FALSE),
-                FALSE, FALSE, 0);
-
-        /* Download Zoom Steps. */
-        gtk_table_attach(GTK_TABLE(table),
-                label = gtk_label_new(_("Name")),
-                0, 1, 0, 1, GTK_FILL, 2, 4, 2);
-        gtk_misc_set_alignment(GTK_MISC(label), 1.f, 0.5f);
-
-        gtk_table_attach(GTK_TABLE(table),
-                txt_name = gtk_entry_new(),
-                1, 2, 0, 1, GTK_FILL, 2, 4, 2);
-
-        gtk_table_attach(GTK_TABLE(table),
-                label = gtk_label_new(_("Type")),
-                0, 1, 1, 2, GTK_FILL, 2, 4, 2);
-        gtk_misc_set_alignment(GTK_MISC(label), 1.f, 0.5f);
-
-        gtk_table_attach(GTK_TABLE(table),
-                cmb_type = gtk_combo_box_new_text(),
-                1, 2, 1, 2, GTK_FILL, 2, 4, 2);
-
-        gtk_combo_box_append_text(GTK_COMBO_BOX(cmb_type),
-                _("SQLite 3 (default)"));
-        gtk_combo_box_append_text(GTK_COMBO_BOX(cmb_type),
-                _("GDBM (legacy)"));
-        gtk_combo_box_set_active(GTK_COMBO_BOX(cmb_type), 0);
-    }
-
-    gtk_entry_set_text(GTK_ENTRY(txt_name), "");
-
-    gtk_widget_show_all(dialog);
-
-    while(GTK_RESPONSE_ACCEPT == gtk_dialog_run(GTK_DIALOG(dialog)))
-    {
-        repoman_dialog_add_repo(rmi,
-                g_strdup(gtk_entry_get_text(GTK_ENTRY(txt_name))),
-                gtk_combo_box_get_active(GTK_COMBO_BOX(cmb_type)) == 0);
-        break;
-    }
-
-    gtk_widget_hide(dialog);
-
-    vprintf("%s(): return TRUE\n", __PRETTY_FUNCTION__);
-    return TRUE;
-}
-
-static gboolean
-repoman_reset(GtkWidget *widget, RepoManInfo *rmi)
-{
-    GtkWidget *confirm;
-    printf("%s()\n", __PRETTY_FUNCTION__);
-
-    confirm = hildon_note_new_confirmation(GTK_WINDOW(rmi->dialog),
-            _("Replace all repositories with the default repository?"));
-
-    if(GTK_RESPONSE_OK == gtk_dialog_run(GTK_DIALOG(confirm)))
-    {
-        /* First, delete all existing repositories. */
-        while(rmi->repo_edits)
-            repoman_delete(rmi, 0);
-
-        /* Now, add the default repository. */
-        repoman_dialog_add_repo(rmi, REPO_DEFAULT_NAME, TRUE);
-        gtk_entry_set_text(
-                GTK_ENTRY(((RepoEditInfo*)rmi->repo_edits->data)->txt_url),
-                REPO_DEFAULT_MAP_URI);
-
-        gtk_combo_box_set_active(GTK_COMBO_BOX(rmi->cmb_repos), 0);
-    }
-    gtk_widget_destroy(confirm);
-
-    vprintf("%s(): return TRUE\n", __PRETTY_FUNCTION__);
-    return TRUE;
-}
-
-gboolean
-repoman_download()
-{
-    GtkWidget *confirm;
-    printf("%s()\n", __PRETTY_FUNCTION__);
-
-    confirm = hildon_note_new_confirmation(GTK_WINDOW(_window),
-            _("Maemo Mapper will now download and add a list of "
-                "possibly-duplicate repositories from the internet.  "
-                "Continue?"));
-
-    if(GTK_RESPONSE_OK == gtk_dialog_run(GTK_DIALOG(confirm)))
-    {
-        gchar *bytes;
-        gchar *head;
-        gchar *tail;
-        gint size;
-        GnomeVFSResult vfs_result;
-        printf("%s()\n", __PRETTY_FUNCTION__);
-
-        /* Get repo config file from the git repository */
-        if(GNOME_VFS_OK != (vfs_result = gnome_vfs_read_entire_file(
-                    "http://vcs.maemo.org/git/maemo-mapper/?p=maemo-mapper;"
-                    "a=blob_plain;f=repos-with-layers.txt;"
-                    "hb=refs/heads/configurations",
-                    &size, &bytes)))
-        {
-            popup_error(_window,
-                    _("An error occurred while retrieving the repositories.  "
-                        "The web service may be temporarily down."));
-            g_printerr("Error while download repositories: %s\n",
-                    gnome_vfs_result_to_string(vfs_result));
-        }
-        /* Parse each line as a reposotory. */
-        else
-        {
-            RepoData *prev_repo = NULL;
-            menu_maps_remove_repos();
-            for(head = bytes; head && *head; head = tail)
-            {
-                RepoData *rd;
-                tail = strchr(head, '\n');
-                *tail++ = '\0';
-
-                rd = settings_parse_repo(head);
-                if (rd->layer_level == 0) {
-                    _repo_list = g_list_append(_repo_list, rd);
-                }
-                else
-                    prev_repo->layers = rd;
-
-                prev_repo = rd;
-            }
-            g_free(bytes);
-            menu_maps_add_repos();
-            settings_save();
-        }
-    }
-    gtk_widget_destroy(confirm);
-
-    vprintf("%s(): return TRUE\n", __PRETTY_FUNCTION__);
-    return TRUE;
-}
-
-
-static gint
-layer_get_page_index (RepoLayersInfo *rli, GtkTreeIter list_it)
-{
-    GtkTreePath *p1, *p2;
-    GtkTreeIter p;
-    gint index = 0;
-
-    gtk_tree_model_get_iter_first (GTK_TREE_MODEL (rli->layers_store), &p);
-
-    p1 = gtk_tree_model_get_path (GTK_TREE_MODEL (rli->layers_store), &list_it);
-    p2 = gtk_tree_model_get_path (GTK_TREE_MODEL (rli->layers_store), &p);
-
-    while (gtk_tree_path_compare (p1, p2) != 0) {
-        gtk_tree_path_next (p2);
-        index++;
-    }
-
-    gtk_tree_path_free (p1);
-    gtk_tree_path_free (p2);
-
-    return index;
-}
-
-
-static gboolean
-layer_name_changed (GtkWidget *entry, LayerEditInfo *lei)
-{
-    const gchar* name;
-    GtkTreeSelection *selection;
-    GtkTreeIter iter;
-
-    printf("%s()\n", __PRETTY_FUNCTION__);
-
-    /* take new name  */
-    name = gtk_entry_get_text (GTK_ENTRY (entry));
-
-    /* find selected entry in list view */
-    selection = gtk_tree_view_get_selection (GTK_TREE_VIEW (lei->rli->layers_list));
-
-    if (!gtk_tree_selection_get_selected (selection, NULL, &iter)) {
-        vprintf("%s(): return FALSE\n", __PRETTY_FUNCTION__);
-        return FALSE;
-    }
-
-    gtk_list_store_set (lei->rli->layers_store, &iter, 0, name, -1);
-
-    vprintf("%s(): return TRUE\n", __PRETTY_FUNCTION__);
-    return TRUE;
-}
-
-
-static gboolean
-layer_dialog_browse (GtkWidget *widget, LayerEditInfo *lei)
-{
-    GtkWidget *dialog;
-    gchar *basename;
-    printf("%s()\n", __PRETTY_FUNCTION__);
-
-    dialog = GTK_WIDGET(
-            hildon_file_chooser_dialog_new(GTK_WINDOW(lei->rli->dialog),
-            GTK_FILE_CHOOSER_ACTION_SAVE));
-
-    gtk_file_chooser_set_uri(GTK_FILE_CHOOSER(dialog),
-            gtk_entry_get_text(GTK_ENTRY(lei->txt_db)));
-
-    /* Work around a bug in HildonFileChooserDialog. */
-    basename = g_path_get_basename(
-            gtk_entry_get_text(GTK_ENTRY(lei->txt_db)));
-    g_object_set(G_OBJECT(dialog), "autonaming", FALSE, NULL);
-    gtk_file_chooser_set_current_name(GTK_FILE_CHOOSER(dialog), basename);
-
-    if(GTK_RESPONSE_OK == gtk_dialog_run(GTK_DIALOG(dialog)))
-    {
-        gchar *filename = gtk_file_chooser_get_filename(
-                GTK_FILE_CHOOSER(dialog));
-        gtk_entry_set_text(GTK_ENTRY(lei->txt_db), filename);
-        g_free(filename);
-    }
-
-    gtk_widget_destroy(dialog);
-
-    vprintf("%s(): return TRUE\n", __PRETTY_FUNCTION__);
-    return TRUE;
-}
-
-
-
-static LayerEditInfo*
-repoman_layers_add_layer (RepoLayersInfo *rli, gchar* name)
-{
-    LayerEditInfo *lei = g_new (LayerEditInfo, 1);
-    GtkWidget *vbox;
-    GtkWidget *hbox2;
-    GtkWidget *table;
-    GtkWidget *label;
-    GtkWidget *btn_browse;
-    GtkTreeIter layers_iter;
-    
-    printf("%s(%s)\n", __PRETTY_FUNCTION__, name);
-
-    lei->rli = rli;
-
-    rli->layer_edits = g_list_append (rli->layer_edits, lei);
-
-    gtk_notebook_append_page (GTK_NOTEBOOK (rli->notebook), vbox = gtk_vbox_new (FALSE, 4),
-                              gtk_label_new (name));
-
-    gtk_box_pack_start (GTK_BOX (vbox), table = gtk_table_new (4, 2, FALSE),
-                        FALSE, FALSE, 0);
-
-    /* Layer name */
-    gtk_table_attach (GTK_TABLE (table), label = gtk_label_new (_("Name")),
-                      0, 1, 0, 1, GTK_FILL, 0, 2, 0);
-    gtk_misc_set_alignment (GTK_MISC (label), 1.f, 0.5f);
-    gtk_table_attach (GTK_TABLE (table), lei->txt_name = gtk_entry_new (),
-                      1, 2, 0, 1, GTK_EXPAND | GTK_FILL, 0, 2, 0);
-    gtk_entry_set_text (GTK_ENTRY (lei->txt_name), name);
-
-    /* signals */
-    g_signal_connect(G_OBJECT(lei->txt_name), "changed", G_CALLBACK(layer_name_changed), lei);
-
-    /* URL format */
-    gtk_table_attach (GTK_TABLE (table), label = gtk_label_new (_("URL")),
-                      0, 1, 1, 2, GTK_FILL, 0, 2, 0);
-    gtk_misc_set_alignment (GTK_MISC (label), 1.f, 0.5f);
-    gtk_table_attach (GTK_TABLE (table), lei->txt_url = gtk_entry_new (),
-                      1, 2, 1, 2, GTK_EXPAND | GTK_FILL, 0, 2, 0);
-
-    /* Map directory */
-    gtk_table_attach (GTK_TABLE (table), label = gtk_label_new (_("Cache DB")),
-                      0, 1, 2, 3, GTK_FILL, 0, 2, 0);
-    gtk_misc_set_alignment (GTK_MISC (label), 1.f, 0.5f);
-    gtk_table_attach (GTK_TABLE (table), hbox2 = gtk_hbox_new (FALSE, 4),
-                      1, 2, 2, 3, GTK_EXPAND | GTK_FILL, 0, 2, 0);
-    gtk_box_pack_start (GTK_BOX (hbox2), lei->txt_db = gtk_entry_new (),
-                        TRUE, TRUE, 0);
-    gtk_box_pack_start (GTK_BOX (hbox2), btn_browse = gtk_button_new_with_label (_("Browse...")),
-                        FALSE, FALSE, 0);
-
-    g_signal_connect(G_OBJECT(btn_browse), "clicked", G_CALLBACK(layer_dialog_browse), lei);
-
-    /* Autorefresh */
-    gtk_table_attach (GTK_TABLE (table), label = gtk_label_new (_("Autofetch")),
-                      0, 1, 3, 4, GTK_FILL, 0, 2, 0);
-    gtk_misc_set_alignment(GTK_MISC(label), 1.f, 0.5f);
-    gtk_table_attach (GTK_TABLE (table), hbox2 = gtk_hbox_new (FALSE, 4),
-                      1, 2, 3, 4, GTK_EXPAND | GTK_FILL, 0, 2, 0);
-    gtk_box_pack_start (GTK_BOX (hbox2), lei->num_autofetch = hildon_number_editor_new (0, 120),
-                        FALSE, FALSE, 4);
-    gtk_box_pack_start (GTK_BOX (hbox2), label = gtk_label_new (_("min.")), FALSE, FALSE, 4);
-    gtk_misc_set_alignment(GTK_MISC(label), 1.f, 0.5f);
-
-    /* Visible */
-    gtk_box_pack_start (GTK_BOX (vbox), lei->chk_visible = gtk_check_button_new_with_label (_("Layer is visible")),
-                        FALSE, FALSE, 4);
-
-    gtk_widget_show_all (vbox);
-
-    /* Side list view with layers */
-    gtk_list_store_append (rli->layers_store, &layers_iter);
-    gtk_list_store_set (rli->layers_store, &layers_iter, 0, name, -1);
-
-    vprintf("%s(): return TRUE\n", __PRETTY_FUNCTION__);
-
-    return lei;
-}
-
-
-
-static gboolean
-repoman_layers_new (GtkWidget *widget, RepoLayersInfo *rli)
-{
-    static GtkWidget *hbox = NULL;
-    static GtkWidget *label = NULL;
-    static GtkWidget *txt_name = NULL;
-    static GtkWidget *dialog = NULL;
-    printf("%s()\n", __PRETTY_FUNCTION__);
-
-    if(dialog == NULL)
-    {
-        dialog = gtk_dialog_new_with_buttons(_("New Layer"),
-                GTK_WINDOW(rli->dialog), GTK_DIALOG_MODAL,
-                GTK_STOCK_OK, GTK_RESPONSE_ACCEPT,
-                GTK_STOCK_CANCEL, GTK_RESPONSE_REJECT,
-                NULL);
-
-        gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox),
-                hbox = gtk_hbox_new(FALSE, 4), FALSE, FALSE, 4);
-
-        gtk_box_pack_start(GTK_BOX(hbox),
-                label = gtk_label_new(_("Name")),
-                FALSE, FALSE, 0);
-        gtk_box_pack_start(GTK_BOX(hbox),
-                txt_name = gtk_entry_new(),
-                TRUE, TRUE, 0);
-    }
-
-    gtk_entry_set_text(GTK_ENTRY(txt_name), "");
-
-    gtk_widget_show_all(dialog);
-
-    while(GTK_RESPONSE_ACCEPT == gtk_dialog_run(GTK_DIALOG(dialog)))
-    {
-        repoman_layers_add_layer(rli,
-                g_strdup(gtk_entry_get_text(GTK_ENTRY(txt_name))));
-        break;
-    }
-
-    gtk_widget_hide(dialog);
-    vprintf("%s(): return TRUE\n", __PRETTY_FUNCTION__);
-    return TRUE;
-}
-
-
-static gboolean
-repoman_layers_del (GtkWidget *widget, RepoLayersInfo *rli)
-{
-    GtkTreeIter iter;
-    GtkTreeSelection *selection;
-    gint index;
-
-    printf("%s()\n", __PRETTY_FUNCTION__);
-
-    /* delete list item */
-    selection = gtk_tree_view_get_selection (GTK_TREE_VIEW (rli->layers_list));
-
-    if (!gtk_tree_selection_get_selected (selection, NULL, &iter)) {
-        vprintf("%s(): return FALSE\n", __PRETTY_FUNCTION__);
-        return FALSE;
-    }
-
-    index = layer_get_page_index (rli, iter);
-    gtk_list_store_remove (rli->layers_store, &iter);
-
-    rli->layer_edits = g_list_remove_link (rli->layer_edits, g_list_nth (rli->layer_edits, index));
-
-    /* delete notebook page */
-    gtk_notebook_remove_page (GTK_NOTEBOOK (rli->notebook), index);
-
-    vprintf("%s(): return TRUE\n", __PRETTY_FUNCTION__);
-    return TRUE;
-}
-
-
-static gboolean
-repoman_layers_up (GtkWidget *widget, RepoLayersInfo *rli)
-{
-    GtkTreeSelection *selection;
-    GtkTreeIter iter, iter2;
-    GtkTreePath *path;
-    gint page;
-    LayerEditInfo *lei;
-    GList *list_elem;
-
-    printf("%s()\n", __PRETTY_FUNCTION__);
-
-    /* find selected entry in list view */
-    selection = gtk_tree_view_get_selection (GTK_TREE_VIEW (rli->layers_list));
-
-    if (!gtk_tree_selection_get_selected (selection, NULL, &iter)) {
-        vprintf("%s(): return FALSE\n", __PRETTY_FUNCTION__);
-        return FALSE;
-    }
-
-    iter2 = iter;
-    path = gtk_tree_model_get_path (GTK_TREE_MODEL (rli->layers_store), &iter);
-    if (!gtk_tree_path_prev (path) || !gtk_tree_model_get_iter (GTK_TREE_MODEL (rli->layers_store), &iter, path)) {
-        vprintf("%s(): return FALSE\n", __PRETTY_FUNCTION__);
-        return FALSE;
-    }
-
-    gtk_tree_path_free (path);
-
-    /* move it up */
-    gtk_list_store_move_before (rli->layers_store, &iter2, &iter);
-
-    /* reorder notebook tabs */
-    page = gtk_notebook_get_current_page (GTK_NOTEBOOK (rli->notebook));
-    gtk_notebook_reorder_child (GTK_NOTEBOOK (rli->notebook), gtk_notebook_get_nth_page (GTK_NOTEBOOK (rli->notebook), page), page-1);
-
-    /* reorder layer edits */
-    list_elem = g_list_nth (rli->layer_edits, page);
-    lei = list_elem->data;
-    rli->layer_edits = g_list_remove_link (rli->layer_edits, list_elem);
-    rli->layer_edits = g_list_insert (rli->layer_edits, lei, page-1);
-
-    vprintf("%s(): return TRUE\n", __PRETTY_FUNCTION__);
-    return TRUE;
-}
-
-
-static gboolean
-repoman_layers_dn (GtkWidget *widget, RepoLayersInfo *rli)
-{
-    GtkTreeSelection *selection;
-    GtkTreeIter iter, iter2;
-    gint page;
-    LayerEditInfo *lei;
-    GList *list_elem;
-
-    printf("%s()\n", __PRETTY_FUNCTION__);
-
-    /* find selected entry in list view */
-    selection = gtk_tree_view_get_selection (GTK_TREE_VIEW (rli->layers_list));
-
-    if (!gtk_tree_selection_get_selected (selection, NULL, &iter)) {
-        vprintf("%s(): return FALSE\n", __PRETTY_FUNCTION__);
-        return FALSE;
-    }
-
-    iter2 = iter;
-    if (!gtk_tree_model_iter_next (GTK_TREE_MODEL (rli->layers_store), &iter)) {
-        vprintf("%s(): return FALSE\n", __PRETTY_FUNCTION__);
-        return FALSE;
-    }
-
-    /* move it down */
-    gtk_list_store_move_after (rli->layers_store, &iter2, &iter);
-
-    /* reorder notebook tabs */
-    page = gtk_notebook_get_current_page (GTK_NOTEBOOK (rli->notebook));
-    gtk_notebook_reorder_child (GTK_NOTEBOOK (rli->notebook), gtk_notebook_get_nth_page (GTK_NOTEBOOK (rli->notebook), page), page+1);
-
-    /* reorder layer edits */
-    list_elem = g_list_nth (rli->layer_edits, page);
-    lei = list_elem->data;
-    rli->layer_edits = g_list_remove_link (rli->layer_edits, list_elem);
-    rli->layer_edits = g_list_insert (rli->layer_edits, lei, page+1);
-
-    vprintf("%s(): return TRUE\n", __PRETTY_FUNCTION__);
-    return TRUE;
-}
-
-
-static gboolean
-repoman_layer_selected (GtkTreeSelection *selection, RepoLayersInfo *rli)
-{
-    GtkTreeIter cur;
-
-    printf("%s()\n", __PRETTY_FUNCTION__);
-
-    if (!gtk_tree_selection_get_selected (selection, NULL, &cur)) {
-        vprintf("%s(): return FALSE\n", __PRETTY_FUNCTION__);
-        return FALSE;
-    }
-
-    gtk_notebook_set_current_page (GTK_NOTEBOOK (rli->notebook), layer_get_page_index (rli, cur));
-
-    vprintf("%s(): return TRUE\n", __PRETTY_FUNCTION__);
-    return TRUE;
-}
-
-
-static gboolean
-repoman_layers(GtkWidget *widget, RepoManInfo *rmi)
-{
-    GtkWidget *hbox = NULL;
-    GtkWidget *layers_vbox = NULL;
-    GtkWidget *buttons_hbox = NULL;
-    GtkWidget *frame;
-    GtkCellRenderer *layers_rendeder = NULL;
-    GtkTreeViewColumn *layers_column = NULL;
-    GtkTreeSelection *selection;
-
-    /* layers buttons */
-    GtkWidget *btn_new = NULL;
-    GtkWidget *btn_del = NULL;
-    GtkWidget *btn_up = NULL;
-    GtkWidget *btn_dn = NULL;
-
-    const char* t_header = _("Manage layers [%s]");
-    char* header = NULL;
-    RepoEditInfo* rei = NULL;
-    RepoLayersInfo rli;
-    gint curr_repo_index = gtk_combo_box_get_active (GTK_COMBO_BOX (rmi->cmb_repos));
-    RepoData *rd;
-
-    printf("%s()\n", __PRETTY_FUNCTION__);
-
-    if (curr_repo_index < 0) {
-        vprintf("%s(): return FALSE (1)\n", __PRETTY_FUNCTION__);
-        return FALSE;
-    }
-
-    rei = g_list_nth_data (rmi->repo_edits, curr_repo_index);
-
-    if (!rei) {
-        vprintf("%s(): return FALSE (2)\n", __PRETTY_FUNCTION__);
-        return FALSE;
-    }
-
-    /* check that rei have repo data structure. If it haven't, it means that repository have just
-       added, so report about this */
-    if (!rei->repo) {
-        GtkWidget *msg = hildon_note_new_information ( GTK_WINDOW (rmi->dialog),
-                           _("You cannot add layers to not saved repository,\nsorry. So, press ok in repository manager\n"
-                             "and open this dialog again."));
-
-        gtk_dialog_run (GTK_DIALOG (msg));
-        gtk_widget_destroy (msg);
-
-        vprintf("%s(): return FALSE (3)\n", __PRETTY_FUNCTION__);
-        return FALSE;
-    }
-
-    header = g_malloc (strlen (t_header) + strlen (rei->name));
-    sprintf (header, t_header, rei->name);
-
-    printf ("Creating dialog with header: %s\n", header);
-
-    rli.layer_edits = NULL;
-    rli.dialog = gtk_dialog_new_with_buttons (header, GTK_WINDOW (rmi->dialog), GTK_DIALOG_MODAL, 
-                                              GTK_STOCK_OK, GTK_RESPONSE_ACCEPT,
-                                              GTK_STOCK_CANCEL, GTK_RESPONSE_REJECT, NULL);
-
-    rli.layers_store = gtk_list_store_new (1, G_TYPE_STRING);
-    rli.layers_list = gtk_tree_view_new_with_model (GTK_TREE_MODEL (rli.layers_store));
-    layers_rendeder = gtk_cell_renderer_text_new ();
-    layers_column = gtk_tree_view_column_new_with_attributes ("Column", layers_rendeder, "text", 0, NULL);
-    gtk_tree_view_append_column (GTK_TREE_VIEW (rli.layers_list), layers_column);
-
-    selection = gtk_tree_view_get_selection (GTK_TREE_VIEW (rli.layers_list));
-
-    frame = gtk_frame_new (NULL);
-    gtk_container_add (GTK_CONTAINER (frame), rli.layers_list);
-    gtk_widget_set_size_request (frame, -1, 100);
-
-    /* beside layers list with have buttons on bottom */
-    layers_vbox = gtk_vbox_new (FALSE, 4);
-    gtk_box_pack_start (GTK_BOX (layers_vbox), frame, TRUE, TRUE, 0);
-    gtk_box_pack_start (GTK_BOX (layers_vbox), buttons_hbox = gtk_hbox_new (FALSE, 4), FALSE, FALSE, 0);
-
-    /* buttons */
-    gtk_box_pack_start (GTK_BOX (buttons_hbox), btn_new = gtk_button_new_with_label (_("New")), FALSE, FALSE, 0);
-    gtk_box_pack_start (GTK_BOX (buttons_hbox), btn_del = gtk_button_new_with_label (_("Del")), FALSE, FALSE, 0);
-    gtk_box_pack_start (GTK_BOX (buttons_hbox), btn_up  = gtk_button_new_with_label (_("Up")), FALSE, FALSE, 0);
-    gtk_box_pack_start (GTK_BOX (buttons_hbox), btn_dn  = gtk_button_new_with_label (_("Dn")), FALSE, FALSE, 0);
-
-    /* signals */
-    g_signal_connect(G_OBJECT(selection), "changed", G_CALLBACK(repoman_layer_selected), &rli);
-    g_signal_connect(G_OBJECT(btn_new), "clicked", G_CALLBACK(repoman_layers_new), &rli);
-    g_signal_connect(G_OBJECT(btn_del), "clicked", G_CALLBACK(repoman_layers_del), &rli);
-    g_signal_connect(G_OBJECT(btn_up),  "clicked", G_CALLBACK(repoman_layers_up), &rli);
-    g_signal_connect(G_OBJECT(btn_dn),  "clicked", G_CALLBACK(repoman_layers_dn), &rli);
-
-    /* notebook with layers' attributes */
-    rli.notebook = gtk_notebook_new ();
-
-    gtk_notebook_set_show_tabs(GTK_NOTEBOOK(rli.notebook), FALSE);
-    gtk_notebook_set_show_border(GTK_NOTEBOOK(rli.notebook), FALSE);
-
-    /* walk through all layers and add notebook pages */
-    rd = rei->repo->layers;
-    while (rd) {
-        LayerEditInfo *lei = repoman_layers_add_layer (&rli, rd->name);
-
-        gtk_entry_set_text (GTK_ENTRY (lei->txt_url),  rd->url);
-        gtk_entry_set_text (GTK_ENTRY (lei->txt_db),   rd->db_filename);
-        hildon_number_editor_set_value (HILDON_NUMBER_EDITOR (lei->num_autofetch), rd->layer_refresh_interval);
-        gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (lei->chk_visible), rd->layer_enabled);
-
-        rd = rd->layers;
-    }
-
-    /* pack all widgets together */
-    hbox = gtk_hbox_new (FALSE, 4);
-
-    gtk_box_pack_start (GTK_BOX (hbox), layers_vbox, TRUE, TRUE, 4);
-    gtk_box_pack_start (GTK_BOX (hbox), rli.notebook, TRUE, TRUE, 4);
-
-    gtk_box_pack_start (GTK_BOX (GTK_DIALOG (rli.dialog)->vbox), hbox, FALSE, FALSE, 4);
-
-    gtk_widget_show_all (rli.dialog);
-
-    while (GTK_RESPONSE_ACCEPT == gtk_dialog_run (GTK_DIALOG (rli.dialog)))
-    {
-        RepoData **rdp;
-        gint i;
-        GList *curr;
-
-        menu_layers_remove_repos ();
-
-        /* iterate over notebook's pages and build layers */
-        /* keep list in memory in case downloads use it (TODO: reference counting) */
-        rdp = &rei->repo->layers;
-        *rdp = NULL;
-
-        for (i = 0, curr = rli.layer_edits; curr; curr = curr->next, i++)  {
-            LayerEditInfo *lei = curr->data;
-
-            rd = g_new0 (RepoData, 1);
-            *rdp = rd;
-
-            rd->name = g_strdup (gtk_entry_get_text (GTK_ENTRY (lei->txt_name)));
-            rd->is_sqlite = rei->repo->is_sqlite;
-            rd->url = g_strdup (gtk_entry_get_text (GTK_ENTRY (lei->txt_url)));
-            rd->db_filename = g_strdup (gtk_entry_get_text (GTK_ENTRY (lei->txt_db)));
-            rd->layer_enabled = gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (lei->chk_visible));
-            rd->layer_refresh_interval = hildon_number_editor_get_value (HILDON_NUMBER_EDITOR (lei->num_autofetch));
-            rd->layer_refresh_countdown = rd->layer_refresh_interval;
-            rd->layer_level = i+1;
-
-            rd->dl_zoom_steps = rei->repo->dl_zoom_steps;
-            rd->view_zoom_steps = rei->repo->view_zoom_steps;
-            rd->double_size = rei->repo->double_size;
-            rd->nextable = rei->repo->nextable;
-            rd->min_zoom = rei->repo->min_zoom;
-            rd->max_zoom = rei->repo->max_zoom;
-
-            set_repo_type (rd);
-            rdp = &rd->layers;
-        }
-
-        menu_layers_add_repos ();
-        repo_set_curr(_curr_repo);
-        settings_save ();
-        map_refresh_mark (TRUE);
-        break;
-    }
-
-    gtk_widget_destroy (rli.dialog);
-
-    vprintf("%s(): return TRUE\n", __PRETTY_FUNCTION__);
-    return TRUE;
-}
-
-
-gboolean
-repoman_dialog()
-{
-    static RepoManInfo rmi;
-    static GtkWidget *dialog = NULL;
-    static GtkWidget *hbox = NULL;
-    static GtkWidget *btn_rename = NULL;
-    static GtkWidget *btn_delete = NULL;
-    static GtkWidget *btn_new = NULL;
-    static GtkWidget *btn_reset = NULL;
-    static GtkWidget *btn_layers = NULL;
-    gint i, curr_repo_index = 0;
-    GList *curr;
-    printf("%s()\n", __PRETTY_FUNCTION__);
-
-    if(dialog == NULL)
-    {
-        rmi.dialog = dialog = gtk_dialog_new_with_buttons(
-                _("Manage Repositories"),
-                GTK_WINDOW(_window), GTK_DIALOG_MODAL,
-                GTK_STOCK_OK, GTK_RESPONSE_ACCEPT,
-                NULL);
-
-        /* Enable the help button. */
-#ifndef LEGACY
-#else
-        ossohelp_dialog_help_enable(
-                GTK_DIALOG(dialog), HELP_ID_REPOMAN, _osso);
-#endif
-
-        /* Reset button. */
-        gtk_container_add(GTK_CONTAINER(GTK_DIALOG(dialog)->action_area),
-                btn_reset = gtk_button_new_with_label(_("Reset...")));
-        g_signal_connect(G_OBJECT(btn_reset), "clicked",
-                          G_CALLBACK(repoman_reset), &rmi);
-
-        /* Layers button. */
-        gtk_container_add(GTK_CONTAINER(GTK_DIALOG(dialog)->action_area),
-                btn_layers = gtk_button_new_with_label(_("Layers...")));
-        g_signal_connect(G_OBJECT(btn_layers), "clicked",
-                          G_CALLBACK(repoman_layers), &rmi);
-
-        /* Cancel button. */
-        gtk_dialog_add_button(GTK_DIALOG(dialog),
-                GTK_STOCK_CANCEL, GTK_RESPONSE_REJECT);
-
-        hbox = gtk_hbox_new(FALSE, 4);
-
-        gtk_box_pack_start(GTK_BOX(hbox),
-                rmi.cmb_repos = gtk_combo_box_new_text(), TRUE, TRUE, 4);
-
-        gtk_box_pack_start(GTK_BOX(hbox),
-                gtk_vseparator_new(), FALSE, FALSE, 4);
-        gtk_box_pack_start(GTK_BOX(hbox),
-                btn_rename = gtk_button_new_with_label(_("Rename...")),
-                FALSE, FALSE, 4);
-        gtk_box_pack_start(GTK_BOX(hbox),
-                btn_delete = gtk_button_new_with_label(_("Delete...")),
-                FALSE, FALSE, 4);
-        gtk_box_pack_start(GTK_BOX(hbox),
-                btn_new = gtk_button_new_with_label(_("New...")),
-                FALSE, FALSE, 4);
-
-        gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox),
-                hbox, FALSE, FALSE, 4);
-
-        gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox),
-                gtk_hseparator_new(), TRUE, TRUE, 4);
-        gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox),
-                rmi.notebook = gtk_notebook_new(), TRUE, TRUE, 4);
-
-        gtk_notebook_set_show_tabs(GTK_NOTEBOOK(rmi.notebook), FALSE);
-        gtk_notebook_set_show_border(GTK_NOTEBOOK(rmi.notebook), FALSE);
-
-        rmi.repo_edits = NULL;
-
-        /* Connect signals. */
-        g_signal_connect(G_OBJECT(btn_rename), "clicked",
-                G_CALLBACK(repoman_dialog_rename), &rmi);
-        g_signal_connect(G_OBJECT(btn_delete), "clicked",
-                G_CALLBACK(repoman_dialog_delete), &rmi);
-        g_signal_connect(G_OBJECT(btn_new), "clicked",
-                G_CALLBACK(repoman_dialog_new), &rmi);
-        g_signal_connect(G_OBJECT(rmi.cmb_repos), "changed",
-                G_CALLBACK(repoman_dialog_select), &rmi);
-    }
-
-    /* Populate combo box and pages in notebook. */
-    for(i = 0, curr = _repo_list; curr; curr = curr->next, i++)
-    {
-        RepoData *rd = (RepoData*)curr->data;
-        RepoEditInfo *rei = repoman_dialog_add_repo(&rmi, g_strdup(rd->name),
-                rd->is_sqlite);
-
-        /* store this to be able to walk through layers attached to repo */
-        rei->repo = rd;
-
-        /* Initialize fields with data from the RepoData object. */
-        gtk_entry_set_text(GTK_ENTRY(rei->txt_url), rd->url);
-        gtk_entry_set_text(GTK_ENTRY(rei->txt_db_filename),
-                rd->db_filename);
-        hildon_controlbar_set_value(
-                HILDON_CONTROLBAR(rei->num_dl_zoom_steps),
-                rd->dl_zoom_steps);
-        hildon_controlbar_set_value(
-                HILDON_CONTROLBAR(rei->num_view_zoom_steps),
-                rd->view_zoom_steps);
-        gtk_toggle_button_set_active(
-                GTK_TOGGLE_BUTTON(rei->chk_double_size),
-                rd->double_size);
-        gtk_toggle_button_set_active(
-                GTK_TOGGLE_BUTTON(rei->chk_nextable),
-                rd->nextable);
-        hildon_number_editor_set_value(
-                HILDON_NUMBER_EDITOR(rei->num_min_zoom),
-                rd->min_zoom);
-        hildon_number_editor_set_value(
-                HILDON_NUMBER_EDITOR(rei->num_max_zoom),
-                rd->max_zoom);
-        if(rd == _curr_repo)
-            curr_repo_index = i;
-    }
-
-    gtk_combo_box_set_active(GTK_COMBO_BOX(rmi.cmb_repos), curr_repo_index);
-    gtk_notebook_set_current_page(GTK_NOTEBOOK(rmi.notebook), curr_repo_index);
-
-    gtk_widget_show_all(dialog);
-
-    while(GTK_RESPONSE_ACCEPT == gtk_dialog_run(GTK_DIALOG(dialog)))
-    {
-        /* Iterate through repos and verify each. */
-        gboolean verified = TRUE;
-        gint i;
-        GList *curr;
-        gchar *old_curr_repo_name = _curr_repo->name;
-
-        for(i = 0, curr = rmi.repo_edits; curr; curr = curr->next, i++)
-        {
-            /* Check the ranges for the min and max zoom levels. */
-            RepoEditInfo *rei = curr->data;
-            if(hildon_number_editor_get_value(
-                        HILDON_NUMBER_EDITOR(rei->num_max_zoom))
-                 < hildon_number_editor_get_value(
-                        HILDON_NUMBER_EDITOR(rei->num_min_zoom)))
-            {
-                verified = FALSE;
-                break;
-            }
-        }
-        if(!verified)
-        {
-            gtk_combo_box_set_active(GTK_COMBO_BOX(rmi.cmb_repos), i);
-            popup_error(dialog,
-                    _("Minimum Downloadable Zoom must be less than "
-                        "Maximum Downloadable Zoom."));
-            continue;
-        }
-
-        /* We're good to replace.  Remove old _repo_list menu items. */
-        menu_maps_remove_repos();
-        /* But keep the repo list in memory, in case downloads are using it. */
-        _repo_list = NULL;
-
-        /* Write new _repo_list. */
-        curr_repo_index = gtk_combo_box_get_active(
-                GTK_COMBO_BOX(rmi.cmb_repos));
-        _curr_repo = NULL;
-        for(i = 0, curr = rmi.repo_edits; curr; curr = curr->next, i++)
-        {
-            RepoEditInfo *rei = curr->data;
-            RepoData *rd = g_new0(RepoData, 1);
-            RepoData *rd0, **rd1;
-            rd->name = g_strdup(rei->name);
-            rd->is_sqlite = rei->is_sqlite;
-            rd->url = g_strdup(gtk_entry_get_text(GTK_ENTRY(rei->txt_url)));
-            rd->db_filename = gnome_vfs_expand_initial_tilde(
-                    gtk_entry_get_text(GTK_ENTRY(rei->txt_db_filename)));
-            rd->dl_zoom_steps = hildon_controlbar_get_value(
-                    HILDON_CONTROLBAR(rei->num_dl_zoom_steps));
-            rd->view_zoom_steps = hildon_controlbar_get_value(
-                    HILDON_CONTROLBAR(rei->num_view_zoom_steps));
-            rd->double_size = gtk_toggle_button_get_active(
-                    GTK_TOGGLE_BUTTON(rei->chk_double_size));
-            rd->nextable = gtk_toggle_button_get_active(
-                    GTK_TOGGLE_BUTTON(rei->chk_nextable));
-            rd->min_zoom = hildon_number_editor_get_value(
-                    HILDON_NUMBER_EDITOR(rei->num_min_zoom));
-            rd->max_zoom = hildon_number_editor_get_value(
-                    HILDON_NUMBER_EDITOR(rei->num_max_zoom));
-
-            if (rei->repo) {
-                /* clone layers */
-                rd0 = rei->repo->layers;
-                rd1 = &rd->layers;
-
-                while (rd0) {
-                    *rd1 = g_new0 (RepoData, 1);
-                    (*rd1)->name = rd0->name;
-                    (*rd1)->is_sqlite = rd0->is_sqlite;
-                    (*rd1)->url = rd0->url;
-                    (*rd1)->db_filename = rd0->db_filename;
-                    (*rd1)->layer_enabled = rd0->layer_enabled;
-                    (*rd1)->layer_refresh_interval = rd0->layer_refresh_interval;
-                    (*rd1)->layer_refresh_countdown = rd0->layer_refresh_countdown;
-                    (*rd1)->layer_level = rd0->layer_level;
-
-                    (*rd1)->dl_zoom_steps = rd0->dl_zoom_steps;
-                    (*rd1)->view_zoom_steps = rd0->view_zoom_steps;
-                    (*rd1)->double_size = rd0->double_size;
-                    (*rd1)->nextable = rd0->nextable;
-                    (*rd1)->min_zoom = rd0->min_zoom;
-                    (*rd1)->max_zoom = rd0->max_zoom;
-
-                    set_repo_type (*rd1);
-
-                    rd0 = rd0->layers;
-                    rd1 = &(*rd1)->layers;
-                }
-                *rd1 = NULL;
-            }
-            else
-                rd->layers = NULL;
-
-            rd->layer_level = 0;
-            set_repo_type(rd);
-
-            _repo_list = g_list_append(_repo_list, rd);
-
-            if(!_curr_repo && !strcmp(old_curr_repo_name, rd->name))
-                repo_set_curr(rd);
-            else if(i == curr_repo_index)
-                repo_set_curr(rd);
-        }
-        if(!_curr_repo)
-            repo_set_curr((RepoData*)g_list_first(_repo_list)->data);
-        menu_maps_add_repos();
-
-        settings_save();
-        break;
-    }
-
-    gtk_widget_hide(dialog);
-
-    /* Clear out the notebook entries. */
-    while(rmi.repo_edits)
-        repoman_delete(&rmi, 0);
-
-    map_set_zoom(_zoom); /* make sure we're at an appropriate zoom level. */
-    map_refresh_mark (TRUE);
-
-    vprintf("%s(): return TRUE\n", __PRETTY_FUNCTION__);
-    return TRUE;
-}
 
 static gboolean
 mapman_by_area(gdouble start_lat, gdouble start_lon,
@@ -2311,6 +711,8 @@ mapman_by_area(gdouble start_lat, gdouble start_lon,
     gint z;
     gchar buffer[80];
     GtkWidget *confirm;
+    Repository* rd = map_controller_get_repository(map_controller_get_instance());
+
     printf("%s(%f, %f, %f, %f)\n", __PRETTY_FUNCTION__, start_lat, start_lon,
             end_lat, end_lon);
 
@@ -2355,9 +757,8 @@ mapman_by_area(gdouble start_lat, gdouble start_lon,
     else
     {
         snprintf(buffer, sizeof(buffer),
-                "%s %d %s\n(%s %.2f MB)\n", _("Confirm download of"),
-                num_maps, _("maps"), _("up to about"),
-                num_maps * (strstr(_curr_repo->url, "%s") ? 18e-3 : 6e-3));
+                "%s %d %s\n", _("Confirm download of"),
+                num_maps, _("maps"));
     }
     confirm = hildon_note_new_confirmation(
             GTK_WINDOW(mapman_info->dialog), buffer);
@@ -2389,18 +790,11 @@ mapman_by_area(gdouble start_lat, gdouble start_lon,
                     if((unsigned)tilex < unit2ztile(WORLD_SIZE_UNITS, z)
                       && (unsigned)tiley < unit2ztile(WORLD_SIZE_UNITS, z))
                     {
-                        RepoData* rd = _curr_repo;
-
-                        while (rd) {
-                            if (rd == _curr_repo
-                                    || (rd->layer_enabled && MAPDB_EXISTS(rd)))
-                                mapdb_initiate_update(rd, z, tilex, tiley,
-                                  update_type, download_batch_id,
-                                  (abs(tilex - unit2tile(_next_center.x))
-                                   +abs(tiley - unit2tile(_next_center.y))),
-                                  NULL);
-                            rd = rd->layers;
-                        }
+                        mapdb_initiate_update(rd->primary, z, tilex, tiley,
+                                              update_type, download_batch_id,
+                                              (abs(tilex - unit2tile(_next_center.x))
+                                               +abs(tiley - unit2tile(_next_center.y))),
+                                              NULL);
                     }
                 }
             }
@@ -2421,6 +815,7 @@ mapman_by_route(MapmanInfo *mapman_info, MapUpdateType update_type,
     gint prev_tilex, prev_tiley, num_maps = 0, z;
     Point *curr;
     gchar buffer[80];
+    Repository* rd = map_controller_get_repository(map_controller_get_instance());
     gint radius = hildon_number_editor_get_value(
             HILDON_NUMBER_EDITOR(mapman_info->num_route_radius));
     printf("%s()\n", __PRETTY_FUNCTION__);
@@ -2462,10 +857,9 @@ mapman_by_route(MapmanInfo *mapman_info, MapUpdateType update_type,
     else
     {
         snprintf(buffer, sizeof(buffer),
-                "%s %s %d %s\n(%s %.2f MB)\n", _("Confirm download of"),
+                "%s %s %d %s\n", _("Confirm download of"),
                 _("about"),
-                num_maps, _("maps"), _("up to about"),
-                num_maps * (strstr(_curr_repo->url, "%s") ? 18e-3 : 6e-3));
+                 num_maps, _("maps"));
     }
     confirm = hildon_note_new_confirmation(
             GTK_WINDOW(mapman_info->dialog), buffer);
@@ -2519,7 +913,7 @@ mapman_by_route(MapmanInfo *mapman_info, MapUpdateType update_type,
                                   && (unsigned)tiley
                                         < unit2ztile(WORLD_SIZE_UNITS, z))
                                 {
-                                    mapdb_initiate_update(_curr_repo, z, x, y,
+                                    mapdb_initiate_update(rd->primary, z, x, y,
                                         update_type, download_batch_id,
                                         (abs(tilex - unit2tile(
                                                  _next_center.x))
@@ -2609,16 +1003,7 @@ mapman_dialog()
     
     printf("%s()\n", __PRETTY_FUNCTION__);
 
-    if(!MAPDB_EXISTS(_curr_repo))
-    {
-        popup_error(_window, "To manage maps, you must set a valid repository "
-                "database filename in the \"Manage Repositories\" dialog.");
-        vprintf("%s(): return TRUE\n", __PRETTY_FUNCTION__);
-        return TRUE;
-    }
-
     // - If the coord system has changed then we need to update certain values
-    
     /* Initialize to the bounds of the screen. */
     unit2latlon(
             _center.x - pixel2unit(MAX(_view_width_pixels,
@@ -2992,25 +1377,12 @@ mapman_dialog()
                     GTK_TOGGLE_BUTTON(mapman_info.chk_zoom_levels[i]), FALSE);
         }
     }
-    gtk_toggle_button_set_active(
-            GTK_TOGGLE_BUTTON(mapman_info.chk_zoom_levels[
-                _zoom + (_curr_repo->double_size ? 1 : 0)]), TRUE);
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(mapman_info.chk_zoom_levels[_zoom]), TRUE);
 
     gtk_widget_show_all(dialog);
 
     mapman_update_state(NULL, &mapman_info);
-
-    if(_curr_repo->type != NULL)
-    {
-        gtk_widget_set_sensitive(mapman_info.rad_download, TRUE);
-    }
-    else
-    {
-        gtk_widget_set_sensitive(mapman_info.rad_download, FALSE);
-        popup_error(dialog,
-                _("NOTE: You must set a Map URI in the current repository in "
-                    "order to download maps."));
-    }
+    gtk_widget_set_sensitive(mapman_info.rad_download, TRUE);
 
     while(GTK_RESPONSE_ACCEPT == gtk_dialog_run(GTK_DIALOG(dialog)))
     {
@@ -3074,68 +1446,7 @@ mapman_dialog()
 }
 
 
-/* changes visibility of current repo's layers to it's previous state */
 void maps_toggle_visible_layers ()
 {
-    RepoData *rd = _curr_repo;
-    gboolean changed = FALSE;
-
-    printf("%s()\n", __PRETTY_FUNCTION__);
-
-    if (!rd) {
-        vprintf("%s(): return\n", __PRETTY_FUNCTION__);
-        return;
-    }
-
-    rd = rd->layers;
-
-    while (rd) {
-        if (rd->layer_enabled) {
-            changed = TRUE;
-            rd->layer_was_enabled = rd->layer_enabled;
-            rd->layer_enabled = FALSE;
-        }
-        else {
-            rd->layer_enabled = rd->layer_was_enabled;
-            if (rd->layer_was_enabled)
-                changed = TRUE;
-        }
-
-        rd = rd->layers;
-    }
-
-    /* redraw map */
-    if (changed) {
-        menu_layers_remove_repos ();
-        menu_layers_add_repos ();
-        map_refresh_mark (TRUE);
-    }
-
-    vprintf("%s(): return\n", __PRETTY_FUNCTION__);
+    map_screen_toggle_layers_visibility(map_controller_get_screen(map_controller_get_instance()));
 }
-
-RepoData*
-create_default_repo()
-{
-    /* We have no repositories - create a default one. */
-    RepoData *repo = g_new0(RepoData, 1);
-
-    repo->db_filename = gnome_vfs_expand_initial_tilde(
-            REPO_DEFAULT_CACHE_DIR);
-    repo->db_file_ext = g_strdup(REPO_DEFAULT_FILE_EXT);
-    repo->url=g_strdup(REPO_DEFAULT_MAP_URI);
-    repo->dl_zoom_steps = REPO_DEFAULT_DL_ZOOM_STEPS;
-    repo->name = g_strdup(REPO_DEFAULT_NAME);
-    repo->view_zoom_steps = REPO_DEFAULT_VIEW_ZOOM_STEPS;
-    repo->double_size = FALSE;
-    repo->nextable = TRUE;
-    repo->min_zoom = REPO_DEFAULT_MIN_ZOOM;
-    repo->max_zoom = REPO_DEFAULT_MAX_ZOOM;
-    repo->layers = NULL;
-    repo->layer_level = 0;
-    repo->is_sqlite = TRUE;
-    repo->type = find_repo_type_by_name(REPO_DEFAULT_TYPE);
-
-    return repo;
-}
-

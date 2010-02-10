@@ -27,6 +27,7 @@
 #include <glib.h>
 #include <glib-object.h>
 #include <gtk/gtk.h>
+#include <gconf/gconf-client.h>
  
 G_BEGIN_DECLS
 
@@ -55,12 +56,25 @@ struct _MapControllerClass
     GObjectClass parent_class;
 };
 
-GType map_controller_get_type (void);
+GType map_controller_get_type(void);
 
 MapController *map_controller_get_instance();
 
 MapScreen *map_controller_get_screen(MapController *self);
 GtkWindow *map_controller_get_main_window(MapController *self);
+
+/* Repository */
+Repository *map_controller_get_repository(MapController *self);
+TileSource *map_controller_lookup_tile_source(MapController *self, const gchar *id);
+TileSource *map_controller_lookup_tile_source_by_name(MapController *self, const gchar *name);
+Repository *map_controller_lookup_repository(MapController *self, const gchar *name);
+void map_controller_set_repository(MapController *self, Repository *repo);
+GList *map_controller_get_repo_list(MapController *self);
+GList *map_controller_get_tile_sources_list(MapController *self);
+void map_controller_delete_repository(MapController *self, Repository *repo);
+void map_controller_delete_tile_source(MapController *self, TileSource *ts);
+void map_controller_append_tile_source(MapController *self, TileSource *ts);
+void map_controller_append_repository(MapController *self, Repository *repo);
 
 void map_controller_action_zoom_in(MapController *self);
 void map_controller_action_zoom_out(MapController *self);
@@ -118,8 +132,11 @@ gint map_controller_get_zoom(MapController *self);
 void map_controller_calc_best_center(MapController *self, MapPoint *new_center);
 
 void map_controller_refresh_paths(MapController *controller);
-
 void map_controller_update_gps(MapController *self);
+
+/* Settings */
+void map_controller_load_repositories(MapController *self, GConfClient *gconf_client);
+void map_controller_save_repositories(MapController *self, GConfClient *gconf_client);
 
 G_END_DECLS
 #endif /* MAP_CONTROLLER_H */

@@ -113,7 +113,7 @@ hide_timeout_cb(MapOsm *self)
 {
     MapOsmPrivate *priv = self->priv;
 
-    g_debug("%s called", G_STRFUNC);
+    printf("%s called", G_STRFUNC);
     /* TODO: nice animation to hide the menu */
     clutter_actor_hide(CLUTTER_ACTOR(self));
     priv->id_hide_timeout = 0;

@@ -86,6 +86,7 @@ void map_screen_refresh_tiles(MapScreen *self);
 void map_screen_refresh_pois(MapScreen *self, MapArea *poi_area);
 
 void map_screen_track_append(MapScreen *self, const Point *p);
+void map_screen_toggle_layers_visibility (MapScreen *self);
 
 G_END_DECLS
 #endif /* MAP_SCREEN_H */

@@ -30,15 +30,24 @@
 #include "gps.h"
 #include "menu.h"
 #include "path.h"
+#include "repository.h"
 #include "screen.h"
+#include "settings.h"
+#include "tile.h"
+#include "tile_source.h"
 
+#include <gconf/gconf-client.h>
 #include <hildon/hildon-banner.h>
 #include <math.h>
+#include <string.h>
 
 #define VELVEC_SIZE_FACTOR (4)
 
 struct _MapControllerPrivate
 {
+    GList *repositories_list;
+    GList *tile_sources_list;
+    Repository *repository;
     MapScreen *screen;
     MapPoint center;
     gint rotation_angle;
@@ -62,6 +71,52 @@ activate_gps()
         rcvr_connect();
     return FALSE;
 }
+
+
+static void
+reset_tile_sources_countdown()
+{
+    GList *ts_list = map_controller_get_tile_sources_list(map_controller_get_instance());
+    TileSource *ts;
+
+    while (ts_list) {
+        ts = (TileSource*)ts_list->data;
+        if (ts->refresh && ts->countdown < 0)
+            ts->countdown = ts->refresh-1;
+        ts_list = ts_list->next;
+    }
+}
+
+
+static gboolean
+expired_tiles_housekeeper(gpointer data)
+{
+    GList *ts_list = map_controller_get_tile_sources_list(map_controller_get_instance());
+    TileSource *ts;
+    gboolean expired = FALSE;
+
+    /* If device is inactive, do not download tiles, but keep timer working */
+    if (!_device_is_active)
+        return TRUE;
+
+    /* Iterate over all tile sources and if they have refresh turned on, decrement coundown */
+    while (ts_list) {
+        ts = (TileSource*)ts_list->data;
+        if (ts->refresh) {
+            ts->countdown--;
+            if (ts->countdown < 0)
+                expired = TRUE;
+        }
+        ts_list = ts_list->next;
+    }
+
+    if (expired) {
+        refresh_expired_tiles();
+        reset_tile_sources_countdown();
+    }
+    return TRUE;
+}
+
 
 static gboolean
 set_center_real(MapController *self)
@@ -97,6 +152,7 @@ static void
 map_controller_init(MapController *controller)
 {
     MapControllerPrivate *priv;
+    GConfClient *gconf_client = gconf_client_get_default();
 
     priv = G_TYPE_INSTANCE_GET_PRIVATE(controller, MAP_TYPE_CONTROLLER,
                                        MapControllerPrivate);
@@ -105,16 +161,27 @@ map_controller_init(MapController *controller)
     g_assert(instance == NULL);
     instance = controller;
 
-    /* TODO: load the settings from inside here */
+    /* Load settings */
+    settings_init(gconf_client);
+
+    /* Load repositories */
+    map_controller_load_repositories(controller, gconf_client);
 
     priv->screen = g_object_new(MAP_TYPE_SCREEN, NULL);
     map_screen_show_compass(priv->screen, _show_comprose);
     map_screen_show_scale(priv->screen, _show_scale);
     map_screen_show_zoom_box(priv->screen, _show_zoomlevel);
 
+    /* TODO: eliminate global _next_center, _next_zoom, _center, _zoom, etc values */
     map_controller_set_center(controller, _next_center, _next_zoom);
 
     g_idle_add(activate_gps, NULL);
+
+    gconf_client_clear_cache(gconf_client);
+    g_object_unref(gconf_client);
+
+    /* create periodical timer which wipes expired tiles from cache */
+    g_timeout_add_seconds(60, expired_tiles_housekeeper, NULL);
 }
 
 static void
@@ -546,9 +613,11 @@ map_controller_set_zoom(MapController *self, gint zoom)
     g_return_if_fail(MAP_IS_CONTROLLER(self));
     priv = self->priv;
 
+    /* Round zoom according step in repository */
+    zoom = zoom / priv->repository->zoom_step * priv->repository->zoom_step;
+
     if (zoom == priv->zoom) return;
 
-    g_debug("%s %d", G_STRFUNC, zoom);
     priv->zoom = zoom;
     map_controller_calc_best_center(self, &center);
     map_controller_set_center(self, center, zoom);
@@ -620,8 +689,252 @@ map_controller_update_gps(MapController *self)
 
     g_return_if_fail(MAP_IS_CONTROLLER(self));
     priv = self->priv;
-
     map_screen_update_mark(priv->screen);
     map_screen_set_best_center(priv->screen);
 }
 
+/*
+ * Load all repositories and associated layers
+ */
+void
+map_controller_load_repositories(MapController *self, GConfClient *gconf_client)
+{
+    MapControllerPrivate *priv;
+    GConfValue *value;
+
+    g_return_if_fail(MAP_IS_CONTROLLER(self));
+    priv = self->priv;
+
+    /* tile sources */
+    value = gconf_client_get(gconf_client, GCONF_KEY_TILE_SOURCES, NULL);
+    if (value) {
+        priv->tile_sources_list = tile_source_xml_to_list(gconf_value_get_string(value));
+        gconf_value_free(value);
+    }
+
+    /* repositories must be loaded after tile sources, because repository load routine performs
+     * lookup in tile sources list */
+    value = gconf_client_get(gconf_client, GCONF_KEY_REPOSITORIES, NULL);
+    if (value) {
+        priv->repositories_list = repository_xml_to_list(gconf_value_get_string(value));
+        gconf_value_free(value);
+    }
+
+    /* if some data failed to load, switch to defaults */
+    if (!priv->tile_sources_list || !priv->repositories_list)
+        priv->repository = repository_create_default_lists(&priv->tile_sources_list,
+                                                           &priv->repositories_list);
+    else {
+        /* current repository */
+        value = gconf_client_get(gconf_client, GCONF_KEY_ACTIVE_REPOSITORY, NULL);
+        if (value) {
+            char *val = (char*)gconf_value_get_string(value);
+            if (val)
+                priv->repository = map_controller_lookup_repository(self, val);
+            gconf_value_free(value);
+        }
+
+        if (!priv->repository)
+            priv->repository = priv->repositories_list->data;
+    }
+
+    reset_tile_sources_countdown();
+}
+
+/*
+ * Save all repositories and associated layers
+ */
+void
+map_controller_save_repositories(MapController *self, GConfClient *gconf_client)
+{
+    MapControllerPrivate *priv;
+    gchar *xml;
+
+    g_return_if_fail(MAP_IS_CONTROLLER(self));
+    priv = self->priv;
+
+    /* Repositories */
+    xml = repository_list_to_xml(priv->repositories_list);
+    if (xml) {
+        gconf_client_set_string(gconf_client, GCONF_KEY_REPOSITORIES, xml, NULL);
+        g_free(xml);
+    }
+    else
+        gconf_client_unset(gconf_client, GCONF_KEY_REPOSITORIES, NULL);
+
+    /* Tile sources */
+    xml = tile_source_list_to_xml(priv->tile_sources_list);
+    if (xml) {
+        gconf_client_set_string(gconf_client, GCONF_KEY_TILE_SOURCES, xml, NULL);
+        g_free(xml);
+    }
+    else
+        gconf_client_unset(gconf_client, GCONF_KEY_TILE_SOURCES, NULL);
+
+    if (priv->repository)
+        gconf_client_set_string(gconf_client, GCONF_KEY_ACTIVE_REPOSITORY,
+                                priv->repository->name, NULL);
+    else
+        gconf_client_unset(gconf_client, GCONF_KEY_ACTIVE_REPOSITORY, NULL);
+}
+
+Repository *
+map_controller_get_repository(MapController *self)
+{
+    g_return_val_if_fail(MAP_IS_CONTROLLER(self), NULL);
+    return self->priv->repository;
+}
+
+void
+map_controller_set_repository(MapController *self, Repository *repo)
+{
+    g_return_if_fail(MAP_IS_CONTROLLER(self));
+    self->priv->repository = repo;
+}
+
+GList *
+map_controller_get_repo_list(MapController *self)
+{
+    g_return_val_if_fail(MAP_IS_CONTROLLER(self), NULL);
+    return self->priv->repositories_list;
+}
+
+GList *
+map_controller_get_tile_sources_list(MapController *self)
+{
+    g_return_val_if_fail(MAP_IS_CONTROLLER(self), NULL);
+    return self->priv->tile_sources_list;
+}
+
+
+/* Return TileSource reference with this ID. If not found, return NULL */
+TileSource *
+map_controller_lookup_tile_source(MapController *self, const gchar *id)
+{
+    GList *ts_list;
+    TileSource *ts;
+
+    g_return_val_if_fail(MAP_IS_CONTROLLER(self), NULL);
+
+    if (!id)
+        return NULL;
+
+    ts_list = self->priv->tile_sources_list;
+    while (ts_list)
+    {
+        ts = (TileSource*)ts_list->data;
+        if (ts && ts->id && strcmp(ts->id, id) == 0)
+            return ts;
+        ts_list = g_list_next(ts_list);
+    }
+
+    return NULL;
+}
+
+
+/* Return TileSource reference with this name. If not found, return NULL */
+TileSource *
+map_controller_lookup_tile_source_by_name(MapController *self, const gchar *name)
+{
+    GList *ts_list;
+    TileSource *ts;
+
+    g_return_val_if_fail(MAP_IS_CONTROLLER(self), NULL);
+
+    if (!name)
+        return NULL;
+
+    ts_list = self->priv->tile_sources_list;
+    while (ts_list)
+    {
+        ts = (TileSource*)ts_list->data;
+        if (ts && ts->name && strcmp(ts->name, name) == 0)
+            return ts;
+        ts_list = g_list_next(ts_list);
+    }
+
+    return NULL;
+}
+
+
+Repository *
+map_controller_lookup_repository(MapController *self, const gchar *name)
+{
+    GList *repo_list;
+    Repository *repo;
+
+    g_return_val_if_fail(MAP_IS_CONTROLLER(self), NULL);
+
+    if (!name)
+        return NULL;
+
+    repo_list = self->priv->repositories_list;
+    while (repo_list)
+    {
+        repo = (Repository*)repo_list->data;
+        if (repo && repo->name && strcmp(repo->name, name) == 0)
+            return repo;
+        repo_list = g_list_next(repo_list);
+    }
+
+    return NULL;
+}
+
+
+void
+map_controller_delete_repository(MapController *self, Repository *repo)
+{
+    MapControllerPrivate *priv;
+
+    g_return_if_fail(MAP_IS_CONTROLLER(self));
+    priv = self->priv;
+
+    /* Do not allow to delete active repository */
+    if (repo == priv->repository)
+        return;
+
+    priv->repositories_list = g_list_remove(priv->repositories_list, repo);
+    repository_free(repo);
+}
+
+
+void
+map_controller_delete_tile_source(MapController *self, TileSource *ts)
+{
+    MapControllerPrivate *priv;
+    GList *repo_list;
+    Repository *repo;
+
+    g_return_if_fail(MAP_IS_CONTROLLER(self));
+    priv = self->priv;
+
+    priv->tile_sources_list = g_list_remove(priv->tile_sources_list, ts);
+
+    repo_list = priv->repositories_list;
+    while (repo_list) {
+        repo = (Repository*)repo_list->data;
+        if (repo->primary == ts)
+            repo->primary = NULL;
+        if (repo->layers)
+            while (g_ptr_array_remove(repo->layers, ts));
+        repo_list = repo_list->next;
+    }
+
+    tile_source_free(ts);
+}
+
+
+void
+map_controller_append_tile_source(MapController *self, TileSource *ts)
+{
+    g_return_if_fail(MAP_IS_CONTROLLER(self));
+    self->priv->tile_sources_list = g_list_append(self->priv->tile_sources_list, ts);
+}
+
+
+void
+map_controller_append_repository(MapController *self, Repository *repo)
+{
+    g_return_if_fail(MAP_IS_CONTROLLER(self));
+    self->priv->repositories_list = g_list_append(self->priv->repositories_list, repo);
+}

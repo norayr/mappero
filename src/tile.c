@@ -21,6 +21,7 @@
 #ifdef HAVE_CONFIG_H
 #   include "config.h"
 #endif
+#include "screen.h"
 #include "tile.h"
 
 #include "controller.h"
@@ -57,7 +58,8 @@ compare_tile_spec(MapTile *tile, MapTileSpec *ts)
 {
     return (tile->ts.zoom == ts->zoom &&
             tile->ts.tilex == ts->tilex &&
-            tile->ts.tiley == ts->tiley) ? 0 : 1;
+            tile->ts.tiley == ts->tiley &&
+            tile->ts.source == ts->source) ? 0 : 1;
 }
 
 static void
@@ -66,15 +68,12 @@ download_tile_cb(MapTileSpec *ts, GdkPixbuf *pixbuf, const GError *error,
 {
     MapTile *tile, **p_tile;
 
-    g_debug("%s", G_STRFUNC);
+    printf("%s", G_STRFUNC);
     p_tile = user_data;
     tile = *p_tile;
     g_slice_free(MapTile *, p_tile);
     if (!tile)
-    {
-        g_debug("Object destroyed");
         return;
-    }
 
     g_object_remove_weak_pointer(G_OBJECT(tile), user_data);
 
@@ -196,7 +195,7 @@ map_tile_get_instance(gboolean *new_tile)
  * Returns: a #ClutterActor representing the tile.
  */
 ClutterActor *
-map_tile_load(RepoData *repo, gint zoom, gint x, gint y, gboolean *new_tile)
+map_tile_load(TileSource *source, gint zoom, gint x, gint y, gboolean *new_tile)
 {
     MapTile *tile;
     GdkPixbuf *pixbuf, *area;
@@ -204,15 +203,14 @@ map_tile_load(RepoData *repo, gint zoom, gint x, gint y, gboolean *new_tile)
 
     tile = map_tile_get_instance(new_tile);
 
-    tile->ts.repo = repo;
+    tile->ts.source = source;
     tile->ts.zoom = zoom;
     tile->ts.tilex = x;
     tile->ts.tiley = y;
 
-    /* TODO: handle layers */
     for (zoff = 0; zoff + zoom <= MAX_ZOOM && zoff < 4; zoff++)
     {
-        pixbuf = mapdb_get(repo, zoom + zoff, x >> zoff, y >> zoff);
+        pixbuf = mapdb_get(source, zoom + zoff, x >> zoff, y >> zoff);
         if (pixbuf)
         {
             if (zoff != 0)
@@ -237,6 +235,12 @@ map_tile_load(RepoData *repo, gint zoom, gint x, gint y, gboolean *new_tile)
             g_object_unref(pixbuf);
             break;
         }
+
+        /* For faster load, we don't scale transparent layers */
+        if (source->transparent) {
+            zoff = 1;
+            break;
+        }
     }
 
     if (zoff != 0)
@@ -253,13 +257,13 @@ map_tile_load(RepoData *repo, gint zoom, gint x, gint y, gboolean *new_tile)
 }
 
 ClutterActor *
-map_tile_cached(RepoData *repo, gint zoom, gint x, gint y)
+map_tile_cached(TileSource *source, gint zoom, gint x, gint y)
 {
     MapTileSpec ts;
     GList *list;
     ClutterActor *tile = NULL;
 
-    ts.repo = repo;
+    ts.source = source;
     ts.tilex = x;
     ts.tiley = y;
     ts.zoom = zoom;
@@ -294,3 +298,19 @@ map_tile_refresh(MapTile *tile)
     map_tile_download(tile);
 }
 
+/*
+ * Iterate over cache and request redownload of expired tiles.
+ */
+void
+refresh_expired_tiles()
+{
+    GList *iter = tile_cache;
+    MapTile *mt;
+
+    while (iter) {
+        mt = MAP_TILE(iter->data);
+        if (mt->ts.source->countdown < 0)
+            map_tile_download(mt);
+        iter = iter->next;
+    }
+}

@@ -86,6 +86,9 @@ extern gboolean _satdetails_on;
 
 extern gboolean _is_first_time;
 
+/* Current state of device (active/inactive). Used in layers to refresh timeout routine.
+ * Updated in OSSO HW state callback routine. */
+extern gboolean _device_is_active;
 
 /** VARIABLES FOR MAINTAINING STATE OF THE CURRENT VIEW. */
 
@@ -184,9 +187,6 @@ extern SpeedLocation _speed_location;
 extern UnblankOption _unblank_option;
 extern InfoFontSize _info_font_size;
 
-extern GList *_repo_list;
-extern RepoData *_curr_repo;
-
 /** POI */
 extern gchar *_poi_db_filename;
 extern gchar *_poi_db_dirname;
@@ -233,6 +233,7 @@ extern GtkWidget *_menu_layers_submenu;
 extern GtkWidget *_menu_maps_mapman_item;
 extern GtkWidget *_menu_maps_auto_download_item;
 extern GtkWidget *_menu_maps_repoman_item;
+extern GtkWidget *_menu_maps_tile_sources_item;
 extern GtkWidget *_menu_maps_repodown_item;
 
 /* Menu items for the "View" submenu. */

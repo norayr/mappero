@@ -445,8 +445,6 @@ maemo_mapper_init(gint argc, gchar **argv)
     _conic_connection_cond = g_cond_new();
 #endif
 
-    settings_init();
-
     /* Initialize _program. */
     _program = HILDON_PROGRAM(hildon_program_get_instance());
     g_set_application_name("Mapper");
@@ -456,6 +454,8 @@ maemo_mapper_init(gint argc, gchar **argv)
     hildon_program_add_window(_program, HILDON_WINDOW(_window));
 
     gtk_window_set_default_size(GTK_WINDOW(_window), 800, 480);
+
+    _controller = g_object_new(MAP_TYPE_CONTROLLER, NULL);
 
     /* Create and add widgets and supporting data. */
     hbox = gtk_hbox_new(FALSE, 0);
@@ -507,7 +507,6 @@ maemo_mapper_init(gint argc, gchar **argv)
     gtk_widget_set_size_request (_heading_panel, -1, 100);
     gtk_box_pack_start(GTK_BOX(vbox), _heading_panel, TRUE, TRUE, 0);
 
-    _controller = g_object_new(MAP_TYPE_CONTROLLER, NULL);
     _w_map = (GtkWidget *)map_controller_get_screen(_controller);
     gtk_box_pack_start(GTK_BOX(hbox), _w_map, TRUE, TRUE, 0);
 
@@ -596,7 +595,6 @@ maemo_mapper_init(gint argc, gchar **argv)
 static gboolean
 osso_cb_hw_state_idle(osso_hw_state_t *state)
 {
-    static gboolean _must_save_data = FALSE;
     printf("%s(inact=%d, save=%d, shut=%d, memlow=%d, state=%d)\n",
             __PRETTY_FUNCTION__, state->system_inactivity_ind,
             state->save_unsaved_data_ind, state->shutdown_ind,
@@ -609,10 +607,9 @@ osso_cb_hw_state_idle(osso_hw_state_t *state)
     }
 
     if(state->save_unsaved_data_ind)
-    {
         settings_save();
-        _must_save_data = TRUE;
-    }
+
+    _device_is_active = !state->system_inactivity_ind;
 
     g_free(state);
 

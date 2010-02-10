@@ -890,7 +890,7 @@ map_download_refresh_idle(MapTileSpec *tile, GdkPixbuf *pixbuf,
 {
     MapUpdateType update_type;
 
-    g_debug("%s(%p, %d, %d, %d)", G_STRFUNC, tile,
+    printf("%s(%p, %d, %d, %d)", G_STRFUNC, tile,
             tile->zoom, tile->tilex, tile->tiley);
 
     update_type = GPOINTER_TO_INT(user_data);
@@ -906,12 +906,10 @@ map_download_refresh_idle(MapTileSpec *tile, GdkPixbuf *pixbuf,
 
         if(_dl_errors)
         {
-            if (tile->repo->layer_level == 0) {
-                gchar buffer[BUFFER_SIZE];
-                snprintf(buffer, sizeof(buffer), "%d %s", _dl_errors,
-                         _("maps failed to download."));
-                MACRO_BANNER_SHOW_INFO(_window, buffer);
-            }
+            gchar buffer[BUFFER_SIZE];
+            snprintf(buffer, sizeof(buffer), "%d %s", _dl_errors,
+                     _("maps failed to download."));
+            MACRO_BANNER_SHOW_INFO(_window, buffer);
             _dl_errors = 0;
         }
     }
@@ -921,7 +919,7 @@ map_download_refresh_idle(MapTileSpec *tile, GdkPixbuf *pixbuf,
                 _curr_download / (double)_num_downloads);
     }
 
-    g_debug("%s(): return", G_STRFUNC);
+    vprintf("%s(): return", G_STRFUNC);
 }
 
 /**
@@ -941,9 +939,7 @@ map_set_zoom(gint new_zoom)
         return;
 
     controller = map_controller_get_instance();
-    map_controller_set_zoom(controller,
-                            new_zoom / _curr_repo->view_zoom_steps
-                            * _curr_repo->view_zoom_steps);
+    map_controller_set_zoom(controller, new_zoom);
 
     vprintf("%s(): return\n", __PRETTY_FUNCTION__);
 }

@@ -332,44 +332,40 @@ struct _PoiInfo {
     gchar *clabel;
 };
 
-typedef struct _RepoData RepoData;
+typedef struct _TileSource TileSource;
 
-typedef gint (*RepoStringFunc)(RepoData *repo, gchar *buffer, gint len,
-                               gint zoom, gint tilex, gint tiley);
+typedef gint (*TileSourceStringFunc)(TileSource *source, gchar *buffer, gint len,
+                                     gint zoom, gint tilex, gint tiley);
 
 /** This enumerated type defines the supported types of repositories. */
 typedef struct
 {
     const gchar *name;
-    RepoStringFunc get_url; /* compose the URL of the tile do dowload */
-} RepoType;
+    TileSourceStringFunc get_url; /* compose the URL of the tile do dowload */
+} TileSourceType;
+
+struct _TileSource {
+    gchar *name;
+    gchar *id;
+    gchar *cache_dir;
+    gchar *url;
+    const TileSourceType* type;
+    gboolean visible;
+    gint refresh;
+    gint countdown;
+    gboolean transparent;
+};
+
 
 /** Data regarding a map repository. */
-struct _RepoData {
+typedef struct _Repository Repository;
+struct _Repository {
     gchar *name;
-    gchar *url;
-    gchar *db_filename;
-    gchar *db_file_ext;
-    gint dl_zoom_steps;
-    gint view_zoom_steps;
-    gboolean double_size;
-    gboolean nextable;
     gint min_zoom;
     gint max_zoom;
-    const RepoType *type;
-    RepoData *layers;
-    gint8 layer_level;
-    gboolean layer_enabled;
-    gboolean layer_was_enabled; /* needed for ability to temporarily toggle layers on and off */
-    gint layer_refresh_interval;
-    gint layer_refresh_countdown;
-    gboolean is_sqlite;
-    sqlite3 *sqlite_db;
-    sqlite3_stmt *stmt_map_select;
-    sqlite3_stmt *stmt_map_exists;
-    sqlite3_stmt *stmt_map_update;
-    sqlite3_stmt *stmt_map_delete;
-    GDBM_FILE gdbm_db;
+    gint zoom_step;
+    TileSource *primary;
+    GPtrArray *layers;
     GtkWidget *menu_item;
 };
 
@@ -404,7 +400,7 @@ struct _GpsSatelliteData {
 typedef struct _MapRenderTask MapRenderTask;
 struct _MapRenderTask
 {
-    RepoData *repo;
+    TileSource *repo;
     Point new_center;
     gint old_offsetx;
     gint old_offsety;
