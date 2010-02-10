@@ -614,6 +614,8 @@ osso_cb_hw_state_idle(osso_hw_state_t *state)
     if(state->save_unsaved_data_ind)
         settings_save();
 
+    _device_is_active = !state->system_inactivity_ind;
+
     g_free(state);
 
     vprintf("%s(): return\n", __PRETTY_FUNCTION__);

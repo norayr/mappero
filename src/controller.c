@@ -94,6 +94,10 @@ expired_tiles_housekeeper(gpointer data)
     TileSource *ts;
     gboolean expired = FALSE;
 
+    /* If device is inactive, do not download tiles, but keep timer working */
+    if (!_device_is_active)
+        return TRUE;
+
     /* Iterate over all tile sources and if they have refresh turned on, decrement coundown */
     while (ts_list) {
         ts = (TileSource*)ts_list->data;

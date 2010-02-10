@@ -109,6 +109,9 @@ gboolean _satdetails_on = FALSE;
 
 gboolean _is_first_time = FALSE;
 
+/* Current state of device (active/inactive). Used in layers to refresh timeout routine.
+ * Updated in OSSO HW state callback routine. */
+gboolean _device_is_active = TRUE;
 
 /** VARIABLES FOR MAINTAINING STATE OF THE CURRENT VIEW. */
 
