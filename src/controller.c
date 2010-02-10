@@ -53,6 +53,8 @@ struct _MapControllerPrivate
     gint rotation_angle;
     gint zoom;
 
+    GSList *plugins;
+
     guint source_map_center;
     guint is_disposed : 1;
     guint device_active : 1;
@@ -145,6 +147,12 @@ map_controller_dispose(GObject *object)
     {
         g_source_remove(priv->source_map_center);
         priv->source_map_center = 0;
+    }
+
+    while (priv->plugins)
+    {
+        g_object_unref(priv->plugins->data);
+        priv->plugins = g_slist_delete_link(priv->plugins, priv->plugins);
     }
 
     G_OBJECT_CLASS(map_controller_parent_class)->dispose(object);
@@ -982,3 +990,39 @@ map_controller_set_device_active(MapController *self, gboolean active)
         g_timeout_add_seconds(60, expired_tiles_housekeeper, NULL);
     }
 }
+
+/**
+ * map_controller_register_plugin:
+ * @self: the #MapController
+ * @plugin: a #GObject
+ *
+ * This mehod registers a plugin with Mapper. The @plugin should implement some
+ * of the interfaces defined by Mapper (e.g., MapRouter). The #MapController
+ * keeps a reference to these objects.
+ */
+void
+map_controller_register_plugin(MapController *self, GObject *plugin)
+{
+    MapControllerPrivate *priv;
+
+    g_return_if_fail(MAP_IS_CONTROLLER(self));
+    g_return_if_fail(G_IS_OBJECT(plugin));
+    priv = self->priv;
+
+    priv->plugins = g_slist_prepend(priv->plugins, g_object_ref(plugin));
+}
+
+/**
+ * map_controller_list_plugins:
+ * @self: the #MapController
+ *
+ * Returns: a #GSList of the registered plugins.
+ */
+const GSList *
+map_controller_list_plugins(MapController *self)
+{
+    g_return_val_if_fail(MAP_IS_CONTROLLER(self), NULL);
+
+    return self->priv->plugins;
+}
+
