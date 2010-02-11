@@ -27,6 +27,7 @@
 #include <libintl.h>
 
 #define _(String) gettext(String)
+#define H_(String) dgettext("hildon-libs", String)
 
 #ifndef DEBUG
 #define printf(...)
