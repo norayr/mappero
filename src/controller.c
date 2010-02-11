@@ -55,6 +55,8 @@ struct _MapControllerPrivate
 
     GSList *plugins;
 
+    MapRouter *default_router;
+
     guint source_map_center;
     guint is_disposed : 1;
     guint device_active : 1;
@@ -1024,5 +1026,28 @@ map_controller_list_plugins(MapController *self)
     g_return_val_if_fail(MAP_IS_CONTROLLER(self), NULL);
 
     return self->priv->plugins;
+}
+
+/**
+ * map_controller_set_default_router:
+ * @self: the #MapController
+ * @router: a #MapRouter
+ *
+ * Sets @router as the default router.
+ */
+void
+map_controller_set_default_router(MapController *self, MapRouter *router)
+{
+    g_return_if_fail(MAP_IS_CONTROLLER(self));
+
+    self->priv->default_router = router;
+}
+
+MapRouter *
+map_controller_get_default_router(MapController *self)
+{
+    g_return_val_if_fail(MAP_IS_CONTROLLER(self), NULL);
+
+    return self->priv->default_router;
 }
 

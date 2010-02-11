@@ -42,6 +42,7 @@ typedef struct _MapController MapController;
 typedef struct _MapControllerPrivate MapControllerPrivate;
 typedef struct _MapControllerClass MapControllerClass;
 
+#include "router.h"
 #include "screen.h"
 
 struct _MapController
@@ -146,6 +147,9 @@ void map_controller_set_device_active(MapController *self, gboolean active);
 /* Plugins */
 void map_controller_register_plugin(MapController *self, GObject *plugin);
 const GSList *map_controller_list_plugins(MapController *self);
+
+void map_controller_set_default_router(MapController *self, MapRouter *router);
+MapRouter *map_controller_get_default_router(MapController *self);
 
 G_END_DECLS
 #endif /* MAP_CONTROLLER_H */
