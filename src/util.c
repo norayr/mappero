@@ -134,8 +134,11 @@ deg_format(gdouble coor, gchar *scoor, gchar neg_char, gchar pos_char)
   * makes a call to the internet, so it may take some time. */
 MapPoint locate_address(GtkWidget *parent, const gchar *addr)
 {
-    Path temp;
     MapPoint retval = _point_null.unit;
+
+    /* TODO: reimplement */
+#if 0
+    Path temp;
     GnomeVFSResult vfs_result;
     gint size;
     gchar *bytes = NULL;
@@ -190,6 +193,7 @@ MapPoint locate_address(GtkWidget *parent, const gchar *addr)
 
     vprintf("%s(): return (%d, %d)\n", __PRETTY_FUNCTION__,
             retval.x, retval.y);
+#endif
     return retval;
 }
 
