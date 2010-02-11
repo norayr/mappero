@@ -274,6 +274,7 @@ repository_sync_handler(GtkWindow *parent)
                         ts_old->url = g_strdup(ts->url);
                     }
                     ts_old->type = ts->type;
+                    ts_old->format = ts->format;
                     ts_mod++;
                 }
                 tile_source_free(ts);
@@ -568,6 +569,7 @@ repository_create_default_lists(GList **tile_sources, GList **repositories)
     osm->url = g_strdup(REPO_DEFAULT_MAP_URI);
     osm->type = type;
     osm->visible = TRUE;
+    osm->format = FORMAT_PNG;
     *tile_sources = g_list_append(*tile_sources, osm);
 
     google = g_slice_new0(TileSource);
@@ -577,6 +579,7 @@ repository_create_default_lists(GList **tile_sources, GList **repositories)
     google->url = g_strdup("http://mt.google.com/vt?z=%d&x=%d&y=%0d");
     google->type = type;
     google->visible = TRUE;
+    google->format = FORMAT_PNG;
     *tile_sources = g_list_append(*tile_sources, google);
 
     satellite = g_slice_new0(TileSource);
@@ -586,6 +589,7 @@ repository_create_default_lists(GList **tile_sources, GList **repositories)
     satellite->url = g_strdup("http://khm.google.com/kh/v=51&z=%d&x=%d&y=%0d");
     satellite->type = type;
     satellite->visible = TRUE;
+    satellite->format = FORMAT_JPG;
     *tile_sources = g_list_append(*tile_sources, satellite);
 
     /* layers */

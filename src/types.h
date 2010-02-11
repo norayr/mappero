@@ -332,6 +332,11 @@ struct _PoiInfo {
     gchar *clabel;
 };
 
+typedef enum {
+    FORMAT_PNG,
+    FORMAT_JPG,
+} TileFormat;
+
 typedef struct _TileSource TileSource;
 
 typedef gint (*TileSourceStringFunc)(TileSource *source, gchar *buffer, gint len,
@@ -350,6 +355,7 @@ struct _TileSource {
     gchar *cache_dir;
     gchar *url;
     const TileSourceType* type;
+    TileFormat format;
     gboolean visible;
     gint refresh;
     gint countdown;

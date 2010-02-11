@@ -5,6 +5,10 @@
 
 #include <hildon/hildon-touch-selector.h>
 
+const gchar *tile_source_format_extention(TileFormat format);
+const gchar *tile_source_format_name(TileFormat format);
+TileFormat   tile_source_format_by_name(const gchar *name);
+
 const TileSourceType* tile_source_type_find_by_name(const gchar *name);
 
 gchar* tile_source_list_to_xml(GList *tile_sources);

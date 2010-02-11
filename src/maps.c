@@ -175,8 +175,9 @@ build_tile_filename(gchar *buffer, gsize size,
                     TileSource *source, gint zoom, gint tilex, gint tiley)
 {
     g_snprintf(buffer, size,
-               "/home/user/MyDocs/.maps/%s/%d/%d/%d.png", /* TODO: new field in tile source with tile format */
-               source->cache_dir, 21 - zoom, tilex, tiley);
+               "/home/user/MyDocs/.maps/%s/%d/%d/%d.%s",
+               source->cache_dir, 21 - zoom, tilex, tiley,
+               tile_source_format_extention(source->format));
 }
 
 static gboolean

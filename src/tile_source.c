@@ -53,6 +53,19 @@ static const TileSourceType tile_source_types[] = {
     { NULL, }
 };
 
+typedef struct {
+    const gchar *name;
+    const gchar *ext;
+    TileFormat format;
+} TileFormatMapEntry;
+
+
+static const TileFormatMapEntry tile_format_map[] = {
+    { "PNG",  "png", FORMAT_PNG, },
+    { "JPEG", "jpg", FORMAT_JPG, },
+    { NULL, }
+};
+
 
 /**
  * Given the xyz coordinates of our map coordinate system, write the qrst
@@ -227,6 +240,7 @@ tile_source_list_to_xml(GList *tile_sources)
             xmlNewChild(nn, NULL, BAD_CAST "cache_dir", BAD_CAST ts->cache_dir);
         xmlNewChild(nn, NULL, BAD_CAST "visible", BAD_CAST (ts->visible ? "1" : "0"));
         xmlNewChild(nn, NULL, BAD_CAST "transparent", BAD_CAST (ts->transparent ? "1" : "0"));
+        xmlNewChild(nn, NULL, BAD_CAST "format", BAD_CAST (tile_source_format_name(ts->format)));
         if (ts->type)
             xmlNewChild(nn, NULL, BAD_CAST "type", BAD_CAST ts->type->name);
 
@@ -286,6 +300,8 @@ tree_to_tile_source(xmlDocPtr doc, xmlNodePtr ts_node)
             ts->transparent = val != 0;
         else if (strcmp(ss, "refresh") == 0 && val_valid)
             ts->refresh = val;
+        else if (strcmp(ss, "format") == 0)
+            ts->format = tile_source_format_by_name(s);
         xmlFree(s);
     }
 
@@ -379,6 +395,8 @@ tile_source_compare(TileSource *ts1, TileSource *ts2)
     if (strcmp(ts1->url, ts2->url) != 0)
         return FALSE;
     if (ts1->type != ts2->type)
+        return FALSE;
+    if (ts1->format != ts2->format)
         return FALSE;
     return TRUE;
 }
@@ -631,3 +649,52 @@ tile_source_edit_dialog(GtkWindow *parent, TileSource *ts)
 
     return res;
 }
+
+
+/*
+ * Return tile format file extention.
+ */
+const gchar *
+tile_source_format_extention(TileFormat format)
+{
+    const TileFormatMapEntry *p = tile_format_map;
+
+    while (p->name) {
+        if (p->format == format)
+            return p->ext;
+        p++;
+    }
+
+    return "";
+}
+
+
+const gchar *
+tile_source_format_name(TileFormat format)
+{
+    const TileFormatMapEntry *p = tile_format_map;
+
+    while (p->name) {
+        if (p->format == format)
+            return p->name;
+        p++;
+    }
+
+    return "";
+}
+
+
+TileFormat
+tile_source_format_by_name(const gchar *name)
+{
+    const TileFormatMapEntry *p = tile_format_map;
+
+    while (p->name) {
+        if (strcmp(name, p->name) == 0)
+            return p->format;
+        p++;
+    }
+
+    return FORMAT_PNG;
+}
+
