@@ -171,6 +171,22 @@ fill_selector_with_repotypes(HildonTouchSelector *selector, const TileSourceType
 }
 
 
+static void
+fill_selector_with_tile_formats(HildonTouchSelector *selector, TileFormat active)
+{
+    gint i = 0;
+    const TileFormatMapEntry *p = tile_format_map;
+
+    while (p->name) {
+        hildon_touch_selector_append_text(selector, p->name);
+        if (p->format == active)
+            hildon_touch_selector_set_active(selector, 0, i);
+        p++;
+        i++;
+    }
+}
+
+
 const TileSourceType*
 tile_source_type_find_by_name(const gchar *name)
 {
@@ -502,6 +518,8 @@ tile_source_edit_dialog(GtkWindow *parent, TileSource *ts)
     GtkWidget *visible_button, *transparent_button;
     HildonTouchSelector *refresh_selector;
     GtkWidget *refresh_button;
+    HildonTouchSelector *format_selector;
+    GtkWidget *format_button;
     gint i;
     gchar buf[10];
     MapController *controller = map_controller_get_instance();
@@ -512,7 +530,7 @@ tile_source_edit_dialog(GtkWindow *parent, TileSource *ts)
 
     dialog = gtk_dialog_new_with_buttons(_("Tile source"), parent, GTK_DIALOG_MODAL,
                                          GTK_STOCK_SAVE, GTK_RESPONSE_ACCEPT, NULL);
-    table = GTK_TABLE(gtk_table_new(6, 4, TRUE));
+    table = GTK_TABLE(gtk_table_new(7, 4, TRUE));
     pannable = hildon_pannable_area_new();
     gtk_widget_set_size_request(pannable, -1, 300);
     hildon_pannable_area_add_with_viewport(HILDON_PANNABLE_AREA(pannable), GTK_WIDGET(table));
@@ -574,6 +592,16 @@ tile_source_edit_dialog(GtkWindow *parent, TileSource *ts)
                                   "touch-selector", refresh_selector,
                                   NULL);
     gtk_table_attach(table, refresh_button, 2, 4, 5, 6, GTK_FILL | GTK_EXPAND, 0, 2, 4);
+
+    /* format */
+    format_selector = HILDON_TOUCH_SELECTOR(hildon_touch_selector_new_text());
+    fill_selector_with_tile_formats(format_selector, ts->format);
+    format_button = g_object_new(HILDON_TYPE_PICKER_BUTTON,
+                                 "size", HILDON_SIZE_FINGER_HEIGHT,
+                                 "title", _("Format"),
+                                 "touch-selector", format_selector,
+                                 NULL);
+    gtk_table_attach(table, format_button, 0, 4, 6, 7, GTK_FILL | GTK_EXPAND, 0, 2, 4);
 
     /* Fill with data */
     hildon_entry_set_text(HILDON_ENTRY(name_entry), ts->name);
@@ -640,6 +668,7 @@ tile_source_edit_dialog(GtkWindow *parent, TileSource *ts)
         ts->visible = hildon_check_button_get_active(HILDON_CHECK_BUTTON(visible_button));
         ts->transparent = hildon_check_button_get_active(HILDON_CHECK_BUTTON(transparent_button));
         ts->refresh = hildon_touch_selector_get_active(refresh_selector, 0);
+        ts->format = tile_format_map[hildon_touch_selector_get_active(format_selector, 0)].format;
 
         res = TRUE;
         break;
