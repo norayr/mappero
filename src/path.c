@@ -45,10 +45,12 @@
 #include "defines.h"
 #include "dialog.h"
 #include "display.h"
+#include "error.h"
 #include "gpx.h"
 #include "main.h"
 #include "path.h"
 #include "poi.h"
+#include "router.h"
 #include "util.h"
 #include "screen.h"
 
@@ -63,10 +65,25 @@ typedef union {
 typedef struct {
     GtkWindow *dialog;
     GtkWidget *autoroute;
+    GtkWidget *origin;
+    GtkWidget *destination;
+    GtkWidget *btn_swap;
+    HildonTouchSelector *router_selector;
     gint origin_row_gps;
     gint origin_row_route;
     gint origin_row_other;
+    gint origin_row_active;
+
+    gboolean replace;
+
+    MapLocation from;
+    MapLocation to;
+
+    GPtrArray *routers;
+    gboolean is_computing;
 } RouteDownloadInfo;
+#define ROUTE_DOWNLOAD_INFO     "rdi"
+#define MAP_RESPONSE_OPTIONS    2
 
 /* _near_point is the route point to which we are closest. */
 static Point *_near_point = NULL;
@@ -98,6 +115,42 @@ static sqlite3_stmt *_path_stmt_trans_commit = NULL;
 static sqlite3_stmt *_path_stmt_trans_rollback = NULL;
 
 static gchar *_last_spoken_phrase;
+
+static MapRouter *
+get_selected_router(RouteDownloadInfo *rdi)
+{
+    gint idx;
+
+    idx = hildon_touch_selector_get_active (rdi->router_selector, 0);
+    g_assert(idx >= 0 && idx < rdi->routers->len);
+
+    return g_ptr_array_index(rdi->routers, idx);
+}
+
+static GPtrArray *
+get_routers(MapController *controller)
+{
+    const GSList *list;
+    static GPtrArray *routers = NULL;
+
+    /* FIXME: This function assumes the routers' list will never change at
+     * runtime. */
+    if (routers) return routers;
+
+    routers = g_ptr_array_sized_new(4);
+    for (list = map_controller_list_plugins(controller); list != NULL;
+         list = list->next)
+    {
+        MapRouter *router = list->data;
+
+        if (!MAP_IS_ROUTER(router)) continue;
+
+        /* FIXME: We should at least weakly reference the routers */
+        g_ptr_array_add(routers, router);
+    }
+
+    return routers;
+}
 
 void
 path_resize(Path *path, gint size)
@@ -644,70 +697,7 @@ route_download_and_setup(GtkWidget *parent, const gchar *source_url,
         const gchar *from, const gchar *to,
         gboolean avoid_highways, gint replace_policy)
 {
-    gchar *from_escaped;
-    gchar *to_escaped;
-    gchar *buffer;
-    gchar *bytes;
-    gint size;
-    GnomeVFSResult vfs_result;
-    printf("%s(%s, %s)\n", __PRETTY_FUNCTION__, from, to);
-
-    from_escaped = gnome_vfs_escape_string(from);
-    to_escaped = gnome_vfs_escape_string(to);
-    buffer = g_strdup_printf(source_url, from_escaped, to_escaped);
-    g_free(from_escaped);
-    g_free(to_escaped);
-
-    if(avoid_highways)
-    {
-        gchar *old = buffer;
-        buffer = g_strconcat(old, "&avoid_highways=on", NULL);
-        g_free(old);
-    }
-
-    /* Attempt to download the route from the server. */
-    vfs_result = gnome_vfs_read_entire_file(buffer, &size, &bytes);
-    g_free (buffer);
-
-    if(vfs_result != GNOME_VFS_OK)
-    {
-        g_free(bytes);
-        popup_error(parent, gnome_vfs_result_to_string(vfs_result));
-        vprintf("%s(): return FALSE\n", __PRETTY_FUNCTION__);
-        return FALSE;
-    }
-
-    if(strncmp(bytes, "<?xml", strlen("<?xml")))
-    {
-        /* Not an XML document - must be bad locations. */
-        popup_error(parent,
-                _("Invalid source or destination."));
-        g_free(bytes);
-        vprintf("%s(): return FALSE\n", __PRETTY_FUNCTION__);
-        return FALSE;
-    }
-    /* Else, if GPS is enabled, replace the route, otherwise append it. */
-    else if(gpx_path_parse(&_route, bytes, size, replace_policy))
-    {
-        MapController *controller = map_controller_get_instance();
-
-        path_save_route_to_db();
-
-        /* Find the nearest route point, if we're connected. */
-        route_find_nearest_point();
-
-        map_controller_refresh_paths(controller);
-
-        MACRO_BANNER_SHOW_INFO(_window, _("Route Downloaded"));
-        g_free(bytes);
-
-        vprintf("%s(): return TRUE\n", __PRETTY_FUNCTION__);
-        return TRUE;
-    }
-    popup_error(parent, _("Error parsing GPX file."));
-    g_free(bytes);
-
-    vprintf("%s(): return FALSE\n", __PRETTY_FUNCTION__);
+    /* TODO: reimplement */
     return FALSE;
 }
 
@@ -1151,6 +1141,193 @@ on_origin_changed_gps(HildonPickerButton *button, RouteDownloadInfo *rdi)
     gtk_widget_set_sensitive(rdi->autoroute, enable);
 }
 
+static void
+on_router_selector_changed(HildonPickerButton *button, RouteDownloadInfo *rdi)
+{
+    MapRouter *router;
+
+    router = get_selected_router(rdi);
+    g_assert(router != NULL);
+
+    gtk_dialog_set_response_sensitive(GTK_DIALOG(rdi->dialog),
+                                      MAP_RESPONSE_OPTIONS,
+                                      map_router_has_options(router));
+}
+
+static void
+calculate_route_cb(MapRouter *router, Path *path, const GError *error,
+                   GtkDialog **p_dialog)
+{
+    GtkDialog *dialog = *p_dialog;
+    MapController *controller = map_controller_get_instance();
+    RouteDownloadInfo *rdi;
+    GtkTreeIter iter;
+    const gchar *from, *to;
+
+    g_debug("%s called (error = %p)", G_STRFUNC, error);
+    g_slice_free(GtkDialog *, p_dialog);
+    if (!dialog)
+    {
+        /* the dialog has been canceled while dowloading the route */
+        g_debug("Route dialog canceled");
+        return;
+    }
+
+    hildon_gtk_window_set_progress_indicator(GTK_WINDOW(dialog), FALSE);
+    rdi = g_object_get_data(G_OBJECT(dialog), ROUTE_DOWNLOAD_INFO);
+    rdi->is_computing = FALSE;
+
+    if (G_UNLIKELY(error))
+    {
+        map_error_show(GTK_WINDOW(dialog), error);
+        return;
+    }
+
+    /* Cancel any autoroute that might be occurring. */
+    cancel_autoroute();
+
+    map_path_merge(path, &_route,
+                   rdi->replace ? MAP_PATH_MERGE_POLICY_REPLACE :
+                   MAP_PATH_MERGE_POLICY_APPEND);
+    path_save_route_to_db();
+
+    /* Find the nearest route point, if we're connected. */
+    route_find_nearest_point();
+
+    map_controller_refresh_paths(controller);
+
+    if (hildon_check_button_get_active
+        (HILDON_CHECK_BUTTON(rdi->autoroute)))
+    {
+        /* TODO source_url -> router
+        _autoroute_data.source_url = g_strdup(source_url);
+        _autoroute_data.dest = g_strdup(to);
+        _autoroute_data.avoid_highways = avoid_highways;
+        _autoroute_data.enabled = TRUE;
+        */
+    }
+
+    /* Save Origin in Route Locations list if not from GPS. */
+    from = rdi->from.address;
+    if (from != NULL &&
+        !g_slist_find_custom(_loc_list, from, (GCompareFunc)strcmp))
+    {
+        _loc_list = g_slist_prepend(_loc_list, g_strdup(from));
+        gtk_list_store_insert_with_values(_loc_model, &iter,
+                INT_MAX, 0, from, -1);
+    }
+
+    /* Save Destination in Route Locations list. */
+    to = rdi->to.address;
+    if (to != NULL &&
+        !g_slist_find_custom(_loc_list, to, (GCompareFunc)strcmp))
+    {
+        _loc_list = g_slist_prepend(_loc_list, g_strdup(to));
+        gtk_list_store_insert_with_values(_loc_model, &iter,
+                INT_MAX, 0, to, -1);
+    }
+
+    gtk_dialog_response(dialog, GTK_RESPONSE_CLOSE);
+}
+
+static void
+on_dialog_response(GtkWidget *dialog, gint response, RouteDownloadInfo *rdi)
+{
+    MapController *controller = map_controller_get_instance();
+    MapRouterQuery rq;
+    MapRouter *router;
+    GtkWidget **p_dialog;
+    const gchar *from = NULL, *to = NULL;
+
+    if (response == MAP_RESPONSE_OPTIONS)
+    {
+        router = get_selected_router(rdi);
+        map_router_run_options_dialog(router, GTK_WINDOW(dialog));
+        return;
+    }
+
+    if (response != GTK_RESPONSE_ACCEPT)
+    {
+        gtk_widget_destroy(dialog);
+        return;
+    }
+
+    if (rdi->is_computing) return;
+
+    memset(&rq, 0, sizeof(rq));
+
+    router = get_selected_router(rdi);
+    map_controller_set_default_router(controller, router);
+
+    rdi->origin_row_active =
+        hildon_picker_button_get_active(HILDON_PICKER_BUTTON(rdi->origin));
+    if (rdi->origin_row_active == rdi->origin_row_gps)
+    {
+        rq.from.point = _pos.unit;
+    }
+    else if (rdi->origin_row_active == rdi->origin_row_route)
+    {
+        Point *p;
+
+        /* Use last non-zero route point. */
+        for(p = _route.tail; !p->unit.y; p--) { }
+
+        rq.from.point = p->unit;
+    }
+    else
+    {
+        from = hildon_button_get_value(HILDON_BUTTON(rdi->origin));
+        if (STR_EMPTY(from))
+        {
+            popup_error(dialog, _("Please specify a start location."));
+            return;
+        }
+    }
+
+    to = gtk_entry_get_text(GTK_ENTRY(rdi->destination));
+    if (STR_EMPTY(to))
+    {
+        popup_error(dialog, _("Please specify an end location."));
+        return;
+    }
+
+    rq.from.address = g_strdup(from);
+    rq.to.address = g_strdup(to);
+
+    if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(rdi->btn_swap)))
+    {
+        MapLocation tmp;
+        tmp = rq.from;
+        rq.from = rq.to;
+        rq.to = tmp;
+    }
+
+    rdi->from = rq.from;
+    rdi->to = rq.to;
+
+    rdi->replace = (rdi->origin_row_active == rdi->origin_row_gps);
+
+    hildon_gtk_window_set_progress_indicator(GTK_WINDOW(dialog), TRUE);
+
+    /* weak pointer trick to prevent crashes if the callback is invoked
+     * after the dialog is destroyed. */
+    p_dialog = g_slice_new(GtkWidget *);
+    *p_dialog = dialog;
+    g_object_add_weak_pointer(G_OBJECT(dialog), (gpointer)p_dialog);
+    rdi->is_computing = TRUE;
+    map_router_calculate_route(router, &rq,
+                               (MapRouterCalculateRouteCb)calculate_route_cb,
+                               p_dialog);
+}
+
+static void
+route_download_info_free(RouteDownloadInfo *rdi)
+{
+    g_free(rdi->from.address);
+    g_free(rdi->to.address);
+    g_slice_free(RouteDownloadInfo, rdi);
+}
+
 /**
  * Display a dialog box to the user asking them to download a route.  The
  * "From" and "To" textfields may be initialized using the first two
@@ -1164,28 +1341,34 @@ on_origin_changed_gps(HildonPickerButton *button, RouteDownloadInfo *rdi)
 gboolean
 route_download(gchar *to)
 {
+    MapController *controller = map_controller_get_instance();
     GtkWidget *dialog;
     MapDialog *dlg;
     GtkWidget *label;
-    GtkWidget *btn_swap, *btn_highways;
-    GtkWidget *router, *origin, *destination;
+    GtkWidget *widget;
     GtkWidget *hbox;
     GtkEntryCompletion *to_comp;
-    HildonTouchSelector *router_selector;
     HildonTouchSelector *origin_selector;
-    RouteDownloadInfo rdi;
+    RouteDownloadInfo *rdi;
     gint i;
     gint active_origin_row, row;
+    MapRouter *router, *default_router;
 
     printf("%s", G_STRFUNC);
     conic_recommend_connected();
 
     dialog = map_dialog_new(_("Download Route"), GTK_WINDOW(_window), TRUE);
     gtk_dialog_add_button(GTK_DIALOG(dialog),
+                          _("Options"), MAP_RESPONSE_OPTIONS);
+    gtk_dialog_add_button(GTK_DIALOG(dialog),
                           GTK_STOCK_OK, GTK_RESPONSE_ACCEPT);
 
+    rdi = g_slice_new0(RouteDownloadInfo);
+    g_object_set_data_full(G_OBJECT(dialog), ROUTE_DOWNLOAD_INFO, rdi,
+                           (GDestroyNotify)route_download_info_free);
+
     dlg = (MapDialog *)dialog;
-    rdi.dialog = GTK_WINDOW(dialog);
+    rdi->dialog = GTK_WINDOW(dialog);
 
     /* Destination. */
     hbox = gtk_hbox_new(FALSE, 0);
@@ -1193,35 +1376,35 @@ route_download(gchar *to)
                        label = gtk_label_new(_("Destination")),
                        FALSE, TRUE, 0);
     gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5f);
-    destination = hildon_entry_new(HILDON_SIZE_FINGER_HEIGHT);
-    gtk_box_pack_start(GTK_BOX(hbox), destination,
+    rdi->destination = hildon_entry_new(HILDON_SIZE_FINGER_HEIGHT);
+    gtk_box_pack_start(GTK_BOX(hbox), rdi->destination,
                        TRUE, TRUE, 0);
     map_dialog_add_widget(dlg, hbox);
 
 
     /* Origin. */
-    origin_selector = HILDON_TOUCH_SELECTOR (hildon_touch_selector_new_text());
+    origin_selector = HILDON_TOUCH_SELECTOR(hildon_touch_selector_new_text());
     row = 0;
-    rdi.origin_row_gps = row++;
+    rdi->origin_row_gps = row++;
     hildon_touch_selector_append_text(origin_selector, _("Use GPS Location"));
     /* Use "End of Route" by default if they have a route. */
     if(_route.head != _route.tail)
     {
         hildon_touch_selector_append_text(origin_selector, _("Use End of Route"));
-        rdi.origin_row_route = row++;
-        rdi.origin_row_other = row++;
-        active_origin_row = rdi.origin_row_route;
+        rdi->origin_row_route = row++;
+        rdi->origin_row_other = row++;
+        active_origin_row = rdi->origin_row_route;
     }
     else
     {
-        rdi.origin_row_other = row++;
-        rdi.origin_row_route = -1;
-        active_origin_row = (_pos.unit.x != 0 && _pos.unit.y != 0) ? rdi.origin_row_gps : rdi.origin_row_other;
+        rdi->origin_row_other = row++;
+        rdi->origin_row_route = -1;
+        active_origin_row = (_pos.unit.x != 0 && _pos.unit.y != 0) ? rdi->origin_row_gps : rdi->origin_row_other;
     }
     hildon_touch_selector_append_text(origin_selector, _("Other..."));
     hildon_touch_selector_set_active(origin_selector, 0, active_origin_row);
 
-    origin =
+    rdi->origin =
         g_object_new(HILDON_TYPE_PICKER_BUTTON,
                      "arrangement", HILDON_BUTTON_ARRANGEMENT_HORIZONTAL,
                      "size", HILDON_SIZE_FINGER_HEIGHT,
@@ -1229,177 +1412,69 @@ route_download(gchar *to)
                      "touch-selector", origin_selector,
                      "xalign", 0.0,
                      NULL);
-    g_signal_connect(origin, "value-changed",
-                     G_CALLBACK(on_origin_changed_other), &rdi);
-    map_dialog_add_widget(dlg, origin);
+    g_signal_connect(rdi->origin, "value-changed",
+                     G_CALLBACK(on_origin_changed_other), rdi);
+    map_dialog_add_widget(dlg, rdi->origin);
 
     /* Auto. */
-    rdi.autoroute = hildon_check_button_new(HILDON_SIZE_FINGER_HEIGHT);
-    if (active_origin_row != rdi.origin_row_gps)
-        gtk_widget_set_sensitive(rdi.autoroute, FALSE);
-    gtk_button_set_label(GTK_BUTTON(rdi.autoroute), _("Auto-Update"));
-    g_signal_connect(origin, "value-changed",
-                     G_CALLBACK(on_origin_changed_gps), &rdi);
-    map_dialog_add_widget(dlg, rdi.autoroute);
-
-    /* Avoid Highways. */
-    btn_highways = hildon_check_button_new(HILDON_SIZE_FINGER_HEIGHT);
-    gtk_button_set_label(GTK_BUTTON(btn_highways), _("Avoid Highways"));
-    map_dialog_add_widget(dlg, btn_highways);
+    rdi->autoroute = hildon_check_button_new(HILDON_SIZE_FINGER_HEIGHT);
+    if (active_origin_row != rdi->origin_row_gps)
+        gtk_widget_set_sensitive(rdi->autoroute, FALSE);
+    gtk_button_set_label(GTK_BUTTON(rdi->autoroute), _("Auto-Update"));
+    g_signal_connect(rdi->origin, "value-changed",
+                     G_CALLBACK(on_origin_changed_gps), rdi);
+    map_dialog_add_widget(dlg, rdi->autoroute);
 
     /* Swap button. */
-    btn_swap = gtk_toggle_button_new_with_label("Swap");
-    hildon_gtk_widget_set_theme_size(btn_swap, HILDON_SIZE_FINGER_HEIGHT);
-    map_dialog_add_widget(dlg, btn_swap);
+    rdi->btn_swap = gtk_toggle_button_new_with_label("Swap");
+    hildon_gtk_widget_set_theme_size(rdi->btn_swap, HILDON_SIZE_FINGER_HEIGHT);
+    map_dialog_add_widget(dlg, rdi->btn_swap);
 
     /* Router */
-    router_selector = HILDON_TOUCH_SELECTOR (hildon_touch_selector_new_text ());
-    i = 0;
-    while (_route_dl_url_table[i].title)
-        hildon_touch_selector_append_text (router_selector, _route_dl_url_table[i++].title);
-    hildon_touch_selector_set_active (router_selector, 0, _route_dl_index);
+    widget = hildon_touch_selector_new_text();
+    rdi->router_selector = HILDON_TOUCH_SELECTOR(widget);
 
-    router = g_object_new(HILDON_TYPE_PICKER_BUTTON,
+    rdi->routers = get_routers(controller);
+    default_router = map_controller_get_default_router(controller);
+    for (i = 0; i < rdi->routers->len; i++)
+    {
+        router = g_ptr_array_index(rdi->routers, i);
+        hildon_touch_selector_append_text(rdi->router_selector,
+                                          map_router_get_name(router));
+        if (router == default_router)
+            hildon_touch_selector_set_active(rdi->router_selector, 0, i);
+    }
+    router = get_selected_router(rdi);
+    gtk_dialog_set_response_sensitive(GTK_DIALOG(dialog), MAP_RESPONSE_OPTIONS,
+                                      router != NULL &&
+                                      map_router_has_options(router));
+
+    widget = g_object_new(HILDON_TYPE_PICKER_BUTTON,
                           "arrangement", HILDON_BUTTON_ARRANGEMENT_HORIZONTAL,
                           "size", HILDON_SIZE_FINGER_HEIGHT,
                           "title", _("Router"),
-                          "touch-selector", router_selector,
+                          "touch-selector", rdi->router_selector,
                           "xalign", 0.0,
                           NULL);
-    map_dialog_add_widget(dlg, router);
+    g_signal_connect(widget, "value-changed",
+                     G_CALLBACK(on_router_selector_changed), rdi);
+    map_dialog_add_widget(dlg, widget);
 
     /* Set up auto-completion. */
     to_comp = gtk_entry_completion_new();
     gtk_entry_completion_set_model(to_comp, GTK_TREE_MODEL(_loc_model));
     gtk_entry_completion_set_text_column(to_comp, 0);
-    gtk_entry_set_completion(GTK_ENTRY(destination), to_comp);
+    gtk_entry_set_completion(GTK_ENTRY(rdi->destination), to_comp);
 
     /* Initialize fields. */
     if(to)
-        gtk_entry_set_text(GTK_ENTRY(destination), to);
+        gtk_entry_set_text(GTK_ENTRY(rdi->destination), to);
 
     gtk_widget_show_all(dialog);
 
-    while(GTK_RESPONSE_ACCEPT == gtk_dialog_run(GTK_DIALOG(dialog)))
-    {
-        gchar buffer[BUFFER_SIZE];
-        const gchar *source_url = NULL, *from, *to;
-        gboolean avoid_highways;
-        gint replace_policy;
-        gint router_idx;
+    g_signal_connect(dialog, "response",
+                     G_CALLBACK(on_dialog_response), rdi);
 
-        router_idx = hildon_touch_selector_get_active (router_selector, 0);
-        if (router_idx >= 0) {
-            source_url = _route_dl_url_table[router_idx].url;
-            _route_dl_index = router_idx;
-        }
-
-        if (STR_EMPTY(source_url))
-        {
-            popup_error(dialog, _("Please specify a source URL."));
-            continue;
-        }
-
-        active_origin_row =
-            hildon_picker_button_get_active(HILDON_PICKER_BUTTON(origin));
-        if (active_origin_row == rdi.origin_row_gps)
-        {
-            gchar strlat[32];
-            gchar strlon[32];
-            g_ascii_formatd(strlat, 32, "%.06f", _gps.lat);
-            g_ascii_formatd(strlon, 32, "%.06f", _gps.lon);
-            snprintf(buffer, sizeof(buffer), "%s, %s", strlat, strlon);
-            from = buffer;
-        }
-        else if (active_origin_row == rdi.origin_row_route)
-        {
-            gchar strlat[32];
-            gchar strlon[32];
-            Point *p;
-            gdouble lat, lon;
-
-            /* Use last non-zero route point. */
-            for(p = _route.tail; !p->unit.y; p--) { }
-
-            unit2latlon(p->unit.x, p->unit.y, lat, lon);
-            g_ascii_formatd(strlat, 32, "%.06f", lat);
-            g_ascii_formatd(strlon, 32, "%.06f", lon);
-            snprintf(buffer, sizeof(buffer), "%s, %s", strlat, strlon);
-            from = buffer;
-        }
-        else
-        {
-            from = hildon_button_get_value(HILDON_BUTTON(origin));
-        }
-
-        if (STR_EMPTY(from))
-        {
-            popup_error(dialog, _("Please specify a start location."));
-            continue;
-        }
-
-        to = gtk_entry_get_text(GTK_ENTRY(destination));
-        if (STR_EMPTY(to))
-        {
-            popup_error(dialog, _("Please specify an end location."));
-            continue;
-        }
-
-        if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(btn_swap)))
-        {
-            const gchar *tmp = from;
-            from = to;
-            to = tmp;
-        }
-
-        avoid_highways =
-            hildon_check_button_get_active(HILDON_CHECK_BUTTON(btn_highways));
-        replace_policy = (active_origin_row == rdi.origin_row_gps) ? 0 : 1;
-        if(route_download_and_setup(dialog, source_url, from, to,
-                                    avoid_highways, replace_policy))
-        {
-            GtkTreeIter iter;
-
-            /* Cancel any autoroute that might be occurring. */
-            cancel_autoroute();
-
-            if (hildon_check_button_get_active
-                (HILDON_CHECK_BUTTON(rdi.autoroute)))
-            {
-                _autoroute_data.source_url = g_strdup(source_url);
-                _autoroute_data.dest = g_strdup(to);
-                _autoroute_data.avoid_highways = avoid_highways;
-                _autoroute_data.enabled = TRUE;
-            }
-
-            /* Save Origin in Route Locations list if not from GPS. */
-            if (active_origin_row == rdi.origin_row_other
-                && !g_slist_find_custom(_loc_list, from,
-                            (GCompareFunc)strcmp))
-            {
-                _loc_list = g_slist_prepend(_loc_list, g_strdup(from));
-                gtk_list_store_insert_with_values(_loc_model, &iter,
-                        INT_MAX, 0, from, -1);
-            }
-
-            /* Save Destination in Route Locations list. */
-            if(!g_slist_find_custom(_loc_list, to,
-                        (GCompareFunc)strcmp))
-            {
-                _loc_list = g_slist_prepend(_loc_list, g_strdup(to));
-                gtk_list_store_insert_with_values(_loc_model, &iter,
-                        INT_MAX, 0, to, -1);
-            }
-
-            /* Success! Get out of the while loop. */
-            break;
-        }
-        /* else let them try again. */
-    }
-
-    gtk_widget_destroy(dialog);
-
-    vprintf("%s(): return TRUE\n", __PRETTY_FUNCTION__);
     return TRUE;
 }
 
