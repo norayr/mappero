@@ -67,6 +67,8 @@
 #include "maps.h"
 #include "menu.h"
 #include "path.h"
+#include "plugins/google.h"
+#include "plugins/yandex.h"
 #include "poi.h"
 #include "screen.h"
 #include "settings.h"
@@ -228,6 +230,7 @@ static void
 maemo_mapper_init(gint argc, gchar **argv)
 {
     GtkWidget *hbox, *label, *vbox;
+    GObject *plugin;
     printf("%s()\n", __PRETTY_FUNCTION__);
 
     /* Set enum-based constants. */
@@ -512,6 +515,16 @@ maemo_mapper_init(gint argc, gchar **argv)
 
     gtk_widget_show_all(hbox);
     gps_show_info(); /* hides info, if necessary. */
+
+    /* register plugins */
+    plugin = g_object_new(MAP_TYPE_GOOGLE, NULL);
+    map_controller_register_plugin(_controller, plugin);
+    map_controller_set_default_router(_controller, MAP_ROUTER(plugin));
+    g_object_unref (plugin);
+
+    plugin = g_object_new(MAP_TYPE_YANDEX, NULL);
+    map_controller_register_plugin(_controller, plugin);
+    g_object_unref (plugin);
 
     _mut_exists_table = g_hash_table_new(
             mut_exists_hashfunc, mut_exists_equalfunc);

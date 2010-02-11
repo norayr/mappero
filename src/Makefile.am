@@ -54,6 +54,8 @@ maemo_mapper_SOURCES = \
 	menu.c \
 	osm.c \
 	path.c \
+	plugins/google.c \
+	plugins/yandex.c \
 	poi.c \
 	router.c \
 	settings.c \
