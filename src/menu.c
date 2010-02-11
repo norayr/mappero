@@ -45,6 +45,7 @@
 #include "defines.h"
 #include "dialog.h"
 #include "display.h"
+#include "error.h"
 #include "gps.h"
 #include "gpx.h"
 #include "maps.h"
@@ -924,66 +925,99 @@ menu_cb_view_goto_latlon(GtkMenuItem *item)
     return TRUE;
 }
 
+static void
+geocode_cb(MapRouter *router, MapPoint p, const GError *error,
+           GtkWidget **p_dialog)
+{
+    GtkWidget *dialog = *p_dialog;
+    MapController *controller = map_controller_get_instance();
+
+    g_debug("%s called (error = %p)", G_STRFUNC, error);
+    g_slice_free(GtkWidget *, p_dialog);
+    if (!dialog) return;
+
+    hildon_gtk_window_set_progress_indicator(GTK_WINDOW(dialog), FALSE);
+    gtk_widget_set_sensitive(dialog, TRUE);
+
+    if (G_UNLIKELY(error))
+    {
+        map_error_show(GTK_WINDOW(dialog), error);
+        return;
+    }
+
+    map_controller_disable_auto_center(controller);
+    map_controller_set_center(controller, p, -1);
+
+    gtk_widget_destroy(dialog);
+}
+
+static void
+on_goto_address_response(GtkWidget *dialog, gint response, GtkEntry *txt_addr)
+{
+    MapController *controller = map_controller_get_instance();
+    MapRouter *router;
+    GtkWidget **p_dialog;
+
+    if (response != GTK_RESPONSE_ACCEPT)
+    {
+        gtk_widget_destroy(dialog);
+        return;
+    }
+
+    gtk_widget_set_sensitive(dialog, FALSE);
+    hildon_gtk_window_set_progress_indicator(GTK_WINDOW(dialog), TRUE);
+
+    /* weak pointer trick to prevent crashes if the callback is invoked
+     * after the dialog is destroyed. */
+    p_dialog = g_slice_new(GtkWidget *);
+    *p_dialog = dialog;
+    g_object_add_weak_pointer(G_OBJECT(dialog), (gpointer)p_dialog);
+
+    router = map_controller_get_default_router(controller);
+    map_router_geocode(router, gtk_entry_get_text(txt_addr),
+                       (MapRouterGeocodeCb)geocode_cb, p_dialog);
+}
+
 static gboolean
 menu_cb_view_goto_address(GtkMenuItem *item)
 {
-    static GtkWidget *dialog = NULL;
-    static GtkWidget *table = NULL;
-    static GtkWidget *label = NULL;
-    static GtkWidget *txt_addr = NULL;
-    printf("%s()\n", __PRETTY_FUNCTION__);
+    GtkWidget *dialog;
+    GtkWidget *table;
+    GtkWidget *label;
+    GtkWidget *txt_addr;
 
-    if(dialog == NULL)
-    {
-        GtkEntryCompletion *comp;
-        dialog = gtk_dialog_new_with_buttons(_("Go to Address"),
-                GTK_WINDOW(_window), GTK_DIALOG_MODAL,
-                GTK_STOCK_OK, GTK_RESPONSE_ACCEPT,
-                GTK_STOCK_CANCEL, GTK_RESPONSE_REJECT,
-                NULL);
+    GtkEntryCompletion *comp;
+    dialog = gtk_dialog_new_with_buttons(_("Go to Address"),
+            GTK_WINDOW(_window), GTK_DIALOG_MODAL,
+            GTK_STOCK_OK, GTK_RESPONSE_ACCEPT,
+            GTK_STOCK_CANCEL, GTK_RESPONSE_REJECT,
+            NULL);
 
-        gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox),
-                table = gtk_table_new(2, 3, FALSE), TRUE, TRUE, 0);
+    gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox),
+            table = gtk_table_new(2, 3, FALSE), TRUE, TRUE, 0);
 
-        gtk_table_attach(GTK_TABLE(table),
-                label = gtk_label_new(_("Address")),
-                0, 1, 0, 1, GTK_FILL, 0, 2, 4);
-        gtk_misc_set_alignment(GTK_MISC(label), 1.f, 0.5f);
+    gtk_table_attach(GTK_TABLE(table),
+            label = gtk_label_new(_("Address")),
+            0, 1, 0, 1, GTK_FILL, 0, 2, 4);
+    gtk_misc_set_alignment(GTK_MISC(label), 1.f, 0.5f);
 
-        gtk_table_attach(GTK_TABLE(table),
-                txt_addr = gtk_entry_new(),
-                1, 2, 0, 1, GTK_FILL, 0, 2, 4);
-        gtk_entry_set_width_chars(GTK_ENTRY(txt_addr), 25);
-        gtk_misc_set_alignment(GTK_MISC(label), 0.0f, 0.5f);
+    gtk_table_attach(GTK_TABLE(table),
+            txt_addr = gtk_entry_new(),
+            1, 2, 0, 1, GTK_FILL, 0, 2, 4);
+    gtk_entry_set_width_chars(GTK_ENTRY(txt_addr), 25);
+    gtk_misc_set_alignment(GTK_MISC(label), 0.0f, 0.5f);
 
-        /* Set up auto-completion. */
-        comp = gtk_entry_completion_new();
-        gtk_entry_completion_set_model(comp, GTK_TREE_MODEL(_loc_model));
-        gtk_entry_completion_set_text_column(comp, 0);
-        gtk_entry_set_completion(GTK_ENTRY(txt_addr), comp);
-    }
+    /* Set up auto-completion. */
+    comp = gtk_entry_completion_new();
+    gtk_entry_completion_set_model(comp, GTK_TREE_MODEL(_loc_model));
+    gtk_entry_completion_set_text_column(comp, 0);
+    gtk_entry_set_completion(GTK_ENTRY(txt_addr), comp);
+
+    g_signal_connect(dialog, "response",
+                     G_CALLBACK(on_goto_address_response), txt_addr);
 
     gtk_widget_show_all(dialog);
 
-    while(GTK_RESPONSE_ACCEPT == gtk_dialog_run(GTK_DIALOG(dialog)))
-    {
-        MapPoint origin = locate_address(dialog,
-                gtk_entry_get_text(GTK_ENTRY(txt_addr)));
-        if(origin.y)
-        {
-            MapController *controller = map_controller_get_instance();
-
-            MACRO_BANNER_SHOW_INFO(_window, _("Address Located"));
-
-            map_controller_disable_auto_center(controller);
-            map_controller_set_center(controller, origin, -1);
-
-            /* Success! Get out of the while loop. */
-            break;
-        }
-    }
-    gtk_widget_hide(dialog);
-    vprintf("%s(): return TRUE\n", __PRETTY_FUNCTION__);
     return TRUE;
 }
 
