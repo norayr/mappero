@@ -324,9 +324,14 @@ settings_save()
     gconf_client_set_bool(gconf_client,
             GCONF_KEY_GPS_INFO, _gps_info, NULL);
 
-    /* Save Route Download URL Format. */
-    gconf_client_set_int(gconf_client,
-            GCONF_KEY_ROUTE_DL_URL_INDEX, _route_dl_index, NULL);
+    /* Save Router engine name */
+    {
+        MapRouter *router;
+        router = map_controller_get_default_router(controller);
+        gconf_client_set_string(gconf_client,
+                                GCONF_KEY_ROUTER_NAME,
+                                map_router_get_name(router), NULL);
+    }
 
     /* Save Route Download Radius. */
     gconf_client_set_int(gconf_client,
@@ -1349,6 +1354,7 @@ void
 settings_init(GConfClient *gconf_client)
 {
     GConfValue *value;
+    MapController *controller = map_controller_get_instance();
     gchar *str;
     printf("%s()\n", __PRETTY_FUNCTION__);
 
@@ -1821,9 +1827,26 @@ settings_init(GConfClient *gconf_client)
     /* Get GPS Info flag.  Default is FALSE. */
     _gps_info = gconf_client_get_bool(gconf_client, GCONF_KEY_GPS_INFO, NULL);
 
-    /* Get Route Download URL index in presdefined table.  Default is:
-       * "http://www.gnuite.com/cgi-bin/gpx.cgi?saddr=%s&daddr=%s" */
-    _route_dl_index = gconf_client_get_int (gconf_client, GCONF_KEY_ROUTE_DL_URL_INDEX, NULL);
+    /* Get default router. */
+    str = gconf_client_get_string(gconf_client, GCONF_KEY_ROUTER_NAME, NULL);
+    if (str)
+    {
+        const GSList *list;
+        for (list = map_controller_list_plugins(controller); list != NULL;
+             list = list->next)
+        {
+            MapRouter *router = list->data;
+
+            if (!MAP_IS_ROUTER(router)) continue;
+
+            if (strcmp(map_router_get_name(router), str) == 0)
+            {
+                map_controller_set_default_router(controller, router);
+                break;
+            }
+        }
+        g_free(str);
+    }
 
     /* Get Route Download Radius.  Default is 4. */
     value = gconf_client_get(gconf_client, GCONF_KEY_ROUTE_DL_RADIUS, NULL);

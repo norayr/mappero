@@ -90,7 +90,7 @@ gboolean settings_dialog(void);
 #define GCONF_KEY_TILE_SOURCES GCONF_KEY_PREFIX"/tile_sources_data"
 #define GCONF_KEY_CURRREPO GCONF_KEY_PREFIX"/curr_repo"
 #define GCONF_KEY_GPS_INFO GCONF_KEY_PREFIX"/gps_info"
-#define GCONF_KEY_ROUTE_DL_URL_INDEX GCONF_KEY_PREFIX"/route_dl_url_index"
+#define GCONF_KEY_ROUTER_NAME GCONF_KEY_PREFIX"/router_name"
 #define GCONF_KEY_ROUTE_DL_RADIUS GCONF_KEY_PREFIX"/route_dl_radius"
 #define GCONF_KEY_POI_DL_URL GCONF_KEY_PREFIX"/poi_dl_url"
 #define GCONF_KEY_DEG_FORMAT GCONF_KEY_PREFIX"/deg_format"
