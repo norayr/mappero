@@ -78,7 +78,7 @@ menu_cb_route_open(GtkMenuItem *item)
     {
         /* If auto is enabled, append the route, otherwise replace it. */
         if(gpx_path_parse(&_route, buffer, size,
-                    _autoroute_data.enabled ? 0 : 1))
+                          autoroute_enabled() ? 0 : 1))
         {
             MapController *controller = map_controller_get_instance();
 

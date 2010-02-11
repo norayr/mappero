@@ -44,6 +44,7 @@ void track_insert_break(gboolean temporary);
 void path_reset_route(void);
 
 void cancel_autoroute(void);
+gboolean autoroute_enabled(void);
 
 WayPoint * find_nearest_waypoint(gint unitx, gint unity);
 

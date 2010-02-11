@@ -449,16 +449,6 @@ struct _ThreadLatch
     GCond *cond;
 };
 
-/** Data used during the asynchronous automatic route downloading operation. */
-typedef struct _AutoRouteDownloadData AutoRouteDownloadData;
-struct _AutoRouteDownloadData {
-    gboolean enabled;
-    gboolean in_progress;
-    gchar *source_url;
-    gchar *dest;
-    gboolean avoid_highways;
-};
-
 /** Data to describe the GPS connection. */
 typedef struct _GpsRcvrInfo GpsRcvrInfo;
 struct _GpsRcvrInfo {

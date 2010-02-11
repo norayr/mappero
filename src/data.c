@@ -206,9 +206,6 @@ gchar *_poi_db_dirname = NULL;
 gint _poi_zoom = 6;
 gboolean _poi_enabled = FALSE;
 
-/** The singleton auto-route-download data. */
-AutoRouteDownloadData _autoroute_data;
-
 
 /*********************
  * BELOW: MENU ITEMS *

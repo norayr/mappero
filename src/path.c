@@ -85,6 +85,16 @@ typedef struct {
 #define ROUTE_DOWNLOAD_INFO     "rdi"
 #define MAP_RESPONSE_OPTIONS    2
 
+/** Data used during the asynchronous automatic route downloading operation. */
+typedef struct {
+    gboolean enabled;
+    gboolean in_progress;
+    MapRouter *router;
+    MapLocation dest;
+} AutoRouteDownloadData;
+
+static AutoRouteDownloadData _autoroute_data;
+
 /* _near_point is the route point to which we are closest. */
 static Point *_near_point = NULL;
 
@@ -692,13 +702,27 @@ track_show_distance_from_first()
     printf("%s(): return\n", __PRETTY_FUNCTION__);
 }
 
-static gboolean
-route_download_and_setup(GtkWidget *parent, const gchar *source_url,
-        const gchar *from, const gchar *to,
-        gboolean avoid_highways, gint replace_policy)
+static void
+auto_calculate_route_cb(MapRouter *router, Path *path, const GError *error)
 {
-    /* TODO: reimplement */
-    return FALSE;
+    MapController *controller = map_controller_get_instance();
+
+    g_debug("%s called (error = %p)", G_STRFUNC, error);
+
+    if (G_UNLIKELY(error))
+        cancel_autoroute();
+    else
+    {
+        map_path_merge(path, &_route, MAP_PATH_MERGE_POLICY_REPLACE);
+        path_save_route_to_db();
+
+        /* Find the nearest route point, if we're connected. */
+        route_find_nearest_point();
+
+        map_controller_refresh_paths(controller);
+    }
+
+    _autoroute_data.in_progress = FALSE;
 }
 
 /**
@@ -708,21 +732,15 @@ route_download_and_setup(GtkWidget *parent, const gchar *source_url,
 static gboolean
 auto_route_dl_idle()
 {
-    gchar latstr[32], lonstr[32], latlonstr[80];
-    printf("%s(%f, %f, %s)\n", __PRETTY_FUNCTION__,
-            _gps.lat, _gps.lon, _autoroute_data.dest);
+    MapRouterQuery rq;
 
-    g_ascii_dtostr(latstr, 32, _gps.lat);
-    g_ascii_dtostr(lonstr, 32, _gps.lon);
-    snprintf(latlonstr, sizeof(latlonstr), "%s, %s", latstr, lonstr);
+    memset(&rq, 0, sizeof(rq));
+    rq.from.point = _pos.unit;
+    rq.to = _autoroute_data.dest;
 
-    if(!route_download_and_setup(_window, _autoroute_data.source_url, latlonstr,
-            _autoroute_data.dest, _autoroute_data.avoid_highways,0))
-        cancel_autoroute();
+    map_router_calculate_route(_autoroute_data.router, &rq,
+        (MapRouterCalculateRouteCb)auto_calculate_route_cb, NULL);
 
-    _autoroute_data.in_progress = FALSE;
-
-    vprintf("%s(): return\n", __PRETTY_FUNCTION__);
     return FALSE;
 }
 
@@ -1039,15 +1057,19 @@ cancel_autoroute()
 
     if(_autoroute_data.enabled)
     {
-        _autoroute_data.enabled = FALSE;
-        g_free(_autoroute_data.source_url);
-        _autoroute_data.source_url = NULL;
-        g_free(_autoroute_data.dest);
-        _autoroute_data.dest = NULL;
-        _autoroute_data.in_progress = FALSE;
+        g_free(_autoroute_data.dest.address);
+        g_object_unref(_autoroute_data.router);
+        /* this also sets the enabled flag to FALSE */
+        memset(&_autoroute_data, 0, sizeof(_autoroute_data));
     }
 
     vprintf("%s(): return\n", __PRETTY_FUNCTION__);
+}
+
+gboolean
+autoroute_enabled()
+{
+    return _autoroute_data.enabled;
 }
 
 WayPoint *
@@ -1199,12 +1221,10 @@ calculate_route_cb(MapRouter *router, Path *path, const GError *error,
     if (hildon_check_button_get_active
         (HILDON_CHECK_BUTTON(rdi->autoroute)))
     {
-        /* TODO source_url -> router
-        _autoroute_data.source_url = g_strdup(source_url);
-        _autoroute_data.dest = g_strdup(to);
-        _autoroute_data.avoid_highways = avoid_highways;
+        _autoroute_data.router = g_object_ref(router);
+        _autoroute_data.dest = rdi->to;
+        _autoroute_data.dest.address = g_strdup(rdi->to.address);
         _autoroute_data.enabled = TRUE;
-        */
     }
 
     /* Save Origin in Route Locations list if not from GPS. */

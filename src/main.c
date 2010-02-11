@@ -537,8 +537,6 @@ maemo_mapper_init(gint argc, gchar **argv)
     g_signal_connect(G_OBJECT(_window), "destroy",
             G_CALLBACK(gtk_main_quit), NULL);
 
-    memset(&_autoroute_data, 0, sizeof(_autoroute_data));
-
     latlon2unit(_gps.lat, _gps.lon, _pos.unit.x, _pos.unit.y);
 
     gtk_widget_show(_window);

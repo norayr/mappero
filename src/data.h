@@ -182,9 +182,6 @@ extern gchar *_poi_db_dirname;
 extern gint _poi_zoom;
 extern gboolean _poi_enabled;
 
-/** The singleton auto-route-download data. */
-extern AutoRouteDownloadData _autoroute_data;
-
 
 /*********************
  * BELOW: MENU ITEMS *
