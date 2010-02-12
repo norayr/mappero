@@ -217,14 +217,11 @@ tile_source_fill_selector(HildonTouchSelector *selector, gboolean filter, gboole
         if (!filter || ts->transparent == transparent) {
             hildon_touch_selector_append_text(selector, ts->name);
             if (ts == active)
-                act = index;
+                hildon_touch_selector_set_active(selector, 0, index);
+            index++;
         }
         ts_list = ts_list->next;
-        index++;
     }
-
-    if (act >= 0)
-        hildon_touch_selector_set_active(selector, 0, act);
 }
 
 
