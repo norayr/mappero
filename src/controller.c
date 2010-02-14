@@ -938,3 +938,17 @@ map_controller_append_repository(MapController *self, Repository *repo)
     g_return_if_fail(MAP_IS_CONTROLLER(self));
     self->priv->repositories_list = g_list_append(self->priv->repositories_list, repo);
 }
+
+
+/*
+ * Routine toggles visibility of given layer.
+ */
+void
+map_controller_toggle_layer_visibility(MapController *self, TileSource *ts)
+{
+    g_return_if_fail(MAP_IS_CONTROLLER(self));
+    g_return_if_fail(ts != NULL);
+
+    ts->visible = !ts->visible;
+    map_screen_refresh_map(self->priv->screen);
+}

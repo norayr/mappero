@@ -561,12 +561,9 @@ menu_cb_maps_auto_download(GtkMenuItem *item)
 static gboolean
 menu_cb_layers_toggle(GtkCheckMenuItem *item, gpointer layer)
 {
-    TileSource* source = (TileSource*)layer;
-
     printf("%s()\n", __PRETTY_FUNCTION__);
 
-    source->visible = !source->visible;
-    map_refresh_mark(TRUE);
+    map_controller_toggle_layer_visibility(map_controller_get_instance(), (TileSource*)layer);
 
     vprintf("%s(): return TRUE\n", __PRETTY_FUNCTION__);
     return TRUE;

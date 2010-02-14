@@ -1311,6 +1311,21 @@ map_screen_refresh_tiles(MapScreen *self)
                               (ClutterCallback)map_tile_refresh, NULL);
 }
 
+
+void
+map_screen_refresh_map(MapScreen *self)
+{
+    MapScreenPrivate *priv;
+
+    g_return_if_fail(MAP_IS_SCREEN(self));
+
+    priv = self->priv;
+
+    map_screen_set_center(self, priv->map_center_ux, priv->map_center_uy, priv->zoom);
+}
+
+
+
 void
 map_screen_track_append(MapScreen *self, const Point *p)
 {
