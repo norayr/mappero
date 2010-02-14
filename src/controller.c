@@ -191,14 +191,15 @@ map_controller_init(MapController *controller)
     map_controller_register_plugin(controller, plugin);
     g_object_unref (plugin);
 
+    /* Load repositories. It is important to load repositories first, because settings need
+     * controller for transformations. */
+    map_controller_load_repositories(controller, gconf_client);
+
     /* Load settings */
     settings_init(gconf_client);
 
     /* Load router settings */
     map_controller_load_routers_options(controller, gconf_client);
-
-    /* Load repositories */
-    map_controller_load_repositories(controller, gconf_client);
 
     priv->screen = g_object_new(MAP_TYPE_SCREEN, NULL);
     map_screen_show_compass(priv->screen, _show_comprose);
@@ -815,11 +816,62 @@ map_controller_get_repository(MapController *self)
     return self->priv->repository;
 }
 
+
+static void
+update_path_coords(Repository *from, Repository *to, Path *path)
+{
+    Point *curr = path->head;
+    gdouble lat, lon;
+
+    while (curr != path->tail) {
+        if (curr->unit.x || curr->unit.y) {
+            from->primary->type->unit_to_latlon(curr->unit.x, curr->unit.y, &lat, &lon);
+            to->primary->type->latlon_to_unit(lat, lon, &curr->unit.x, &curr->unit.y);
+        }
+        curr++;
+    }
+}
+
+
 void
 map_controller_set_repository(MapController *self, Repository *repo)
 {
+    MapControllerPrivate *priv;
+    Repository *curr_repo;
+    MapPoint center;
+    gint new_zoom;
+    const TileSourceType *curr_type, *new_type;
+
     g_return_if_fail(MAP_IS_CONTROLLER(self));
-    self->priv->repository = repo;
+
+    priv = self->priv;
+    center = priv->center;
+    curr_repo = priv->repository;
+    new_zoom = priv->zoom;
+
+    curr_type = curr_repo->primary->type;
+    new_type = repo->primary->type;
+
+    /* Adjust zoom */
+    new_zoom -= curr_type->zoom_delta;
+    new_zoom += new_type->zoom_delta;
+
+    /* if new repo coordinate system differs from current one,
+       recalculate map center, current track and route (if needed) */
+    if (curr_repo && curr_type->latlon_to_unit != new_type->latlon_to_unit) {
+        gdouble lat, lon;
+
+        curr_type->unit_to_latlon(center.x, center.y, &lat, &lon);
+        new_type->latlon_to_unit(lat, lon, &center.x, &center.y);
+
+        if ((_show_paths & ROUTES_MASK) && _route.head != _route.tail)
+            update_path_coords(curr_repo, repo, &_route);
+        if ((_show_paths & TRACKS_MASK) && _track.head != _track.tail)
+            update_path_coords(curr_repo, repo, &_track);
+    }
+
+    priv->repository = repo;
+    map_controller_set_center(self, center, new_zoom);
 }
 
 GList *

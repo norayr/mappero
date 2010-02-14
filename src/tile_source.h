@@ -10,6 +10,7 @@ const gchar *tile_source_format_name(TileFormat format);
 TileFormat   tile_source_format_by_name(const gchar *name);
 
 const TileSourceType* tile_source_type_find_by_name(const gchar *name);
+const TileSourceType* tile_source_get_primary_type();
 
 gchar* tile_source_list_to_xml(GList *tile_sources);
 GList* tile_source_xml_to_list(const gchar *data);

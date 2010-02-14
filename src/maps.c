@@ -461,6 +461,7 @@ download_tile(MapTileSpec *tile, gchar **bytes, gint *size,
     ret = map_construct_url(src_url, sizeof(src_url), tile->source,
                             tile->zoom, tile->tilex, tile->tiley);
     if (ret < 0) src_url[0] = 0; /* download will fail */
+    DEBUG("URL: %s", src_url);
 
     /* Now, attempt to read the entire contents of the URL. */
     vfs_result = gnome_vfs_read_entire_file(src_url, size, bytes);

@@ -26,6 +26,8 @@
 
 #include <libintl.h>
 
+#include "tile_source.h"
+
 #define _(String) gettext(String)
 #define H_(String) dgettext("hildon-libs", String)
 
@@ -87,7 +89,8 @@
 #define GPSD_PORT_DEFAULT (2947)
 
 #define NUM_DOWNLOAD_THREADS (4)
-#define WORLD_SIZE_UNITS (2 << (MAX_ZOOM + TILE_SIZE_P2))
+#define WORLD_SIZE_UNITS_GOOGLE (2 << (MAX_ZOOM + TILE_SIZE_P2))
+#define WORLD_SIZE_UNITS_YANDEX (0x7FFFFFFF)
 
 #define HOURGLASS_SEPARATION (7)
 
@@ -143,21 +146,13 @@
 #define HELP_ID_POILIST HELP_ID_PREFIX"poilist"
 #define HELP_ID_POICAT HELP_ID_PREFIX"poicat"
 
-#define MERCATOR_SPAN (-6.28318377773622)
-#define MERCATOR_TOP (3.14159188886811)
-#define latlon2unit(lat, lon, unitx, unity) { \
-    gdouble tmp; \
-    unitx = (lon + 180.0) * (WORLD_SIZE_UNITS / 360.0) + 0.5; \
-    tmp = sin(deg2rad(lat)); \
-    unity = 0.5 + (WORLD_SIZE_UNITS / MERCATOR_SPAN) \
-        * (log((1.0 + tmp) / (1.0 - tmp)) * 0.5 - MERCATOR_TOP); \
-}
+#define latlon2unit(lat, lon, unitx, unity) \
+    (tile_source_get_primary_type()->latlon_to_unit(lat, lon, &unitx, &unity))
+#define unit2latlon(unitx, unity, lat, lon) \
+    (tile_source_get_primary_type()->unit_to_latlon(unitx, unity, &lat, &lon))
 
-#define unit2latlon(unitx, unity, lat, lon) { \
-    (lon) = ((unitx) * (360.0 / WORLD_SIZE_UNITS)) - 180.0; \
-    (lat) = (360.0 * (atan(exp(((unity) * (MERCATOR_SPAN / WORLD_SIZE_UNITS)) \
-                     + MERCATOR_TOP)))) * (1.0 / PI) - 90.0; \
-}
+#define WORLD_SIZE_UNITS (tile_source_get_primary_type()->world_size)
+
 
 #define MACRO_PATH_INIT(path) { \
     (path).head = (path).tail = g_new(Point, ARRAY_CHUNK_SIZE); \

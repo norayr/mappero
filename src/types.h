@@ -347,14 +347,22 @@ typedef enum {
 
 typedef struct _TileSource TileSource;
 
-typedef gint (*TileSourceStringFunc)(TileSource *source, gchar *buffer, gint len,
-                                     gint zoom, gint tilex, gint tiley);
+typedef gint (*TileSourceURLFormatFunc)(TileSource *source, gchar *buffer, gint len,
+                                        gint zoom, gint tilex, gint tiley);
+
+typedef void (*TileSourceLatlonToUnit)(gdouble lat, gdouble lon, gint *x, gint *y);
+typedef void (*TileSourceUnitToLatlon)(gint x, gint y, gdouble *lat, gdouble *lon);
+
 
 /** This enumerated type defines the supported types of repositories. */
 typedef struct
 {
     const gchar *name;
-    TileSourceStringFunc get_url; /* compose the URL of the tile do dowload */
+    guint world_size;                /* Size of world in units */
+    gint zoom_delta;                 /* zoom delta relative to goole zoom */
+    TileSourceURLFormatFunc get_url; /* compose the URL of the tile do dowload */
+    TileSourceLatlonToUnit latlon_to_unit;
+    TileSourceUnitToLatlon unit_to_latlon;
 } TileSourceType;
 
 struct _TileSource {
