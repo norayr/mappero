@@ -41,7 +41,7 @@ G_DEFINE_TYPE(MapTile, map_tile, CLUTTER_TYPE_TEXTURE);
 
 #define MAP_TILE_PRIV(tile) (MAP_TILE(tile)->priv)
 
-#define MAX_CACHE_SIZE  90
+#define MAX_CACHE_SIZE  140
 static GList *tile_cache = NULL;
 static GList *tile_cache_last = NULL;
 static gint tile_cache_size = 0;
