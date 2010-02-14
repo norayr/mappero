@@ -593,7 +593,7 @@ thread_proc_mut()
 
             if (download_needed)
             {
-                TileSource *source;
+                TileSource *source = tile->source;
                 gint zoom, tilex, tiley;
                 gchar *bytes = NULL;
                 gint size;
@@ -609,7 +609,6 @@ thread_proc_mut()
                 }
 
                 /* Copy database-relevant mut data before we release it. */
-                source = tile->source;
                 zoom = tile->zoom;
                 tilex = tile->tilex;
                 tiley = tile->tiley;
