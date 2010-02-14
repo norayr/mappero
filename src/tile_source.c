@@ -318,6 +318,9 @@ tree_to_tile_source(xmlDocPtr doc, xmlNodePtr ts_node)
         xmlFree(s);
     }
 
+    if (!ts->cache_dir && ts->id)
+        ts->cache_dir = g_strdup(ts->id);
+
     return ts;
 }
 
