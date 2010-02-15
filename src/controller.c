@@ -30,6 +30,8 @@
 #include "gps.h"
 #include "menu.h"
 #include "path.h"
+#include "plugins/google.h"
+#include "plugins/yandex.h"
 #include "repository.h"
 #include "screen.h"
 #include "settings.h"
@@ -165,6 +167,7 @@ map_controller_init(MapController *controller)
 {
     MapControllerPrivate *priv;
     GConfClient *gconf_client = gconf_client_get_default();
+    GObject *plugin;
 
     priv = G_TYPE_INSTANCE_GET_PRIVATE(controller, MAP_TYPE_CONTROLLER,
                                        MapControllerPrivate);
@@ -172,6 +175,16 @@ map_controller_init(MapController *controller)
 
     g_assert(instance == NULL);
     instance = controller;
+
+    /* register plugins */
+    plugin = g_object_new(MAP_TYPE_GOOGLE, NULL);
+    map_controller_register_plugin(controller, plugin);
+    map_controller_set_default_router(controller, MAP_ROUTER(plugin));
+    g_object_unref (plugin);
+
+    plugin = g_object_new(MAP_TYPE_YANDEX, NULL);
+    map_controller_register_plugin(controller, plugin);
+    g_object_unref (plugin);
 
     /* Load settings */
     settings_init(gconf_client);
