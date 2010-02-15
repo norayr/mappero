@@ -564,7 +564,7 @@ repository_create_default_lists(GList **tile_sources, GList **repositories)
 
     osm = g_slice_new0(TileSource);
     osm->name = g_strdup("OpenStreet");
-    osm->id = g_strdup("OpenStreet");
+    osm->id = g_strdup("OpenStreetMap I");
     osm->cache_dir = g_strdup(osm->id);
     osm->url = g_strdup(REPO_DEFAULT_MAP_URI);
     osm->type = type;
