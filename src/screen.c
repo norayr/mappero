@@ -475,10 +475,6 @@ draw_path(MapScreen *screen, cairo_t *cr, Path *path, Colorable base)
     {
         gint x1, y1;
 
-        /* since waypoints are bigger, let's give them one zoom level more
-         * (instead of comparing with "<=", we use "<") */
-        if (wcurr->point->zoom < priv->zoom) continue;
-
         point_to_pixels(priv, wcurr->point->unit, &x1, &y1);
         draw_break(cr, &_color[base + 1], x1, y1);
         cairo_move_to(cr, x1, y1);
