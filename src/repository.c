@@ -344,7 +344,6 @@ repository_sync_handler(GtkWindow *parent)
 
     /* Show user statistics about sync */
     {
-        GtkWidget *dialog;
         gchar *msg;
 
         if (!ts_new && !ts_mod && !repo_new && !repo_mod)

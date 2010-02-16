@@ -213,7 +213,7 @@ tile_source_fill_selector(HildonTouchSelector *selector, gboolean filter,
 {
     GList *ts_list = map_controller_get_tile_sources_list(map_controller_get_instance());
     TileSource *ts;
-    gint act = -1, index = 0;
+    gint index = 0;
 
     while (ts_list) {
         ts = (TileSource*)ts_list->data;
