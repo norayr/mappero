@@ -189,6 +189,31 @@ fill_selector_with_tile_formats(HildonTouchSelector *selector,
 }
 
 
+/*
+ * Check that given tile source is belong to active repository.
+ */
+static gboolean
+tile_source_is_active(TileSource *ts)
+{
+    MapController *controller = map_controller_get_instance();
+    Repository *active = map_controller_get_repository(controller);
+    gint i;
+
+    g_return_val_if_fail(ts != NULL, FALSE);
+
+    if (active->primary == ts)
+        return TRUE;
+
+    if (!ts->transparent)
+        return FALSE;
+
+    for (i = 0; i < active->layers->len; i++)
+        if (g_ptr_array_index(active->layers, i) == ts)
+            return TRUE;
+    return FALSE;
+}
+
+
 const TileSourceType*
 tile_source_type_find_by_name(const gchar *name)
 {
@@ -498,9 +523,14 @@ tile_source_list_edit_dialog()
             update_items = TRUE;
             break;
         case RESP_DELETE:
-            tile_sources_delete_handler(GTK_WINDOW(dialog), active_ts);
-            update_items = TRUE;
-            active_ts = NULL;
+            /* Check that tile source not belong to active repository */
+            if (!tile_source_is_active(active_ts)) {
+                tile_sources_delete_handler(GTK_WINDOW(dialog), active_ts);
+                update_items = TRUE;
+                active_ts = NULL;
+            }
+            else
+                popup_error(dialog, _("Selected layer is active, so, cannot be deleted."));
             break;
         }
 
