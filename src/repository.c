@@ -345,9 +345,7 @@ repository_sync_handler(GtkWindow *parent)
             msg = g_strdup_printf(_("Layers: %d new, %d updated\nRepositories: %d new, %d updated\n"),
                                   ts_new, ts_mod, repo_new, repo_mod);
 
-        dialog = hildon_note_new_information(parent, msg);
-        gtk_dialog_run(GTK_DIALOG(dialog));
-        gtk_widget_destroy(dialog);
+        popup_error(GTK_WIDGET(parent), msg);
         g_free(msg);
     }
 
