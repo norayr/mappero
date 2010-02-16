@@ -155,7 +155,8 @@ append_url(xmlDocPtr doc, xmlNodePtr parent, gchar *url)
 
 
 static void
-fill_selector_with_repotypes(HildonTouchSelector *selector, const TileSourceType *active)
+fill_selector_with_repotypes(HildonTouchSelector *selector,
+                             const TileSourceType *active)
 {
     gint i = 0;
     const TileSourceType *p = tile_source_types;
@@ -172,7 +173,8 @@ fill_selector_with_repotypes(HildonTouchSelector *selector, const TileSourceType
 
 
 static void
-fill_selector_with_tile_formats(HildonTouchSelector *selector, TileFormat active)
+fill_selector_with_tile_formats(HildonTouchSelector *selector,
+                                TileFormat active)
 {
     gint i = 0;
     const TileFormatMapEntry *p = tile_format_map;
@@ -202,11 +204,12 @@ tile_source_type_find_by_name(const gchar *name)
 
 
 /*
- * Fill selector with names of tile sources, filtered by transparency (only if filter is TRUE).
- * If active is non-null, this entry will be activated.
+ * Fill selector with names of tile sources, filtered by transparency (only if
+ * filter is TRUE).  If active is non-null, this entry will be activated.
  */
 void
-tile_source_fill_selector(HildonTouchSelector *selector, gboolean filter, gboolean transparent, TileSource *active)
+tile_source_fill_selector(HildonTouchSelector *selector, gboolean filter,
+                          gboolean transparent, TileSource *active)
 {
     GList *ts_list = map_controller_get_tile_sources_list(map_controller_get_instance());
     TileSource *ts;
@@ -251,9 +254,12 @@ tile_source_list_to_xml(GList *tile_sources)
             xmlNewChild(nn, NULL, BAD_CAST "id", BAD_CAST ts->id);
         if (ts->cache_dir)
             xmlNewChild(nn, NULL, BAD_CAST "cache_dir", BAD_CAST ts->cache_dir);
-        xmlNewChild(nn, NULL, BAD_CAST "visible", BAD_CAST (ts->visible ? "1" : "0"));
-        xmlNewChild(nn, NULL, BAD_CAST "transparent", BAD_CAST (ts->transparent ? "1" : "0"));
-        xmlNewChild(nn, NULL, BAD_CAST "format", BAD_CAST (tile_source_format_name(ts->format)));
+        xmlNewChild(nn, NULL, BAD_CAST "visible",
+                    BAD_CAST (ts->visible ? "1" : "0"));
+        xmlNewChild(nn, NULL, BAD_CAST "transparent",
+                    BAD_CAST (ts->transparent ? "1" : "0"));
+        xmlNewChild(nn, NULL, BAD_CAST "format",
+                    BAD_CAST (tile_source_format_name(ts->format)));
         if (ts->type)
             xmlNewChild(nn, NULL, BAD_CAST "type", BAD_CAST ts->type->name);
 
@@ -325,7 +331,8 @@ tree_to_tile_source(xmlDocPtr doc, xmlNodePtr ts_node)
 }
 
 
-/* Ask about tile source deletion and remove it from all repositories it referenced */
+/* Ask about tile source deletion and remove it from all repositories it
+ * referenced */
 static void
 tile_sources_delete_handler(GtkWindow* parent, TileSource* ts)
 {
@@ -333,7 +340,8 @@ tile_sources_delete_handler(GtkWindow* parent, TileSource* ts)
     gchar *msg;
     gint ret;
 
-    msg = g_strdup_printf(_("Do you really want to delete tile source\n%s?"), ts->name);
+    msg = g_strdup_printf(_("Do you really want to delete tile source\n%s?"),
+                          ts->name);
 
     dialog = hildon_note_new_confirmation(parent, msg);
     ret = gtk_dialog_run(GTK_DIALOG(dialog));
@@ -366,7 +374,9 @@ GList* tile_source_xml_to_list(const gchar *data)
     }
 
     for (n = n->children; n; n = n->next) {
-        if (n->type == XML_ELEMENT_NODE && strcmp((gchar*)n->name, TS_ENTRY) == 0) {
+        if (n->type == XML_ELEMENT_NODE &&
+            strcmp((gchar*)n->name, TS_ENTRY) == 0)
+        {
             TileSource *ts = tree_to_tile_source(doc, n);
             if (ts)
                 res = g_list_append(res, ts);
@@ -436,13 +446,16 @@ tile_source_list_edit_dialog()
         RESP_DELETE,
     };
 
-    dialog = gtk_dialog_new_with_buttons(_("Tiles and layers"), GTK_WINDOW(_window),
-                                         GTK_DIALOG_MODAL, NULL);
+    dialog = gtk_dialog_new_with_buttons(_("Tiles and layers"),
+                  GTK_WINDOW(_window), GTK_DIALOG_MODAL, NULL);
     gtk_dialog_add_button(GTK_DIALOG(dialog), GTK_STOCK_ADD, RESP_ADD);
-    edit_button = gtk_dialog_add_button(GTK_DIALOG(dialog), GTK_STOCK_EDIT, RESP_EDIT);
-    delete_button = gtk_dialog_add_button(GTK_DIALOG(dialog), GTK_STOCK_DELETE, RESP_DELETE);
+    edit_button = gtk_dialog_add_button(GTK_DIALOG(dialog),
+                                        GTK_STOCK_EDIT, RESP_EDIT);
+    delete_button = gtk_dialog_add_button(GTK_DIALOG(dialog),
+                       GTK_STOCK_DELETE, RESP_DELETE);
     ts_selector = HILDON_TOUCH_SELECTOR(hildon_touch_selector_new_text());
-    gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox), GTK_WIDGET(ts_selector), TRUE, TRUE, 0);
+    gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox),
+                       GTK_WIDGET(ts_selector), TRUE, TRUE, 0);
 
     list_model = hildon_touch_selector_get_model(ts_selector, 0);
     list_store = GTK_LIST_STORE(list_model);
@@ -463,7 +476,8 @@ tile_source_list_edit_dialog()
 
         active = hildon_touch_selector_get_active(ts_selector, 0);
         if (active >= 0)
-            active_ts = (TileSource*)g_list_nth_data(map_controller_get_tile_sources_list(controller), active);
+            active_ts = (TileSource*)g_list_nth_data(
+                   map_controller_get_tile_sources_list(controller), active);
         else
             active_ts = NULL;
 
@@ -528,12 +542,14 @@ tile_source_edit_dialog(GtkWindow *parent, TileSource *ts)
     if (!ts)
         return FALSE;
 
-    dialog = gtk_dialog_new_with_buttons(_("Tile source"), parent, GTK_DIALOG_MODAL,
-                                         GTK_STOCK_SAVE, GTK_RESPONSE_ACCEPT, NULL);
+    dialog = gtk_dialog_new_with_buttons(
+                 _("Tile source"), parent, GTK_DIALOG_MODAL,
+                 GTK_STOCK_SAVE, GTK_RESPONSE_ACCEPT, NULL);
     table = GTK_TABLE(gtk_table_new(7, 4, TRUE));
     pannable = hildon_pannable_area_new();
     gtk_widget_set_size_request(pannable, -1, 300);
-    hildon_pannable_area_add_with_viewport(HILDON_PANNABLE_AREA(pannable), GTK_WIDGET(table));
+    hildon_pannable_area_add_with_viewport(HILDON_PANNABLE_AREA(pannable),
+                                           GTK_WIDGET(table));
     gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox), pannable, TRUE, TRUE, 0);
 
     /* Name */
@@ -726,4 +742,3 @@ tile_source_format_by_name(const gchar *name)
 
     return FORMAT_PNG;
 }
-

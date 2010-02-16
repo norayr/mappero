@@ -45,7 +45,8 @@ append_int(xmlNodePtr parent, const gchar *name, int val)
 
 
 static void
-fill_selector_with_repositories(HildonTouchSelector *selector, Repository *active)
+fill_selector_with_repositories(HildonTouchSelector *selector,
+                                Repository *active)
 {
     MapController *controller = map_controller_get_instance();
     GList *repo_list = map_controller_get_repo_list(controller);
@@ -97,13 +98,15 @@ repository_list_to_xml(GList *repositories)
         xmlAddChild(nn, nl);
 
         if (repo->primary && repo->primary->id)
-            xmlNewChild(nl, NULL, BAD_CAST REPO_PRIMARY_ENTRY, BAD_CAST repo->primary->id);
+            xmlNewChild(nl, NULL, BAD_CAST REPO_PRIMARY_ENTRY,
+                        BAD_CAST repo->primary->id);
 
         if (repo->layers) {
             for (i = 0; i < repo->layers->len; i++) {
                 ts = g_ptr_array_index (repo->layers, i);
                 if (ts && ts->name)
-                    nll = xmlNewChild(nl, NULL, BAD_CAST REPO_LAYER_ENTRY, BAD_CAST (ts->id ? ts->id : ""));
+                    nll = xmlNewChild(nl, NULL, BAD_CAST REPO_LAYER_ENTRY,
+                                      BAD_CAST (ts->id ? ts->id : ""));
             }
         }
         repositories = g_list_next(repositories);
@@ -186,7 +189,8 @@ repository_delete_handler(GtkWindow* parent, Repository* repo)
     gchar *msg;
     gint ret;
 
-    msg = g_strdup_printf(_("Do you really want to delete repository\n%s?"), repo->name);
+    msg = g_strdup_printf(_("Do you really want to delete repository\n%s?"),
+                          repo->name);
 
     dialog = hildon_note_new_confirmation(parent, msg);
     ret = gtk_dialog_run(GTK_DIALOG(dialog));
@@ -214,7 +218,8 @@ repository_compare(Repository *repo1, Repository *repo2)
     {
         return FALSE;
     }
-    if (!repo1->primary || !repo2->primary || strcmp(repo1->primary->id, repo2->primary->id) != 0)
+    if (!repo1->primary || !repo2->primary ||
+        strcmp(repo1->primary->id, repo2->primary->id) != 0)
         return FALSE;
     if (repo1->layers || repo2->layers) {
         if (!repo1->layers || !repo2->layers)
@@ -231,9 +236,10 @@ repository_compare(Repository *repo1, Repository *repo2)
 
 
 /*
- * Download XML data with repositories and tile sources and merge it into current configuration.
- * Don't really sure what is better: silently update user's repositories or ask about this?
- * At this moment, just update. Return TRUE if configuration changed by sync.
+ * Download XML data with repositories and tile sources and merge it into
+ * current configuration.  Don't really sure what is better: silently update
+ * user's repositories or ask about this?  At this moment, just update. Return
+ * TRUE if configuration changed by sync.
  */
 static gboolean
 repository_sync_handler(GtkWindow *parent)
@@ -250,9 +256,10 @@ repository_sync_handler(GtkWindow *parent)
     ts_new = ts_mod = repo_new = repo_mod = 0;
 
     /* TileSources */
-    res = gnome_vfs_read_entire_file("http://vcs.maemo.org/git/maemo-mapper/?p=maemo-mapper;"
-                                     "a=blob_plain;f=tile_sources.xml;hb=refs/heads/configurations",
-                                     &size, &data);
+    res = gnome_vfs_read_entire_file(
+            "http://vcs.maemo.org/git/maemo-mapper/?p=maemo-mapper;"
+            "a=blob_plain;f=tile_sources.xml;hb=refs/heads/configurations",
+            &size, &data);
     if (res != GNOME_VFS_OK)
         return FALSE;
 
@@ -280,8 +287,8 @@ repository_sync_handler(GtkWindow *parent)
                 tile_source_free(ts);
             }
             else {
-                /* We don't ask about new tile sources, because new repository may depend on them,
-                 * so just silently add it */
+                /* We don't ask about new tile sources, because new repository
+                 * may depend on them, so just silently add it */
                 map_controller_append_tile_source(controller, ts);
                 ts_new++;
             }
@@ -291,9 +298,10 @@ repository_sync_handler(GtkWindow *parent)
     }
 
     /* Repositories */
-    res = gnome_vfs_read_entire_file("http://vcs.maemo.org/git/maemo-mapper/?p=maemo-mapper;"
-                                     "a=blob_plain;f=repositories.xml;hb=refs/heads/configurations",
-                                     &size, &data);
+    res = gnome_vfs_read_entire_file(
+               "http://vcs.maemo.org/git/maemo-mapper/?p=maemo-mapper;"
+               "a=blob_plain;f=repositories.xml;hb=refs/heads/configurations",
+               &size, &data);
     if (res != GNOME_VFS_OK)
         return ts_mod || ts_new;
 
@@ -313,13 +321,15 @@ repository_sync_handler(GtkWindow *parent)
                     repo_old->max_zoom = repo->max_zoom;
                     repo_old->zoom_step = repo->zoom_step;
                     if (!repo_old->primary || strcmp(repo_old->primary->id, repo->primary->id) != 0)
-                        repo_old->primary = map_controller_lookup_tile_source(controller, repo->primary->id);
+                        repo_old->primary =
+                            map_controller_lookup_tile_source(controller, repo->primary->id);
                     if (repo_old->layers) {
                         g_ptr_array_free(repo_old->layers, TRUE);
                         repo_old->layers = g_ptr_array_new();
                         if (repo->layers)
                             for (i = 0; i < repo->layers->len; i++)
-                                g_ptr_array_add(repo_old->layers, g_ptr_array_index(repo->layers, i));
+                                g_ptr_array_add(repo_old->layers,
+                                                g_ptr_array_index(repo->layers, i));
                     }
                     repo_mod++;
                 }
@@ -342,7 +352,8 @@ repository_sync_handler(GtkWindow *parent)
         if (!ts_new && !ts_mod && !repo_new && !repo_mod)
             msg = g_strdup(_("No changes in repositories"));
         else
-            msg = g_strdup_printf(_("Layers: %d new, %d updated\nRepositories: %d new, %d updated\n"),
+            msg = g_strdup_printf(_("Layers: %d new, %d updated\n"
+                                    "Repositories: %d new, %d updated\n"),
                                   ts_new, ts_mod, repo_new, repo_mod);
 
         popup_error(GTK_WIDGET(parent), msg);
@@ -384,7 +395,8 @@ update_layers_button_value(HildonButton *button, GPtrArray *layers)
  * Layers selector dialog context
  */
 struct RepositoryLayersDialogContext {
-    GPtrArray *layers;          /* List of TileSource references. Modified only on save clicked. */
+    GPtrArray *layers;          /* List of TileSource references. Modified only
+                                 * on save clicked. */
     HildonButton *button;       /* Button with list of layer's names */
 };
 
@@ -417,7 +429,8 @@ select_tile_source_dialog(GtkWindow *parent, gboolean transparent)
 
     if (index >= 0) {
         /* Iterate over tile sources and find N'th */
-        GList *ts_list = map_controller_get_tile_sources_list(map_controller_get_instance());
+        GList *ts_list = map_controller_get_tile_sources_list(
+                                    map_controller_get_instance());
         TileSource *ts = NULL;
 
         while (ts_list) {
@@ -439,7 +452,8 @@ select_tile_source_dialog(GtkWindow *parent, gboolean transparent)
  * Show dialog with list of layers
  */
 static gboolean
-select_layers_button_clicked(GtkWidget *widget, struct RepositoryLayersDialogContext *ctx)
+select_layers_button_clicked(GtkWidget *widget,
+                             struct RepositoryLayersDialogContext *ctx)
 {
     GtkWidget *dialog;
     HildonTouchSelector *layers_selector;
@@ -458,7 +472,8 @@ select_layers_button_clicked(GtkWidget *widget, struct RepositoryLayersDialogCon
             g_ptr_array_add(layers, g_ptr_array_index(ctx->layers, i));
     }
 
-    dialog = gtk_dialog_new_with_buttons(_("Repository's layers"), NULL, GTK_DIALOG_MODAL, NULL);
+    dialog = gtk_dialog_new_with_buttons(_("Repository's layers"), NULL,
+                                         GTK_DIALOG_MODAL, NULL);
     gtk_dialog_add_button(GTK_DIALOG(dialog), GTK_STOCK_ADD, RESP_ADD);
     gtk_dialog_add_button(GTK_DIALOG(dialog), GTK_STOCK_DELETE, RESP_DELETE);
     gtk_dialog_add_button(GTK_DIALOG(dialog), GTK_STOCK_SAVE, RESP_SAVE);
@@ -535,7 +550,9 @@ GList* repository_xml_to_list(const gchar *data)
     }
 
     for (n = n->children; n; n = n->next) {
-        if (n->type == XML_ELEMENT_NODE && strcmp((gchar*)n->name, REPO_ENTRY) == 0) {
+        if (n->type == XML_ELEMENT_NODE && 
+            strcmp((gchar*)n->name, REPO_ENTRY) == 0)
+        {
             Repository *repo = tree_to_repository(doc, n);
             if (repo)
                 res = g_list_append(res, repo);
@@ -548,7 +565,8 @@ GList* repository_xml_to_list(const gchar *data)
 
 
 /*
- * Create default repositories and tile sources lists. Return default current repsoitory.
+ * Create default repositories and tile sources lists. Return default current
+ * repsoitory.
  */
 Repository*
 repository_create_default_lists(GList **tile_sources, GList **repositories)
@@ -676,11 +694,13 @@ repository_list_edit_dialog()
     gtk_dialog_add_button(GTK_DIALOG(dialog), _("_Sync"), RESP_SYNC);
     gtk_dialog_add_button(GTK_DIALOG(dialog), GTK_STOCK_ADD, RESP_ADD);
     edit_button = gtk_dialog_add_button(GTK_DIALOG(dialog), GTK_STOCK_EDIT, RESP_EDIT);
-    delete_button = gtk_dialog_add_button(GTK_DIALOG(dialog), GTK_STOCK_DELETE, RESP_DELETE);
+    delete_button = gtk_dialog_add_button(GTK_DIALOG(dialog),
+                                          GTK_STOCK_DELETE, RESP_DELETE);
     repos_selector = HILDON_TOUCH_SELECTOR(hildon_touch_selector_new_text());
     list_model = hildon_touch_selector_get_model(repos_selector, 0);
     list_store = GTK_LIST_STORE(list_model);
-    gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox), GTK_WIDGET(repos_selector), TRUE, TRUE, 0);
+    gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox),
+                       GTK_WIDGET(repos_selector), TRUE, TRUE, 0);
     gtk_widget_show_all(dialog);
 
     fill_selector_with_repositories(repos_selector, NULL);
@@ -697,7 +717,8 @@ repository_list_edit_dialog()
 
         active = hildon_touch_selector_get_active(repos_selector, 0);
         if (active >= 0)
-            active_repo = (Repository*)g_list_nth_data(map_controller_get_repo_list(controller), active);
+            active_repo = (Repository*)g_list_nth_data(
+                 map_controller_get_repo_list(controller), active);
         else
             active_repo = NULL;
 
@@ -784,10 +805,12 @@ repository_edit_dialog(GtkWindow *parent, Repository *repo)
     gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox), table, TRUE, TRUE, 0);
 
     label = gtk_label_new(_("Name"));
-    gtk_table_attach(GTK_TABLE(table), label, 0, 1, 0, 1, GTK_FILL | GTK_EXPAND, 0, 2, 4);
+    gtk_table_attach(GTK_TABLE(table), label, 0, 1, 0, 1,
+                     GTK_FILL | GTK_EXPAND, 0, 2, 4);
 
     name_entry = hildon_entry_new(HILDON_SIZE_FINGER_HEIGHT);
-    gtk_table_attach(GTK_TABLE(table), name_entry, 1, 3, 0, 1, GTK_FILL | GTK_EXPAND, 0, 2, 4);
+    gtk_table_attach(GTK_TABLE(table), name_entry, 1, 3, 0, 1,
+                     GTK_FILL | GTK_EXPAND, 0, 2, 4);
 
     /* Zoom selectors are used to otain zoom levels */
     min_zoom_selector = HILDON_TOUCH_SELECTOR(hildon_touch_selector_new_text());
@@ -810,14 +833,16 @@ repository_edit_dialog(GtkWindow *parent, Repository *repo)
                             "title", _("Min zoom"),
                             "touch-selector", min_zoom_selector,
                             NULL);
-    gtk_table_attach(GTK_TABLE(table), min_zoom, 0, 1, 1, 2, GTK_FILL | GTK_EXPAND, 0, 2, 4);
+    gtk_table_attach(GTK_TABLE(table), min_zoom, 0, 1, 1, 2,
+                     GTK_FILL | GTK_EXPAND, 0, 2, 4);
 
     max_zoom = g_object_new(HILDON_TYPE_PICKER_BUTTON,
                             "size", HILDON_SIZE_FINGER_HEIGHT,
                             "title", _("Max zoom"),
                             "touch-selector", max_zoom_selector,
                             NULL);
-    gtk_table_attach(GTK_TABLE(table), max_zoom, 1, 2, 1, 2, GTK_FILL | GTK_EXPAND, 0, 2, 4);
+    gtk_table_attach(GTK_TABLE(table), max_zoom, 1, 2, 1, 2,
+                     GTK_FILL | GTK_EXPAND, 0, 2, 4);
 
     zoom_step = g_object_new(HILDON_TYPE_PICKER_BUTTON,
                             "size", HILDON_SIZE_FINGER_HEIGHT,
@@ -852,9 +877,12 @@ repository_edit_dialog(GtkWindow *parent, Repository *repo)
 
     /* Fill with data */
     hildon_entry_set_text(HILDON_ENTRY(name_entry), repo->name);
-    hildon_touch_selector_set_active(min_zoom_selector, 0, repo->min_zoom - MIN_ZOOM);
-    hildon_touch_selector_set_active(max_zoom_selector, 0, repo->max_zoom - MIN_ZOOM);
-    hildon_touch_selector_set_active(zoom_step_selector, 0, repo->zoom_step - 1);
+    hildon_touch_selector_set_active(min_zoom_selector, 0,
+                                     repo->min_zoom - MIN_ZOOM);
+    hildon_touch_selector_set_active(max_zoom_selector, 0,
+                                     repo->max_zoom - MIN_ZOOM);
+    hildon_touch_selector_set_active(zoom_step_selector, 0,
+                                     repo->zoom_step - 1);
 
     update_layers_button_value(HILDON_BUTTON(layers), repo->layers);
 
@@ -863,10 +891,12 @@ repository_edit_dialog(GtkWindow *parent, Repository *repo)
 
     if (repo->layers && repo->layers->len) {
         for (i = 0; i < repo->layers->len; i++)
-            g_ptr_array_add(layers_context.layers, g_ptr_array_index(repo->layers, i));
+            g_ptr_array_add(layers_context.layers,
+                            g_ptr_array_index(repo->layers, i));
     }
 
-    g_signal_connect(G_OBJECT(layers), "clicked", G_CALLBACK(select_layers_button_clicked), &layers_context);
+    g_signal_connect(G_OBJECT(layers), "clicked", 
+                     G_CALLBACK(select_layers_button_clicked), &layers_context);
 
     gtk_widget_show_all(dialog);
     res = FALSE;
