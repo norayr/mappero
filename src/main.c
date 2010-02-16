@@ -595,6 +595,8 @@ maemo_mapper_init(gint argc, gchar **argv)
 static gboolean
 osso_cb_hw_state_idle(osso_hw_state_t *state)
 {
+    MapController *controller = map_controller_get_instance();
+
     printf("%s(inact=%d, save=%d, shut=%d, memlow=%d, state=%d)\n",
             __PRETTY_FUNCTION__, state->system_inactivity_ind,
             state->save_unsaved_data_ind, state->shutdown_ind,
@@ -609,7 +611,8 @@ osso_cb_hw_state_idle(osso_hw_state_t *state)
     if(state->save_unsaved_data_ind)
         settings_save();
 
-    _device_is_active = !state->system_inactivity_ind;
+    if (map_controller_get_device_active(controller) != !state->system_inactivity_ind)
+        map_controller_set_device_active(controller, !state->system_inactivity_ind);
 
     g_free(state);
 

@@ -139,5 +139,9 @@ void map_controller_update_gps(MapController *self);
 void map_controller_load_repositories(MapController *self, GConfClient *gconf_client);
 void map_controller_save_repositories(MapController *self, GConfClient *gconf_client);
 
+/* Device activity state */
+gboolean map_controller_get_device_active(MapController *self);
+void map_controller_set_device_active(MapController *self, gboolean active);
+
 G_END_DECLS
 #endif /* MAP_CONTROLLER_H */

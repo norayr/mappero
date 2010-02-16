@@ -86,10 +86,6 @@ extern gboolean _satdetails_on;
 
 extern gboolean _is_first_time;
 
-/* Current state of device (active/inactive). Used in layers to refresh timeout routine.
- * Updated in OSSO HW state callback routine. */
-extern gboolean _device_is_active;
-
 /** VARIABLES FOR MAINTAINING STATE OF THE CURRENT VIEW. */
 
 /** The "zoom" level defines the resolution of a pixel, from 0 to MAX_ZOOM.

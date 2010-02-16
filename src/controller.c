@@ -55,6 +55,7 @@ struct _MapControllerPrivate
 
     guint source_map_center;
     guint is_disposed : 1;
+    guint device_active : 1;
 };
 
 G_DEFINE_TYPE(MapController, map_controller, G_TYPE_OBJECT);
@@ -92,12 +93,13 @@ static gboolean
 expired_tiles_housekeeper(gpointer data)
 {
     GList *ts_list = map_controller_get_tile_sources_list(map_controller_get_instance());
+    MapController *controller = map_controller_get_instance();
     TileSource *ts;
     gboolean expired = FALSE;
 
-    /* If device is inactive, do not download tiles, but keep timer working */
-    if (!_device_is_active)
-        return TRUE;
+    /* If device is inactive, do not download tiles and stop tileout routine */
+    if (!map_controller_get_device_active(controller))
+        return FALSE;
 
     /* Iterate over all tile sources and if they have refresh turned on, decrement coundown */
     while (ts_list) {
@@ -114,7 +116,7 @@ expired_tiles_housekeeper(gpointer data)
         refresh_expired_tiles();
         reset_tile_sources_countdown();
     }
-    return TRUE;
+    return map_controller_get_device_active(controller);
 }
 
 
@@ -179,9 +181,6 @@ map_controller_init(MapController *controller)
 
     gconf_client_clear_cache(gconf_client);
     g_object_unref(gconf_client);
-
-    /* create periodical timer which wipes expired tiles from cache */
-    g_timeout_add_seconds(60, expired_tiles_housekeeper, NULL);
 }
 
 static void
@@ -951,4 +950,35 @@ map_controller_toggle_layer_visibility(MapController *self, TileSource *ts)
 
     ts->visible = !ts->visible;
     map_screen_refresh_map(self->priv->screen);
+}
+
+
+/* Obtain device activity state */
+gboolean
+map_controller_get_device_active(MapController *self)
+{
+    g_return_val_if_fail(MAP_IS_CONTROLLER(self), TRUE);
+
+    return self->priv->device_active;
+}
+
+
+/*
+ * Routine saves new state of device (active or not). According to this,
+ * we register or unregister timeout routine to save battery.
+ */
+void
+map_controller_set_device_active(MapController *self, gboolean active)
+{
+    g_return_if_fail(MAP_IS_CONTROLLER(self));
+    self->priv->device_active = active;
+
+    /* If new device state is active, we recharge timer. If device becomes inactive, we do nothing
+     * here, but in timeout routine well return FALSE, which will disable it. */
+    if (active) {
+        /* Run routine explicitly, to force tiles to refresh immediately */
+        expired_tiles_housekeeper(NULL);
+        /* create periodical timer which wipes expired tiles from cache */
+        g_timeout_add_seconds(60, expired_tiles_housekeeper, NULL);
+    }
 }
