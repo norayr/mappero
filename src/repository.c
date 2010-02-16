@@ -138,8 +138,6 @@ tree_to_repository(xmlDocPtr doc, xmlNodePtr repo_node)
     MapController *controller = map_controller_get_instance();
 
     repo = g_slice_new0(Repository);
-    if (!repo)
-        return NULL;
 
     for (n = repo_node->children; n; n = n->next) {
         if (!n->children)

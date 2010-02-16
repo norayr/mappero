@@ -293,8 +293,6 @@ tree_to_tile_source(xmlDocPtr doc, xmlNodePtr ts_node)
     gboolean val_valid;
 
     ts = g_slice_new0(TileSource);
-    if (!ts)
-        return NULL;
 
     for (n = ts_node->children; n; n = n->next) {
         if (!n->children)
