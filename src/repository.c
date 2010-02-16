@@ -729,9 +729,13 @@ repository_list_edit_dialog()
                 }
             break;
         case RESP_DELETE:
-            repository_delete_handler(GTK_WINDOW(dialog), active_repo);
-            active_repo = NULL;
-            update_list = TRUE;
+            if (active_repo == map_controller_get_repository(controller))
+                popup_error(dialog, _("You cannot delete active repository"));
+            else {
+                repository_delete_handler(GTK_WINDOW(dialog), active_repo);
+                active_repo = NULL;
+                update_list = TRUE;
+            }
             break;
         }
 
