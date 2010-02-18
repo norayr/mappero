@@ -58,6 +58,8 @@ struct _MapRouterIface
     void (*calculate_route)(MapRouter *router, const MapRouterQuery *query,
                             MapRouterCalculateRouteCb callback,
                             gpointer user_data);
+    void (*geocode)(MapRouter *router, const gchar *address,
+                    MapRouterGeocodeCb callback, gpointer user_data);
 };
 
 GType map_router_get_type (void) G_GNUC_CONST;

@@ -63,8 +63,8 @@ map_router_get_type(void)
 }
 
 static void
-geocode_from_route(MapRouter *router, Path *path, const GError *error,
-                   MapGeocodeData *mgd)
+geocode_from_route_cb(MapRouter *router, Path *path, const GError *error,
+                      MapGeocodeData *mgd)
 {
     MapPoint point = { 0, 0 };
 
@@ -79,6 +79,26 @@ geocode_from_route(MapRouter *router, Path *path, const GError *error,
     mgd->callback(router, point, error, mgd->user_data);
 
     g_slice_free(MapGeocodeData, mgd);
+}
+
+static void
+geocode_from_route(MapRouter *router, const gchar *address,
+                   MapRouterGeocodeCb callback, gpointer user_data)
+{
+    MapGeocodeData *mgd;
+    MapRouterQuery q;
+
+    g_return_if_fail(address != NULL);
+
+    memset(&q, 0, sizeof(q));
+    q.from.address = q.to.address = (gchar *)address;
+
+    mgd = g_slice_new0(MapGeocodeData);
+    mgd->callback = callback;
+    mgd->user_data = user_data;
+    map_router_calculate_route(router, &q,
+                               (MapRouterCalculateRouteCb)geocode_from_route_cb,
+                               mgd);
 }
 
 const gchar *
@@ -151,19 +171,15 @@ void
 map_router_geocode(MapRouter *router, const gchar *address,
                    MapRouterGeocodeCb callback, gpointer user_data)
 {
-    MapGeocodeData *mgd;
-    MapRouterQuery q;
+    MapRouterIface *iface = MAP_ROUTER_GET_IFACE(router);
 
+    g_return_if_fail(iface != NULL);
     g_return_if_fail(address != NULL);
+    g_return_if_fail(callback != NULL);
 
-    memset(&q, 0, sizeof(q));
-    q.from.address = q.to.address = (gchar *)address;
-
-    mgd = g_slice_new0(MapGeocodeData);
-    mgd->callback = callback;
-    mgd->user_data = user_data;
-    map_router_calculate_route(router, &q,
-                               (MapRouterCalculateRouteCb)geocode_from_route,
-                               mgd);
+    if (iface->geocode)
+        iface->geocode(router, address, callback, user_data);
+    else
+        geocode_from_route(router, address, callback, user_data);
 }
 
