@@ -525,6 +525,88 @@ select_layers_button_clicked(GtkWidget *widget,
 }
 
 
+/* Structure passed to repository list selection callback */
+struct SelectRepositoryContext {
+    gboolean active;            /* Should we handle changed signal? */
+};
+
+
+/*
+ * Returns active repository object in repository list selector
+ */
+static Repository *
+repository_selector_get_active(HildonTouchSelector *selector)
+{
+    gint active;
+    GList *repo_list = map_controller_get_repo_list(map_controller_get_instance());
+
+    active = hildon_touch_selector_get_active(selector, 0);
+    if (active < 0)
+        return NULL;
+
+    return (Repository*)g_list_nth_data(repo_list, active);
+}
+
+
+/*
+ * Routine erases passed selector and fill it with actual
+ * list of repositories' names. It properly locks context
+ * to prevent repository edit dialog appearance.
+ */
+static void
+refresh_repository_list_selector(HildonTouchSelector *selector,
+                                 struct SelectRepositoryContext *context)
+{
+    GtkListStore *list_store = GTK_LIST_STORE(hildon_touch_selector_get_model(selector, 0));
+    Repository *repo;
+
+    /* lock context */
+    context->active = FALSE;
+
+    /* find active item. If there is no active item, we'll make current
+     * repository active item. */
+    repo = repository_selector_get_active(selector);
+
+    /* clear current items */
+    gtk_list_store_clear(list_store);
+
+    /* fill selector with repositories */
+    fill_selector_with_repositories(selector, repo);
+
+    /* unlock context */
+    context->active = TRUE;
+}
+
+
+/*
+ * Routine called when touch selector with list of repositories changes
+ * selection. If context is active, we show edit dialog with selected repository.
+ */
+static void
+select_repository_callback(HildonTouchSelector *selector,
+                           gint column, struct SelectRepositoryContext *context)
+{
+    MapController *controller = map_controller_get_instance();
+    Repository *repo;
+
+    if (!context->active)
+        return;
+
+    repo = repository_selector_get_active(selector);
+    if (!repo)
+        return;
+
+    if (repository_edit_dialog(NULL, repo)) {
+        if (repo == map_controller_get_repository(controller))
+            map_refresh_mark(TRUE);
+        /* Refresh repositories menu entries */
+        menu_maps_add_repos();
+        /* Refresh repostiory list */
+        refresh_repository_list_selector(selector, context);
+    }
+}
+
+
 /* Parse repositories XML */
 GList* repository_xml_to_list(const gchar *data)
 {
@@ -670,103 +752,60 @@ repository_free(Repository *repo)
 void
 repository_list_edit_dialog()
 {
-    GtkWidget *dialog, *edit_button, *delete_button;
+    GtkWidget *dialog;
     HildonTouchSelector *repos_selector;
     MapController *controller = map_controller_get_instance();
-    GtkTreeModel *list_model;
-    GtkListStore *list_store;
     enum {
         RESP_SYNC,
-        RESP_ADD,
-        RESP_EDIT,
-        RESP_DELETE,
+        RESP_NEW
     };
     gint response;
-    Repository *active_repo = NULL;
-    gint active, rows_count;
-    gboolean update_menus = FALSE, update_list = FALSE;
+    Repository *repo;
+    gboolean update_list = FALSE;
+    struct SelectRepositoryContext context;
 
     dialog = gtk_dialog_new_with_buttons(_("Repositories"), GTK_WINDOW(_window),
                                          GTK_DIALOG_MODAL, NULL);
     gtk_dialog_add_button(GTK_DIALOG(dialog), _("_Sync"), RESP_SYNC);
-    gtk_dialog_add_button(GTK_DIALOG(dialog), GTK_STOCK_ADD, RESP_ADD);
-    edit_button = gtk_dialog_add_button(GTK_DIALOG(dialog), GTK_STOCK_EDIT, RESP_EDIT);
-    delete_button = gtk_dialog_add_button(GTK_DIALOG(dialog),
-                                          GTK_STOCK_DELETE, RESP_DELETE);
+    gtk_dialog_add_button(GTK_DIALOG(dialog), GTK_STOCK_NEW, RESP_NEW);
     repos_selector = HILDON_TOUCH_SELECTOR(hildon_touch_selector_new_text());
-    list_model = hildon_touch_selector_get_model(repos_selector, 0);
-    list_store = GTK_LIST_STORE(list_model);
+    gtk_widget_set_size_request(GTK_WIDGET(repos_selector), -1, 300);
     gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox),
                        GTK_WIDGET(repos_selector), TRUE, TRUE, 0);
     gtk_widget_show_all(dialog);
 
-    fill_selector_with_repositories(repos_selector, NULL);
+    g_signal_connect(G_OBJECT(repos_selector), "changed", G_CALLBACK(select_repository_callback), &context);
+    refresh_repository_list_selector(repos_selector, &context);
 
     while (1) {
-        rows_count = gtk_tree_model_iter_n_children(list_model, NULL);
-
-        /* These two buttons have meaning only if we have something in a list */
-        gtk_widget_set_sensitive(edit_button, rows_count > 0);
-        gtk_widget_set_sensitive(delete_button, rows_count > 0);
-
         if ((response = gtk_dialog_run(GTK_DIALOG(dialog))) == GTK_RESPONSE_DELETE_EVENT)
             break;
 
-        active = hildon_touch_selector_get_active(repos_selector, 0);
-        if (active >= 0)
-            active_repo = (Repository*)g_list_nth_data(
-                 map_controller_get_repo_list(controller), active);
-        else
-            active_repo = NULL;
-
         switch (response) {
         case RESP_SYNC:
-            update_list = update_menus = repository_sync_handler(GTK_WINDOW(dialog));
+            update_list = repository_sync_handler(GTK_WINDOW(dialog));
             break;
-        case RESP_ADD:
-            active_repo = g_slice_new0(Repository);
-            active_repo->name = g_strdup(_("New repository"));
-            active_repo->min_zoom = REPO_DEFAULT_MIN_ZOOM;
-            active_repo->max_zoom = REPO_DEFAULT_MAX_ZOOM;
-            active_repo->zoom_step = 1;
+        case RESP_NEW:
+            repo = g_slice_new0(Repository);
+            repo->name = g_strdup(_("New repository"));
+            repo->min_zoom = REPO_DEFAULT_MIN_ZOOM;
+            repo->max_zoom = REPO_DEFAULT_MAX_ZOOM;
+            repo->zoom_step = 1;
 
-            if (repository_edit_dialog(GTK_WINDOW(dialog), active_repo)) {
-                map_controller_append_repository(controller, active_repo);
-                update_list = update_menus = TRUE;
-            }
-            else
-                repository_free(active_repo);
-            active_repo = NULL;
-            break;
-        case RESP_EDIT:
-            if (active_repo)
-                if (repository_edit_dialog(GTK_WINDOW(dialog), active_repo)) {
-                    if (active_repo == map_controller_get_repository(controller))
-                        map_refresh_mark(TRUE);
-                    update_list = update_menus = TRUE;
-                }
-            break;
-        case RESP_DELETE:
-            if (active_repo == map_controller_get_repository(controller))
-                popup_error(dialog, _("You cannot delete active repository"));
-            else {
-                repository_delete_handler(GTK_WINDOW(dialog), active_repo);
-                active_repo = NULL;
+            if (repository_edit_dialog(GTK_WINDOW(dialog), repo)) {
+                map_controller_append_repository(controller, repo);
                 update_list = TRUE;
             }
+            else
+                repository_free(repo);
             break;
         }
 
-        /* We need to sync menu entries with repository list */
-        if (update_menus)
-            menu_maps_add_repos();
-
         if (update_list) {
-            /* populate list with repositories */
-            gtk_list_store_clear(list_store);
-            fill_selector_with_repositories(repos_selector, active_repo);
+            menu_maps_add_repos();
+            refresh_repository_list_selector(repos_selector, &context);
+            update_list = FALSE;
         }
-        update_menus = update_list = FALSE;
     }
     gtk_widget_destroy(dialog);
     settings_save();
@@ -775,7 +814,7 @@ repository_list_edit_dialog()
 
 /*
  * Show dialog to edit repository settings. Returns TRUE when
- * user pressed 'save', FALSE on cancel
+ * user pressed 'save' or 'delete', FALSE on cancel
  */
 gboolean
 repository_edit_dialog(GtkWindow *parent, Repository *repo)
@@ -790,14 +829,22 @@ repository_edit_dialog(GtkWindow *parent, Repository *repo)
     GtkWidget *primary_layer;
     HildonTouchSelector *primary_selector;
     GtkWidget *layers;
-    gint i;
+    gint i, response;
     gchar buf[10];
     struct RepositoryLayersDialogContext layers_context;
     gboolean res = FALSE;
     MapController *controller = map_controller_get_instance();
+    enum {
+        RESP_DELETE,
+        RESP_SAVE,
+    };
 
     dialog = gtk_dialog_new_with_buttons(_("Repository"), parent, GTK_DIALOG_MODAL,
-                                         GTK_STOCK_SAVE, GTK_RESPONSE_ACCEPT, NULL);
+                                         NULL);
+    /* Don't allow to delete active repository by hiding button */
+    if (repo != map_controller_get_repository(controller))
+        gtk_dialog_add_button(GTK_DIALOG(dialog), GTK_STOCK_DELETE, RESP_DELETE);
+    gtk_dialog_add_button(GTK_DIALOG(dialog), GTK_STOCK_SAVE, RESP_SAVE);
     table = gtk_table_new(4, 3, TRUE);
     gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox), table, TRUE, TRUE, 0);
 
@@ -842,10 +889,10 @@ repository_edit_dialog(GtkWindow *parent, Repository *repo)
                      GTK_FILL | GTK_EXPAND, 0, 2, 4);
 
     zoom_step = g_object_new(HILDON_TYPE_PICKER_BUTTON,
-                            "size", HILDON_SIZE_FINGER_HEIGHT,
-                            "title", _("Zoom step"),
-                            "touch-selector", zoom_step_selector,
-                            NULL);
+                             "size", HILDON_SIZE_FINGER_HEIGHT,
+                             "title", _("Zoom step"),
+                             "touch-selector", zoom_step_selector,
+                             NULL);
     gtk_table_attach(GTK_TABLE(table), zoom_step, 2, 3, 1, 2,
                      GTK_FILL | GTK_EXPAND, 0, 2, 4);
 
@@ -856,10 +903,10 @@ repository_edit_dialog(GtkWindow *parent, Repository *repo)
     tile_source_fill_selector(primary_selector, TRUE, FALSE, repo->primary);
 
     primary_layer = g_object_new(HILDON_TYPE_PICKER_BUTTON,
-                            "size", HILDON_SIZE_FINGER_HEIGHT,
-                            "title", _("Tiles"),
-                            "touch-selector", primary_selector,
-                            NULL);
+                                 "size", HILDON_SIZE_FINGER_HEIGHT,
+                                 "title", _("Tiles"),
+                                 "touch-selector", primary_selector,
+                                 NULL);
     gtk_table_attach(GTK_TABLE(table), primary_layer, 0, 3, 2, 3,
                      GTK_FILL | GTK_EXPAND, 0, 2, 4);
 
@@ -898,43 +945,51 @@ repository_edit_dialog(GtkWindow *parent, Repository *repo)
     gtk_widget_show_all(dialog);
     res = FALSE;
 
-    while (gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_ACCEPT) {
+    while ((response = gtk_dialog_run(GTK_DIALOG(dialog))) != GTK_RESPONSE_DELETE_EVENT) {
         gint index;
         TileSource *ts;
 
-        /* Check for primary tile source. If not specified or not valid,
-         * show notice and spin again. */
-        ts = map_controller_lookup_tile_source_by_name(
-            controller, hildon_button_get_value(HILDON_BUTTON(primary_layer)));
-
-        if (ts)
-            repo->primary = ts;
+        if (response == RESP_DELETE) {
+            /* User wants to delete repository completely */
+            repository_delete_handler(GTK_WINDOW(dialog), repo);
+            repo = NULL;
+        }
         else {
-            popup_error(dialog, _("Tile source is required"));
-            continue;
+            /* User wants to save repository */
+            /* Check for primary tile source. If not specified or not valid,
+             * show notice and spin again. */
+            ts = map_controller_lookup_tile_source_by_name(controller,
+                       hildon_button_get_value(HILDON_BUTTON(primary_layer)));
+
+            if (ts)
+                repo->primary = ts;
+            else {
+                popup_error(dialog, _("Tile source is required"));
+                continue;
+            }
+
+            if (gtk_entry_get_text_length (GTK_ENTRY(name_entry)) &&
+                strcmp(gtk_entry_get_text(GTK_ENTRY(name_entry)), repo->name) != 0)
+                {
+                    g_free(repo->name);
+                    repo->name = g_strdup(gtk_entry_get_text(GTK_ENTRY(name_entry)));
+                }
+
+            index = hildon_touch_selector_get_active(min_zoom_selector, 0);
+            if (index >= 0)
+                repo->min_zoom = index + MIN_ZOOM;
+            index = hildon_touch_selector_get_active(max_zoom_selector, 0);
+            if (index >= 0)
+                repo->max_zoom = index + MIN_ZOOM;
+            index = hildon_touch_selector_get_active(zoom_step_selector, 0);
+            if (index >= 0)
+                repo->zoom_step = index + 1;
+
+            /* Layers */
+            if (repo->layers)
+                g_ptr_array_free(repo->layers, TRUE);
+            repo->layers = layers_context.layers;
         }
-
-        if (gtk_entry_get_text_length (GTK_ENTRY(name_entry)) &&
-            strcmp(gtk_entry_get_text(GTK_ENTRY(name_entry)), repo->name) != 0)
-        {
-            g_free(repo->name);
-            repo->name = g_strdup(gtk_entry_get_text(GTK_ENTRY(name_entry)));
-        }
-
-        index = hildon_touch_selector_get_active(min_zoom_selector, 0);
-        if (index >= 0)
-            repo->min_zoom = index + MIN_ZOOM;
-        index = hildon_touch_selector_get_active(max_zoom_selector, 0);
-        if (index >= 0)
-            repo->max_zoom = index + MIN_ZOOM;
-        index = hildon_touch_selector_get_active(zoom_step_selector, 0);
-        if (index >= 0)
-            repo->zoom_step = index + 1;
-
-        /* Layers */
-        if (repo->layers)
-            g_ptr_array_free(repo->layers, TRUE);
-        repo->layers = layers_context.layers;
         res = TRUE;
         break;
     }
