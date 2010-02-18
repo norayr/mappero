@@ -36,10 +36,19 @@ G_BEGIN_DECLS
 typedef struct _MapReittiopas MapReittiopas;
 typedef struct _MapReittiopasClass MapReittiopasClass;
 
+typedef enum {
+    RO_TRANSPORT_BUS = 0,
+    RO_TRANSPORT_TRAIN,
+    RO_TRANSPORT_FERRY,
+    RO_TRANSPORT_METRO,
+    RO_TRANSPORT_TRAM,
+    RO_TRANSPORT_LAST
+} RoTransportType;
 
 struct _MapReittiopas
 {
     GObject parent;
+    gboolean transport_allowed[RO_TRANSPORT_LAST];
 };
 
 struct _MapReittiopasClass

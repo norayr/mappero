@@ -31,6 +31,7 @@
 #include "error.h"
 #include "path.h"
 
+#include <hildon/hildon-picker-button.h>
 #include <libxml/xmlreader.h>
 #include <math.h>
 #include <string.h>
@@ -677,7 +678,8 @@ parse_xml(SaxData *data, gchar *buffer, gsize len)
 }
 
 static void
-download_route(Path *path, const KKJ2 *from, const KKJ2 *to, GError **error)
+download_route(MapReittiopas *self, Path *path,
+               const KKJ2 *from, const KKJ2 *to, GError **error)
 {
     gchar *query, *bytes;
     GString *string;
@@ -690,6 +692,17 @@ download_route(Path *path, const KKJ2 *from, const KKJ2 *to, GError **error)
 
     g_string_append_printf(string, "&a=%.0f,%.0f&b=%.0f,%.0f&show=1",
                            from->i, from->p, to->i, to->p);
+
+    if (!self->transport_allowed[RO_TRANSPORT_BUS])
+        g_string_append(string, "&use_bus=0");
+    if (!self->transport_allowed[RO_TRANSPORT_TRAIN])
+        g_string_append(string, "&use_train=0");
+    if (!self->transport_allowed[RO_TRANSPORT_FERRY])
+        g_string_append(string, "&use_ferry=0");
+    if (!self->transport_allowed[RO_TRANSPORT_METRO])
+        g_string_append(string, "&use_metro=0");
+    if (!self->transport_allowed[RO_TRANSPORT_TRAM])
+        g_string_append(string, "&use_tram=0");
 
     query = g_string_free(string, FALSE);
     g_debug("URL: %s", query);
@@ -791,7 +804,7 @@ calculate_route_with_units(MapRouter *router,
     unit2kkj2(to_u, &to);
 
     MACRO_PATH_INIT(path);
-    download_route(&path, &from, &to, &error);
+    download_route(MAP_REITTIOPAS(router), &path, &from, &to, &error);
     if (!error)
     {
         callback(router, &path, NULL, user_data);
@@ -873,6 +886,135 @@ map_reittiopas_geocode(MapRouter *router, const gchar *address,
 }
 
 static void
+hack_sel(GtkWidget *selector, gint column, gboolean *hacked)
+{
+    GtkWidget *dialog;
+    guint id, ret;
+
+    if (*hacked) return;
+
+    /* HILDON HACK: HildonPickerDialog blocks the emission of the "response"
+     * signal if no item is selected. Since this blocking happens on a signal
+     * handler for the "response" signal itself, we disconnect it :-) */
+    dialog = gtk_widget_get_toplevel(selector);
+    id = g_signal_lookup("response", GTK_TYPE_DIALOG);
+    ret = g_signal_handlers_disconnect_matched(dialog,
+        G_SIGNAL_MATCH_ID | G_SIGNAL_MATCH_DATA, id, 0, NULL, NULL, NULL);
+    if (ret != 1)
+        g_warning("%s: disconnected %u signals!", G_STRFUNC, ret);
+
+    *hacked = TRUE;
+}
+
+static gchar *
+transport_print_func(HildonTouchSelector *selector, gpointer user_data)
+{
+    GList *selected_rows, *list;
+    GtkTreeModel *model;
+    GtkTreeIter iter;
+    gchar text[256], *transport;
+    gint i_text = 0;
+
+    selected_rows = hildon_touch_selector_get_selected_rows(selector, 0);
+    model = hildon_touch_selector_get_model(selector, 0);
+    for (list = selected_rows; list != NULL; list = list->next)
+    {
+        GtkTreePath *path = list->data;
+
+        gtk_tree_model_get_iter(model, &iter, path);
+        gtk_tree_path_free(path);
+
+        gtk_tree_model_get(model, &iter, 0, &transport, -1);
+        g_assert(i_text + strlen(transport) + 1 < sizeof(text));
+        i_text += sprintf(text + i_text, (i_text == 0) ? "%s" : ", %s",
+                          transport);
+        g_free(transport);
+    }
+    g_list_free(selected_rows);
+
+    if (i_text == 0)
+    {
+        return g_strdup(_("Walking only"));
+    }
+    else
+        return g_strdup(text);
+}
+
+static void
+map_reittiopas_run_options_dialog(MapRouter *router, GtkWindow *parent)
+{
+    MapReittiopas *self = MAP_REITTIOPAS(router);
+    GtkWidget *dialog;
+    GtkWidget *widget;
+    HildonTouchSelector *transport;
+    GtkTreeModel *model;
+    GtkTreeIter iter;
+    gboolean selector_hacked = FALSE;
+    gint i;
+
+    dialog = map_dialog_new(_("Reittiopas router options"), parent, TRUE);
+    gtk_dialog_add_button(GTK_DIALOG(dialog),
+                          H_("wdgt_bd_save"), GTK_RESPONSE_ACCEPT);
+
+    transport=
+        HILDON_TOUCH_SELECTOR(hildon_touch_selector_new_text());
+    hildon_touch_selector_append_text(transport, _("bus"));
+    hildon_touch_selector_append_text(transport, _("train"));
+    hildon_touch_selector_append_text(transport, _("ferry"));
+    hildon_touch_selector_append_text(transport, _("metro"));
+    hildon_touch_selector_append_text(transport, _("tram"));
+    hildon_touch_selector_set_column_selection_mode(transport,
+        HILDON_TOUCH_SELECTOR_SELECTION_MODE_MULTIPLE);
+    hildon_touch_selector_set_print_func(transport, transport_print_func);
+    hildon_touch_selector_unselect_all(transport, 0);
+    model = hildon_touch_selector_get_model(transport, 0);
+    for (i = 0; i < RO_TRANSPORT_LAST; i++)
+    {
+        if (self->transport_allowed[i])
+        {
+            gtk_tree_model_iter_nth_child(model, &iter, NULL, i);
+            hildon_touch_selector_select_iter(transport, 0, &iter, FALSE);
+        }
+    }
+    g_signal_connect(transport, "changed", G_CALLBACK(hack_sel),
+                     &selector_hacked);
+
+    widget =
+        g_object_new(HILDON_TYPE_PICKER_BUTTON,
+                     "arrangement", HILDON_BUTTON_ARRANGEMENT_VERTICAL,
+                     "size", HILDON_SIZE_FINGER_HEIGHT,
+                     "title", _("Allowed transport means"),
+                     "touch-selector", transport,
+                     "xalign", 0.0,
+                     NULL);
+    map_dialog_add_widget(MAP_DIALOG(dialog), widget);
+
+    gtk_widget_show_all(dialog);
+
+    if (gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_ACCEPT)
+    {
+        GList *selected_rows, *list;
+
+        for (i = 0; i < RO_TRANSPORT_LAST; i++)
+            self->transport_allowed[i] = FALSE;
+        selected_rows = hildon_touch_selector_get_selected_rows(transport, 0);
+        for (list = selected_rows; list != NULL; list = list->next)
+        {
+            GtkTreePath *path = list->data;
+            gint *p_i;
+
+            p_i = gtk_tree_path_get_indices(path);
+            if (*p_i < RO_TRANSPORT_LAST)
+                self->transport_allowed[*p_i] = TRUE;
+            gtk_tree_path_free(path);
+        }
+        g_list_free(selected_rows);
+    }
+
+    gtk_widget_destroy(dialog);
+}
+
+static void
 map_reittiopas_calculate_route(MapRouter *router, const MapRouterQuery *query,
                                MapRouterCalculateRouteCb callback,
                                gpointer user_data)
@@ -918,13 +1060,18 @@ static void
 router_iface_init(MapRouterIface *iface)
 {
     iface->get_name = map_reittiopas_get_name;
+    iface->run_options_dialog = map_reittiopas_run_options_dialog;
     iface->calculate_route = map_reittiopas_calculate_route;
     iface->geocode = map_reittiopas_geocode;
 }
 
 static void
-map_reittiopas_init(MapReittiopas *reittiopas)
+map_reittiopas_init(MapReittiopas *self)
 {
+    gint i;
+
+    for (i = 0; i < RO_TRANSPORT_LAST; i++)
+        self->transport_allowed[i] = TRUE;
 }
 
 static void
