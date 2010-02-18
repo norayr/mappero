@@ -919,6 +919,7 @@ router_iface_init(MapRouterIface *iface)
 {
     iface->get_name = map_reittiopas_get_name;
     iface->calculate_route = map_reittiopas_calculate_route;
+    iface->geocode = map_reittiopas_geocode;
 }
 
 static void
