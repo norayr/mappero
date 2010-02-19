@@ -375,6 +375,59 @@ tile_sources_delete_handler(GtkWindow* parent, TileSource* ts)
 }
 
 
+struct SelectTileSourceContext {
+    gboolean active;            /* Should we handle changed signal? */
+};
+
+
+
+static TileSource *
+tile_source_selector_get_active(HildonTouchSelector *selector)
+{
+    gint active = hildon_touch_selector_get_active(selector, 0);
+    GList *ts_list = map_controller_get_tile_sources_list(
+                          map_controller_get_instance());
+
+    if (active < 0)
+        return NULL;
+
+    return (TileSource*)g_list_nth_data(ts_list, active);
+}
+
+
+static void
+refresh_tile_source_list_selector(HildonTouchSelector *selector,
+                                  struct SelectTileSourceContext *context)
+{
+    GtkListStore *list_store = GTK_LIST_STORE(hildon_touch_selector_get_model(selector, 0));
+    TileSource *ts;
+
+    context->active = FALSE;
+    ts = tile_source_selector_get_active(selector);
+    gtk_list_store_clear(list_store);
+    tile_source_fill_selector(selector, FALSE, FALSE, ts);
+    context->active = TRUE;
+}
+
+
+static void
+select_tile_source_callback(HildonTouchSelector *selector,
+                            gint column, struct SelectTileSourceContext *context)
+{
+    TileSource *ts;
+
+    if (!context->active)
+        return;
+
+    ts = tile_source_selector_get_active(selector);
+    if (!ts)
+        return;
+
+    if (tile_source_edit_dialog(NULL, ts))
+        refresh_tile_source_list_selector(selector, context);
+}
+
+
 /* Parse XML data */
 GList* tile_source_xml_to_list(const gchar *data)
 {
@@ -455,88 +508,47 @@ tile_source_compare(TileSource *ts1, TileSource *ts2)
 void
 tile_source_list_edit_dialog()
 {
-    GtkWidget *dialog, *edit_button, *delete_button;
+    GtkWidget *dialog;
     HildonTouchSelector *ts_selector;
     MapController *controller = map_controller_get_instance();
-    TileSource *ts, *active_ts = NULL;
-    gint response, active, rows_count;
-    GtkTreeModel *list_model;
-    GtkListStore *list_store;
-    gboolean update_items = FALSE;
+    TileSource *ts;
+    gint response;
+    struct SelectTileSourceContext context;
     enum {
-        RESP_ADD,
-        RESP_EDIT,
-        RESP_DELETE,
+        RESP_NEW,
     };
 
     dialog = gtk_dialog_new_with_buttons(_("Tiles and layers"),
                   GTK_WINDOW(_window), GTK_DIALOG_MODAL, NULL);
-    gtk_dialog_add_button(GTK_DIALOG(dialog), GTK_STOCK_ADD, RESP_ADD);
-    edit_button = gtk_dialog_add_button(GTK_DIALOG(dialog),
-                                        GTK_STOCK_EDIT, RESP_EDIT);
-    delete_button = gtk_dialog_add_button(GTK_DIALOG(dialog),
-                       GTK_STOCK_DELETE, RESP_DELETE);
+    gtk_dialog_add_button(GTK_DIALOG(dialog), GTK_STOCK_NEW, RESP_NEW);
     ts_selector = HILDON_TOUCH_SELECTOR(hildon_touch_selector_new_text());
     gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox),
                        GTK_WIDGET(ts_selector), TRUE, TRUE, 0);
-
-    list_model = hildon_touch_selector_get_model(ts_selector, 0);
-    list_store = GTK_LIST_STORE(list_model);
     gtk_widget_set_size_request(GTK_WIDGET(ts_selector), -1, 300);
 
-    tile_source_fill_selector(ts_selector, FALSE, FALSE, active_ts);
     gtk_widget_show_all(dialog);
 
+    context.active = TRUE;
+    g_signal_connect(G_OBJECT(ts_selector), "changed", G_CALLBACK(select_tile_source_callback), &context);
+    refresh_tile_source_list_selector(ts_selector, &context);
+
     while (1) {
-        rows_count = gtk_tree_model_iter_n_children(list_model, NULL);
-
-        /* These two buttons have meaning only if we have something in a list */
-        gtk_widget_set_sensitive(edit_button, rows_count > 0);
-        gtk_widget_set_sensitive(delete_button, rows_count > 0);
-
         if ((response = gtk_dialog_run(GTK_DIALOG(dialog))) == GTK_RESPONSE_DELETE_EVENT)
             break;
 
-        active = hildon_touch_selector_get_active(ts_selector, 0);
-        if (active >= 0)
-            active_ts = (TileSource*)g_list_nth_data(
-                   map_controller_get_tile_sources_list(controller), active);
-        else
-            active_ts = NULL;
-
         switch (response) {
-        case RESP_ADD:
+        case RESP_NEW:
             ts = g_slice_new0(TileSource);
             ts->name = g_strdup("New tile source");
             ts->id = g_strdup("New tile source ID");
             ts->type = NULL;
             if (tile_source_edit_dialog(GTK_WINDOW(dialog), ts)) {
                 map_controller_append_tile_source(controller, ts);
-                active_ts = ts;
-                update_items = TRUE;
+                refresh_tile_source_list_selector(ts_selector, &context);
             }
             else
                 tile_source_free(ts);
             break;
-        case RESP_EDIT:
-            tile_source_edit_dialog(GTK_WINDOW(dialog), active_ts);
-            update_items = TRUE;
-            break;
-        case RESP_DELETE:
-            /* Check that tile source not belong to active repository */
-            if (!tile_source_is_active(active_ts)) {
-                tile_sources_delete_handler(GTK_WINDOW(dialog), active_ts);
-                update_items = TRUE;
-                active_ts = NULL;
-            }
-            else
-                popup_error(dialog, _("Selected layer is active, so, cannot be deleted."));
-            break;
-        }
-
-        if (update_items) {
-            gtk_list_store_clear(list_store);
-            tile_source_fill_selector(ts_selector, FALSE, FALSE, active_ts);
         }
     }
 
@@ -562,17 +574,23 @@ tile_source_edit_dialog(GtkWindow *parent, TileSource *ts)
     GtkWidget *refresh_button;
     HildonTouchSelector *format_selector;
     GtkWidget *format_button;
-    gint i;
+    gint i, response;
     gchar buf[10];
     MapController *controller = map_controller_get_instance();
     gboolean res = FALSE;
+    enum {
+        RESP_SAVE,
+        RESP_DELETE,
+    };
 
     if (!ts)
         return FALSE;
 
     dialog = gtk_dialog_new_with_buttons(
-                 _("Tile source"), parent, GTK_DIALOG_MODAL,
-                 GTK_STOCK_SAVE, GTK_RESPONSE_ACCEPT, NULL);
+                 _("Tile source"), parent, GTK_DIALOG_MODAL, NULL);
+    gtk_dialog_add_button(GTK_DIALOG(dialog), GTK_STOCK_DELETE, RESP_DELETE);
+    gtk_dialog_add_button(GTK_DIALOG(dialog), GTK_STOCK_SAVE, RESP_SAVE);
+
     table = GTK_TABLE(gtk_table_new(7, 4, TRUE));
     pannable = hildon_pannable_area_new();
     gtk_widget_set_size_request(pannable, -1, 300);
@@ -658,61 +676,69 @@ tile_source_edit_dialog(GtkWindow *parent, TileSource *ts)
 
     gtk_widget_show_all(dialog);
 
-    while (gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_ACCEPT) {
-        TileSource *ts_ref;
-        const gchar *str;
+    while ((response = gtk_dialog_run(GTK_DIALOG(dialog))) != GTK_RESPONSE_DELETE_EVENT) {
+        if (response == RESP_DELETE) {
+            if (!tile_source_is_active(ts))
+                tile_sources_delete_handler(GTK_WINDOW(dialog), ts);
+            else
+                popup_error(dialog, _("Selected layer is active, so, cannot be deleted."));
+        }
+        else {
+            TileSource *ts_ref;
+            const gchar *str;
 
-        /* Check dialog data */
-        if (!gtk_entry_get_text_length(GTK_ENTRY(name_entry))) {
-            popup_error(dialog, _("Name is required"));
-            continue;
-        }
-        if (!gtk_entry_get_text_length(GTK_ENTRY(id_entry))) {
-            popup_error(dialog, _("ID is required"));
-            continue;
-        }
-        str = gtk_entry_get_text(GTK_ENTRY(id_entry));
-        ts_ref = map_controller_lookup_tile_source(controller, str);
-        if (ts_ref && ts_ref != ts) {
-            popup_error(dialog, _("ID is not unique"));
-            continue;
-        }
-        if (!gtk_entry_get_text_length(GTK_ENTRY(cache_entry))) {
-            popup_error(dialog, _("Cache dir is required"));
-            continue;
-        }
-        if (!gtk_entry_get_text_length(GTK_ENTRY(url_entry))) {
-            popup_error(dialog, _("URL is required"));
-            continue;
-        }
+            /* Check dialog data */
+            if (!gtk_entry_get_text_length(GTK_ENTRY(name_entry))) {
+                popup_error(dialog, _("Name is required"));
+                continue;
+            }
+            if (!gtk_entry_get_text_length(GTK_ENTRY(id_entry))) {
+                popup_error(dialog, _("ID is required"));
+                continue;
+            }
+            str = gtk_entry_get_text(GTK_ENTRY(id_entry));
+            ts_ref = map_controller_lookup_tile_source(controller, str);
+            if (ts_ref && ts_ref != ts) {
+                popup_error(dialog, _("ID is not unique"));
+                continue;
+            }
+            if (!gtk_entry_get_text_length(GTK_ENTRY(cache_entry))) {
+                popup_error(dialog, _("Cache dir is required"));
+                continue;
+            }
+            if (!gtk_entry_get_text_length(GTK_ENTRY(url_entry))) {
+                popup_error(dialog, _("URL is required"));
+                continue;
+            }
 
-        /* All seems valid, update tile source record */
-        str = gtk_entry_get_text(GTK_ENTRY(name_entry));
-        if (g_strcmp0 (ts->name, str) != 0) {
-            g_free(ts->name);
-            ts->name = g_strdup(str);
-        }
-        str = gtk_entry_get_text(GTK_ENTRY(id_entry));
-        if (g_strcmp0 (ts->id, str) != 0) {
-            g_free(ts->id);
-            ts->id = g_strdup(str);
-        }
-        str = gtk_entry_get_text(GTK_ENTRY(cache_entry));
-        if (g_strcmp0 (ts->cache_dir, str) != 0) {
-            g_free(ts->cache_dir);
-            ts->cache_dir = g_strdup(str);
-        }
-        str = gtk_entry_get_text(GTK_ENTRY(url_entry));
-        if (g_strcmp0 (ts->url, str) != 0) {
-            g_free(ts->url);
-            ts->url = g_strdup(str);
-        }
+            /* All seems valid, update tile source record */
+            str = gtk_entry_get_text(GTK_ENTRY(name_entry));
+            if (g_strcmp0 (ts->name, str) != 0) {
+                g_free(ts->name);
+                ts->name = g_strdup(str);
+            }
+            str = gtk_entry_get_text(GTK_ENTRY(id_entry));
+            if (g_strcmp0 (ts->id, str) != 0) {
+                g_free(ts->id);
+                ts->id = g_strdup(str);
+            }
+            str = gtk_entry_get_text(GTK_ENTRY(cache_entry));
+            if (g_strcmp0 (ts->cache_dir, str) != 0) {
+                g_free(ts->cache_dir);
+                ts->cache_dir = g_strdup(str);
+            }
+            str = gtk_entry_get_text(GTK_ENTRY(url_entry));
+            if (g_strcmp0 (ts->url, str) != 0) {
+                g_free(ts->url);
+                ts->url = g_strdup(str);
+            }
 
-        ts->type = &tile_source_types[hildon_touch_selector_get_active(type_selector, 0)];
-        ts->visible = hildon_check_button_get_active(HILDON_CHECK_BUTTON(visible_button));
-        ts->transparent = hildon_check_button_get_active(HILDON_CHECK_BUTTON(transparent_button));
-        ts->refresh = hildon_touch_selector_get_active(refresh_selector, 0);
-        ts->format = tile_format_map[hildon_touch_selector_get_active(format_selector, 0)].format;
+            ts->type = &tile_source_types[hildon_touch_selector_get_active(type_selector, 0)];
+            ts->visible = hildon_check_button_get_active(HILDON_CHECK_BUTTON(visible_button));
+            ts->transparent = hildon_check_button_get_active(HILDON_CHECK_BUTTON(transparent_button));
+            ts->refresh = hildon_touch_selector_get_active(refresh_selector, 0);
+            ts->format = tile_format_map[hildon_touch_selector_get_active(format_selector, 0)].format;
+        }
 
         res = TRUE;
         break;
