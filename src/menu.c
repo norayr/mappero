@@ -936,6 +936,8 @@ geocode_cb(MapRouter *router, MapPoint p, const GError *error,
     g_slice_free(GtkWidget *, p_dialog);
     if (!dialog) return;
 
+    g_object_remove_weak_pointer(G_OBJECT(dialog), p_dialog);
+
     hildon_gtk_window_set_progress_indicator(GTK_WINDOW(dialog), FALSE);
     gtk_widget_set_sensitive(dialog, TRUE);
 
