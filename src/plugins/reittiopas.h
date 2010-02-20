@@ -45,10 +45,29 @@ typedef enum {
     RO_TRANSPORT_LAST
 } RoTransportType;
 
+typedef enum {
+    RO_OPTIMIZE_DEFAULT = 0,
+    RO_OPTIMIZE_FASTEST,
+    RO_OPTIMIZE_LEAST_TRANSFERS,
+    RO_OPTIMIZE_LEAST_WALKING,
+    RO_OPTIMIZE_LAST
+} RoOptimizeGoal;
+
+typedef enum {
+    RO_WALKSPEED_SLOW = 1,
+    RO_WALKSPEED_NORMAL,
+    RO_WALKSPEED_FAST,
+    RO_WALKSPEED_RUNNING,
+    RO_WALKSPEED_CYCLING,
+} RoWalkspeed;
+
 struct _MapReittiopas
 {
     GObject parent;
     gboolean transport_allowed[RO_TRANSPORT_LAST];
+    RoOptimizeGoal optimize;
+    RoWalkspeed walkspeed;
+    gint margin;
 };
 
 struct _MapReittiopasClass

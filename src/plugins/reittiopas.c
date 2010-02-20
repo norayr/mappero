@@ -49,6 +49,9 @@ G_DEFINE_TYPE_WITH_CODE(MapReittiopas, map_reittiopas, G_TYPE_OBJECT,
                         G_IMPLEMENT_INTERFACE(MAP_TYPE_ROUTER,
                                               router_iface_init));
 
+#define WALKSPEED_TO_SELECTOR(ws)   (ws - 1)
+#define WALKSPEED_FROM_SELECTOR(idx)    (idx + 1)
+
 /* a point in Reittiopas coordinate system */
 typedef struct {
     gfloat p;
@@ -643,7 +646,7 @@ handle_end_element(SaxData *data, const xmlChar *name)
             free_point(data);
         }
     }
-    else if (el == EL_LINE)
+    else if (EL_IS_SEGMENT(el))
     {
         free_line(data);
     }
@@ -703,6 +706,9 @@ download_route(MapReittiopas *self, Path *path,
         g_string_append(string, "&use_metro=0");
     if (!self->transport_allowed[RO_TRANSPORT_TRAM])
         g_string_append(string, "&use_tram=0");
+
+    g_string_append_printf(string, "&margin=%d&optimize=%d&walkspeed=%d",
+                           self->margin, self->optimize, self->walkspeed);
 
     query = g_string_free(string, FALSE);
     g_debug("URL: %s", query);
@@ -946,15 +952,75 @@ map_reittiopas_run_options_dialog(MapRouter *router, GtkWindow *parent)
     MapReittiopas *self = MAP_REITTIOPAS(router);
     GtkWidget *dialog;
     GtkWidget *widget;
-    HildonTouchSelector *transport;
+    HildonTouchSelector *transport, *optimize, *walkspeed, *margin;
     GtkTreeModel *model;
     GtkTreeIter iter;
     gboolean selector_hacked = FALSE;
+    gchar buffer[16];
     gint i;
 
     dialog = map_dialog_new(_("Reittiopas router options"), parent, TRUE);
     gtk_dialog_add_button(GTK_DIALOG(dialog),
                           H_("wdgt_bd_save"), GTK_RESPONSE_ACCEPT);
+
+    /* transfer margin */
+    margin = HILDON_TOUCH_SELECTOR(hildon_touch_selector_new_text());
+    for (i = 0; i <= 10; i++)
+    {
+        sprintf(buffer, "%d", i);
+        hildon_touch_selector_append_text(margin, buffer);
+    }
+    hildon_touch_selector_set_active(margin, 0, self->margin);
+
+    widget =
+        g_object_new(HILDON_TYPE_PICKER_BUTTON,
+                     "arrangement", HILDON_BUTTON_ARRANGEMENT_VERTICAL,
+                     "size", HILDON_SIZE_FINGER_HEIGHT,
+                     "title", _("Transfer margin (mins)"),
+                     "touch-selector", margin,
+                     "xalign", 0.0,
+                     NULL);
+    map_dialog_add_widget(MAP_DIALOG(dialog), widget);
+
+    /* Optimization goal */
+
+    optimize = HILDON_TOUCH_SELECTOR(hildon_touch_selector_new_text());
+    hildon_touch_selector_append_text(optimize, _("default"));
+    hildon_touch_selector_append_text(optimize, _("fastest"));
+    hildon_touch_selector_append_text(optimize, _("least transfers"));
+    hildon_touch_selector_append_text(optimize, _("least walking"));
+    hildon_touch_selector_set_active(optimize, 0, self->optimize);
+
+    widget =
+        g_object_new(HILDON_TYPE_PICKER_BUTTON,
+                     "arrangement", HILDON_BUTTON_ARRANGEMENT_VERTICAL,
+                     "size", HILDON_SIZE_FINGER_HEIGHT,
+                     "title", _("Routing algorithm"),
+                     "touch-selector", optimize,
+                     "xalign", 0.0,
+                     NULL);
+    map_dialog_add_widget(MAP_DIALOG(dialog), widget);
+
+    /* Walking speed */
+
+    walkspeed = HILDON_TOUCH_SELECTOR(hildon_touch_selector_new_text());
+    hildon_touch_selector_append_text(walkspeed, _("slow"));
+    hildon_touch_selector_append_text(walkspeed, _("normal"));
+    hildon_touch_selector_append_text(walkspeed, _("fast"));
+    hildon_touch_selector_append_text(walkspeed, _("running"));
+    hildon_touch_selector_append_text(walkspeed, _("cycling"));
+    hildon_touch_selector_set_active(walkspeed, 0,
+                                     WALKSPEED_TO_SELECTOR(self->walkspeed));
+
+    widget =
+        g_object_new(HILDON_TYPE_PICKER_BUTTON,
+                     "arrangement", HILDON_BUTTON_ARRANGEMENT_VERTICAL,
+                     "size", HILDON_SIZE_FINGER_HEIGHT,
+                     "title", _("Walking speed"),
+                     "touch-selector", walkspeed,
+                     "xalign", 0.0,
+                     NULL);
+    map_dialog_add_widget(MAP_DIALOG(dialog), widget);
 
     transport=
         HILDON_TOUCH_SELECTOR(hildon_touch_selector_new_text());
@@ -1009,6 +1075,13 @@ map_reittiopas_run_options_dialog(MapRouter *router, GtkWindow *parent)
             gtk_tree_path_free(path);
         }
         g_list_free(selected_rows);
+
+        self->optimize = hildon_touch_selector_get_active(optimize, 0);
+
+        self->walkspeed = WALKSPEED_FROM_SELECTOR(
+            hildon_touch_selector_get_active(walkspeed, 0));
+
+        self->margin = hildon_touch_selector_get_active(margin, 0);
     }
 
     gtk_widget_destroy(dialog);
@@ -1072,6 +1145,9 @@ map_reittiopas_init(MapReittiopas *self)
 
     for (i = 0; i < RO_TRANSPORT_LAST; i++)
         self->transport_allowed[i] = TRUE;
+
+    self->walkspeed = RO_WALKSPEED_NORMAL;
+    self->margin = 3;
 }
 
 static void
