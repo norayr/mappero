@@ -89,9 +89,11 @@ typedef enum {
 #define EL_IS_SEGMENT(e)  (e == EL_LINE || e == EL_WALK)
 
 #define MAX_LEVELS  16
+#define MAX_ROUTES  5
 
 typedef struct {
-    MapPoint p;
+    KKJ2 kkj;
+    gboolean got_coords;
     gint type;
     gint mobility;
     const gchar *code;
@@ -104,32 +106,45 @@ typedef struct {
 } Attributes;
 
 typedef struct {
-    MapPoint p;
+    KKJ2 kkj;
     time_t arrival;
     time_t departure;
     gchar *code;
     gchar *id;
     gchar *name;
-    gboolean is_waypoint;
 } RoPoint;
 
 typedef struct {
+    guint time; /* in seconds */
+    float distance;
+} RoLength;
+
+typedef struct {
+    RoLength length;
     gint type;
     gint mobility;
     gchar *code;
     gchar *id;
+    GArray *points;
 } RoLine;
 
 typedef struct {
-    Path *path;
+    RoLength length;
+    GList *lines;
+} RoRoute;
+
+typedef struct {
     gfloat lat;
     gfloat lon;
     gboolean error;
     RoElement elements[MAX_LEVELS];
     gint level;
-    gboolean segment_has_points;
     RoPoint point;
-    RoLine line;
+    RoRoute routes[MAX_ROUTES];
+    gint n_routes;
+    /* current elements */
+    RoRoute *route;
+    RoLine *line;
 } SaxData;
 
 #define strsame(s1, s2)  (strcmp((const gchar *)s1, s2) == 0)
@@ -354,20 +369,58 @@ unit2kkj2(const MapPoint *p, KKJ2 *k)
 /* XML handling */
 
 static void
-free_point(SaxData *data)
+ro_point_free(RoPoint *point)
 {
-    g_free(data->point.code);
-    g_free(data->point.id);
-    g_free(data->point.name);
-    memset(&data->point, 0, sizeof(RoPoint));
+    g_free(point->code);
+    g_free(point->id);
+    g_free(point->name);
+    memset(point, 0, sizeof(RoPoint));
+}
+
+static RoLine *
+ro_line_new()
+{
+    RoLine *line = g_slice_new0(RoLine);
+    line->points = g_array_sized_new(FALSE, FALSE, sizeof(RoPoint), 4);
+    return line;
 }
 
 static void
-free_line(SaxData *data)
+ro_line_free(RoLine *line)
 {
-    g_free(data->line.code);
-    g_free(data->line.id);
-    memset(&data->line, 0, sizeof(RoLine));
+    gint i;
+
+    g_free(line->code);
+    g_free(line->id);
+
+    for (i = 1; i < line->points->len; i++)
+    {
+        RoPoint *point = &g_array_index(line->points, RoPoint, i);
+        ro_point_free(point);
+    }
+    g_array_free(line->points, TRUE);
+
+    g_slice_free(RoLine, line);
+}
+
+static void
+ro_route_free(RoRoute *route)
+{
+    while (route->lines)
+    {
+        RoLine *line = route->lines->data;
+        ro_line_free(line);
+        route->lines = g_list_delete_link(route->lines, route->lines);
+    }
+}
+
+static void
+sax_data_free(SaxData *data)
+{
+    gint i;
+
+    for (i = 0; i < MAX_ROUTES; i++)
+        ro_route_free(&data->routes[i]);
 }
 
 static xmlEntityPtr
@@ -447,7 +500,6 @@ static void
 parse_attributes(Attributes *a, RoElement el, const gchar **attrs)
 {
     const gchar **attr;
-    KKJ2 kkj;
     gboolean got_x = FALSE, got_y = FALSE;
     const gchar *date = NULL, *time = NULL;
 
@@ -460,12 +512,12 @@ parse_attributes(Attributes *a, RoElement el, const gchar **attrs)
         {
             if (strsame(name, "x"))
             {
-                kkj.i = g_ascii_strtod(value, NULL);
+                a->kkj.i = g_ascii_strtod(value, NULL);
                 got_x = TRUE;
             }
             else if (strsame(name, "y"))
             {
-                kkj.p = g_ascii_strtod(value, NULL);
+                a->kkj.p = g_ascii_strtod(value, NULL);
                 got_y = TRUE;
             }
             else if (strsame(name, "code"))
@@ -508,7 +560,7 @@ parse_attributes(Attributes *a, RoElement el, const gchar **attrs)
     }
 
     if (got_x && got_y)
-        kkj22unit(&kkj, &a->p);
+        a->got_coords = TRUE;
 
     if (date && time)
     {
@@ -546,8 +598,22 @@ handle_start_element(SaxData *data, const xmlChar *name, const xmlChar **attrs)
     }
     data->elements[data->level] = el;
 
-    if (EL_IS_SEGMENT(el))
-        data->segment_has_points = FALSE;
+    if (el == EL_ROUTE)
+    {
+        if (data->n_routes >= MAX_ROUTES)
+            data->error = TRUE;
+        else
+            data->route = data->routes + data->n_routes;
+    }
+    else if (EL_IS_SEGMENT(el))
+    {
+        if (!data->route)
+        {
+            data->error = TRUE;
+            return;
+        }
+        data->line = ro_line_new();
+    }
 
     if (attrs)
     {
@@ -558,15 +624,11 @@ handle_start_element(SaxData *data, const xmlChar *name, const xmlChar **attrs)
         {
             if (EL_IS_POINT(el))
             {
-                data->point.p = a.p;
-                data->point.code = g_strdup(a.code);
-                data->point.id = g_strdup(a.id);
-
-                /* if this is the first point in a segment, it's a waypoint */
-                if (!data->segment_has_points)
+                if (a.got_coords)
                 {
-                    data->segment_has_points = TRUE;
-                    data->point.is_waypoint = TRUE;
+                    data->point.kkj = a.kkj;
+                    data->point.code = g_strdup(a.code);
+                    data->point.id = g_strdup(a.id);
                 }
             }
         }
@@ -586,10 +648,10 @@ handle_start_element(SaxData *data, const xmlChar *name, const xmlChar **attrs)
         }
         else if (el == EL_LINE)
         {
-            data->line.code = g_strdup(a.code);
-            data->line.id = g_strdup(a.id);
-            data->line.type = a.type;
-            data->line.mobility = a.mobility;
+            data->line->code = g_strdup(a.code);
+            data->line->id = g_strdup(a.id);
+            data->line->type = a.type;
+            data->line->mobility = a.mobility;
         }
         else if (el == EL_LOC && data->lat == 0)
         {
@@ -621,43 +683,91 @@ handle_end_element(SaxData *data, const xmlChar *name)
 
     if (EL_IS_POINT(el))
     {
-        if (data->point.p.x != 0)
+        if (data->line)
         {
-            MACRO_PATH_INCREMENT_TAIL(*data->path);
-            data->path->tail->unit = data->point.p;
-            data->path->tail->time = data->point.departure;
-            data->path->tail->altitude = 0;
-
-            if (data->point.is_waypoint)
-            {
-                MACRO_PATH_INCREMENT_WTAIL(*data->path);
-                data->path->wtail->point = data->path->tail;
-                if (data->line.code)
-                {
-                    data->path->wtail->desc =
-                        g_strdup_printf("%s\n%s %.4s", data->point.name,
-                                        transport_type(data->line.type),
-                                        data->line.code + 1);
-                }
-                else
-                    data->path->wtail->desc = g_strdup(data->point.name);
-            }
-
-            free_point(data);
+            g_array_append_val(data->line->points, data->point);
+            memset(&data->point, 0, sizeof(RoPoint));
         }
+        else
+            ro_point_free(&data->point);
     }
     else if (EL_IS_SEGMENT(el))
     {
-        free_line(data);
+        data->route->lines = g_list_append(data->route->lines, data->line);
+        data->line = NULL;
     }
     else if (el == EL_ROUTE)
     {
-        /* Add a null point at the end of the route */
-        MACRO_PATH_INCREMENT_TAIL(*data->path);
-        *data->path->tail = _point_null;
+        data->n_routes++;
+        data->route = NULL;
     }
 
     data->level--;
+}
+
+static void
+ro_point_to_path_point(const RoPoint *point, Point *p)
+{
+    kkj22unit(&point->kkj, &p->unit);
+    p->time = point->departure;
+    p->altitude = 0;
+}
+
+static void
+ro_route_to_path(const RoRoute *route, Path *path)
+{
+    GList *list;
+
+    for (list = route->lines; list != NULL; list = list->next)
+    {
+        RoLine *line = list->data;
+        RoPoint *point;
+        Point path_point;
+        gint i;
+
+        if (line->points->len < 2) continue;
+
+        /* the first point is somehow special: handle it out of the for loop */
+        point = &g_array_index(line->points, RoPoint, 0);
+
+        memset(&path_point, 0, sizeof(path_point));
+        ro_point_to_path_point(point, &path_point);
+        if (path->head != path->tail &&
+            path->tail->unit.x == path_point.unit.x &&
+            path->tail->unit.y == path_point.unit.y)
+        {
+            /* if this point has the same coordinates of the previous one,
+             * overwrite the previous: do not increment the path */
+        }
+        else
+            MACRO_PATH_INCREMENT_TAIL(*path);
+        *path->tail = path_point;
+
+        /* the first point is always a waypoint */
+        MACRO_PATH_INCREMENT_WTAIL(*path);
+        path->wtail->point = path->tail;
+        if (line->code)
+        {
+            path->wtail->desc =
+                g_strdup_printf("%s\n%s %.4s", point->name,
+                                transport_type(line->type),
+                                line->code + 1);
+        }
+        else
+            path->wtail->desc = g_strdup(point->name);
+
+        for (i = 1; i < line->points->len; i++)
+        {
+            point = &g_array_index(line->points, RoPoint, i);
+
+            MACRO_PATH_INCREMENT_TAIL(*path);
+            ro_point_to_path_point(point, path->tail);
+        }
+    }
+
+    /* Add a null point at the end of the route */
+    MACRO_PATH_INCREMENT_TAIL(*path);
+    *path->tail = _point_null;
 }
 
 static gboolean
@@ -733,14 +843,17 @@ download_route(MapReittiopas *self, Path *path,
     }
 
     memset(&data, 0, sizeof(data));
-    data.path = path;
-    if (!parse_xml(&data, bytes, size))
+    if (!parse_xml(&data, bytes, size) || data.n_routes == 0)
     {
         g_set_error(error, MAP_ERROR, MAP_ERROR_INVALID_ADDRESS,
                     _("Invalid source or destination."));
+        sax_data_free(&data);
         goto finish;
     }
 
+    ro_route_to_path(&data.routes[0], path);
+
+    sax_data_free(&data);
 finish:
     g_free(bytes);
 }
@@ -786,11 +899,13 @@ fetch_geocode(const gchar *address, gfloat *lat, gfloat *lon, GError **error)
     {
         g_set_error(error, MAP_ERROR, MAP_ERROR_INVALID_ADDRESS,
                     _("Invalid source or destination."));
+        sax_data_free(&data);
         goto finish;
     }
 
     *lat = data.lat;
     *lon = data.lon;
+    sax_data_free(&data);
 
 finish:
     g_free(bytes);
