@@ -586,8 +586,9 @@ repository_edit_dialog(GtkWindow *parent, Repository *repo, gboolean allow_delet
 
     dialog = gtk_dialog_new_with_buttons(_("Repository"), parent, GTK_DIALOG_MODAL,
                                          NULL);
-    if (allow_delete)
-        gtk_dialog_add_button(GTK_DIALOG(dialog), GTK_STOCK_DELETE, RESP_DELETE);
+    gtk_widget_set_sensitive(gtk_dialog_add_button(GTK_DIALOG(dialog),
+                                                   GTK_STOCK_DELETE, RESP_DELETE),
+                             allow_delete);
     gtk_dialog_add_button(GTK_DIALOG(dialog), GTK_STOCK_SAVE, RESP_SAVE);
     table = gtk_table_new(4, 3, TRUE);
     gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox), table, TRUE, TRUE, 0);
