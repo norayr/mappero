@@ -375,56 +375,49 @@ tile_sources_delete_handler(GtkWindow* parent, TileSource* ts)
 }
 
 
-struct SelectTileSourceContext {
-    gboolean active;            /* Should we handle changed signal? */
-};
-
-
-
 static TileSource *
-tile_source_selector_get_active(HildonTouchSelector *selector)
+tile_source_selector_get_activated(HildonTouchSelector *selector)
 {
-    gint active = hildon_touch_selector_get_active(selector, 0);
-    GList *ts_list = map_controller_get_tile_sources_list(
-                          map_controller_get_instance());
+    GtkTreePath *path;
+    gint *indices;
+    GList *ts_list;
 
-    if (active < 0)
+    ts_list = map_controller_get_tile_sources_list( map_controller_get_instance());
+
+    path = hildon_touch_selector_get_last_activated_row(selector, 0);
+    if (!path)
         return NULL;
 
-    return (TileSource*)g_list_nth_data(ts_list, active);
+    indices = gtk_tree_path_get_indices(path);
+    if (!indices)
+        return NULL;
+
+    return (TileSource*)g_list_nth_data(ts_list, *indices);
 }
 
 
 static void
-refresh_tile_source_list_selector(HildonTouchSelector *selector,
-                                  struct SelectTileSourceContext *context)
+refresh_tile_source_list_selector(HildonTouchSelector *selector)
 {
     GtkListStore *list_store = GTK_LIST_STORE(hildon_touch_selector_get_model(selector, 0));
-    TileSource *ts;
 
-    context->active = FALSE;
-    ts = tile_source_selector_get_active(selector);
     gtk_list_store_clear(list_store);
-    tile_source_fill_selector(selector, FALSE, FALSE, ts);
-    context->active = TRUE;
+    tile_source_fill_selector(selector, FALSE, FALSE, NULL);
 }
 
 
 static void
 select_tile_source_callback(HildonTouchSelector *selector,
-                            gint column, struct SelectTileSourceContext *context)
+                            gint column, gpointer data)
 {
     TileSource *ts;
 
-    if (!context->active)
-        return;
-
-    ts = tile_source_selector_get_active(selector);
+    ts = tile_source_selector_get_activated(selector);
     if (!ts)
         return;
 
     if (tile_source_edit_dialog(NULL, ts))
-        refresh_tile_source_list_selector(selector, context);
+        refresh_tile_source_list_selector(selector);
 }
 
 
@@ -513,7 +506,6 @@ tile_source_list_edit_dialog()
     MapController *controller = map_controller_get_instance();
     TileSource *ts;
     gint response;
-    struct SelectTileSourceContext context;
     enum {
         RESP_NEW,
     };
@@ -525,12 +517,11 @@ tile_source_list_edit_dialog()
     gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox),
                        GTK_WIDGET(ts_selector), TRUE, TRUE, 0);
     gtk_widget_set_size_request(GTK_WIDGET(ts_selector), -1, 300);
-
+    hildon_touch_selector_set_hildon_ui_mode(ts_selector, HILDON_UI_MODE_NORMAL);
     gtk_widget_show_all(dialog);
 
-    context.active = TRUE;
-    g_signal_connect(G_OBJECT(ts_selector), "changed", G_CALLBACK(select_tile_source_callback), &context);
-    refresh_tile_source_list_selector(ts_selector, &context);
+    g_signal_connect(G_OBJECT(ts_selector), "changed", G_CALLBACK(select_tile_source_callback), NULL);
+    refresh_tile_source_list_selector(ts_selector);
 
     while (1) {
         if ((response = gtk_dialog_run(GTK_DIALOG(dialog))) == GTK_RESPONSE_DELETE_EVENT)
@@ -544,7 +535,7 @@ tile_source_list_edit_dialog()
             ts->type = NULL;
             if (tile_source_edit_dialog(GTK_WINDOW(dialog), ts)) {
                 map_controller_append_tile_source(controller, ts);
-                refresh_tile_source_list_selector(ts_selector, &context);
+                refresh_tile_source_list_selector(ts_selector);
             }
             else
                 tile_source_free(ts);
