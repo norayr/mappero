@@ -45,24 +45,16 @@ append_int(xmlNodePtr parent, const gchar *name, int val)
 
 
 static void
-fill_selector_with_repositories(HildonTouchSelector *selector,
-                                Repository *active)
+fill_selector_with_repositories(HildonTouchSelector *selector)
 {
     MapController *controller = map_controller_get_instance();
     GList *repo_list = map_controller_get_repo_list(controller);
-    gint index = 0;
     Repository *repo;
-
-    if (!active)
-        active = map_controller_get_repository(controller);
 
     while (repo_list) {
         repo = (Repository*)repo_list->data;
         hildon_touch_selector_append_text(selector, repo->name);
-        if (repo == active)
-            hildon_touch_selector_set_active(selector, 0, index);
         repo_list = repo_list->next;
-        index++;
     }
 }
 
@@ -525,56 +517,43 @@ select_layers_button_clicked(GtkWidget *widget,
 }
 
 
-/* Structure passed to repository list selection callback */
-struct SelectRepositoryContext {
-    gboolean active;            /* Should we handle changed signal? */
-};
-
 
 /*
- * Returns active repository object in repository list selector
+ * Returns last activated item in repository selector
  */
 static Repository *
-repository_selector_get_active(HildonTouchSelector *selector)
+repository_selector_get_activated(HildonTouchSelector *selector)
 {
-    gint active;
     GList *repo_list = map_controller_get_repo_list(map_controller_get_instance());
+    GtkTreePath *path;
+    gint *indices;
 
-    active = hildon_touch_selector_get_active(selector, 0);
-    if (active < 0)
+    path = hildon_touch_selector_get_last_activated_row(selector, 0);
+    if (!path)
         return NULL;
 
-    return (Repository*)g_list_nth_data(repo_list, active);
+    indices = gtk_tree_path_get_indices(path);
+    if (!indices)
+        return NULL;
+
+    return (Repository*)g_list_nth_data(repo_list, *indices);
 }
 
 
 /*
  * Routine erases passed selector and fill it with actual
- * list of repositories' names. It properly locks context
- * to prevent repository edit dialog appearance.
+ * list of repositories' names.
  */
 static void
-refresh_repository_list_selector(HildonTouchSelector *selector,
-                                 struct SelectRepositoryContext *context)
+refresh_repository_list_selector(HildonTouchSelector *selector)
 {
     GtkListStore *list_store = GTK_LIST_STORE(hildon_touch_selector_get_model(selector, 0));
-    Repository *repo;
-
-    /* lock context */
-    context->active = FALSE;
-
-    /* find active item. If there is no active item, we'll make current
-     * repository active item. */
-    repo = repository_selector_get_active(selector);
 
     /* clear current items */
     gtk_list_store_clear(list_store);
 
     /* fill selector with repositories */
-    fill_selector_with_repositories(selector, repo);
-
-    /* unlock context */
-    context->active = TRUE;
+    fill_selector_with_repositories(selector);
 }
 
 
@@ -771,21 +750,17 @@ repository_edit_dialog(GtkWindow *parent, Repository *repo, gboolean allow_delet
 
 
 /*
- * Routine called when touch selector with list of repositories changes
- * selection. If context is active, we show edit dialog with selected repository.
+ * Routine called when user activates item in touch selector
  */
 static void
 select_repository_callback(HildonTouchSelector *selector,
-                           gint column, struct SelectRepositoryContext *context)
+                           gint column, gpointer data)
 {
     MapController *controller = map_controller_get_instance();
     Repository *repo;
     gboolean repo_is_active;
 
-    if (!context->active)
-        return;
-
-    repo = repository_selector_get_active(selector);
+    repo = repository_selector_get_activated(selector);
     if (!repo)
         return;
 
@@ -793,12 +768,12 @@ select_repository_callback(HildonTouchSelector *selector,
 
     if (repository_edit_dialog(NULL, repo, !repo_is_active))
     {
-        if (repo == map_controller_get_repository(controller))
+        if (repo_is_active)
             map_refresh_mark(TRUE);
         /* Refresh repositories menu entries */
         menu_maps_add_repos();
         /* Refresh repostiory list */
-        refresh_repository_list_selector(selector, context);
+        refresh_repository_list_selector(selector);
     }
 }
 
@@ -959,7 +934,6 @@ repository_list_edit_dialog()
     gint response;
     Repository *repo;
     gboolean update_list = FALSE;
-    struct SelectRepositoryContext context;
 
     dialog = gtk_dialog_new_with_buttons(_("Repositories"), GTK_WINDOW(_window),
                                          GTK_DIALOG_MODAL, NULL);
@@ -971,8 +945,9 @@ repository_list_edit_dialog()
                        GTK_WIDGET(repos_selector), TRUE, TRUE, 0);
     gtk_widget_show_all(dialog);
 
-    g_signal_connect(G_OBJECT(repos_selector), "changed", G_CALLBACK(select_repository_callback), &context);
-    refresh_repository_list_selector(repos_selector, &context);
+    hildon_touch_selector_set_hildon_ui_mode(repos_selector, HILDON_UI_MODE_NORMAL);
+    g_signal_connect(G_OBJECT(repos_selector), "changed", G_CALLBACK(select_repository_callback), NULL);
+    refresh_repository_list_selector(repos_selector);
 
     while (1) {
         if ((response = gtk_dialog_run(GTK_DIALOG(dialog))) == GTK_RESPONSE_DELETE_EVENT)
@@ -1000,7 +975,7 @@ repository_list_edit_dialog()
 
         if (update_list) {
             menu_maps_add_repos();
-            refresh_repository_list_selector(repos_selector, &context);
+            refresh_repository_list_selector(repos_selector);
             update_list = FALSE;
         }
     }
