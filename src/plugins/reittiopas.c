@@ -31,6 +31,7 @@
 #include "error.h"
 #include "path.h"
 
+#include <hildon/hildon-pannable-area.h>
 #include <hildon/hildon-picker-button.h>
 #include <libxml/xmlreader.h>
 #include <math.h>
@@ -52,11 +53,55 @@ G_DEFINE_TYPE_WITH_CODE(MapReittiopas, map_reittiopas, G_TYPE_OBJECT,
 #define WALKSPEED_TO_SELECTOR(ws)   (ws - 1)
 #define WALKSPEED_FROM_SELECTOR(idx)    (idx + 1)
 
+enum {
+    COL_PIXBUF = 0,
+    COL_LAST
+};
+
+typedef enum {
+    RO_TRANSPORT_HELSINKI_BUS = 1,
+    RO_TRANSPORT_HELSINKI_TRAM,
+    RO_TRANSPORT_ESPOO_INTERNAL,
+    RO_TRANSPORT_VANTAA_INTERNAL,
+    RO_TRANSPORT_REGIONAL,
+    RO_TRANSPORT_METRO,
+    RO_TRANSPORT_FERRY,
+    RO_TRANSPORT_U_LINES,
+    RO_TRANSPORT_OTHER_REGIONAL,
+    RO_TRANSPORT_LONG_DISTANCE,
+    RO_TRANSPORT_EXPRESS,
+    RO_TRANSPORT_VR_REGIONAL,
+    RO_TRANSPORT_VR_LONG_DISTANCE,
+    RO_TRANSPORT_ALL,
+    RO_TRANSPORT_HELSINKI_SERVICE_LINES = 21,
+    RO_TRANSPORT_HELSINKI_NIGHT,
+    RO_TRANSPORT_ESPOO_SERVICE_LINES,
+    RO_TRANSPORT_VANTAA_SERVICE_LINES,
+    RO_TRANSPORT_REGIONAL_NIGHT,
+} RoTransport;
+
+typedef enum {
+    RO_AREA_TYPE_HELSINKI_INTERNAL = '1',
+    RO_AREA_TYPE_ESPOO,
+    RO_AREA_TYPE_LOCAL_TRAIN,
+    RO_AREA_TYPE_VANTAA,
+    RO_AREA_TYPE_REGIONAL,
+    RO_AREA_TYPE_UNUSED,
+    RO_AREA_TYPE_U_LINES,
+} RoAreaType;
+
 /* a point in Reittiopas coordinate system */
 typedef struct {
     gfloat p;
     gfloat i;
 } KKJ2;
+
+typedef struct {
+    KKJ2 from;
+    KKJ2 to;
+    time_t time;
+    gboolean arrival;
+} RoQuery;
 
 typedef struct {
     MapPoint from;
@@ -70,6 +115,7 @@ typedef enum {
     EL_NONE,
     EL_MTRXML,
     EL_ROUTE,
+    EL_LENGTH,
     EL_WALK,
     EL_LINE,
     EL_POINT,
@@ -93,20 +139,6 @@ typedef enum {
 
 typedef struct {
     KKJ2 kkj;
-    gboolean got_coords;
-    gint type;
-    gint mobility;
-    const gchar *code;
-    const gchar *id;
-    const gchar *lang;
-    const gchar *val;
-    time_t time;
-    gfloat lat;
-    gfloat lon;
-} Attributes;
-
-typedef struct {
-    KKJ2 kkj;
     time_t arrival;
     time_t departure;
     gchar *code;
@@ -116,14 +148,17 @@ typedef struct {
 
 typedef struct {
     guint time; /* in seconds */
-    float distance;
+    guint distance; /* in metres */
 } RoLength;
 
+#define LINE_CODE_LEN 6
 typedef struct {
     RoLength length;
-    gint type;
+    gboolean walk;
+    RoTransport transport;
+    RoAreaType area_type;
     gint mobility;
-    gchar *code;
+    gchar code[LINE_CODE_LEN];
     gchar *id;
     GArray *points;
 } RoLine;
@@ -134,20 +169,51 @@ typedef struct {
 } RoRoute;
 
 typedef struct {
+    KKJ2 kkj;
+    gboolean got_coords;
+    RoTransport type;
+    gint mobility;
+    const gchar *code;
+    const gchar *id;
+    const gchar *lang;
+    const gchar *val;
+    time_t time;
+    gfloat lat;
+    gfloat lon;
+    RoLength length;
+} Attributes;
+
+typedef struct {
+    RoRoute routes[MAX_ROUTES];
+    gint n_routes;
+} RoRoutes;
+
+typedef struct {
     gfloat lat;
     gfloat lon;
     gboolean error;
     RoElement elements[MAX_LEVELS];
     gint level;
     RoPoint point;
-    RoRoute routes[MAX_ROUTES];
-    gint n_routes;
+    RoRoutes *routes;
     /* current elements */
     RoRoute *route;
     RoLine *line;
 } SaxData;
 
+typedef struct {
+    MapReittiopas *reittiopas;
+    GtkWidget *dialog;
+    RoRoutes *routes;
+    const RoQuery *query;
+    GtkListStore *store;
+} RouteSelectionData;
+
 #define strsame(s1, s2)  (strcmp((const gchar *)s1, s2) == 0)
+
+static void
+download_route(MapReittiopas *self, RoRoutes *routes, const RoQuery *q,
+               GError **error);
 
 static gboolean
 location2units(const MapLocation *loc, MapPoint *u)
@@ -201,7 +267,7 @@ wgslatlon2kkjlatlon(gdouble wlat, gdouble wlon, gdouble *klat, gdouble *klon)
         0.122353E-02 * la * lo +
         0.335456E-03 * lo * lo;
     dla = deg2rad(dla) / 3600.0;
-    
+
     dlo = 0.286008E+02 +
         -0.114139E+01 * la +
         0.581329E+00 * lo +
@@ -390,10 +456,9 @@ ro_line_free(RoLine *line)
 {
     gint i;
 
-    g_free(line->code);
     g_free(line->id);
 
-    for (i = 1; i < line->points->len; i++)
+    for (i = 0; i < line->points->len; i++)
     {
         RoPoint *point = &g_array_index(line->points, RoPoint, i);
         ro_point_free(point);
@@ -415,12 +480,17 @@ ro_route_free(RoRoute *route)
 }
 
 static void
-sax_data_free(SaxData *data)
+ro_routes_free(RoRoutes *routes)
 {
     gint i;
 
-    for (i = 0; i < MAX_ROUTES; i++)
-        ro_route_free(&data->routes[i]);
+    for (i = 0; i < routes->n_routes; i++)
+        ro_route_free(&routes->routes[i]);
+}
+
+static void
+sax_data_free(SaxData *data)
+{
 }
 
 static xmlEntityPtr
@@ -437,28 +507,28 @@ handle_error(SaxData *data, const gchar *msg, ...)
 }
 
 static const gchar *
-transport_type(gint type)
+transport_type(RoTransport type)
 {
     switch (type) {
-    case 1: return "Helsinki/bus";
-    case 2: return "Helsinki/tram";
-    case 3: return "Espoo internal";
-    case 4: return "Vantaa internal";
-    case 5: return "Regional traffic";
-    case 6: return "Metro traffic";
-    case 7: return "Ferry";
-    case 8: return "U-lines";
-    case 9: return "Other local traffic";
-    case 10: return "Long-distance traffic";
-    case 11: return "Express";
-    case 12: return "VR local traffic";
-    case 13: return "VR long-distance traffic";
-    case 14: return "All";
-    case 21: return "Helsinki service lines";
-    case 22: return "Helsinki night traffic";
-    case 23: return "Espoo service lines";
-    case 24: return "Vantaa service lines";
-    case 25: return "Regional night traffic";
+    case RO_TRANSPORT_HELSINKI_BUS: return "Helsinki/bus";
+    case RO_TRANSPORT_HELSINKI_TRAM: return "Helsinki/tram";
+    case RO_TRANSPORT_ESPOO_INTERNAL: return "Espoo internal";
+    case RO_TRANSPORT_VANTAA_INTERNAL: return "Vantaa internal";
+    case RO_TRANSPORT_REGIONAL: return "Regional traffic";
+    case RO_TRANSPORT_METRO: return "Metro traffic";
+    case RO_TRANSPORT_FERRY: return "Ferry";
+    case RO_TRANSPORT_U_LINES: return "U-lines";
+    case RO_TRANSPORT_OTHER_REGIONAL: return "Other local traffic";
+    case RO_TRANSPORT_LONG_DISTANCE: return "Long-distance traffic";
+    case RO_TRANSPORT_EXPRESS: return "Express";
+    case RO_TRANSPORT_VR_REGIONAL: return "VR local traffic";
+    case RO_TRANSPORT_VR_LONG_DISTANCE: return "VR long-distance traffic";
+    case RO_TRANSPORT_ALL: return "All";
+    case RO_TRANSPORT_HELSINKI_SERVICE_LINES: return "Helsinki service lines";
+    case RO_TRANSPORT_HELSINKI_NIGHT: return "Helsinki night traffic";
+    case RO_TRANSPORT_ESPOO_SERVICE_LINES: return "Espoo service lines";
+    case RO_TRANSPORT_VANTAA_SERVICE_LINES: return "Vantaa service lines";
+    case RO_TRANSPORT_REGIONAL_NIGHT: return "Regional night traffic";
     };
 
     return "Unknown";
@@ -491,6 +561,8 @@ ro_element_from_name(const xmlChar *name)
         return EL_GEOCODE;
     if (strsame(name, "LOC"))
         return EL_LOC;
+    if (strsame(name, "LENGTH"))
+        return EL_LENGTH;
     if (strsame(name, "ERROR"))
         return EL_ERROR;
     return EL_UNKNOWN;
@@ -557,6 +629,13 @@ parse_attributes(Attributes *a, RoElement el, const gchar **attrs)
             else if (strsame(name, "lon"))
                 a->lon = g_ascii_strtod(value, NULL);
         }
+        else if (el == EL_LENGTH)
+        {
+            if (strsame(name, "time"))
+                a->length.time = g_ascii_strtod(value, NULL) * 60;
+            else if (strsame(name, "dist"))
+                a->length.distance = g_ascii_strtod(value, NULL);
+        }
     }
 
     if (got_x && got_y)
@@ -600,10 +679,10 @@ handle_start_element(SaxData *data, const xmlChar *name, const xmlChar **attrs)
 
     if (el == EL_ROUTE)
     {
-        if (data->n_routes >= MAX_ROUTES)
+        if (!data->routes || data->routes->n_routes >= MAX_ROUTES)
             data->error = TRUE;
         else
-            data->route = data->routes + data->n_routes;
+            data->route = data->routes->routes + data->routes->n_routes;
     }
     else if (EL_IS_SEGMENT(el))
     {
@@ -613,6 +692,8 @@ handle_start_element(SaxData *data, const xmlChar *name, const xmlChar **attrs)
             return;
         }
         data->line = ro_line_new();
+        if (el == EL_WALK)
+            data->line->walk = TRUE;
     }
 
     if (attrs)
@@ -631,6 +712,10 @@ handle_start_element(SaxData *data, const xmlChar *name, const xmlChar **attrs)
                     data->point.id = g_strdup(a.id);
                 }
             }
+            else if (el == EL_LENGTH)
+            {
+                data->line->length = a.length;
+            }
         }
         else if (EL_IS_POINT(parent))
         {
@@ -646,12 +731,27 @@ handle_start_element(SaxData *data, const xmlChar *name, const xmlChar **attrs)
                     data->point.name = g_strdup(a.val);
             }
         }
-        else if (el == EL_LINE)
+        else if (parent == EL_ROUTE)
         {
-            data->line->code = g_strdup(a.code);
-            data->line->id = g_strdup(a.id);
-            data->line->type = a.type;
-            data->line->mobility = a.mobility;
+            if (el == EL_LINE)
+            {
+                gchar buffer[6], *ptr;
+
+                data->line->area_type = a.code[0];
+                sprintf(buffer, "%.4s", a.code + 1);
+                /* remove leading spaces/zeroes and trailing spaces */
+                for (ptr = buffer + strlen(buffer) - 1; ptr[0] == ' '; ptr--)
+                    ptr[0] = '\0';
+                for (ptr = buffer; ptr[0] == ' ' || ptr[0] == '0'; ptr++);
+                sprintf(data->line->code, "%.4s", ptr);
+                data->line->id = g_strdup(a.id);
+                data->line->transport = a.type;
+                data->line->mobility = a.mobility;
+            }
+            else if (el == EL_LENGTH)
+            {
+                data->route->length = a.length;
+            }
         }
         else if (el == EL_LOC && data->lat == 0)
         {
@@ -698,7 +798,7 @@ handle_end_element(SaxData *data, const xmlChar *name)
     }
     else if (el == EL_ROUTE)
     {
-        data->n_routes++;
+        data->routes->n_routes++;
         data->route = NULL;
     }
 
@@ -750,8 +850,8 @@ ro_route_to_path(const RoRoute *route, Path *path)
         {
             path->wtail->desc =
                 g_strdup_printf("%s\n%s %.4s", point->name,
-                                transport_type(line->type),
-                                line->code + 1);
+                                transport_type(line->transport),
+                                line->code);
         }
         else
             path->wtail->desc = g_strdup(point->name);
@@ -790,9 +890,490 @@ parse_xml(SaxData *data, gchar *buffer, gsize len)
     return ret == 0 && !data->error;
 }
 
+static size_t
+time_to_string(gchar *string, size_t size, time_t time)
+{
+    struct tm tm;
+
+    tm = *localtime(&time);
+    return strftime(string, size, "%H:%M", &tm);
+}
+
+static inline guint8
+convert_color_channel(guint8 src, guint8 alpha)
+{
+        return alpha ? ((src << 8) - src) / alpha : 0;
+}
+
+/**
+ * cairo_convert_to_pixbuf:
+ * Converts from a Cairo image surface to a GdkPixbuf. Why does GTK+ not
+ * implement this?
+ */
+GdkPixbuf *
+cairo_convert_to_pixbuf(cairo_surface_t *surface)
+{
+    GdkPixbuf *pixbuf;
+    int width, height;
+    int srcstride, dststride;
+    guchar *srcpixels, *dstpixels;
+    guchar *srcpixel, *dstpixel;
+    int n_channels;
+    int x, y;
+
+    width = cairo_image_surface_get_width (surface);
+    height = cairo_image_surface_get_height (surface);
+    srcstride = cairo_image_surface_get_stride (surface);
+    srcpixels = cairo_image_surface_get_data (surface);
+
+    pixbuf = gdk_pixbuf_new (GDK_COLORSPACE_RGB, TRUE, 8,
+                             width, height);
+    dststride = gdk_pixbuf_get_rowstride (pixbuf);
+    dstpixels = gdk_pixbuf_get_pixels (pixbuf);
+    n_channels = gdk_pixbuf_get_n_channels (pixbuf);
+
+    for (y = 0; y < height; y++)
+    {
+        for (x = 0; x < width; x++)
+        {
+            srcpixel = srcpixels + y * srcstride + x * 4;
+            dstpixel = dstpixels + y * dststride + x * n_channels;
+
+            dstpixel[0] = convert_color_channel (srcpixel[2],
+                                                 srcpixel[3]);
+            dstpixel[1] = convert_color_channel (srcpixel[1],
+                                                 srcpixel[3]);
+            dstpixel[2] = convert_color_channel (srcpixel[0],
+                                                 srcpixel[3]);
+            dstpixel[3] = srcpixel[3];
+        }
+    }
+
+    return pixbuf;
+}
+
 static void
-download_route(MapReittiopas *self, Path *path,
-               const KKJ2 *from, const KKJ2 *to, GError **error)
+draw_text(cairo_t *cr, PangoFontDescription *desc, const gchar *text,
+          gboolean centered, gboolean top)
+{
+    PangoLayout *layout;
+    gint width, height;
+
+    layout = pango_cairo_create_layout(cr);
+    pango_layout_set_font_description(layout, desc);
+    pango_layout_set_text(layout, text, -1);
+    pango_layout_get_pixel_size(layout, &width, &height);
+    if (top)
+        cairo_rel_move_to(cr, 0, -height);
+    if (centered)
+        cairo_rel_move_to(cr, -width / 2, 0);
+    pango_cairo_show_layout(cr, layout);
+    g_object_unref(layout);
+}
+
+static const gchar *
+ro_line_to_icon_name(RoLine *line)
+{
+#define ICON_BASE   "/usr/share/icons/hicolor/scalable/hildon/maemo-mapper-"
+    if (line->walk)
+        return ICON_BASE "walk.png";
+
+    if (line->area_type == RO_AREA_TYPE_LOCAL_TRAIN)
+        return ICON_BASE "train.png";
+
+    switch (line->transport) {
+    case RO_TRANSPORT_METRO:
+        return ICON_BASE "metro.png";
+    case RO_TRANSPORT_FERRY:
+        return ICON_BASE "ferry.png";
+    case RO_TRANSPORT_HELSINKI_TRAM:
+        return ICON_BASE "tram.png";
+    case RO_TRANSPORT_EXPRESS:
+    case RO_TRANSPORT_VR_REGIONAL:
+    case RO_TRANSPORT_VR_LONG_DISTANCE:
+        return ICON_BASE "train.png";
+    default:
+        return ICON_BASE "bus.png";
+    }
+}
+
+static void
+put_tranport_icon(cairo_t *cr, RoLine *line, gint x, gint y)
+{
+    cairo_surface_t *icon;
+    gint width, height;
+    const gchar *icon_name;
+
+    icon_name = ro_line_to_icon_name(line);
+    icon = cairo_image_surface_create_from_png(icon_name);
+    width = cairo_image_surface_get_width(icon);
+    height = cairo_image_surface_get_height(icon);
+
+    cairo_save(cr);
+
+    cairo_translate(cr, x, y);
+    cairo_set_source_surface(cr, icon, 0, 0);
+    cairo_paint(cr);
+    cairo_surface_destroy(icon);
+
+    cairo_restore(cr);
+}
+
+static inline void
+set_source_color(cairo_t *cr, GdkColor *color)
+{
+    cairo_set_source_rgb(cr,
+                         color->red / 65535.0,
+                         color->green / 65535.0,
+                         color->blue / 65535.0);
+}
+
+static void
+ro_line_transport_to_text(gchar *buffer, gsize len, RoLine *line)
+{
+    if (line->walk)
+        g_snprintf(buffer, len, "%.1fkm", line->length.distance / 1000.0);
+    else if (line->transport == RO_TRANSPORT_METRO)
+        strncpy(buffer, _("Metro"), len);
+    else if (line->transport == RO_TRANSPORT_FERRY)
+        strncpy(buffer, _("Ferry"), len);
+    else
+        g_snprintf(buffer, len, "%.4s", line->code);
+}
+
+static GdkPixbuf *
+ro_route_to_pixbuf(RoRoute *route)
+{
+    GdkPixbuf *pixbuf;
+    gchar buffer[128];
+    RoPoint *point = NULL;
+    RoLine *line = NULL;
+    gint width, height, seg_x = 0;
+    GList *list;
+    cairo_surface_t *surface;
+    cairo_t *cr;
+    PangoFontDescription *font_time, *font_small;
+    GdkColor color_default, color_secondary;
+    GtkStyle *style;
+
+#define SEGMENT_WIDTH   150
+#define ROUTE_HEIGHT    80
+#define TICK_HEIGHT 4
+#define TIME_WIDTH  64
+#define LINE_X  (TIME_WIDTH / 2)
+#define LINE_Y  56
+#define TIME_X          LINE_X
+#define TIME_Y          (LINE_Y - TICK_HEIGHT)
+#define ICON_SIZE   20
+#define ICON_X  (LINE_X + SEGMENT_WIDTH / 2 - ICON_SIZE / 2)
+#define ICON_Y  (LINE_Y - ICON_SIZE - TICK_HEIGHT)
+#define TRANSPORT_X (LINE_X + SEGMENT_WIDTH / 2)
+#define TRANSPORT_Y ICON_Y
+#define PLACE_X LINE_X
+#define PLACE_Y LINE_Y
+
+    style = gtk_rc_get_style_by_paths(gtk_settings_get_default(),
+                                      "SystemFont", NULL, G_TYPE_NONE);
+    font_time = pango_font_description_copy(style->font_desc);
+
+    style = gtk_rc_get_style_by_paths(gtk_settings_get_default(),
+                                      "SmallSystemFont", NULL, G_TYPE_NONE);
+    font_small = pango_font_description_copy(style->font_desc);
+
+    style = gtk_rc_get_style_by_paths(gtk_settings_get_default(),
+                                      NULL, "GtkWidget", GTK_TYPE_WIDGET);
+    gtk_style_lookup_color(style, "DefaultTextColor", &color_default);
+    gtk_style_lookup_color(style, "SecondaryTextColor", &color_secondary);
+
+    width = g_list_length(route->lines) * SEGMENT_WIDTH + TIME_WIDTH;
+    height = ROUTE_HEIGHT;
+
+    surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
+
+    cr = cairo_create(surface);
+
+    for (list = route->lines; list != NULL; list = list->next)
+    {
+        line = list->data;
+
+        /* draw the timeline */
+        set_source_color (cr, &color_secondary);
+        cairo_set_line_width (cr, 2);
+        cairo_move_to (cr, seg_x + LINE_X, LINE_Y - TICK_HEIGHT);
+        cairo_rel_line_to (cr, 0, TICK_HEIGHT * 2);
+        cairo_move_to (cr, seg_x + LINE_X, LINE_Y);
+        cairo_rel_line_to (cr, SEGMENT_WIDTH, 0);
+        cairo_rel_move_to (cr, 0, -TICK_HEIGHT);
+        cairo_rel_line_to (cr, 0, TICK_HEIGHT * 2);
+        cairo_stroke(cr);
+
+        set_source_color (cr, &color_default);
+
+        point = &g_array_index(line->points, RoPoint, 0);
+        time_to_string(buffer, sizeof(buffer), point->departure);
+
+        cairo_move_to(cr, seg_x + TIME_X, TIME_Y);
+        draw_text(cr, font_time, buffer, TRUE, TRUE);
+
+        put_tranport_icon(cr, line, seg_x + ICON_X, ICON_Y);
+
+        cairo_move_to(cr, seg_x + TRANSPORT_X, TRANSPORT_Y);
+        ro_line_transport_to_text(buffer, sizeof(buffer), line);
+        draw_text(cr, line->walk ? font_small : font_time, buffer, TRUE, TRUE);
+
+        if (point->name)
+        {
+            set_source_color (cr, &color_secondary);
+            cairo_move_to(cr, seg_x + PLACE_X, PLACE_Y);
+            draw_text(cr, font_small, point->name, FALSE, FALSE);
+        }
+
+        seg_x += SEGMENT_WIDTH;
+    }
+
+    /* print the time of the last point */
+    if (line && line->points->len > 0)
+    {
+        point = &g_array_index(line->points, RoPoint, line->points->len - 1);
+        time_to_string(buffer, sizeof(buffer), point->arrival);
+
+        cairo_move_to(cr, seg_x + TIME_X, TIME_Y);
+        set_source_color (cr, &color_default);
+        draw_text(cr, font_time, buffer, TRUE, TRUE);
+    }
+
+    cairo_destroy(cr);
+
+    pixbuf = cairo_convert_to_pixbuf(surface);
+    cairo_surface_destroy(surface);
+
+    pango_font_description_free(font_time);
+    pango_font_description_free(font_small);
+    return pixbuf;
+}
+
+static void
+put_routes_in_store(RoRoutes *routes, GtkListStore *store)
+{
+    GdkPixbuf *pixbuf;
+    gint i;
+
+    for (i = 0; i < routes->n_routes; i++)
+    {
+        RoRoute *route = routes->routes + i;
+        GtkTreeIter iter;
+
+        gtk_list_store_append(store, &iter);
+        pixbuf = ro_route_to_pixbuf(route);
+        gtk_list_store_set(store, &iter,
+                           COL_PIXBUF, pixbuf,
+                           -1);
+        g_object_unref(pixbuf);
+    }
+}
+
+static void
+refresh_dialog(RouteSelectionData *sd, RoQuery *query, gboolean invert)
+{
+    GError *error = NULL;
+    RoRoutes new_routes;
+
+    download_route(sd->reittiopas, &new_routes, query, &error);
+    if (error)
+    {
+        map_error_show_and_clear(GTK_WINDOW(sd->dialog), &error);
+        return;
+    }
+
+    gtk_list_store_clear(sd->store);
+    ro_routes_free(sd->routes);
+
+    if (invert)
+    {
+        gint i;
+
+        for (i = 0; i < new_routes.n_routes; i++)
+            memcpy(sd->routes->routes + i,
+                   new_routes.routes + (new_routes.n_routes - 1 - i),
+                   sizeof(RoRoute));
+        sd->routes->n_routes = new_routes.n_routes;
+    }
+    else
+        memcpy(sd->routes, &new_routes, sizeof(RoRoutes));
+    put_routes_in_store(sd->routes, sd->store);
+}
+
+static void
+on_earlier_clicked(GtkWidget *button, RouteSelectionData *sd)
+{
+    RoRoute *route;
+    RoLine *line;
+    RoPoint *point;
+    RoQuery query;
+
+    if (sd->routes->n_routes == 0) return;
+
+    /* find the first final time */
+    route = sd->routes->routes;
+    if (route->lines)
+    {
+        line = g_list_last(route->lines)->data;
+        if (line->points->len > 0)
+        {
+            point = &g_array_index(line->points, RoPoint,
+                                   line->points->len - 1);
+
+            query = *sd->query;
+            query.time = point->arrival - 60;
+            query.arrival = TRUE;
+
+            refresh_dialog(sd, &query, TRUE);
+        }
+    }
+}
+
+static void
+on_later_clicked(GtkWidget *button, RouteSelectionData *sd)
+{
+    RoRoute *route;
+    RoLine *line;
+    RoPoint *point;
+    RoQuery query;
+
+    if (sd->routes->n_routes == 0) return;
+
+    /* find the last time */
+    route = sd->routes->routes + sd->routes->n_routes - 1;
+    if (route->lines)
+    {
+        line = route->lines->data;
+        if (line->points->len > 0)
+        {
+            point = &g_array_index(line->points, RoPoint, 0);
+
+            query = *sd->query;
+            query.time = point->departure + 60;
+            query.arrival = FALSE;
+
+            refresh_dialog(sd, &query, FALSE);
+        }
+    }
+}
+
+static void
+on_pannable_size_request(GtkWidget *pannable, GtkRequisition *req,
+                         GtkWidget *child)
+{
+    gtk_widget_get_child_requisition(child, req);
+}
+
+static void
+on_route_selected(GtkTreeView *treeview, GtkTreePath *path,
+                  GtkTreeViewColumn *column, GtkDialog *dialog)
+{
+    gint *p_i;
+
+    p_i = gtk_tree_path_get_indices(path);
+    if (p_i)
+        gtk_dialog_response(dialog, *p_i);
+}
+
+static gint
+route_selection_dialog(MapReittiopas *self, RoRoutes *routes,
+                       const RoQuery *query)
+{
+    MapController *controller = map_controller_get_instance();
+    GtkWidget *dialog;
+    GtkWidget *tree_view;
+    GtkWidget *pannable, *viewport, *hbox, *button;
+    GtkTreeViewColumn *column;
+    GtkCellRenderer *renderer;
+    GtkListStore *store;
+    gint response;
+    RouteSelectionData sd;
+
+    dialog = gtk_dialog_new_with_buttons(_("Select route"),
+        map_controller_get_main_window(controller),
+        GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
+        NULL);
+    gtk_dialog_set_has_separator(GTK_DIALOG(dialog), FALSE);
+    gtk_widget_hide(GTK_DIALOG(dialog)->action_area);
+    gtk_widget_set_no_show_all(GTK_DIALOG(dialog)->action_area, TRUE);
+
+    hbox = gtk_hbox_new(TRUE, 0);
+    gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox), hbox,
+                       FALSE, FALSE, 0);
+
+    button = gtk_button_new_with_label(_("Earlier"));
+    hildon_gtk_widget_set_theme_size(button, HILDON_SIZE_FINGER_HEIGHT);
+    g_signal_connect(button, "clicked",
+                     G_CALLBACK(on_earlier_clicked), &sd);
+    gtk_box_pack_start(GTK_BOX(hbox), button, FALSE, TRUE, 0);
+
+    button = gtk_button_new_with_label(_("Later"));
+    hildon_gtk_widget_set_theme_size(button, HILDON_SIZE_FINGER_HEIGHT);
+    g_signal_connect(button, "clicked",
+                     G_CALLBACK(on_later_clicked), &sd);
+    gtk_box_pack_start(GTK_BOX(hbox), button, FALSE, TRUE, 0);
+
+    store = gtk_list_store_new(COL_LAST, GDK_TYPE_PIXBUF);
+
+    tree_view = gtk_tree_view_new_with_model(GTK_TREE_MODEL(store));
+    gtk_widget_set_name(tree_view, "mapper::reittiopas::tree-view");
+    gtk_rc_parse_string("style \"reittiopas\" = \"fremantle-touchlist\"\n{\n"
+                        "GtkTreeView::row-height = 80\n"
+                        "GtkTreeView::row-ending-details = 1\n"
+                        "GtkWidget::hildon-mode = 1\n}\n"
+                        "widget \"*.mapper::reittiopas::tree-view\" "
+                        "style \"reittiopas\"");
+    g_signal_connect(tree_view, "row-activated",
+                     G_CALLBACK(on_route_selected), dialog);
+
+    column = g_object_new(GTK_TYPE_TREE_VIEW_COLUMN,
+                          "sizing", GTK_TREE_VIEW_COLUMN_AUTOSIZE,
+                          NULL);
+    renderer = g_object_new(GTK_TYPE_CELL_RENDERER_PIXBUF,
+                            "xalign", 0.0,
+                            NULL);
+    gtk_tree_view_column_pack_start(column, renderer, TRUE);
+    gtk_tree_view_column_add_attribute(column, renderer, "pixbuf", COL_PIXBUF);
+    gtk_tree_view_append_column(GTK_TREE_VIEW(tree_view), column);
+
+    pannable = hildon_pannable_area_new();
+    g_object_set(pannable,
+                 "mov-mode", HILDON_MOVEMENT_MODE_BOTH,
+                 NULL);
+    g_signal_connect(pannable, "size-request",
+                     G_CALLBACK(on_pannable_size_request), tree_view);
+    gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox), pannable,
+                       TRUE, TRUE, 0);
+
+    viewport = gtk_viewport_new(NULL, NULL);
+    gtk_container_add(GTK_CONTAINER(viewport), tree_view);
+    gtk_container_add(GTK_CONTAINER(pannable), viewport);
+
+    put_routes_in_store(routes, store);
+
+    memset(&sd, 0, sizeof(sd));
+    sd.reittiopas = self;
+    sd.dialog = dialog;
+    sd.store = store;
+    sd.routes = routes;
+    sd.query = query;
+
+    gtk_widget_show_all(dialog);
+    response = gtk_dialog_run(GTK_DIALOG(dialog));
+
+    gtk_widget_destroy(dialog);
+
+    if (response < 0) return -1;
+
+    return response;
+}
+
+static void
+download_route(MapReittiopas *self, RoRoutes *routes, const RoQuery *q,
+               GError **error)
 {
     gchar *query, *bytes;
     GString *string;
@@ -800,25 +1381,38 @@ download_route(MapReittiopas *self, Path *path,
     GnomeVFSResult vfs_result;
     SaxData data;
 
+    memset(routes, 0, sizeof(RoRoutes));
+
     string = g_string_new_len(REITTIOPAS_ROUTER_URL,
                               sizeof(REITTIOPAS_ROUTER_URL) - 1);
 
-    g_string_append_printf(string, "&a=%.0f,%.0f&b=%.0f,%.0f&show=1",
-                           from->i, from->p, to->i, to->p);
+    g_string_append_printf(string, "&a=%.0f,%.0f&b=%.0f,%.0f&show=5",
+                           q->from.i, q->from.p, q->to.i, q->to.p);
 
-    if (!self->transport_allowed[RO_TRANSPORT_BUS])
+    if (!self->transport_allowed[RO_TRANSPORT_TYPE_BUS])
         g_string_append(string, "&use_bus=0");
-    if (!self->transport_allowed[RO_TRANSPORT_TRAIN])
+    if (!self->transport_allowed[RO_TRANSPORT_TYPE_TRAIN])
         g_string_append(string, "&use_train=0");
-    if (!self->transport_allowed[RO_TRANSPORT_FERRY])
+    if (!self->transport_allowed[RO_TRANSPORT_TYPE_FERRY])
         g_string_append(string, "&use_ferry=0");
-    if (!self->transport_allowed[RO_TRANSPORT_METRO])
+    if (!self->transport_allowed[RO_TRANSPORT_TYPE_METRO])
         g_string_append(string, "&use_metro=0");
-    if (!self->transport_allowed[RO_TRANSPORT_TRAM])
+    if (!self->transport_allowed[RO_TRANSPORT_TYPE_TRAM])
         g_string_append(string, "&use_tram=0");
 
     g_string_append_printf(string, "&margin=%d&optimize=%d&walkspeed=%d",
                            self->margin, self->optimize, self->walkspeed);
+
+    if (q->time != 0)
+    {
+        struct tm tm;
+        gchar time[6], date[10];
+        tm = *localtime(&q->time);
+        strftime(time, sizeof(time), "%H%M", &tm);
+        strftime(date, sizeof(date), "%Y%m%d", &tm);
+        g_string_append_printf(string, "&time=%s&date=%s&timemode=%d",
+                               time, date, q->arrival + 1);
+    }
 
     query = g_string_free(string, FALSE);
     g_debug("URL: %s", query);
@@ -843,15 +1437,14 @@ download_route(MapReittiopas *self, Path *path,
     }
 
     memset(&data, 0, sizeof(data));
-    if (!parse_xml(&data, bytes, size) || data.n_routes == 0)
+    data.routes = routes;
+    if (!parse_xml(&data, bytes, size) || routes->n_routes == 0)
     {
         g_set_error(error, MAP_ERROR, MAP_ERROR_INVALID_ADDRESS,
                     _("Invalid source or destination."));
         sax_data_free(&data);
         goto finish;
     }
-
-    ro_route_to_path(&data.routes[0], path);
 
     sax_data_free(&data);
 finish:
@@ -917,23 +1510,40 @@ calculate_route_with_units(MapRouter *router,
                            MapRouterCalculateRouteCb callback,
                            gpointer user_data)
 {
-    KKJ2 to, from;
+    MapReittiopas *self = MAP_REITTIOPAS(router);
     Path path;
+    RoRoutes routes;
+    RoQuery query;
     GError *error = NULL;
 
-    unit2kkj2(from_u, &from);
-    unit2kkj2(to_u, &to);
+    memset(&query, 0, sizeof(query));
+    unit2kkj2(from_u, &query.from);
+    unit2kkj2(to_u, &query.to);
 
-    MACRO_PATH_INIT(path);
-    download_route(MAP_REITTIOPAS(router), &path, &from, &to, &error);
+    download_route(self, &routes, &query, &error);
     if (!error)
     {
-        callback(router, &path, NULL, user_data);
+        gint id = 0;
+        if (routes.n_routes > 1)
+            id = route_selection_dialog(self, &routes, &query);
+
+        if (id >= 0)
+        {
+            MACRO_PATH_INIT(path);
+            ro_route_to_path(&routes.routes[id], &path);
+            callback(router, &path, NULL, user_data);
+        }
+        else
+        {
+            GError err = { MAP_ERROR, MAP_ERROR_USER_CANCELED, "" };
+            callback(router, NULL, &err, user_data);
+        }
+
+        ro_routes_free(&routes);
     }
     else
     {
         callback(router, NULL, error, user_data);
-        MACRO_PATH_FREE(path);
         g_error_free(error);
     }
 }
@@ -1149,7 +1759,7 @@ map_reittiopas_run_options_dialog(MapRouter *router, GtkWindow *parent)
     hildon_touch_selector_set_print_func(transport, transport_print_func);
     hildon_touch_selector_unselect_all(transport, 0);
     model = hildon_touch_selector_get_model(transport, 0);
-    for (i = 0; i < RO_TRANSPORT_LAST; i++)
+    for (i = 0; i < RO_TRANSPORT_TYPE_LAST; i++)
     {
         if (self->transport_allowed[i])
         {
@@ -1176,7 +1786,7 @@ map_reittiopas_run_options_dialog(MapRouter *router, GtkWindow *parent)
     {
         GList *selected_rows, *list;
 
-        for (i = 0; i < RO_TRANSPORT_LAST; i++)
+        for (i = 0; i < RO_TRANSPORT_TYPE_LAST; i++)
             self->transport_allowed[i] = FALSE;
         selected_rows = hildon_touch_selector_get_selected_rows(transport, 0);
         for (list = selected_rows; list != NULL; list = list->next)
@@ -1185,7 +1795,7 @@ map_reittiopas_run_options_dialog(MapRouter *router, GtkWindow *parent)
             gint *p_i;
 
             p_i = gtk_tree_path_get_indices(path);
-            if (*p_i < RO_TRANSPORT_LAST)
+            if (*p_i < RO_TRANSPORT_TYPE_LAST)
                 self->transport_allowed[*p_i] = TRUE;
             gtk_tree_path_free(path);
         }
@@ -1258,7 +1868,7 @@ map_reittiopas_init(MapReittiopas *self)
 {
     gint i;
 
-    for (i = 0; i < RO_TRANSPORT_LAST; i++)
+    for (i = 0; i < RO_TRANSPORT_TYPE_LAST; i++)
         self->transport_allowed[i] = TRUE;
 
     self->walkspeed = RO_WALKSPEED_NORMAL;
