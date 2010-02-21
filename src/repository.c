@@ -438,6 +438,30 @@ select_tile_source_dialog(GtkWindow *parent, gboolean transparent)
 
 
 /*
+ * Routine clears selector and fills it with layers from array
+ */
+static void
+fill_selector_with_layers(HildonTouchSelector *selector, GPtrArray *layers)
+{
+    gint i;
+    TileSource *ts;
+    GtkListStore *list_store;
+
+    list_store = GTK_LIST_STORE(hildon_touch_selector_get_model(selector, 0));
+
+    gtk_list_store_clear(list_store);
+
+    if (!layers)
+        return;
+
+    for (i = 0; i < layers->len; i++) {
+        ts = (TileSource*)g_ptr_array_index(layers, i);
+        hildon_touch_selector_append_text(selector, ts->name);
+    }
+}
+
+
+/*
  * Show dialog with list of layers
  */
 static gboolean
@@ -466,18 +490,13 @@ select_layers_button_clicked(GtkWidget *widget,
     gtk_dialog_add_button(GTK_DIALOG(dialog), GTK_STOCK_ADD, RESP_ADD);
     gtk_dialog_add_button(GTK_DIALOG(dialog), GTK_STOCK_DELETE, RESP_DELETE);
     gtk_dialog_add_button(GTK_DIALOG(dialog), GTK_STOCK_SAVE, RESP_SAVE);
+    layers_selector = HILDON_TOUCH_SELECTOR(hildon_touch_selector_new_text());
+    fill_selector_with_layers (layers_selector, layers);
+    gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox),
+                       GTK_WIDGET(layers_selector), TRUE, TRUE, 0);
+    gtk_widget_show_all(dialog);
+
     while (1) {
-        layers_selector = HILDON_TOUCH_SELECTOR(hildon_touch_selector_new_text());
-
-        /* Populate selector with layers */
-        for (i = 0; i < layers->len; i++) {
-            ts = (TileSource*)g_ptr_array_index(layers, i);
-            hildon_touch_selector_append_text(layers_selector, ts->name);
-        }
-
-        gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox),
-                           GTK_WIDGET(layers_selector), TRUE, TRUE, 0);
-        gtk_widget_show_all(dialog);
         resp = gtk_dialog_run(GTK_DIALOG(dialog));
 
         if (resp == RESP_SAVE || resp == GTK_RESPONSE_DELETE_EVENT)
@@ -492,15 +511,17 @@ select_layers_button_clicked(GtkWidget *widget,
         switch (resp) {
         case RESP_ADD:
             ts = select_tile_source_dialog(GTK_WINDOW(dialog), TRUE);
-            if (ts)
+            if (ts) {
                 g_ptr_array_add(layers, ts);
+                fill_selector_with_layers(layers_selector, layers);
+            }
             break;
         case RESP_DELETE:
             g_ptr_array_remove(layers, ts);
+            fill_selector_with_layers(layers_selector, layers);
             break;
         }
-        gtk_widget_destroy(GTK_WIDGET(layers_selector));
-     }
+    }
 
     gtk_widget_destroy(dialog);
     if (resp == RESP_SAVE) {
