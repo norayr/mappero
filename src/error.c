@@ -30,6 +30,10 @@ map_error_show(GtkWindow *parent, const GError *error)
 {
     GtkWidget *dialog;
 
+    if (error->domain == MAP_ERROR &&
+        error->code == MAP_ERROR_USER_CANCELED)
+        return;
+
     dialog = hildon_note_new_information(parent, error->message);
     gtk_dialog_run(GTK_DIALOG(dialog));
     gtk_widget_destroy(dialog);
