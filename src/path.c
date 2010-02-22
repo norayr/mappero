@@ -1195,7 +1195,7 @@ calculate_route_cb(MapRouter *router, Path *path, const GError *error,
         return;
     }
 
-    g_object_remove_weak_pointer(G_OBJECT(dialog), p_dialog);
+    g_object_remove_weak_pointer(G_OBJECT(dialog), (gpointer)p_dialog);
 
     hildon_gtk_window_set_progress_indicator(GTK_WINDOW(dialog), FALSE);
     rdi = g_object_get_data(G_OBJECT(dialog), ROUTE_DOWNLOAD_INFO);
