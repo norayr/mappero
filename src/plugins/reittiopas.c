@@ -107,6 +107,7 @@ typedef struct {
     MapPoint from;
     MapPoint to;
     gchar *dest_address;
+    GtkWindow *parent;
     MapRouterCalculateRouteCb callback;
     gpointer user_data;
 } CalculateRouteData;
@@ -1279,10 +1280,9 @@ on_route_selected(GtkTreeView *treeview, GtkTreePath *path,
 }
 
 static gint
-route_selection_dialog(MapReittiopas *self, RoRoutes *routes,
+route_selection_dialog(MapReittiopas *self, GtkWindow *parent, RoRoutes *routes,
                        const RoQuery *query)
 {
-    MapController *controller = map_controller_get_instance();
     GtkWidget *dialog;
     GtkWidget *tree_view;
     GtkWidget *pannable, *viewport, *hbox, *button;
@@ -1292,8 +1292,7 @@ route_selection_dialog(MapReittiopas *self, RoRoutes *routes,
     gint response;
     RouteSelectionData sd;
 
-    dialog = gtk_dialog_new_with_buttons(_("Select route"),
-        map_controller_get_main_window(controller),
+    dialog = gtk_dialog_new_with_buttons(_("Select route"), parent,
         GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
         NULL);
     gtk_dialog_set_has_separator(GTK_DIALOG(dialog), FALSE);
@@ -1507,6 +1506,7 @@ finish:
 static void
 calculate_route_with_units(MapRouter *router,
                            const MapPoint *from_u, const MapPoint *to_u,
+                           GtkWindow *parent,
                            MapRouterCalculateRouteCb callback,
                            gpointer user_data)
 {
@@ -1524,8 +1524,8 @@ calculate_route_with_units(MapRouter *router,
     if (!error)
     {
         gint id = 0;
-        if (routes.n_routes > 1)
-            id = route_selection_dialog(self, &routes, &query);
+        if (routes.n_routes > 1 && parent != NULL)
+            id = route_selection_dialog(self, parent, &routes, &query);
 
         if (id >= 0)
         {
@@ -1582,7 +1582,7 @@ route_address_retrieved(MapRouter *router, MapPoint point,
 
     /* at this point, we should have origin and destination in units: we can
      * calculate the route  */
-    calculate_route_with_units(router, &crd->from, &crd->to,
+    calculate_route_with_units(router, &crd->from, &crd->to, crd->parent,
                                crd->callback, crd->user_data);
     calculate_route_data_free(crd);
 }
@@ -1845,13 +1845,15 @@ map_reittiopas_calculate_route(MapRouter *router, const MapRouterQuery *query,
 
         crd->callback = callback;
         crd->user_data = user_data;
+        crd->parent = query->parent;
         map_reittiopas_geocode(router, address,
                                (MapRouterGeocodeCb)route_address_retrieved,
                                crd);
         return;
     }
 
-    calculate_route_with_units(router, &from_u, &to_u, callback, user_data);
+    calculate_route_with_units(router, &from_u, &to_u, query->parent,
+                               callback, user_data);
 }
 
 static void
