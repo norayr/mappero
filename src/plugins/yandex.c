@@ -26,15 +26,17 @@
 
 #include "data.h"
 #include "defines.h"
+#include "dialog.h"
 #include "error.h"
 #include "gpx.h"
 #include "path.h"
 
+#include <hildon/hildon-check-button.h>
 #include <math.h>
 #include <string.h>
 
 #define YANDEX_ROUTER_URL \
-    "http://mm-proxy.appspot.com/yaroute?from=%s&to=%s"
+    "http://mm-proxy.appspot.com/yaroute?from=%s&to=%s&traffic=%d"
 
 static void router_iface_init(MapRouterIface *iface);
 
@@ -59,7 +61,7 @@ get_address(const MapLocation *loc, gchar *buffer, gsize len)
 static void
 route_download_and_setup(Path *path, const gchar *source_url,
                          const gchar *from, const gchar *to,
-                         GError **error)
+                         gboolean use_traffic, GError **error)
 {
     gchar *from_escaped;
     gchar *to_escaped;
@@ -70,7 +72,7 @@ route_download_and_setup(Path *path, const gchar *source_url,
 
     from_escaped = gnome_vfs_escape_string(from);
     to_escaped = gnome_vfs_escape_string(to);
-    buffer = g_strdup_printf(source_url, from_escaped, to_escaped);
+    buffer = g_strdup_printf(source_url, from_escaped, to_escaped, use_traffic ? 1 : 0);
     g_free(from_escaped);
     g_free(to_escaped);
 
@@ -107,10 +109,40 @@ map_yandex_get_name(MapRouter *router)
 }
 
 static void
+map_yandex_run_options_dialog(MapRouter *router, GtkWindow *parent)
+{
+    MapYandex *yandex = MAP_YANDEX(router);
+    GtkWidget *dialog;
+    GtkWidget *btn_traffic;
+
+    dialog = map_dialog_new(_("Yandex router options"), parent, TRUE);
+    gtk_dialog_add_button(GTK_DIALOG(dialog),
+                          H_("wdgt_bd_save"), GTK_RESPONSE_ACCEPT);
+
+    /* Use traffic information. */
+    btn_traffic = hildon_check_button_new(HILDON_SIZE_FINGER_HEIGHT);
+    gtk_button_set_label(GTK_BUTTON(btn_traffic), _("Use traffic information"));
+    map_dialog_add_widget(MAP_DIALOG(dialog), btn_traffic);
+    hildon_check_button_set_active(HILDON_CHECK_BUTTON(btn_traffic),
+                                   yandex->use_traffic);
+
+    gtk_widget_show_all(dialog);
+
+    if (gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_ACCEPT)
+    {
+        yandex->use_traffic =
+            hildon_check_button_get_active(HILDON_CHECK_BUTTON(btn_traffic));
+    }
+
+    gtk_widget_destroy(dialog);
+}
+
+static void
 map_yandex_calculate_route(MapRouter *router, const MapRouterQuery *query,
                            MapRouterCalculateRouteCb callback,
                            gpointer user_data)
 {
+    MapYandex *yandex = MAP_YANDEX(router);
     gchar buf_from[64], buf_to[64];
     const gchar *from, *to;
     GError *error = NULL;
@@ -120,7 +152,7 @@ map_yandex_calculate_route(MapRouter *router, const MapRouterQuery *query,
     to = get_address(&query->to, buf_to, sizeof(buf_to));
 
     MACRO_PATH_INIT(path);
-    route_download_and_setup(&path, YANDEX_ROUTER_URL, from, to, &error);
+    route_download_and_setup(&path, YANDEX_ROUTER_URL, from, to, yandex->use_traffic, &error);
     if (!error)
     {
         callback(router, &path, NULL, user_data);
@@ -137,7 +169,7 @@ static void
 router_iface_init(MapRouterIface *iface)
 {
     iface->get_name = map_yandex_get_name;
-    iface->run_options_dialog = NULL;
+    iface->run_options_dialog = map_yandex_run_options_dialog;
     iface->calculate_route = map_yandex_calculate_route;
 }
 

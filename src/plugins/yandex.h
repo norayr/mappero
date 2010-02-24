@@ -40,6 +40,7 @@ typedef struct _MapYandexClass MapYandexClass;
 struct _MapYandex
 {
     GObject parent;
+    gboolean use_traffic;
 };
 
 struct _MapYandexClass
