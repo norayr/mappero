@@ -169,6 +169,7 @@ tree_to_repository(xmlDocPtr doc, xmlNodePtr repo_node)
                     if (ts)
                         repo->primary = ts;
                 }
+                xmlFree(ss);
             }
         }
         xmlFree(s);
