@@ -503,7 +503,7 @@ handle_get_entity(SaxData *data, const xmlChar *name)
 static void
 handle_error(SaxData *data, const gchar *msg, ...)
 {
-    g_debug("%s: %s", G_STRFUNC, msg);
+    DEBUG("%s", msg);
     data->error = TRUE;
 }
 
@@ -758,7 +758,7 @@ handle_start_element(SaxData *data, const xmlChar *name, const xmlChar **attrs)
         {
             data->lat = a.lat;
             data->lon = a.lon;
-            g_debug("Got lat lon: %.6f, %.6f", data->lat, data->lon);
+            DEBUG("Got lat lon: %.6f, %.6f", data->lat, data->lon);
         }
     }
 }
@@ -1414,7 +1414,7 @@ download_route(MapReittiopas *self, RoRoutes *routes, const RoQuery *q,
     }
 
     query = g_string_free(string, FALSE);
-    g_debug("URL: %s", query);
+    DBUG("URL: %s", query);
 
     /* Attempt to download the route from the server. */
     vfs_result = gnome_vfs_read_entire_file(query, &size, &bytes);
@@ -1466,7 +1466,7 @@ fetch_geocode(const gchar *address, gfloat *lat, gfloat *lon, GError **error)
                             address_escaped);
     g_free(address_escaped);
 
-    g_debug("URL: %s", query);
+    DEBUG("URL: %s", query);
 
     vfs_result = gnome_vfs_read_entire_file(query, &size, &bytes);
     g_free(query);
@@ -1605,8 +1605,7 @@ map_reittiopas_geocode(MapRouter *router, const gchar *address,
     if (!error)
     {
         latlon2unit(lat, lon, p.x, p.y);
-        g_debug("Got lat lon: %.6f, %.6f, units %u, %u",
-                lat, lon, p.x, p.y);
+        DEBUG("Got lat lon: %.6f, %.6f, units %u, %u", lat, lon, p.x, p.y);
         callback(router, p, NULL, user_data);
     }
     else

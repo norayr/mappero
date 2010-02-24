@@ -25,6 +25,7 @@
 #include "tile.h"
 
 #include "controller.h"
+#include "debug.h"
 #include "defines.h"
 
 #include <clutter-gtk/clutter-gtk.h>
@@ -68,7 +69,7 @@ download_tile_cb(MapTileSpec *ts, GdkPixbuf *pixbuf, const GError *error,
 {
     MapTile *tile, **p_tile;
 
-    printf("%s", G_STRFUNC);
+    DEBUG("");
     p_tile = user_data;
     tile = *p_tile;
     g_slice_free(MapTile *, p_tile);

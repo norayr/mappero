@@ -707,7 +707,7 @@ auto_calculate_route_cb(MapRouter *router, Path *path, const GError *error)
 {
     MapController *controller = map_controller_get_instance();
 
-    g_debug("%s called (error = %p)", G_STRFUNC, error);
+    DEBUG("called (error = %p)", error);
 
     if (G_UNLIKELY(error))
         cancel_autoroute();
@@ -1186,12 +1186,12 @@ calculate_route_cb(MapRouter *router, Path *path, const GError *error,
     GtkTreeIter iter;
     const gchar *from, *to;
 
-    g_debug("%s called (error = %p)", G_STRFUNC, error);
+    DEBUG("called (error = %p)", error);
     g_slice_free(GtkDialog *, p_dialog);
     if (!dialog)
     {
         /* the dialog has been canceled while dowloading the route */
-        g_debug("Route dialog canceled");
+        DEBUG("Route dialog canceled");
         return;
     }
 

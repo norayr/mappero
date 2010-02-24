@@ -932,7 +932,7 @@ geocode_cb(MapRouter *router, MapPoint p, const GError *error,
     GtkWidget *dialog = *p_dialog;
     MapController *controller = map_controller_get_instance();
 
-    g_debug("%s called (error = %p)", G_STRFUNC, error);
+    DEBUG("called (error = %p)", error);
     g_slice_free(GtkWidget *, p_dialog);
     if (!dialog) return;
 

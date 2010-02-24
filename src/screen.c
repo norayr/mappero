@@ -24,6 +24,7 @@
 #include "screen.h"
 
 #include "data.h"
+#include "debug.h"
 #include "defines.h"
 #include "display.h"
 #include "maps.h"
@@ -428,7 +429,7 @@ draw_path(MapScreen *screen, cairo_t *cr, Path *path, Colorable base)
     WayPoint *wcurr;
     gint x = 0, y = 0;
     gboolean segment_open = FALSE;
-#ifdef DEBUG
+#ifdef ENABLE_DEBUG
     gint segment_count = 0;
     gint waypoint_count = 0;
 #endif
@@ -455,7 +456,7 @@ draw_path(MapScreen *screen, cairo_t *cr, Path *path, Colorable base)
         }
         else
         {
-#ifdef DEBUG
+#ifdef ENABLE_DEBUG
             segment_count++;
 #endif
             point_to_pixels(priv, curr->unit, &x, &y);
@@ -478,13 +479,13 @@ draw_path(MapScreen *screen, cairo_t *cr, Path *path, Colorable base)
         point_to_pixels(priv, wcurr->point->unit, &x1, &y1);
         draw_break(cr, &_color[base + 1], x1, y1);
         cairo_move_to(cr, x1, y1);
-#ifdef DEBUG
+#ifdef ENABLE_DEBUG
         waypoint_count++;
 #endif
     }
 
-#ifdef DEBUG
-    g_debug("Drawn %d segments, %d waypoints", segment_count, waypoint_count);
+#ifdef ENABLE_DEBUG
+    DEBUG("Drawn %d segments, %d waypoints", segment_count, waypoint_count);
 #endif
 }
 
@@ -975,7 +976,7 @@ map_screen_set_center(MapScreen *screen, gint x, gint y, gint zoom)
     g_return_if_fail(MAP_IS_SCREEN(screen));
     priv = screen->priv;
 
-    g_debug("%s, (%u, %u) zoom %d", G_STRFUNC, x, y, zoom);
+    DEBUG("(%u, %u) zoom %d", x, y, zoom);
     allocation = &(GTK_WIDGET(screen)->allocation);
     clutter_actor_set_position(priv->map,
                                allocation->width / 2,
