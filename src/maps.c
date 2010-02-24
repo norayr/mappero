@@ -768,7 +768,6 @@ mapman_by_area(gdouble start_lat, gdouble start_lon,
         return FALSE;
     }
 
-    g_mutex_lock(_mut_priority_mutex);
     for(z = 0; z <= MAX_ZOOM; ++z)
     {
         if(gtk_toggle_button_get_active(
@@ -798,7 +797,6 @@ mapman_by_area(gdouble start_lat, gdouble start_lon,
             }
         }
     }
-    g_mutex_unlock(_mut_priority_mutex);
 
     gtk_widget_destroy(confirm);
     vprintf("%s(): return TRUE\n", __PRETTY_FUNCTION__);
@@ -990,6 +988,10 @@ mapman_dialog()
     static GtkWidget *lbl_center_lon = NULL;
     static MapmanInfo mapman_info;
     static gint last_deg_format = 0;
+    MapController *controller = map_controller_get_instance();
+    GtkAllocation *allocation;
+    MapPoint center;
+    gint half_screen;
     
     gchar buffer[80];
     gdouble lat, lon;
@@ -1001,29 +1003,26 @@ mapman_dialog()
     
     printf("%s()\n", __PRETTY_FUNCTION__);
 
+    map_controller_get_center(controller, &center);
+    allocation =
+        &(GTK_WIDGET(map_controller_get_screen(controller))->allocation);
+    half_screen = MAX(allocation->width, allocation->height) / 2;
+
     // - If the coord system has changed then we need to update certain values
     /* Initialize to the bounds of the screen. */
-    unit2latlon(
-            _center.x - pixel2unit(MAX(_view_width_pixels,
-                    _view_height_pixels) / 2),
-            _center.y - pixel2unit(MAX(_view_width_pixels,
-                    _view_height_pixels) / 2), top_left_lat, top_left_lon);
-    
+    unit2latlon(center.x - pixel2unit(half_screen),
+                center.y - pixel2unit(half_screen),
+                top_left_lat, top_left_lon);
     BOUND(top_left_lat, -90.f, 90.f);
     BOUND(top_left_lon, -180.f, 180.f);
 
         
-    unit2latlon(
-            _center.x + pixel2unit(MAX(_view_width_pixels,
-                    _view_height_pixels) / 2),
-            _center.y + pixel2unit(MAX(_view_width_pixels,
-                    _view_height_pixels) / 2), bottom_right_lat, bottom_right_lon);
+    unit2latlon(center.x + pixel2unit(half_screen),
+                center.y + pixel2unit(half_screen),
+                bottom_right_lat, bottom_right_lon);
     BOUND(bottom_right_lat, -90.f, 90.f);
     BOUND(bottom_right_lon, -180.f, 180.f);
-    
-    
 
-    
     if(!coord_system_check_lat_lon (top_left_lat, top_left_lon, &fallback_deg_format))
     {
     	_degformat = fallback_deg_format;
@@ -1343,7 +1342,7 @@ mapman_dialog()
     if(DEG_FORMAT_ENUM_TEXT[_degformat].field_2_in_use)
     	gtk_label_set_text(GTK_LABEL(lbl_gps_lon), buffer2);
     
-    unit2latlon(_center.x, _center.y, lat, lon);
+    unit2latlon(center.x, center.y, lat, lon);
     
     format_lat_lon(lat, lon, buffer1, buffer2);
     //lat_format(lat, buffer);
