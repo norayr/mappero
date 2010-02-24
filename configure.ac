@@ -93,6 +93,36 @@ PKG_CHECK_MODULES(CAIRO, cairo)
 AC_SUBST(CAIRO_LIBS)
 AC_SUBST(CAIRO_CFLAGS)
 
+# Debug
+AC_ARG_ENABLE(debug,
+    AS_HELP_STRING([--disable-debug], [compile without debug code]),
+    [enable_debug=${enableval}], enable_debug=yes )
+if test "x$enable_debug" = "xyes"; then
+    CFLAGS="$CFLAGS -DENABLE_DEBUG"
+fi
+
+AC_ARG_ENABLE(cast-checks,
+    AS_HELP_STRING[--disable-cast-checks], [compile with GLIB cast checks disabled],
+    [cchecks=${enableval}], cchecks=yes)
+if test "x$cchecks" = "xno"; then
+    CFLAGS="$CFLAGS -DG_DISABLE_CAST_CHECKS"
+fi
+
+AC_ARG_ENABLE(asserts,
+    AS_HELP_STRING[--disable-asserts], [compile with GLIB assertions disabled],
+    [asserts=${enableval}], asserts=yes)
+if test "x$asserts" = "xno"; then
+    CFLAGS="$CFLAGS -DG_DISABLE_ASSERTS"
+fi
+
+AC_ARG_ENABLE(checks,
+    AS_HELP_STRING[--disable-checks], [compile with GLIB checks disabled],
+    [checks=${enableval}], checks=yes)
+if test "x$checks" = "xno"; then
+    CFLAGS="$CFLAGS -DG_DISABLE_CHECKS"
+fi
+
+
 # Localisation
 localedir=`$PKG_CONFIG osso-af-settings --variable=localedir`
 AC_PROG_INTLTOOL([0.23])

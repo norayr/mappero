@@ -54,6 +54,7 @@
 
 #include "types.h"
 #include "data.h"
+#include "debug.h"
 #include "defines.h"
 
 #include "cmenu.h"
@@ -640,6 +641,8 @@ main(gint argc, gchar *argv[])
     textdomain(GETTEXT_PACKAGE);
 
     g_thread_init(NULL);
+
+    map_debug_init();
 
     /* Initialize _osso. */
     _osso = osso_initialize("com.gnuite.maemo_mapper", VERSION, TRUE, NULL);

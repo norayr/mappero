@@ -40,6 +40,7 @@ maemo_mapper_SOURCES = \
 	controller.c \
 	data.c \
 	dbus-ifc.c \
+	debug.c \
 	dialog.c \
 	display.c \
 	error.c \

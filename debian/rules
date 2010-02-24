@@ -12,7 +12,7 @@ DEB_HOST_GNU_TYPE   ?= $(shell dpkg-architecture -qDEB_HOST_GNU_TYPE)
 DEB_BUILD_GNU_TYPE  ?= $(shell dpkg-architecture -qDEB_BUILD_GNU_TYPE)
 DEB_HOST_ARCH ?= $(shell dpkg-architecture -qDEB_HOST_ARCH)
 
-
+CONFIGURE_EXTRA_FLAGS =
 CFLAGS =
 
 ifeq ($(DEB_HOST_ARCH), armel)
@@ -30,9 +30,10 @@ ifeq (,$(findstring nostrip,$(DEB_BUILD_OPTIONS)))
 endif
 
 ifneq (,$(findstring debug,$(DEB_BUILD_OPTIONS)))
-	CFLAGS += -g -O0 -DDEBUG
+	CFLAGS += -g -O0
+	CONFIGURE_EXTRA_FLAGS += --enable-debug
 else
-	CFLAGS += -DNDEBUG
+	CONFIGURE_EXTRA_FLAGS += --disable-debug --disable-cast-checks
 endif
 
 # Check maemo version we are building for
@@ -50,7 +51,7 @@ configure-stamp:
 	dh_testdir
 	./autogen.sh
 	# Add here commands to configure the package.
-	CFLAGS="$(CFLAGS)" ./configure --prefix=/usr --disable-static --enable-legacy=$(BUILD_LEGACY)
+	CFLAGS="$(CFLAGS)" ./configure --prefix=/usr --disable-static --enable-legacy=$(BUILD_LEGACY) $(CONFIGURE_EXTRA_FLAGS)
 	touch configure-stamp
 
 
