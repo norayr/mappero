@@ -237,8 +237,6 @@ set_conn_state(ConnState new_conn_state)
         default: ; /* to quell warning. */
     }
     map_force_redraw();
-
-    vprintf("%s(): return\n", __PRETTY_FUNCTION__);
 }
 
 /**
@@ -254,7 +252,6 @@ rcvr_disconnect()
 
     if(_window)
         set_conn_state(RCVR_OFF);
-    vprintf("%s(): return\n", __PRETTY_FUNCTION__);
 }
 
 /**
@@ -276,7 +273,6 @@ rcvr_connect()
 	location_gpsd_control_start(gpsd_control);
     }
 
-    vprintf("%s(): return FALSE\n", __PRETTY_FUNCTION__);
     return FALSE;
 }
 
@@ -294,7 +290,6 @@ reset_bluetooth()
     {
         rcvr_connect();
     }
-    vprintf("%s(): return\n", __PRETTY_FUNCTION__);
 }
 
 void
@@ -330,8 +325,6 @@ gps_init()
         localtime_r(&time1, &time2);
         _gmtoffset = time2.tm_gmtoff;
     }
-
-    vprintf("%s(): return FALSE\n", __PRETTY_FUNCTION__);
 }
 
 void
@@ -350,7 +343,5 @@ gps_destroy(gboolean last)
     }
     else if(tmp)
         g_thread_join(tmp);
-
-    vprintf("%s(): return FALSE\n", __PRETTY_FUNCTION__);
 }
 

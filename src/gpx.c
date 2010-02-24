@@ -117,8 +117,6 @@ gpx_chars(SaxData *data, const xmlChar *ch, int len)
         default:
             break;
     }
-
-    vprintf("%s(): return\n", __PRETTY_FUNCTION__);
 }
 
 /**
@@ -129,7 +127,6 @@ static xmlEntityPtr
 gpx_get_entity(SaxData *data, const xmlChar *name)
 {
     vprintf("%s()\n", __PRETTY_FUNCTION__);
-    vprintf("%s(): return\n", __PRETTY_FUNCTION__);
     return xmlGetPredefinedEntity(name);
 }
 
@@ -140,7 +137,6 @@ static void
 gpx_error(SaxData *data, const gchar *msg, ...)
 {
     vprintf("%s()\n", __PRETTY_FUNCTION__);
-    vprintf("%s(): return\n", __PRETTY_FUNCTION__);
     data->state = ERROR;
 }
 
@@ -326,8 +322,6 @@ gpx_path_start_element(PathSaxData *data,
         default:
             ;
     }
-
-    vprintf("%s(): return\n", __PRETTY_FUNCTION__);
 }
 
 /**
@@ -508,8 +502,6 @@ gpx_path_end_element(PathSaxData *data, const xmlChar *name)
         default:
             ;
     }
-
-    vprintf("%s(): return\n", __PRETTY_FUNCTION__);
 }
 
 gboolean
@@ -538,7 +530,6 @@ gpx_path_parse(Path *to_replace, gchar *buffer, gint size, gint policy_old)
 
     if(data.sax_data.state != FINISH)
     {
-        vprintf("%s(): return FALSE\n", __PRETTY_FUNCTION__);
         return FALSE;
     }
 
@@ -550,7 +541,6 @@ gpx_path_parse(Path *to_replace, gchar *buffer, gint size, gint policy_old)
         policy = MAP_PATH_MERGE_POLICY_PREPEND;
     map_path_merge(&data.path, to_replace, policy);
 
-    vprintf("%s(): return TRUE\n", __PRETTY_FUNCTION__);
     return TRUE;
 }
 
@@ -674,7 +664,6 @@ gpx_path_write(Path *path, GnomeVFSHandle *handle)
             "</gpx>\n");
 
 
-    vprintf("%s(): return TRUE\n", __PRETTY_FUNCTION__);
     return TRUE;
 }
 
@@ -768,8 +757,6 @@ gpx_poi_start_element(PoiSaxData *data,
         default:
             ;
     }
-
-    vprintf("%s(): return\n", __PRETTY_FUNCTION__);
 }
 
 /**
@@ -849,8 +836,6 @@ gpx_poi_end_element(PoiSaxData *data, const xmlChar *name)
         default:
             ;
     }
-
-    vprintf("%s(): return\n", __PRETTY_FUNCTION__);
 }
 
 gboolean
@@ -879,11 +864,9 @@ gpx_poi_parse(gchar *buffer, gint size, GList **poi_list)
 
     if(data.sax_data.state != FINISH)
     {
-        vprintf("%s(): return FALSE\n", __PRETTY_FUNCTION__);
         return FALSE;
     }
 
-    vprintf("%s(): return TRUE\n", __PRETTY_FUNCTION__);
     return TRUE;
 }
 
@@ -959,7 +942,6 @@ gpx_poi_write(GtkTreeModel *model, GnomeVFSHandle *handle)
     /* Write the footer. */
     gpx_write_string(handle, "</gpx>\n");
 
-    vprintf("%s(): return %d\n", __PRETTY_FUNCTION__, num_written);
     return num_written;
 }
 
@@ -981,6 +963,4 @@ gpx_init()
         snprintf(XML_TZONE, sizeof(XML_TZONE), "%+03ld:%02ld",
                 (time2.tm_gmtoff / 60 / 60), (time2.tm_gmtoff / 60) % 60);
     }
-
-    vprintf("%s(): return\n", __PRETTY_FUNCTION__);
 }

@@ -207,7 +207,6 @@ mapdb_exists(TileSource *source, gint zoom, gint tilex, gint tiley)
     if (!is_tile_expired(filename, source->refresh))
         exists = g_file_test(filename, G_FILE_TEST_EXISTS);
 
-    vprintf("%s(): return %d\n", __PRETTY_FUNCTION__, exists);
     return exists;
 }
 
@@ -240,7 +239,6 @@ mapdb_update(TileSource *source, gint zoom, gint tilex, gint tiley,
     build_tile_filename(filename, sizeof(filename), source, zoom, tilex, tiley);
     success = g_file_set_contents(filename, bytes, size, NULL);
 
-    vprintf("%s(): return %d\n", __PRETTY_FUNCTION__, success);
     return success;
 }
 
@@ -255,7 +253,6 @@ mapdb_delete(TileSource *source, gint zoom, gint tilex, gint tiley)
     build_tile_filename(filename, sizeof(filename), source, zoom, tilex, tiley);
     g_remove(filename);
 
-    vprintf("%s(): return %d\n", __PRETTY_FUNCTION__, success);
     return success;
 }
 
@@ -764,7 +761,6 @@ mapman_by_area(gdouble start_lat, gdouble start_lon,
     if(GTK_RESPONSE_OK != gtk_dialog_run(GTK_DIALOG(confirm)))
     {
         gtk_widget_destroy(confirm);
-        vprintf("%s(): return FALSE\n", __PRETTY_FUNCTION__);
         return FALSE;
     }
 
@@ -799,7 +795,6 @@ mapman_by_area(gdouble start_lat, gdouble start_lon,
     }
 
     gtk_widget_destroy(confirm);
-    vprintf("%s(): return TRUE\n", __PRETTY_FUNCTION__);
     return TRUE;
 }
 
@@ -863,7 +858,6 @@ mapman_by_route(MapmanInfo *mapman_info, MapUpdateType update_type,
     if(GTK_RESPONSE_OK != gtk_dialog_run(GTK_DIALOG(confirm)))
     {
         gtk_widget_destroy(confirm);
-        vprintf("%s(): return FALSE\n", __PRETTY_FUNCTION__);
         return FALSE;
     }
 
@@ -927,7 +921,6 @@ mapman_by_route(MapmanInfo *mapman_info, MapUpdateType update_type,
     }
     _route_dl_radius = radius;
     gtk_widget_destroy(confirm);
-    vprintf("%s(): return TRUE\n", __PRETTY_FUNCTION__);
     return TRUE;
 }
 
@@ -949,7 +942,6 @@ mapman_clear(GtkWidget *widget, MapmanInfo *mapman_info)
         gtk_entry_set_text(GTK_ENTRY(mapman_info->txt_botright_lat), "");
         gtk_entry_set_text(GTK_ENTRY(mapman_info->txt_botright_lon), "");
     }
-    vprintf("%s(): return\n", __PRETTY_FUNCTION__);
 }
 
 void mapman_update_state(GtkWidget *widget, MapmanInfo *mapman_info)
@@ -968,7 +960,6 @@ void mapman_update_state(GtkWidget *widget, MapmanInfo *mapman_info)
     gtk_widget_set_sensitive(mapman_info->num_route_radius,
             gtk_toggle_button_get_active(
                 GTK_TOGGLE_BUTTON(mapman_info->rad_by_route)));
-    vprintf("%s(): return\n", __PRETTY_FUNCTION__);
 }
 
 gboolean
@@ -1436,7 +1427,6 @@ mapman_dialog()
     
     _degformat = prev_degformat;
 
-    vprintf("%s(): return TRUE\n", __PRETTY_FUNCTION__);
     return TRUE;
 }
 

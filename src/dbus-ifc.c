@@ -54,7 +54,6 @@ dbus_ifc_cb_default(const gchar *interface, const gchar *method,
     /* TODO: study this code and figure out if this callback can be removed */
     retval->type = DBUS_TYPE_INVALID;
 
-    vprintf("%s(): return\n", __PRETTY_FUNCTION__);
     return OSSO_OK;
 }
 
@@ -77,7 +76,6 @@ dbus_ifc_set_view_position_idle(SetViewPositionArgs *args)
 
     g_free(args);
 
-    vprintf("%s(): return FALSE\n", __PRETTY_FUNCTION__);
     return FALSE;
 }
 
@@ -136,7 +134,6 @@ dbus_ifc_handle_set_view_center(GArray *args, osso_rpc_t *retval)
     g_idle_add((GSourceFunc)dbus_ifc_set_view_position_idle, svca);
     retval->type = DBUS_TYPE_INVALID;
 
-    vprintf("%s(): return OSSO_OK\n", __PRETTY_FUNCTION__);
     return OSSO_OK;
 }
 
@@ -150,7 +147,6 @@ dbus_ifc_controller(const gchar *interface, const gchar *method,
     if(!strcmp(method, MM_DBUS_METHOD_SET_VIEW_POSITION))
         return dbus_ifc_handle_set_view_center(args, retval);
 
-    vprintf("%s(): return OSSO_ERROR\n", __PRETTY_FUNCTION__);
     return OSSO_ERROR;
 }
 
@@ -189,8 +185,6 @@ dbus_ifc_fire_view_position_changed(
 
     if(message)
         dbus_message_unref(message);
-
-    vprintf("%s(): return\n", __PRETTY_FUNCTION__);
 }
 
 void
@@ -214,8 +208,6 @@ dbus_ifc_fire_view_dimensions_changed(
 
     if(message)
         dbus_message_unref(message);
-
-    vprintf("%s(): return\n", __PRETTY_FUNCTION__);
 }
 
 /***********************
@@ -244,6 +236,4 @@ dbus_ifc_init()
                 (dbus_error_is_set(&error)
                  ? error.message : ""));
     }
-
-    vprintf("%s(): return\n", __PRETTY_FUNCTION__);
 }

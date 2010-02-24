@@ -132,8 +132,6 @@ conic_conn_event(ConIcConnection *connection, ConIcConnectionEvent *event)
     _conic_is_connecting = FALSE; /* No longer trying to connect. */
     g_cond_broadcast(_conic_connection_cond);
     g_mutex_unlock(_conic_connection_mutex);
-
-    vprintf("%s(): return\n", __PRETTY_FUNCTION__);
 }
 #endif
 
@@ -152,8 +150,6 @@ conic_recommend_connected()
     }
     g_mutex_unlock(_conic_connection_mutex);
 #endif
-
-    vprintf("%s(): return\n", __PRETTY_FUNCTION__);
 }
 
 gboolean
@@ -180,8 +176,6 @@ conic_ensure_connected()
     _conic_is_connected = TRUE;
 #endif
 
-    vprintf("%s(): return %d\n", __PRETTY_FUNCTION__,
-            _window && _conic_is_connected);
     return _window && _conic_is_connected;
 }
 
@@ -218,8 +212,6 @@ maemo_mapper_destroy()
     g_thread_pool_free(_mut_thread_pool, TRUE, TRUE);
 
     gps_destroy(TRUE);
-
-    vprintf("%s(): return\n", __PRETTY_FUNCTION__);
 }
 
 /**
@@ -587,8 +579,6 @@ maemo_mapper_init(gint argc, gchar **argv)
     if (_fullscreen) {
       gtk_window_fullscreen(GTK_WINDOW(_window));
     }
-
-    vprintf("%s(): return\n", __PRETTY_FUNCTION__);
 }
 
 static gboolean
@@ -615,7 +605,6 @@ osso_cb_hw_state_idle(osso_hw_state_t *state)
 
     g_free(state);
 
-    vprintf("%s(): return\n", __PRETTY_FUNCTION__);
     return FALSE;
 }
 
@@ -626,7 +615,6 @@ osso_cb_hw_state(osso_hw_state_t *state, gpointer data)
     osso_hw_state_t *state_copy = g_new(osso_hw_state_t, 1);
     memcpy(state_copy, state, sizeof(osso_hw_state_t));
     g_idle_add((GSourceFunc)osso_cb_hw_state_idle, state_copy);
-    vprintf("%s(): return\n", __PRETTY_FUNCTION__);
 }
 
 gint
@@ -748,7 +736,6 @@ main(gint argc, gchar *argv[])
 
     osso_deinitialize(_osso);
 
-    vprintf("%s(): return\n", __PRETTY_FUNCTION__);
     exit(0);
 }
 

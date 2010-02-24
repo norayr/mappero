@@ -182,8 +182,6 @@ path_resize(Path *path, gint size)
                 curr->point = path->head + (curr->point - old_head);
         }
     }
-
-    vprintf("%s(): return\n", __PRETTY_FUNCTION__);
 }
 
 void
@@ -198,8 +196,6 @@ path_wresize(Path *path, gint wsize)
         path->wtail = path->whead + (path->wtail - old_whead);
         path->wcap = path->whead + wsize;
     }
-
-    vprintf("%s(): return\n", __PRETTY_FUNCTION__);
 }
 
 static void
@@ -239,7 +235,6 @@ read_path_from_db(Path *path, sqlite3_stmt *select_stmt)
     }
 
     map_path_optimize(path);
-    vprintf("%s(): return\n", __PRETTY_FUNCTION__);
 }
 
 /* Returns the new next_update_index. */
@@ -334,14 +329,12 @@ write_path_to_db(Path *path,
     {
         sqlite3_step(_path_stmt_trans_commit);
         sqlite3_reset(_path_stmt_trans_commit);
-        vprintf("%s(): return TRUE\n", __PRETTY_FUNCTION__);
         return num;
     }
     else
     {
         sqlite3_step(_path_stmt_trans_rollback);
         sqlite3_reset(_path_stmt_trans_rollback);
-        vprintf("%s(): return 0\n", __PRETTY_FUNCTION__);
         return index_last_saved;
     }
 }
@@ -504,7 +497,6 @@ route_update_nears(gboolean quick)
         }
     }
 
-    vprintf("%s(): return %d\n", __PRETTY_FUNCTION__, ret);
     return ret;
 }
 
@@ -536,8 +528,6 @@ route_find_nearest_point()
     _next_wpt_dist_squared = INT64_MAX;
 
     route_update_nears(FALSE);
-
-    vprintf("%s(): return\n", __PRETTY_FUNCTION__);
 }
 
 /**
@@ -560,7 +550,6 @@ route_show_distance_to(Point *point)
     /* If point is still NULL, return an error. */
     if(point == NULL)
     {
-        printf("%s(): return FALSE\n", __PRETTY_FUNCTION__);
         return FALSE;
     }
 
@@ -607,7 +596,6 @@ route_show_distance_to(Point *point)
     MACRO_BANNER_SHOW_INFO(_window, buffer);
 
     return TRUE;
-    printf("%s(): return TRUE\n", __PRETTY_FUNCTION__);
 }
 
 void
@@ -619,7 +607,6 @@ route_show_distance_to_next()
     {
         MACRO_BANNER_SHOW_INFO(_window, _("There is no next waypoint."));
     }
-    printf("%s(): return\n", __PRETTY_FUNCTION__);
 }
 
 void
@@ -638,7 +625,6 @@ route_show_distance_to_last()
     {
         MACRO_BANNER_SHOW_INFO(_window, _("The current route is empty."));
     }
-    printf("%s(): return\n", __PRETTY_FUNCTION__);
 }
 
 static void
@@ -684,7 +670,6 @@ track_show_distance_from_last()
     {
         MACRO_BANNER_SHOW_INFO(_window, _("The current track is empty."));
     }
-    printf("%s(): return\n", __PRETTY_FUNCTION__);
 }
 
 void
@@ -699,7 +684,6 @@ track_show_distance_from_first()
     {
         MACRO_BANNER_SHOW_INFO(_window, _("The current track is empty."));
     }
-    printf("%s(): return\n", __PRETTY_FUNCTION__);
 }
 
 static void
@@ -750,8 +734,6 @@ path_reset_route()
     printf("%s()\n", __PRETTY_FUNCTION__);
 
     route_find_nearest_point();
-
-    vprintf("%s(): return TRUE\n", __PRETTY_FUNCTION__);
 }
 
 /**
@@ -999,7 +981,6 @@ track_add(time_t time, gboolean newly_fixed)
         }
     }
 
-    vprintf("%s(): return\n", __PRETTY_FUNCTION__);
     return ret;
 }
 
@@ -1043,8 +1024,6 @@ track_insert_break(gboolean temporary)
 
     /* Update the track database. */
     path_update_track_in_db();
-
-    vprintf("%s(): return\n", __PRETTY_FUNCTION__);
 }
 
 /**
@@ -1062,8 +1041,6 @@ cancel_autoroute()
         /* this also sets the enabled flag to FALSE */
         memset(&_autoroute_data, 0, sizeof(_autoroute_data));
     }
-
-    vprintf("%s(): return\n", __PRETTY_FUNCTION__);
 }
 
 gboolean
@@ -1104,7 +1081,6 @@ find_nearest_waypoint(gint unitx, gint unity)
             return wnear;
     }
 
-    vprintf("%s(): return\n", __PRETTY_FUNCTION__);
     return NULL;
 }
 
@@ -1675,8 +1651,6 @@ route_add_way_dialog(gint unitx, gint unity)
     gtk_widget_hide(dialog);
     
     _degformat = last_deg_format;
-    
-    vprintf("%s(): return\n", __PRETTY_FUNCTION__);
 }
 
 WayPoint*
@@ -1798,8 +1772,6 @@ path_init()
     g_free(settings_dir);
 
     _last_spoken_phrase = g_strdup("");
-
-    vprintf("%s(): return\n", __PRETTY_FUNCTION__);
 }
 
 void
@@ -1821,8 +1793,6 @@ path_destroy()
 
     MACRO_PATH_FREE(_track);
     MACRO_PATH_FREE(_route);
-
-    vprintf("%s(): return\n", __PRETTY_FUNCTION__);
 }
 
 void

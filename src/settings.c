@@ -369,8 +369,6 @@ settings_save()
     gconf_client_clear_cache(gconf_client);
     g_object_unref(gconf_client);
     g_free(settings_dir);
-
-    vprintf("%s(): return\n", __PRETTY_FUNCTION__);
 }
 
 static gboolean
@@ -398,7 +396,6 @@ settings_dialog_browse_forfile(GtkWidget *button)
 
     gtk_widget_destroy(dialog);
 
-    vprintf("%s(): return TRUE\n", __PRETTY_FUNCTION__);
     return TRUE;
 }
 
@@ -420,7 +417,6 @@ settings_dialog_hardkeys_reset(GtkWidget *widget, KeysDialogInfo *cdi)
     }
     gtk_widget_destroy(confirm);
 
-    vprintf("%s(): return\n", __PRETTY_FUNCTION__);
     return TRUE;
 }
 
@@ -512,7 +508,6 @@ OUTER_WHILE:
 
     gtk_widget_hide(dialog);
 
-    vprintf("%s(): return\n", __PRETTY_FUNCTION__);
     return TRUE;
 }
 
@@ -537,7 +532,6 @@ settings_dialog_colors_reset(GtkWidget *widget, ColorsDialogInfo *cdi)
     }
     gtk_widget_destroy(confirm);
 
-    vprintf("%s(): return\n", __PRETTY_FUNCTION__);
     return TRUE;
 }
 
@@ -758,7 +752,6 @@ settings_dialog_colors(GtkWindow *parent)
 
     gtk_widget_hide(dialog);
 
-    vprintf("%s(): return TRUE\n", __PRETTY_FUNCTION__);
     return TRUE;
 }
 
@@ -1882,7 +1875,5 @@ settings_init(GConfClient *gconf_client)
     _gps.fix = 1;
     _gps.satinuse = 0;
     _gps.satinview = 0;
-
-    vprintf("%s(): return\n", __PRETTY_FUNCTION__);
 }
 

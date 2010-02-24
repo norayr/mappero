@@ -90,7 +90,6 @@ map_convert_coords_to_quadtree_string(gint x, gint y, gint zoomlevel,
         *ptr++ = quadrant[xbit + 2 * ybit];
     }
     *ptr++ = '\0';
-    vprintf("%s(): return\n", __PRETTY_FUNCTION__);
 }
 
 

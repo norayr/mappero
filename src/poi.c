@@ -334,8 +334,6 @@ poi_db_connect()
     gtk_widget_set_sensitive(_cmenu_loc_browse_poi_item, _poi_enabled);
     gtk_widget_set_sensitive(_cmenu_way_add_poi_item, _poi_enabled);
     gtk_widget_set_sensitive(_cmenu_poi_submenu, _poi_enabled);
-
-    vprintf("%s(): return\n", __PRETTY_FUNCTION__);
 }
 
 gboolean
@@ -362,7 +360,6 @@ get_nearest_poi(gint unitx, gint unity, PoiInfo *poi)
     else
         result = FALSE;
     sqlite3_reset(_stmt_select_nearest_poi);
-    vprintf("%s(): return %d\n", __PRETTY_FUNCTION__, result);
     return result;
 }
 
@@ -573,7 +570,6 @@ select_poi(gint unitx, gint unity, PoiInfo *poi, gboolean quick)
 
     map_force_redraw();
 
-    vprintf("%s(): return %d\n", __PRETTY_FUNCTION__, selected);
     return selected;
 }
 
@@ -620,7 +616,6 @@ category_delete(GtkWidget *widget, DeletePOI *dpoi)
     }
     gtk_widget_destroy(confirm);
 
-    vprintf("%s(): return TRUE\n", __PRETTY_FUNCTION__);
     return TRUE;
 }
 
@@ -648,7 +643,6 @@ category_edit_dialog(GtkWidget *parent, gint cat_id)
         if(SQLITE_OK != sqlite3_bind_double(_stmt_select_cat, 1, cat_id) ||
            SQLITE_ROW != sqlite3_step(_stmt_select_cat))
         {
-            vprintf("%s(): return FALSE\n", __PRETTY_FUNCTION__);
             sqlite3_reset(_stmt_select_cat);
             return FALSE;
         }
@@ -808,7 +802,6 @@ category_edit_dialog(GtkWidget *parent, gint cat_id)
 
     gtk_widget_hide(dialog);
 
-    vprintf("%s(): return\n", __PRETTY_FUNCTION__);
     return results;
 }
 
@@ -845,8 +838,6 @@ category_toggled(GtkCellRendererToggle *cell, gchar *path, GtkListStore *data)
     }
 
     sqlite3_reset(_stmt_toggle_cat);
-
-    vprintf("%s(): return TRUE\n", __PRETTY_FUNCTION__);
 }
 
 static GtkListStore*
@@ -876,7 +867,6 @@ generate_store()
     }
     sqlite3_reset(_stmt_selall_cat);
 
-    vprintf("%s(): return %p\n", __PRETTY_FUNCTION__, store);
     return store;
 }
 
@@ -894,7 +884,6 @@ category_add(GtkWidget *widget, PoiCategoryEditInfo *pcedit)
                 GTK_TREE_MODEL(store));
         g_object_unref(G_OBJECT(store));
     }
-    vprintf("%s(): return TRUE\n", __PRETTY_FUNCTION__);
     return TRUE;
 }
 
@@ -922,7 +911,6 @@ category_edit(GtkWidget *widget, PoiCategoryEditInfo *pcedit)
             g_object_unref(G_OBJECT(new_store));
         }
     }
-    vprintf("%s(): return TRUE\n", __PRETTY_FUNCTION__);
     return TRUE;
 }
 
@@ -1031,7 +1019,6 @@ category_list_dialog(GtkWidget *parent)
 
     gtk_widget_destroy(dialog);
 
-    vprintf("%s(): return TRUE\n", __PRETTY_FUNCTION__);
     return TRUE;
 }
 
@@ -1065,7 +1052,6 @@ poi_delete(GtkWidget *widget, DeletePOI *dpoi)
         sqlite3_reset(_stmt_delete_poi);
     }
 
-    vprintf("%s(): return TRUE\n", __PRETTY_FUNCTION__);
     return TRUE;
 }
 
@@ -1096,7 +1082,6 @@ poi_populate_categories(GtkListStore *store, gint cat_id,
     }
     sqlite3_reset(_stmt_selall_cat);
 
-    vprintf("%s(): return\n", __PRETTY_FUNCTION__);
     return has_active;
 }
 
@@ -1115,7 +1100,6 @@ poi_edit_cat(GtkWidget *widget, PoiCategoryEditInfo *data)
                     GTK_COMBO_BOX(data->cmb_category), &active);
         }
     }
-    vprintf("%s(): return\n", __PRETTY_FUNCTION__);
     return TRUE;
 }
 
@@ -1145,7 +1129,6 @@ poi_create_cat_combo()
         poi_populate_categories(GTK_LIST_STORE(gtk_combo_box_get_model(
                         GTK_COMBO_BOX(cmb_category))), -1, &active);
     }
-    vprintf("%s(): return\n", __PRETTY_FUNCTION__);
     return cmb_category;
 }
 
@@ -1419,7 +1402,6 @@ poi_add_dialog(GtkWidget *parent, gint unitx, gint unity)
 
     _degformat = last_deg_format;
     	
-    vprintf("%s(): return TRUE\n", __PRETTY_FUNCTION__);
     return !dpoi.deleted;
 }
 
@@ -1675,7 +1657,6 @@ poi_view_dialog(GtkWidget *parent, PoiInfo *poi)
 
     _degformat = last_deg_format;
     
-    vprintf("%s(): return TRUE\n", __PRETTY_FUNCTION__);
     return !dpoi.deleted;
 }
 
@@ -1693,7 +1674,6 @@ poi_list_insert(GtkWidget *parent, GList *poi_list, GtkComboBox *cmb_category)
     if(!gtk_combo_box_get_active_iter(
             GTK_COMBO_BOX(cmb_category), &iter))
     {
-        vprintf("%s(): return 0\n", __PRETTY_FUNCTION__);
         return 0;
     }
     gtk_tree_model_get(
@@ -1758,7 +1738,6 @@ poi_list_insert(GtkWidget *parent, GList *poi_list, GtkComboBox *cmb_category)
     if(default_cat_label)
         g_free(default_cat_label);
 
-    vprintf("%s(): return %d\n", __PRETTY_FUNCTION__, num_inserts);
     return num_inserts;
 }
 
@@ -1784,8 +1763,6 @@ poi_list_free(GList *poi_list)
     }
 
     g_list_free(poi_list);
-
-    vprintf("%s(): return\n", __PRETTY_FUNCTION__);
 }
 
 static void
@@ -1802,8 +1779,6 @@ poi_list_bearing_cell_data_func(
     gtk_tree_model_get(tree_model, iter, POI_BEARING, &f, -1);
     snprintf(buffer, sizeof(buffer), "%.1f", f);
     g_object_set(cell, "text", buffer, NULL);
-
-    vprintf("%s(): return\n", __PRETTY_FUNCTION__);
 }
 
 static void
@@ -1820,8 +1795,6 @@ poi_list_distance_cell_data_func(
     gtk_tree_model_get(tree_model, iter, POI_DISTANCE, &f, -1);
     snprintf(buffer, sizeof(buffer), "%.2f", f);
     g_object_set(cell, "text", buffer, NULL);
-
-    vprintf("%s(): return\n", __PRETTY_FUNCTION__);
 }
 
 static gboolean
@@ -1840,7 +1813,6 @@ poi_list_row_selected(GtkCellRendererToggle *renderer,
                 -1);
     }
 
-    vprintf("%s(): return TRUE\n", __PRETTY_FUNCTION__);
     return TRUE;
 }
 
@@ -1965,7 +1937,6 @@ poi_list_set_category(GtkWidget *widget, PoiListInfo *pli)
     map_force_redraw();
     gtk_widget_hide(dialog);
 
-    vprintf("%s(): return TRUE\n", __PRETTY_FUNCTION__);
     return TRUE;
 }
 
@@ -1988,7 +1959,6 @@ poi_list_select_all(GtkTreeViewColumn *column, PoiListInfo *pli)
 
     pli->select_all = !pli->select_all;
 
-    vprintf("%s(): return TRUE\n", __PRETTY_FUNCTION__);
     return TRUE;
 }
 
@@ -2039,7 +2009,6 @@ poi_list_view(GtkWidget *widget, PoiListInfo *pli)
         }
     }
 
-    vprintf("%s(): return TRUE\n", __PRETTY_FUNCTION__);
     return TRUE;
 }
 
@@ -2051,8 +2020,6 @@ poi_list_row_activated(GtkTreeView *tree_view, GtkTreePath *path,
 
     if(column != pli->select_column)
         poi_list_view(GTK_WIDGET(tree_view), pli);
-
-    vprintf("%s(): return TRUE\n", __PRETTY_FUNCTION__);
 }
 
 static gboolean
@@ -2085,7 +2052,6 @@ poi_list_goto(GtkWidget *widget, PoiListInfo *pli)
         map_controller_set_center(controller, unit, -1);
     }
 
-    vprintf("%s(): return TRUE\n", __PRETTY_FUNCTION__);
     return TRUE;
 }
 
@@ -2142,7 +2108,6 @@ poi_list_delete(GtkWidget *widget, PoiListInfo *pli)
 
     gtk_widget_destroy(confirm);
 
-    vprintf("%s(): return TRUE\n", __PRETTY_FUNCTION__);
     return TRUE;
 }
 
@@ -2169,7 +2134,6 @@ poi_list_export_gpx(GtkWidget *widget, PoiListInfo *pli)
         gnome_vfs_close(handle);
     }
 
-    vprintf("%s(): return TRUE\n", __PRETTY_FUNCTION__);
     return TRUE;
 }
 
@@ -2224,7 +2188,6 @@ poi_list_manage_checks(GtkWidget *widget, PoiListInfo *pli)
     gtk_widget_destroy(pli->dialog2);
     pli->dialog2 = NULL;
 
-    vprintf("%s(): return TRUE\n", __PRETTY_FUNCTION__);
     return TRUE;
 }
 
@@ -2415,7 +2378,6 @@ poi_list_dialog(GtkWidget *parent, gint unitx, gint unity, GList *poi_list)
 
     gtk_widget_hide(pli.dialog);
 
-    vprintf("%s(): return TRUE\n", __PRETTY_FUNCTION__);
     return TRUE;
 }
 
@@ -2529,7 +2491,6 @@ poi_import_dialog(gint unitx, gint unity)
     /* Hide the dialog. */
     gtk_widget_destroy(dialog);
 
-    vprintf("%s(): return TRUE\n", __PRETTY_FUNCTION__);
     return success;
 }
 
@@ -2566,7 +2527,6 @@ poi_download_cat_selected(GtkComboBox *cmb_category, GtkEntry *txt_query)
             gtk_widget_destroy(confirm);
     }
 
-    vprintf("%s(): return TRUE\n", __PRETTY_FUNCTION__);
     return TRUE;
 }
 
@@ -2579,7 +2539,6 @@ origin_type_selected(GtkWidget *toggle, OriginToggleInfo *oti)
     if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(toggle)))
         gtk_widget_set_sensitive(oti->txt_origin, toggle == oti->rad_use_text);
 
-    vprintf("%s(): return TRUE\n", __PRETTY_FUNCTION__);
     return TRUE;
 }
 
@@ -2914,7 +2873,6 @@ poi_download_dialog(gint unitx, gint unity)
     /* Hide the dialog. */
     gtk_widget_hide(dialog);
 
-    vprintf("%s(): return TRUE\n", __PRETTY_FUNCTION__);
     return TRUE;
 }
 
@@ -3219,7 +3177,6 @@ poi_browse_dialog(gint unitx, gint unity)
     /* Hide the dialog. */
     gtk_widget_hide(dialog);
 
-    vprintf("%s(): return TRUE\n", __PRETTY_FUNCTION__);
     return TRUE;
 }
 
@@ -3296,7 +3253,5 @@ poi_destroy()
         sqlite3_close(_poi_db); 
         _poi_db = NULL; 
     }
-
-    vprintf("%s(): return\n", __PRETTY_FUNCTION__);
 }
 

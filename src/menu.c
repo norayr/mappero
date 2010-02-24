@@ -97,7 +97,6 @@ menu_cb_route_open(GtkMenuItem *item)
         g_free(buffer);
     }
 
-    vprintf("%s(): return TRUE\n", __PRETTY_FUNCTION__);
     return TRUE;
 }
 
@@ -106,7 +105,6 @@ menu_cb_route_download(GtkMenuItem *item)
 {
     printf("%s()\n", __PRETTY_FUNCTION__);
     route_download(NULL);
-    vprintf("%s(): return\n", __PRETTY_FUNCTION__);
     return TRUE;
 }
 
@@ -128,7 +126,6 @@ menu_cb_route_save(GtkMenuItem *item)
         gnome_vfs_close(handle);
     }
 
-    vprintf("%s(): return TRUE\n", __PRETTY_FUNCTION__);
     return TRUE;
 }
 
@@ -139,7 +136,6 @@ menu_cb_route_distnext(GtkMenuItem *item)
 
     route_show_distance_to_next();
 
-    vprintf("%s(): return TRUE\n", __PRETTY_FUNCTION__);
     return TRUE;
 }
 
@@ -150,7 +146,6 @@ menu_cb_route_distlast(GtkMenuItem *item)
 
     route_show_distance_to_last();
 
-    vprintf("%s(): return TRUE\n", __PRETTY_FUNCTION__);
     return TRUE;
 }
 
@@ -161,7 +156,6 @@ menu_cb_route_reset(GtkMenuItem *item)
 
     path_reset_route();
 
-    vprintf("%s(): return TRUE\n", __PRETTY_FUNCTION__);
     return TRUE;
 }
 
@@ -178,7 +172,6 @@ menu_cb_route_clear(GtkMenuItem *item)
     route_find_nearest_point();
     map_controller_refresh_paths(controller);
 
-    vprintf("%s(): return TRUE\n", __PRETTY_FUNCTION__);
     return TRUE;
 }
 
@@ -211,7 +204,6 @@ menu_cb_track_open(GtkMenuItem *item)
         g_free(buffer);
     }
 
-    vprintf("%s(): return TRUE\n", __PRETTY_FUNCTION__);
     return TRUE;
 }
 
@@ -233,7 +225,6 @@ menu_cb_track_save(GtkMenuItem *item)
         gnome_vfs_close(handle);
     }
 
-    vprintf("%s(): return TRUE\n", __PRETTY_FUNCTION__);
     return TRUE;
 }
 
@@ -244,7 +235,6 @@ menu_cb_track_insert_break(GtkMenuItem *item)
 
     track_insert_break(TRUE);
 
-    vprintf("%s(): return TRUE\n", __PRETTY_FUNCTION__);
     return TRUE;
 }
 
@@ -347,7 +337,6 @@ menu_cb_track_insert_mark(GtkMenuItem *item)
     }
     gtk_widget_hide(dialog);
 
-    vprintf("%s(): return TRUE\n", __PRETTY_FUNCTION__);
     return TRUE;
 }
 
@@ -358,7 +347,6 @@ menu_cb_track_distlast(GtkMenuItem *item)
 
     track_show_distance_from_last();
 
-    vprintf("%s(): return TRUE\n", __PRETTY_FUNCTION__);
     return TRUE;
 }
 
@@ -369,7 +357,6 @@ menu_cb_track_distfirst(GtkMenuItem *item)
 
     track_show_distance_from_first();
 
-    vprintf("%s(): return TRUE\n", __PRETTY_FUNCTION__);
     return TRUE;
 }
 
@@ -380,7 +367,6 @@ menu_cb_track_clear(GtkMenuItem *item)
 
     track_clear();
 
-    vprintf("%s(): return TRUE\n", __PRETTY_FUNCTION__);
     return TRUE;
 }
 
@@ -409,7 +395,6 @@ menu_cb_track_enable_tracking(GtkCheckMenuItem *item)
     enable = gtk_check_menu_item_get_active(item);
     track_enable_tracking(enable);
 
-    vprintf("%s(): return TRUE\n", __PRETTY_FUNCTION__);
     return TRUE;
 }
 
@@ -444,7 +429,6 @@ menu_cb_poi_import(GtkMenuItem *item)
     if(poi_import_dialog(_center.x, _center.y))
         map_force_redraw();
 
-    vprintf("%s(): return TRUE\n", __PRETTY_FUNCTION__);
     return TRUE;
 }
 
@@ -456,7 +440,6 @@ menu_cb_poi_download(GtkMenuItem *item)
     if(poi_download_dialog(0, 0)) /* 0, 0 means no default origin */
         map_force_redraw();
 
-    vprintf("%s(): return TRUE\n", __PRETTY_FUNCTION__);
     return TRUE;
 }
 
@@ -468,7 +451,6 @@ menu_cb_poi_browse(GtkMenuItem *item)
     if(poi_browse_dialog(0, 0)) /* 0, 0 means no default origin */
         map_force_redraw();
 
-    vprintf("%s(): return TRUE\n", __PRETTY_FUNCTION__);
     return TRUE;
 }
 
@@ -480,7 +462,6 @@ menu_cb_poi_categories(GtkMenuItem *item)
     if(category_list_dialog(_window))
         map_force_redraw();
 
-    vprintf("%s(): return TRUE\n", __PRETTY_FUNCTION__);
     return TRUE;
 }
 
@@ -496,7 +477,6 @@ menu_cb_maps_repoman(GtkMenuItem *item)
 {
     printf("%s()\n", __PRETTY_FUNCTION__);
     repository_list_edit_dialog();
-    vprintf("%s(): return TRUE\n", __PRETTY_FUNCTION__);
     return TRUE;
 }
 
@@ -506,7 +486,6 @@ menu_cb_maps_tile_sources(GtkMenuItem *item)
 {
     printf("%s()\n", __PRETTY_FUNCTION__);
     tile_source_list_edit_dialog();
-    vprintf("%s(): return TRUE\n", __PRETTY_FUNCTION__);
     return TRUE;
 }
 
@@ -521,7 +500,6 @@ menu_cb_maps_select(GtkMenuItem *item, gpointer new_repo)
         map_controller_set_repository(map_controller_get_instance(), new_repo);
         map_refresh_mark(TRUE);
     }
-    vprintf("%s(): return TRUE\n", __PRETTY_FUNCTION__);
     return TRUE;
 }
 
@@ -532,7 +510,6 @@ menu_cb_maps_mapman(GtkMenuItem *item)
 
     mapman_dialog();
 
-    vprintf("%s(): return TRUE\n", __PRETTY_FUNCTION__);
     return TRUE;
 }
 
@@ -547,7 +524,6 @@ menu_cb_maps_auto_download(GtkMenuItem *item)
         map_refresh_mark(TRUE);
     }
 
-    vprintf("%s(): return TRUE\n", __PRETTY_FUNCTION__);
     return TRUE;
 }
 
@@ -566,7 +542,6 @@ menu_cb_layers_toggle(GtkCheckMenuItem *item, RepositoryLayer *repo_layer)
 
     map_controller_toggle_layer_visibility(map_controller_get_instance(), repo_layer);
 
-    vprintf("%s(): return TRUE\n", __PRETTY_FUNCTION__);
     return TRUE;
 }
 
@@ -592,7 +567,6 @@ menu_cb_view_zoom_in(GtkMenuItem *item)
         map_set_zoom(_next_zoom - 1);
     }
 
-    vprintf("%s(): return TRUE\n", __PRETTY_FUNCTION__);
     return TRUE;
 }
 
@@ -610,7 +584,6 @@ menu_cb_view_zoom_out(GtkMenuItem *item)
         map_set_zoom(_next_zoom + 1);
     }
 
-    vprintf("%s(): return TRUE\n", __PRETTY_FUNCTION__);
     return TRUE;
 }
 
@@ -629,7 +602,6 @@ menu_cb_view_rotate_clock(GtkMenuItem *item)
 
     map_rotate(-ROTATE_DEGREES);
 
-    vprintf("%s(): return TRUE\n", __PRETTY_FUNCTION__);
     return TRUE;
 }
 
@@ -640,7 +612,6 @@ menu_cb_view_rotate_counter(GtkMenuItem *item)
 
     map_rotate(ROTATE_DEGREES);
 
-    vprintf("%s(): return TRUE\n", __PRETTY_FUNCTION__);
     return TRUE;
 }
 
@@ -651,7 +622,6 @@ menu_cb_view_rotate_reset(GtkMenuItem *item)
 
     map_rotate(-_next_map_rotate_angle);
 
-    vprintf("%s(): return TRUE\n", __PRETTY_FUNCTION__);
     return TRUE;
 }
 
@@ -674,7 +644,6 @@ menu_cb_view_rotate_auto(GtkMenuItem *item)
         MACRO_BANNER_SHOW_INFO(_window, _("Auto-Rotate Disabled"));
     }
 
-    vprintf("%s(): return TRUE\n", __PRETTY_FUNCTION__);
     return TRUE;
 }
 
@@ -700,7 +669,6 @@ menu_cb_view_pan_up(GtkMenuItem *item)
     map_pan(pixel2unit((gint)(panx_adj + 0.5f)),
                 pixel2unit((gint)(pany_adj + 0.5f)));
 
-    vprintf("%s(): return TRUE\n", __PRETTY_FUNCTION__);
 #endif
     return TRUE;
 }
@@ -719,7 +687,6 @@ menu_cb_view_pan_down(GtkMenuItem *item)
     map_pan(pixel2unit((gint)(panx_adj + 0.5f)),
                 pixel2unit((gint)(pany_adj + 0.5f)));
 
-    vprintf("%s(): return TRUE\n", __PRETTY_FUNCTION__);
 #endif
     return TRUE;
 }
@@ -738,7 +705,6 @@ menu_cb_view_pan_left(GtkMenuItem *item)
     map_pan(pixel2unit((gint)(panx_adj + 0.5f)),
                 pixel2unit((gint)(pany_adj + 0.5f)));
 
-    vprintf("%s(): return TRUE\n", __PRETTY_FUNCTION__);
 #endif
     return TRUE;
 }
@@ -757,7 +723,6 @@ menu_cb_view_pan_right(GtkMenuItem *item)
     map_pan(pixel2unit((gint)(panx_adj + 0.5f)),
                 pixel2unit((gint)(pany_adj + 0.5f)));
 
-    vprintf("%s(): return TRUE\n", __PRETTY_FUNCTION__);
 #endif
     return TRUE;
 }
@@ -769,7 +734,6 @@ menu_cb_view_pan_north(GtkMenuItem *item)
 
     map_pan(0, -pixel2unit(PAN_PIXELS));
 
-    vprintf("%s(): return TRUE\n", __PRETTY_FUNCTION__);
     return TRUE;
 }
 
@@ -780,7 +744,6 @@ menu_cb_view_pan_south(GtkMenuItem *item)
 
     map_pan(0, pixel2unit(PAN_PIXELS));
 
-    vprintf("%s(): return TRUE\n", __PRETTY_FUNCTION__);
     return TRUE;
 }
 
@@ -791,7 +754,6 @@ menu_cb_view_pan_west(GtkMenuItem *item)
 
     map_pan(-pixel2unit(PAN_PIXELS), 0);
 
-    vprintf("%s(): return TRUE\n", __PRETTY_FUNCTION__);
     return TRUE;
 }
 
@@ -802,7 +764,6 @@ menu_cb_view_pan_east(GtkMenuItem *item)
 
     map_pan(pixel2unit(PAN_PIXELS), 0);
 
-    vprintf("%s(): return TRUE\n", __PRETTY_FUNCTION__);
     return TRUE;
 }
 
@@ -921,7 +882,6 @@ menu_cb_view_goto_latlon(GtkMenuItem *item)
         break;
     }
     gtk_widget_hide(dialog);
-    vprintf("%s(): return TRUE\n", __PRETTY_FUNCTION__);
     return TRUE;
 }
 
@@ -1033,7 +993,6 @@ menu_cb_view_goto_gps(GtkMenuItem *item)
     map_controller_disable_auto_center(controller);
     map_controller_set_center(controller, _pos.unit, -1);
 
-    vprintf("%s(): return TRUE\n", __PRETTY_FUNCTION__);
     return TRUE;
 }
 
@@ -1057,7 +1016,6 @@ menu_cb_view_goto_nextway(GtkMenuItem *item)
         MACRO_BANNER_SHOW_INFO(_window, _("There is no next waypoint."));
     }
 
-    vprintf("%s(): return TRUE\n", __PRETTY_FUNCTION__);
     return TRUE;
 }
 
@@ -1095,7 +1053,6 @@ menu_cb_view_goto_nearpoi(GtkMenuItem *item)
         }
     }
 
-    vprintf("%s(): return TRUE\n", __PRETTY_FUNCTION__);
     return TRUE;
 }
 
@@ -1120,7 +1077,6 @@ menu_cb_view_ac_lead(GtkMenuItem *item)
         map_refresh_mark(TRUE);
     }
 
-    vprintf("%s(): return TRUE\n", __PRETTY_FUNCTION__);
     return TRUE;
 }
 
@@ -1137,7 +1093,6 @@ menu_cb_view_ac_latlon(GtkMenuItem *item)
         map_refresh_mark(TRUE);
     }
 
-    vprintf("%s(): return TRUE\n", __PRETTY_FUNCTION__);
     return TRUE;
 }
 
@@ -1153,7 +1108,6 @@ menu_cb_view_ac_none(GtkMenuItem *item)
         MACRO_BANNER_SHOW_INFO(_window, _("Auto-Center Off"));
     }
 
-    vprintf("%s(): return TRUE\n", __PRETTY_FUNCTION__);
     return TRUE;
 }
 
@@ -1172,7 +1126,6 @@ menu_cb_view_fullscreen(GtkMenuItem *item)
     else
         gtk_window_unfullscreen(GTK_WINDOW(_window));
 
-    vprintf("%s(): return TRUE\n", __PRETTY_FUNCTION__);
     return TRUE;
 }
 
@@ -1196,7 +1149,6 @@ menu_cb_gps_enable(GtkMenuItem *item)
     gtk_widget_set_sensitive(GTK_WIDGET(_menu_gps_details_item), _enable_gps);
     gtk_widget_set_sensitive(GTK_WIDGET(_menu_gps_reset_item), _enable_gps);
 
-    vprintf("%s(): return TRUE\n", __PRETTY_FUNCTION__);
     return TRUE;
 }
 
@@ -1210,7 +1162,6 @@ menu_cb_gps_show_info(GtkMenuItem *item)
 
     gps_show_info();
 
-    vprintf("%s(): return TRUE\n", __PRETTY_FUNCTION__);
     return TRUE;
 }
 
@@ -1221,7 +1172,6 @@ menu_cb_gps_details(GtkMenuItem *item)
 
     gps_details();
 
-    vprintf("%s(): return TRUE\n", __PRETTY_FUNCTION__);
     return TRUE;
 }
 
@@ -1232,7 +1182,6 @@ menu_cb_gps_reset(GtkMenuItem *item)
 
     reset_bluetooth();
 
-    vprintf("%s(): return TRUE\n", __PRETTY_FUNCTION__);
     return TRUE;
 }
 
@@ -1255,7 +1204,6 @@ menu_cb_settings(GtkMenuItem *item)
         }
     }
 
-    vprintf("%s(): return TRUE\n", __PRETTY_FUNCTION__);
     return TRUE;
 }
 
@@ -1269,7 +1217,6 @@ menu_cb_help(GtkMenuItem *item)
     ossohelp_show(_osso, HELP_ID_INTRO, 0);
 #endif
 
-    vprintf("%s(): return TRUE\n", __PRETTY_FUNCTION__);
     return TRUE;
 }
 
@@ -1283,7 +1230,6 @@ menu_cb_about(GtkMenuItem *item)
     ossohelp_show(_osso, HELP_ID_ABOUT, OSSO_HELP_SHOW_DIALOG);
 #endif
 
-    vprintf("%s(): return TRUE\n", __PRETTY_FUNCTION__);
     return TRUE;
 }
 
@@ -1300,8 +1246,6 @@ menu_maps_remove_repos()
         gtk_widget_destroy(child->data);
 
     menu_layers_remove_repos ();
-
-    vprintf("%s(): return\n", __PRETTY_FUNCTION__);
 }
 
 
@@ -1314,8 +1258,6 @@ menu_layers_remove_repos()
     /* Delete one menu item for each repo. */
     while ((child = gtk_container_get_children(GTK_CONTAINER(_menu_layers_submenu))))
         gtk_widget_destroy (child->data);
-
-    vprintf("%s(): return\n", __PRETTY_FUNCTION__);
 }
 
 
@@ -1361,8 +1303,6 @@ menu_maps_add_repos()
 
     gtk_widget_show_all(_menu_maps_submenu);
     menu_layers_add_repos ();
-
-    vprintf("%s(): return\n", __PRETTY_FUNCTION__);
 }
 
 
@@ -1415,7 +1355,6 @@ menu_layers_add_repos()
     }
 
     gtk_widget_show_all(_menu_layers_submenu);
-    vprintf("%s(): return\n", __PRETTY_FUNCTION__);
 }
 
 
@@ -1797,8 +1736,6 @@ menu_init()
                       G_CALLBACK(menu_cb_about), NULL);
     g_signal_connect(G_OBJECT(_menu_close_item), "activate",
                       G_CALLBACK(gtk_main_quit), NULL);
-
-    vprintf("%s(): return\n", __PRETTY_FUNCTION__);
 }
 
 void

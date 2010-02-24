@@ -228,7 +228,6 @@ gps_display_details(void)
         _sat_details_panel->allocation.width,
         _sat_details_panel->allocation.height);
 
-    vprintf("%s(): return\n", __PRETTY_FUNCTION__);
     return TRUE;
 }
 
@@ -309,7 +308,6 @@ gps_display_data(void)
         _heading_panel->allocation.width,
         _heading_panel->allocation.height);
 
-    vprintf("%s(): return\n", __PRETTY_FUNCTION__);
     return;
 }
 
@@ -325,8 +323,6 @@ gps_hide_text(void)
 
     if(_gps_info)
         gps_display_data();
-
-    vprintf("%s(): return\n", __PRETTY_FUNCTION__);
 }
 
 void
@@ -341,8 +337,6 @@ gps_show_info(void)
         gps_hide_text();
         gtk_widget_hide(GTK_WIDGET(_gps_widget));
     }
-
-    vprintf("%s(): return\n", __PRETTY_FUNCTION__);
 }
 
 static void
@@ -428,7 +422,6 @@ draw_sat_info(GtkWidget *widget, gint x0, gint y0,
         }
     }
 
-    vprintf("%s(): return\n", __PRETTY_FUNCTION__);
     return;
 }
 
@@ -592,7 +585,6 @@ draw_sat_details(GtkWidget *widget, gint x0, gint y0,
     g_object_unref (gc2);
     g_object_unref (gc3);
 
-    vprintf("%s(): return\n", __PRETTY_FUNCTION__);
     return;
 }
 
@@ -651,7 +643,6 @@ sat_details_panel_expose(GtkWidget *widget, GdkEventExpose *event)
         _sat_details_expose_layout);
     g_free(buffer);
 
-    vprintf("%s(): return\n", __PRETTY_FUNCTION__);
     return TRUE;
 }
 
@@ -799,8 +790,6 @@ gps_details(void)
         break;
     }
     gtk_widget_hide(dialog);
-
-    vprintf("%s(): return\n", __PRETTY_FUNCTION__);
 }
 
 /**
@@ -858,8 +847,6 @@ map_pan(gint delta_unitx, gint delta_unity)
     map_center_unit_full(new_center, _next_zoom,
             _center_mode > 0 && _center_rotate
             ? _gps.heading : _next_map_rotate_angle);
-
-    vprintf("%s(): return\n", __PRETTY_FUNCTION__);
 }
 
 /**
@@ -918,8 +905,6 @@ map_download_refresh_idle(MapTileSpec *tile, GdkPixbuf *pixbuf,
         hildon_banner_set_fraction(HILDON_BANNER(_download_banner),
                 _curr_download / (double)_num_downloads);
     }
-
-    vprintf("%s(): return", G_STRFUNC);
 }
 
 /**
@@ -940,8 +925,6 @@ map_set_zoom(gint new_zoom)
 
     controller = map_controller_get_instance();
     map_controller_set_zoom(controller, new_zoom);
-
-    vprintf("%s(): return\n", __PRETTY_FUNCTION__);
 }
 
 gboolean
@@ -983,7 +966,6 @@ sat_panel_expose(GtkWidget *widget, GdkEventExpose *event)
         _sat_panel_layout);
     g_free(tmp);
 
-    vprintf("%s(): return\n", __PRETTY_FUNCTION__);
     return TRUE;
 }
 
@@ -1119,7 +1101,6 @@ heading_panel_expose(GtkWidget *widget, GdkEventExpose *event)
         g_free(text);
     }
 
-    vprintf("%s(): return\n", __PRETTY_FUNCTION__);
     return TRUE;
 }
 
@@ -1292,7 +1273,6 @@ latlon_dialog(gdouble lat, gdouble lon)
     
     gtk_widget_hide(dialog);
 
-    vprintf("%s(): return TRUE\n", __PRETTY_FUNCTION__);
     return TRUE;
 }
 
@@ -1386,7 +1366,6 @@ display_open_file(GtkWindow *parent, gchar **bytes_out,
 
     gtk_widget_destroy(dialog);
 
-    vprintf("%s(): return %d\n", __PRETTY_FUNCTION__, success);
     return success;
 }
 
@@ -1483,6 +1462,4 @@ display_init()
             G_CALLBACK(sat_panel_expose), NULL);
     g_signal_connect(G_OBJECT(_heading_panel), "expose_event",
             G_CALLBACK(heading_panel_expose), NULL);
-
-    vprintf("%s(): return\n", __PRETTY_FUNCTION__);
 }

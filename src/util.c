@@ -59,8 +59,6 @@ popup_error(GtkWidget *window, const gchar *error)
 
     gtk_dialog_run(GTK_DIALOG(dialog));
     gtk_widget_destroy(dialog);
-
-    vprintf("%s(): return\n", __PRETTY_FUNCTION__);
 }
 
 void
@@ -127,7 +125,6 @@ deg_format(gdouble coor, gchar *scoor, gchar neg_char, gchar pos_char)
                     ((min - (int)min)*60.0));
             break;
     }
-    vprintf("%s(): return\n", __PRETTY_FUNCTION__);
 }
 
 /** Return the location (in units) of the given string address.  This function
@@ -191,8 +188,6 @@ MapPoint locate_address(GtkWidget *parent, const gchar *addr)
     MACRO_PATH_FREE(temp);
     g_free(bytes);
 
-    vprintf("%s(): return (%d, %d)\n", __PRETTY_FUNCTION__,
-            retval.x, retval.y);
 #endif
     return retval;
 }
@@ -219,7 +214,6 @@ calculate_distance(gdouble lat1, gdouble lon1, gdouble lat2, gdouble lon2)
     slon = sin(dlon / 2.0);
     a = (slat * slat) + (cos(lat1) * cos(lat2) * slon * slon);
 
-    vprintf("%s(): return\n", __PRETTY_FUNCTION__);
     return ((2.0 * atan2(sqrt(a), sqrt(1.0 - a))) * EARTH_RADIUS);
 }
 
@@ -256,7 +250,6 @@ force_min_visible_bars(HildonControlbar *control_bar, gint num_bars)
     g_value_init(&val, G_TYPE_INT);
     g_value_set_int(&val, num_bars);
     g_object_set_property(G_OBJECT(control_bar), "minimum-visible-bars", &val);
-    vprintf("%s(): return\n", __PRETTY_FUNCTION__);
 #endif
 }
 

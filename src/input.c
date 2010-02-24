@@ -89,7 +89,6 @@ get_custom_key_from_keyval(gint keyval)
             custom_key = -1;
     }
 
-    vprintf("%s(): return %d\n", __PRETTY_FUNCTION__, custom_key);
     return custom_key;
 }
 
@@ -258,12 +257,10 @@ window_cb_key_press(GtkWidget* widget, GdkEventKey *event)
             break;
 
         default:
-            vprintf("%s(): return FALSE\n", __PRETTY_FUNCTION__);
             return FALSE;
     }
 
     return TRUE;
-    vprintf("%s(): return TRUE\n", __PRETTY_FUNCTION__);
 }
 
 gboolean
@@ -287,7 +284,6 @@ window_cb_key_release(GtkWidget* widget, GdkEventKey *event)
         default:
             return FALSE;
     }
-    vprintf("%s(): return\n", __PRETTY_FUNCTION__);
 }
 
 void
@@ -300,6 +296,4 @@ input_init()
 
     g_signal_connect(G_OBJECT(_window), "key_release_event",
             G_CALLBACK(window_cb_key_release), NULL);
-
-    vprintf("%s(): return\n", __PRETTY_FUNCTION__);
 }
