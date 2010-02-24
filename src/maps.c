@@ -868,7 +868,6 @@ mapman_by_route(MapmanInfo *mapman_info, MapUpdateType update_type,
     }
 
     /* Now, do the actual download. */
-    g_mutex_lock(_mut_priority_mutex);
     for(z = 0; z <= MAX_ZOOM; ++z)
     {
         if(gtk_toggle_button_get_active(
@@ -926,7 +925,6 @@ mapman_by_route(MapmanInfo *mapman_info, MapUpdateType update_type,
             }
         }
     }
-    g_mutex_unlock(_mut_priority_mutex);
     _route_dl_radius = radius;
     gtk_widget_destroy(confirm);
     vprintf("%s(): return TRUE\n", __PRETTY_FUNCTION__);
