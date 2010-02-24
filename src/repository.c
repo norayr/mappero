@@ -69,7 +69,7 @@ repository_list_to_xml(GList *repositories)
     int i;
     int buf_size;
     gchar *res;
-    TileSource *ts;
+    RepositoryLayer *repo_layer;
 
     doc = xmlNewDoc(BAD_CAST "1.0");
     n = xmlNewNode(NULL, BAD_CAST REPO_ROOT);
@@ -95,10 +95,12 @@ repository_list_to_xml(GList *repositories)
 
         if (repo->layers) {
             for (i = 0; i < repo->layers->len; i++) {
-                ts = g_ptr_array_index (repo->layers, i);
-                if (ts && ts->name)
+                repo_layer = g_ptr_array_index (repo->layers, i);
+                if (repo_layer && repo_layer->ts->name) {
                     nll = xmlNewChild(nl, NULL, BAD_CAST REPO_LAYER_ENTRY,
-                                      BAD_CAST (ts->id ? ts->id : ""));
+                                      BAD_CAST (repo_layer->ts->id ? repo_layer->ts->id : ""));
+                    xmlSetProp(nll, BAD_CAST "visible", BAD_CAST (repo_layer->visible ? "1" : "0"));
+                }
             }
         }
         repositories = g_list_next(repositories);
@@ -154,14 +156,20 @@ tree_to_repository(xmlDocPtr doc, xmlNodePtr repo_node)
                 if (strcmp((gchar*)nn->name, REPO_LAYER_ENTRY) == 0) {
                     ts = map_controller_lookup_tile_source(controller, ss);
 
-                    if (ts)
-                        g_ptr_array_add(repo->layers, ts);
+                    if (ts) {
+                        RepositoryLayer *repo_layer = g_slice_new0(RepositoryLayer);
+                        const xmlChar *visible = xmlGetProp(nn, BAD_CAST "visible");
+                        repo_layer->ts = ts;
+                        repo_layer->visible = (!visible || *visible == '1') ? TRUE : FALSE;
+                        g_ptr_array_add(repo->layers, repo_layer);
+                    }
                 }
                 else if (strcmp((gchar*)nn->name, REPO_PRIMARY_ENTRY) == 0) {
                     ts = map_controller_lookup_tile_source(controller, ss);
                     if (ts)
                         repo->primary = ts;
                 }
+                xmlFree(ss);
             }
         }
         xmlFree(s);
@@ -217,8 +225,8 @@ repository_compare(Repository *repo1, Repository *repo2)
         if (repo1->layers->len != repo2->layers->len)
             return FALSE;
         for (layer = 0; layer < repo1->layers->len; layer++)
-            if (strcmp(((TileSource*)g_ptr_array_index(repo1->layers, layer))->id, 
-                       ((TileSource*)g_ptr_array_index(repo2->layers, layer))->id) != 0)
+            if (strcmp(((RepositoryLayer*)g_ptr_array_index(repo1->layers, layer))->ts->id,
+                       ((RepositoryLayer*)g_ptr_array_index(repo2->layers, layer))->ts->id) != 0)
                 return FALSE;
     }
     return TRUE;
@@ -314,12 +322,18 @@ repository_sync_handler(GtkWindow *parent)
                         repo_old->primary =
                             map_controller_lookup_tile_source(controller, repo->primary->id);
                     if (repo_old->layers) {
+                        for (i = 0; i < repo_old->layers->len; i++)
+                            g_slice_free(RepositoryLayer, g_ptr_array_index(repo_old->layers, i));
                         g_ptr_array_free(repo_old->layers, TRUE);
                         repo_old->layers = g_ptr_array_new();
-                        if (repo->layers)
-                            for (i = 0; i < repo->layers->len; i++)
-                                g_ptr_array_add(repo_old->layers,
-                                                g_ptr_array_index(repo->layers, i));
+                        if (repo->layers) {
+                            for (i = 0; i < repo->layers->len; i++) {
+                                RepositoryLayer *repo_layer = g_ptr_array_index(repo->layers, i);
+                                g_ptr_array_add(repo_old->layers, repo_layer);
+                            }
+                            g_ptr_array_free(repo->layers, TRUE);
+                            repo->layers = NULL;
+                        }
                     }
                     repo_mod++;
                 }
@@ -390,74 +404,32 @@ struct RepositoryLayersDialogContext {
 };
 
 
-/*
- * Show dialog to select tile source from the list. Show only transprent layers.
- */
-static TileSource*
-select_tile_source_dialog(GtkWindow *parent, gboolean transparent)
+static gboolean
+lookup_ptr_array(GPtrArray *arr, gpointer ptr)
 {
-    GtkWidget *dialog;
-    HildonTouchSelector *selector;
-    gint ret, index;
+    gint i;
 
-    selector = HILDON_TOUCH_SELECTOR(hildon_touch_selector_new_text());
-    tile_source_fill_selector(selector, TRUE, transparent, NULL);
-
-    dialog = hildon_picker_dialog_new(parent);
-    gtk_window_set_title(GTK_WINDOW(dialog), _("Select layer"));
-    hildon_picker_dialog_set_selector(HILDON_PICKER_DIALOG(dialog), selector);
-    ret = gtk_dialog_run(GTK_DIALOG(dialog));
-
-    if (ret == GTK_RESPONSE_DELETE_EVENT) {
-        gtk_widget_destroy(dialog);
-        return NULL;
-    }
-
-    index = hildon_touch_selector_get_active(selector, 0);
-    gtk_widget_destroy(dialog);
-
-    if (index >= 0) {
-        /* Iterate over tile sources and find N'th */
-        GList *ts_list = map_controller_get_tile_sources_list(
-                                    map_controller_get_instance());
-        TileSource *ts = NULL;
-
-        while (ts_list) {
-            if (((TileSource*)ts_list->data)->transparent == transparent) {
-                if (!index)
-                    ts = (TileSource*)ts_list->data;
-                index--;
-            }
-            ts_list = ts_list->next;
-        }
-
-        return ts;
-    }
-    return NULL;
+    for (i = 0; i < arr->len; i++)
+        if (g_ptr_array_index(arr, i) == ptr)
+            return TRUE;
+    return FALSE;
 }
 
 
-/*
- * Routine clears selector and fills it with layers from array
- */
 static void
-fill_selector_with_layers(HildonTouchSelector *selector, GPtrArray *layers)
+toggle_layer_callback(GtkCellRendererToggle *toggle,
+                      gchar *path, GtkListStore *store)
 {
-    gint i;
-    TileSource *ts;
-    GtkListStore *list_store;
+    GtkTreePath *tree_path = gtk_tree_path_new_from_string(path);
+    GtkTreeIter iter;
+    gboolean val;
 
-    list_store = GTK_LIST_STORE(hildon_touch_selector_get_model(selector, 0));
-
-    gtk_list_store_clear(list_store);
-
-    if (!layers)
+    if (!gtk_tree_model_get_iter(GTK_TREE_MODEL(store), &iter, tree_path))
         return;
 
-    for (i = 0; i < layers->len; i++) {
-        ts = (TileSource*)g_ptr_array_index(layers, i);
-        hildon_touch_selector_append_text(selector, ts->name);
-    }
+    gtk_tree_model_get(GTK_TREE_MODEL(store), &iter, 0, &val, -1);
+    gtk_list_store_set(store, &iter, 0, !val, -1);
+    gtk_tree_path_free(tree_path);
 }
 
 
@@ -468,73 +440,94 @@ static gboolean
 select_layers_button_clicked(GtkWidget *widget,
                              struct RepositoryLayersDialogContext *ctx)
 {
+    MapController *controller = map_controller_get_instance();
+    GList *ts_list;
     GtkWidget *dialog;
     HildonTouchSelector *layers_selector;
     TileSource *ts;
-    gint resp, i;
-    GPtrArray *layers = g_ptr_array_new();;
+    gint resp;
+    GtkListStore *store;
+    GtkTreeIter iter;
+    GtkCellRenderer *renderer;
+    HildonTouchSelectorColumn *column;
     enum {
-        RESP_ADD,
-        RESP_DELETE,
         RESP_SAVE,
     };
 
-    /* Create copy of context's layers list. */
-    if (ctx->layers && ctx->layers->len) {
-        for (i = 0; i < ctx->layers->len; i++)
-            g_ptr_array_add(layers, g_ptr_array_index(ctx->layers, i));
+    dialog = gtk_dialog_new_with_buttons(_("Repository's layers"), NULL,
+                                         GTK_DIALOG_MODAL,
+                                         GTK_STOCK_SAVE, RESP_SAVE, NULL);
+    layers_selector = HILDON_TOUCH_SELECTOR(hildon_touch_selector_new());
+
+    /* Fill store with list of transparent tile source to let user select from */
+    store = gtk_list_store_new(2, G_TYPE_BOOLEAN, G_TYPE_STRING);
+    ts_list = map_controller_get_tile_sources_list(controller);
+
+    while (ts_list) {
+        ts = (TileSource*)ts_list->data;
+        if (ts->transparent) {
+            gtk_list_store_append(store, &iter);
+            gtk_list_store_set(store, &iter,
+                               0, lookup_ptr_array(ctx->layers, ts),
+                               1, ts->name,
+                               -1);
+        }
+        ts_list = ts_list->next;
     }
 
-    dialog = gtk_dialog_new_with_buttons(_("Repository's layers"), NULL,
-                                         GTK_DIALOG_MODAL, NULL);
-    gtk_dialog_add_button(GTK_DIALOG(dialog), GTK_STOCK_ADD, RESP_ADD);
-    gtk_dialog_add_button(GTK_DIALOG(dialog), GTK_STOCK_DELETE, RESP_DELETE);
-    gtk_dialog_add_button(GTK_DIALOG(dialog), GTK_STOCK_SAVE, RESP_SAVE);
-    layers_selector = HILDON_TOUCH_SELECTOR(hildon_touch_selector_new_text());
-    fill_selector_with_layers (layers_selector, layers);
+    /* make column with text and checkbox */
+    column = hildon_touch_selector_append_column(layers_selector, GTK_TREE_MODEL(store), NULL, NULL);
+    hildon_touch_selector_column_set_text_column(column, 1);
+
+    renderer = gtk_cell_renderer_toggle_new();
+    gtk_cell_renderer_set_fixed_size (renderer, 50, 50);
+    gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(column), renderer, FALSE);
+    gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(column), renderer, "active", 0, NULL);
+    g_signal_connect(G_OBJECT(renderer), "toggled", G_CALLBACK(toggle_layer_callback), store);
+
+    renderer = gtk_cell_renderer_text_new();
+    gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(column), renderer, TRUE);
+    gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(column), renderer, "text", 1, NULL);
+
+    hildon_touch_selector_set_hildon_ui_mode(layers_selector, HILDON_UI_MODE_NORMAL);
+    gtk_widget_set_size_request(GTK_WIDGET(layers_selector), -1, 300);
+
+    /* We finished with selector, pack it */
     gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox),
                        GTK_WIDGET(layers_selector), TRUE, TRUE, 0);
     gtk_widget_show_all(dialog);
 
-    while (1) {
-        resp = gtk_dialog_run(GTK_DIALOG(dialog));
-
-        if (resp == RESP_SAVE || resp == GTK_RESPONSE_DELETE_EVENT)
-            break;
-
-        i = hildon_touch_selector_get_active(layers_selector, 0);
-        if (i < 0)
-            ts = NULL;
-        else
-            ts = g_ptr_array_index(layers, i);
-
-        switch (resp) {
-        case RESP_ADD:
-            ts = select_tile_source_dialog(GTK_WINDOW(dialog), TRUE);
-            if (ts) {
-                g_ptr_array_add(layers, ts);
-                fill_selector_with_layers(layers_selector, layers);
-            }
-            break;
-        case RESP_DELETE:
-            g_ptr_array_remove(layers, ts);
-            fill_selector_with_layers(layers_selector, layers);
-            break;
-        }
-    }
+    resp = gtk_dialog_run(GTK_DIALOG(dialog));
 
     gtk_widget_destroy(dialog);
     if (resp == RESP_SAVE) {
-        update_layers_button_value(ctx->button, layers);
-        if (ctx->layers)
+        /* iterate list store and update context's list*/
+        if (ctx->layers) {
             g_ptr_array_free(ctx->layers, TRUE);
-        ctx->layers = layers;
+            ctx->layers = NULL;
+        }
+        if (gtk_tree_model_get_iter_first(GTK_TREE_MODEL(store), &iter)) {
+            gboolean val;
+            const gchar *name;
+
+            ctx->layers = g_ptr_array_new();
+
+            while (1) {
+                gtk_tree_model_get(GTK_TREE_MODEL(store), &iter, 0, &val, 1, &name, -1);
+                if (val) {
+                    ts = map_controller_lookup_tile_source_by_name(controller, name);
+                    if (ts)
+                        g_ptr_array_add(ctx->layers, ts);
+                }
+                if (!gtk_tree_model_iter_next(GTK_TREE_MODEL(store), &iter))
+                    break;
+            }
+        }
+        update_layers_button_value(ctx->button, ctx->layers);
         return TRUE;
     }
-    else {
-        g_ptr_array_free(layers, TRUE);
+    else
         return FALSE;
-    }
 }
 
 
@@ -694,17 +687,18 @@ repository_edit_dialog(GtkWindow *parent, Repository *repo, gboolean allow_delet
     hildon_touch_selector_set_active(zoom_step_selector, 0,
                                      repo->zoom_step - 1);
 
-    update_layers_button_value(HILDON_BUTTON(layers), repo->layers);
-
     layers_context.button = HILDON_BUTTON(layers);
     layers_context.layers = g_ptr_array_new();
 
     if (repo->layers && repo->layers->len) {
-        for (i = 0; i < repo->layers->len; i++)
-            g_ptr_array_add(layers_context.layers,
-                            g_ptr_array_index(repo->layers, i));
+        RepositoryLayer *repo_layer;
+        for (i = 0; i < repo->layers->len; i++) {
+            repo_layer = (RepositoryLayer*)g_ptr_array_index(repo->layers, i);
+            g_ptr_array_add(layers_context.layers, repo_layer->ts);
+        }
     }
 
+    update_layers_button_value(HILDON_BUTTON(layers), layers_context.layers);
     g_signal_connect(G_OBJECT(layers), "clicked",
                      G_CALLBACK(select_layers_button_clicked),
                      &layers_context);
@@ -753,18 +747,26 @@ repository_edit_dialog(GtkWindow *parent, Repository *repo, gboolean allow_delet
                 repo->zoom_step = index + 1;
 
             /* Layers */
-            if (repo->layers)
+            if (repo->layers) {
+                for (i = 0; i < repo->layers->len; i++)
+                    g_slice_free(RepositoryLayer, g_ptr_array_index(repo->layers, i));
                 g_ptr_array_free(repo->layers, TRUE);
-            repo->layers = layers_context.layers;
+            }
+
+            repo->layers = g_ptr_array_new();
+            for (i = 0; i < layers_context.layers->len; i++) {
+                RepositoryLayer *repo_layer = g_slice_new0(RepositoryLayer);
+                repo_layer->visible = TRUE;
+                repo_layer->ts = g_ptr_array_index(layers_context.layers, i);
+                g_ptr_array_add(repo->layers, repo_layer);
+            }
         }
         res = TRUE;
         break;
     }
 
     gtk_widget_destroy(dialog);
-
-    if (!res)
-        g_ptr_array_free(layers_context.layers, TRUE);
+    g_ptr_array_free(layers_context.layers, TRUE);
 
     return res;
 }
@@ -847,6 +849,7 @@ repository_create_default_lists(GList **tile_sources, GList **repositories)
     TileSource *osm, *google, *satellite, *traffic;
     Repository *repo;
     const TileSourceType *type = tile_source_type_find_by_name("XYZ_INV");
+    RepositoryLayer *repo_layer;
 
     *tile_sources = NULL;
     *repositories = NULL;
@@ -857,7 +860,6 @@ repository_create_default_lists(GList **tile_sources, GList **repositories)
     osm->cache_dir = g_strdup(osm->id);
     osm->url = g_strdup(REPO_DEFAULT_MAP_URI);
     osm->type = type;
-    osm->visible = TRUE;
     osm->format = FORMAT_PNG;
     *tile_sources = g_list_append(*tile_sources, osm);
 
@@ -867,7 +869,6 @@ repository_create_default_lists(GList **tile_sources, GList **repositories)
     google->cache_dir = g_strdup(google->id);
     google->url = g_strdup("http://mt.google.com/vt?z=%d&x=%d&y=%0d");
     google->type = type;
-    google->visible = TRUE;
     google->format = FORMAT_PNG;
     *tile_sources = g_list_append(*tile_sources, google);
 
@@ -877,7 +878,6 @@ repository_create_default_lists(GList **tile_sources, GList **repositories)
     satellite->cache_dir = g_strdup(satellite->id);
     satellite->url = g_strdup("http://khm.google.com/kh/v=51&z=%d&x=%d&y=%0d");
     satellite->type = type;
-    satellite->visible = TRUE;
     satellite->format = FORMAT_JPG;
     *tile_sources = g_list_append(*tile_sources, satellite);
 
@@ -889,7 +889,6 @@ repository_create_default_lists(GList **tile_sources, GList **repositories)
     traffic->url = g_strdup("http://mt0.google.com/vt?lyrs=m@115,traffic&"
                             "z=%d&x=%d&y=%0d&opts=T");
     traffic->type = type;
-    traffic->visible = TRUE;
     traffic->transparent = TRUE;
     *tile_sources = g_list_append(*tile_sources, traffic);
 
@@ -909,7 +908,9 @@ repository_create_default_lists(GList **tile_sources, GList **repositories)
     repo->zoom_step = 1;
     repo->primary = satellite;
     repo->layers = g_ptr_array_new();
-    g_ptr_array_add(repo->layers, traffic);
+    repo_layer = g_slice_new0(RepositoryLayer);
+    repo_layer->ts = traffic;
+    g_ptr_array_add(repo->layers, repo_layer);
     *repositories = g_list_append(*repositories, repo);
 
     repo = g_slice_new0(Repository);
@@ -919,7 +920,9 @@ repository_create_default_lists(GList **tile_sources, GList **repositories)
     repo->zoom_step = 1;
     repo->primary = google;
     repo->layers = g_ptr_array_new();
-    g_ptr_array_add(repo->layers, traffic);
+    repo_layer = g_slice_new0(RepositoryLayer);
+    repo_layer->ts = traffic;
+    g_ptr_array_add(repo->layers, repo_layer);
     *repositories = g_list_append(*repositories, repo);
 
     return repo;
@@ -934,8 +937,15 @@ repository_free(Repository *repo)
 {
     if (repo->name)
         g_free(repo->name);
-    if (repo->layers)
+    if (repo->layers) {
+        gint i;
+        RepositoryLayer *repo_layer;
+        for (i = 0; i < repo->layers->len; i++) {
+            repo_layer = (RepositoryLayer*)g_ptr_array_index(repo->layers, i);
+            g_slice_free(RepositoryLayer, repo_layer);
+        }
         g_ptr_array_free(repo->layers, TRUE);
+    }
     if (repo->menu_item)
         gtk_widget_destroy(repo->menu_item);
     g_slice_free(Repository, repo);

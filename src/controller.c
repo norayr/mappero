@@ -971,12 +971,12 @@ map_controller_append_repository(MapController *self, Repository *repo)
  * Routine toggles visibility of given layer.
  */
 void
-map_controller_toggle_layer_visibility(MapController *self, TileSource *ts)
+map_controller_toggle_layer_visibility(MapController *self, RepositoryLayer *repo_layer)
 {
     g_return_if_fail(MAP_IS_CONTROLLER(self));
-    g_return_if_fail(ts != NULL);
+    g_return_if_fail(repo_layer != NULL);
 
-    ts->visible = !ts->visible;
+    repo_layer->visible = !repo_layer->visible;
     map_screen_refresh_map(self->priv->screen);
 }
 

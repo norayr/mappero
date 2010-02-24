@@ -76,7 +76,7 @@ void map_controller_delete_repository(MapController *self, Repository *repo);
 void map_controller_delete_tile_source(MapController *self, TileSource *ts);
 void map_controller_append_tile_source(MapController *self, TileSource *ts);
 void map_controller_append_repository(MapController *self, Repository *repo);
-void map_controller_toggle_layer_visibility(MapController *self, TileSource *ts);
+void map_controller_toggle_layer_visibility(MapController *self, RepositoryLayer *repo_layer);
 
 void map_controller_action_zoom_in(MapController *self);
 void map_controller_action_zoom_out(MapController *self);
