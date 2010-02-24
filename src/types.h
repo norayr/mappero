@@ -364,12 +364,16 @@ struct _TileSource {
     gchar *url;
     const TileSourceType* type;
     TileFormat format;
-    gboolean visible;
     gint refresh;
     gint countdown;
     gboolean transparent;
 };
 
+typedef struct _RepositoryLayer RepositoryLayer;
+struct _RepositoryLayer {
+    TileSource *ts;
+    gboolean visible;
+};
 
 /** Data regarding a map repository. */
 typedef struct _Repository Repository;
@@ -379,7 +383,7 @@ struct _Repository {
     gint max_zoom;
     gint zoom_step;
     TileSource *primary;
-    GPtrArray *layers;
+    GPtrArray *layers;          /* Array of RepositoryLayer structures */
     GtkWidget *menu_item;
 };
 

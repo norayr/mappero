@@ -563,7 +563,7 @@ load_tiles_into_map(MapScreen *screen, Repository *repo, gint zoom,
     ClutterActor *tile;
     gfloat center_x, center_y;
     gint tx, ty, layer;
-    TileSource *ts;
+    RepositoryLayer *repo_layer;
 
     tile_group = CLUTTER_CONTAINER(screen->priv->tile_group);
     layers_group = CLUTTER_CONTAINER(screen->priv->layers_group);
@@ -610,14 +610,14 @@ load_tiles_into_map(MapScreen *screen, Repository *repo, gint zoom,
             if (repo->layers) {
                 for (layer = 0; layer < repo->layers->len; layer++)
                 {
-                    ts = g_ptr_array_index(repo->layers, layer);
-                    if (!ts || !ts->visible)
+                    repo_layer = g_ptr_array_index(repo->layers, layer);
+                    if (!repo_layer || !repo_layer->visible)
                         continue;
-                    tile = map_tile_cached(ts, zoom, tx, ty);
+                    tile = map_tile_cached(repo_layer->ts, zoom, tx, ty);
                     if (!tile)
                     {
                         gboolean new_tile;
-                        tile = map_tile_load(ts, zoom, tx, ty, &new_tile);
+                        tile = map_tile_load(repo_layer->ts, zoom, tx, ty, &new_tile);
                         if (new_tile)
                             clutter_container_add_actor(layers_group, tile);
                     }
