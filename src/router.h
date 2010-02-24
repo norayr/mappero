@@ -38,9 +38,18 @@ G_BEGIN_DECLS
 typedef struct _MapRouter MapRouter;
 typedef struct _MapRouterIface MapRouterIface;
 
+/**
+ * MapRouterQuery:
+ * @from: starting location
+ * @to: destination
+ * @parent: a #GtkWindow to be set as parent for any dialogs the router
+ * implementation needs to show. If this is %NULL, then no UI elements must be
+ * shown.
+ */
 typedef struct {
     MapLocation from;
     MapLocation to;
+    GtkWindow *parent;
 } MapRouterQuery;
 
 typedef void (*MapRouterCalculateRouteCb)(MapRouter *router, Path *path,

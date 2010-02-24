@@ -23,6 +23,14 @@ service_DATA = com.gnuite.maemo_mapper.service
 desktopdir = $(datadir)/applications/hildon
 desktop_DATA = maemo-mapper.desktop
 
+icon_reittiopas = \
+	icons/reittiopas/maemo-mapper-bus.png \
+	icons/reittiopas/maemo-mapper-ferry.png \
+	icons/reittiopas/maemo-mapper-metro.png \
+	icons/reittiopas/maemo-mapper-train.png \
+	icons/reittiopas/maemo-mapper-tram.png \
+	icons/reittiopas/maemo-mapper-walk.png
+
 icon_26x26_DATA = icons/26x26/maemo-mapper.png 
 icon_40x40_DATA = icons/40x40/maemo-mapper.png
 icon_scalable_DATA = icons/scalable/maemo-mapper.png icons/scalable/maemo-mapper-wait.png \
@@ -36,7 +44,8 @@ icon_scalable_DATA = icons/scalable/maemo-mapper.png icons/scalable/maemo-mapper
 	icons/scalable/maemo-mapper-settings.png \
 	icons/scalable/maemo-mapper-view.png \
 	icons/scalable/maemo-mapper-zoom-in.png \
-	icons/scalable/maemo-mapper-zoom-out.png
+	icons/scalable/maemo-mapper-zoom-out.png \
+	$(icon_reittiopas)
 icon_svg = \
 	icons/scalable/svg/maemo-mapper-point.svg \
 	icons/scalable/svg/maemo-mapper-fullscreen.svg \

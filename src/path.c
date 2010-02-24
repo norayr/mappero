@@ -1315,6 +1315,7 @@ on_dialog_response(GtkWidget *dialog, gint response, RouteDownloadInfo *rdi)
 
     rq.from.address = g_strdup(from);
     rq.to.address = g_strdup(to);
+    rq.parent = GTK_WINDOW(dialog);
 
     if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(rdi->btn_swap)))
     {
