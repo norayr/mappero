@@ -404,74 +404,32 @@ struct RepositoryLayersDialogContext {
 };
 
 
-/*
- * Show dialog to select tile source from the list. Show only transprent layers.
- */
-static TileSource*
-select_tile_source_dialog(GtkWindow *parent, gboolean transparent)
+static gboolean
+lookup_ptr_array(GPtrArray *arr, gpointer ptr)
 {
-    GtkWidget *dialog;
-    HildonTouchSelector *selector;
-    gint ret, index;
+    gint i;
 
-    selector = HILDON_TOUCH_SELECTOR(hildon_touch_selector_new_text());
-    tile_source_fill_selector(selector, TRUE, transparent, NULL);
-
-    dialog = hildon_picker_dialog_new(parent);
-    gtk_window_set_title(GTK_WINDOW(dialog), _("Select layer"));
-    hildon_picker_dialog_set_selector(HILDON_PICKER_DIALOG(dialog), selector);
-    ret = gtk_dialog_run(GTK_DIALOG(dialog));
-
-    if (ret == GTK_RESPONSE_DELETE_EVENT) {
-        gtk_widget_destroy(dialog);
-        return NULL;
-    }
-
-    index = hildon_touch_selector_get_active(selector, 0);
-    gtk_widget_destroy(dialog);
-
-    if (index >= 0) {
-        /* Iterate over tile sources and find N'th */
-        GList *ts_list = map_controller_get_tile_sources_list(
-                                    map_controller_get_instance());
-        TileSource *ts = NULL;
-
-        while (ts_list) {
-            if (((TileSource*)ts_list->data)->transparent == transparent) {
-                if (!index)
-                    ts = (TileSource*)ts_list->data;
-                index--;
-            }
-            ts_list = ts_list->next;
-        }
-
-        return ts;
-    }
-    return NULL;
+    for (i = 0; i < arr->len; i++)
+        if (g_ptr_array_index(arr, i) == ptr)
+            return TRUE;
+    return FALSE;
 }
 
 
-/*
- * Routine clears selector and fills it with layers from array
- */
 static void
-fill_selector_with_layers(HildonTouchSelector *selector, GPtrArray *layers)
+toggle_layer_callback(GtkCellRendererToggle *toggle,
+                      gchar *path, GtkListStore *store)
 {
-    gint i;
-    TileSource *ts;
-    GtkListStore *list_store;
+    GtkTreePath *tree_path = gtk_tree_path_new_from_string(path);
+    GtkTreeIter iter;
+    gboolean val;
 
-    list_store = GTK_LIST_STORE(hildon_touch_selector_get_model(selector, 0));
-
-    gtk_list_store_clear(list_store);
-
-    if (!layers)
+    if (!gtk_tree_model_get_iter(GTK_TREE_MODEL(store), &iter, tree_path))
         return;
 
-    for (i = 0; i < layers->len; i++) {
-        ts = (TileSource*)g_ptr_array_index(layers, i);
-        hildon_touch_selector_append_text(selector, ts->name);
-    }
+    gtk_tree_model_get(GTK_TREE_MODEL(store), &iter, 0, &val, -1);
+    gtk_list_store_set(store, &iter, 0, !val, -1);
+    gtk_tree_path_free(tree_path);
 }
 
 
@@ -482,73 +440,94 @@ static gboolean
 select_layers_button_clicked(GtkWidget *widget,
                              struct RepositoryLayersDialogContext *ctx)
 {
+    MapController *controller = map_controller_get_instance();
+    GList *ts_list;
     GtkWidget *dialog;
     HildonTouchSelector *layers_selector;
     TileSource *ts;
-    gint resp, i;
-    GPtrArray *layers = g_ptr_array_new();;
+    gint resp;
+    GtkListStore *store;
+    GtkTreeIter iter;
+    GtkCellRenderer *renderer;
+    HildonTouchSelectorColumn *column;
     enum {
-        RESP_ADD,
-        RESP_DELETE,
         RESP_SAVE,
     };
 
-    /* Create copy of context's layers list. */
-    if (ctx->layers && ctx->layers->len) {
-        for (i = 0; i < ctx->layers->len; i++)
-            g_ptr_array_add(layers, g_ptr_array_index(ctx->layers, i));
+    dialog = gtk_dialog_new_with_buttons(_("Repository's layers"), NULL,
+                                         GTK_DIALOG_MODAL,
+                                         GTK_STOCK_SAVE, RESP_SAVE, NULL);
+    layers_selector = HILDON_TOUCH_SELECTOR(hildon_touch_selector_new());
+
+    /* Fill store with list of transparent tile source to let user select from */
+    store = gtk_list_store_new(2, G_TYPE_BOOLEAN, G_TYPE_STRING);
+    ts_list = map_controller_get_tile_sources_list(controller);
+
+    while (ts_list) {
+        ts = (TileSource*)ts_list->data;
+        if (ts->transparent) {
+            gtk_list_store_append(store, &iter);
+            gtk_list_store_set(store, &iter,
+                               0, lookup_ptr_array(ctx->layers, ts),
+                               1, ts->name,
+                               -1);
+        }
+        ts_list = ts_list->next;
     }
 
-    dialog = gtk_dialog_new_with_buttons(_("Repository's layers"), NULL,
-                                         GTK_DIALOG_MODAL, NULL);
-    gtk_dialog_add_button(GTK_DIALOG(dialog), GTK_STOCK_ADD, RESP_ADD);
-    gtk_dialog_add_button(GTK_DIALOG(dialog), GTK_STOCK_DELETE, RESP_DELETE);
-    gtk_dialog_add_button(GTK_DIALOG(dialog), GTK_STOCK_SAVE, RESP_SAVE);
-    layers_selector = HILDON_TOUCH_SELECTOR(hildon_touch_selector_new_text());
-    fill_selector_with_layers(layers_selector, layers);
+    /* make column with text and checkbox */
+    column = hildon_touch_selector_append_column(layers_selector, GTK_TREE_MODEL(store), NULL, NULL);
+    hildon_touch_selector_column_set_text_column(column, 1);
+
+    renderer = gtk_cell_renderer_toggle_new();
+    gtk_cell_renderer_set_fixed_size (renderer, 50, 50);
+    gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(column), renderer, FALSE);
+    gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(column), renderer, "active", 0, NULL);
+    g_signal_connect(G_OBJECT(renderer), "toggled", G_CALLBACK(toggle_layer_callback), store);
+
+    renderer = gtk_cell_renderer_text_new();
+    gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(column), renderer, TRUE);
+    gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(column), renderer, "text", 1, NULL);
+
+    hildon_touch_selector_set_hildon_ui_mode(layers_selector, HILDON_UI_MODE_NORMAL);
+    gtk_widget_set_size_request(GTK_WIDGET(layers_selector), -1, 300);
+
+    /* We finished with selector, pack it */
     gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox),
                        GTK_WIDGET(layers_selector), TRUE, TRUE, 0);
     gtk_widget_show_all(dialog);
 
-    while (1) {
-        resp = gtk_dialog_run(GTK_DIALOG(dialog));
-
-        if (resp == RESP_SAVE || resp == GTK_RESPONSE_DELETE_EVENT)
-            break;
-
-        i = hildon_touch_selector_get_active(layers_selector, 0);
-        if (i < 0)
-            ts = NULL;
-        else
-            ts = g_ptr_array_index(layers, i);
-
-        switch (resp) {
-        case RESP_ADD:
-            ts = select_tile_source_dialog(GTK_WINDOW(dialog), TRUE);
-            if (ts) {
-                g_ptr_array_add(layers, ts);
-                fill_selector_with_layers(layers_selector, layers);
-            }
-            break;
-        case RESP_DELETE:
-            g_ptr_array_remove(layers, ts);
-            fill_selector_with_layers(layers_selector, layers);
-            break;
-        }
-    }
+    resp = gtk_dialog_run(GTK_DIALOG(dialog));
 
     gtk_widget_destroy(dialog);
     if (resp == RESP_SAVE) {
-        update_layers_button_value(ctx->button, layers);
-        if (ctx->layers)
+        /* iterate list store and update context's list*/
+        if (ctx->layers) {
             g_ptr_array_free(ctx->layers, TRUE);
-        ctx->layers = layers;
+            ctx->layers = NULL;
+        }
+        if (gtk_tree_model_get_iter_first(GTK_TREE_MODEL(store), &iter)) {
+            gboolean val;
+            const gchar *name;
+
+            ctx->layers = g_ptr_array_new();
+
+            while (1) {
+                gtk_tree_model_get(GTK_TREE_MODEL(store), &iter, 0, &val, 1, &name, -1);
+                if (val) {
+                    ts = map_controller_lookup_tile_source_by_name(controller, name);
+                    if (ts)
+                        g_ptr_array_add(ctx->layers, ts);
+                }
+                if (!gtk_tree_model_iter_next(GTK_TREE_MODEL(store), &iter))
+                    break;
+            }
+        }
+        update_layers_button_value(ctx->button, ctx->layers);
         return TRUE;
     }
-    else {
-        g_ptr_array_free(layers, TRUE);
+    else
         return FALSE;
-    }
 }
 
 
