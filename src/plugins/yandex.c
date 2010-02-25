@@ -31,9 +31,14 @@
 #include "gpx.h"
 #include "path.h"
 
+#include <gconf/gconf-client.h>
 #include <hildon/hildon-check-button.h>
 #include <math.h>
 #include <string.h>
+
+
+#define GCONF_YANDEX_KEY_PREFIX GCONF_ROUTER_KEY_PREFIX"/yandex"
+#define GCONF_YANDEX_KEY_USE_TRAFFIC GCONF_YANDEX_KEY_PREFIX"/use_traffic"
 
 #define YANDEX_ROUTER_URL \
     "http://mm-proxy.appspot.com/yaroute?from=%s&to=%s&traffic=%d"
@@ -166,11 +171,29 @@ map_yandex_calculate_route(MapRouter *router, const MapRouterQuery *query,
 }
 
 static void
+map_yandex_load_options(MapRouter *router, GConfClient *gconf_client)
+{
+    MapYandex *yandex = MAP_YANDEX(router);
+
+    yandex->use_traffic = gconf_client_get_bool(gconf_client, GCONF_YANDEX_KEY_USE_TRAFFIC, NULL);
+}
+
+static void
+map_yandex_save_options(MapRouter *router, GConfClient *gconf_client)
+{
+    MapYandex *yandex = MAP_YANDEX(router);
+
+    gconf_client_set_bool(gconf_client, GCONF_YANDEX_KEY_USE_TRAFFIC, yandex->use_traffic, NULL);
+}
+
+static void
 router_iface_init(MapRouterIface *iface)
 {
     iface->get_name = map_yandex_get_name;
     iface->run_options_dialog = map_yandex_run_options_dialog;
     iface->calculate_route = map_yandex_calculate_route;
+    iface->load_options = map_yandex_load_options;
+    iface->save_options = map_yandex_save_options;
 }
 
 static void

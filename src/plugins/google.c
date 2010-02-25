@@ -31,9 +31,13 @@
 #include "gpx.h"
 #include "path.h"
 
+#include <gconf/gconf-client.h>
 #include <hildon/hildon-check-button.h>
 #include <math.h>
 #include <string.h>
+
+#define GCONF_GOOGLE_KEY_PREFIX GCONF_ROUTER_KEY_PREFIX"/google"
+#define GCONF_GOOGLE_KEY_AVOID_HIGHWAYS GCONF_GOOGLE_KEY_PREFIX"/avoid_highways"
 
 #define GOOGLE_ROUTER_URL \
     "http://www.gnuite.com/cgi-bin/gpx.cgi?saddr=%s&daddr=%s"
@@ -174,11 +178,29 @@ map_google_calculate_route(MapRouter *router, const MapRouterQuery *query,
 }
 
 static void
+map_google_load_options(MapRouter *router, GConfClient *gconf_client)
+{
+    MapGoogle *google = MAP_GOOGLE(router);
+
+    google->avoid_highways = gconf_client_get_bool(gconf_client, GCONF_GOOGLE_KEY_AVOID_HIGHWAYS, NULL);
+}
+
+static void
+map_google_save_options(MapRouter *router, GConfClient *gconf_client)
+{
+    MapGoogle *google = MAP_GOOGLE(router);
+
+    gconf_client_set_bool(gconf_client, GCONF_GOOGLE_KEY_AVOID_HIGHWAYS, google->avoid_highways, NULL);
+}
+
+static void
 router_iface_init(MapRouterIface *iface)
 {
     iface->get_name = map_google_get_name;
     iface->run_options_dialog = map_google_run_options_dialog;
     iface->calculate_route = map_google_calculate_route;
+    iface->load_options = map_google_load_options;
+    iface->save_options = map_google_save_options;
 }
 
 static void

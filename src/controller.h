@@ -151,5 +151,8 @@ const GSList *map_controller_list_plugins(MapController *self);
 void map_controller_set_default_router(MapController *self, MapRouter *router);
 MapRouter *map_controller_get_default_router(MapController *self);
 
+void map_controller_load_routers_options(MapController *self, GConfClient *gconf_client);
+void map_controller_save_routers_options(MapController *self, GConfClient *gconf_client);
+
 G_END_DECLS
 #endif /* MAP_CONTROLLER_H */

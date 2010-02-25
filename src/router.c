@@ -183,3 +183,26 @@ map_router_geocode(MapRouter *router, const gchar *address,
         geocode_from_route(router, address, callback, user_data);
 }
 
+
+void
+map_router_load_options(MapRouter *router, GConfClient *gconf_client)
+{
+    MapRouterIface *iface = MAP_ROUTER_GET_IFACE(router);
+
+    g_return_if_fail(iface != NULL);
+
+    if (iface->load_options)
+        iface->load_options(router, gconf_client);
+}
+
+
+void
+map_router_save_options(MapRouter *router, GConfClient *gconf_client)
+{
+    MapRouterIface *iface = MAP_ROUTER_GET_IFACE(router);
+
+    g_return_if_fail(iface != NULL);
+
+    if (iface->save_options)
+        iface->save_options(router, gconf_client);
+}

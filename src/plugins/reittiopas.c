@@ -31,12 +31,19 @@
 #include "error.h"
 #include "path.h"
 
+#include <gconf/gconf-client.h>
 #include <hildon/hildon-pannable-area.h>
 #include <hildon/hildon-picker-button.h>
 #include <libxml/xmlreader.h>
 #include <math.h>
 #include <string.h>
 #include <time.h>
+
+#define GCONF_REITTIOPAS_KEY_PREFIX GCONF_ROUTER_KEY_PREFIX"/reittiopas"
+#define GCONF_REITTIOPAS_KEY_MARGIN GCONF_REITTIOPAS_KEY_PREFIX"/margin"
+#define GCONF_REITTIOPAS_KEY_WALKSPEED GCONF_REITTIOPAS_KEY_PREFIX"/walkspeed"
+#define GCONF_REITTIOPAS_KEY_OPTIMIZE GCONF_REITTIOPAS_KEY_PREFIX"/optimize"
+#define GCONF_REITTIOPAS_KEY_ALLOWED GCONF_REITTIOPAS_KEY_PREFIX"/allowed"
 
 #define REITTIOPAS_ROUTER_URL \
     "http://api.reittiopas.fi/public-ytv/fi/api/?user=maemomapper&pass=b4zmhurp"
@@ -1856,12 +1863,67 @@ map_reittiopas_calculate_route(MapRouter *router, const MapRouterQuery *query,
 }
 
 static void
+map_reittiopas_load_options(MapRouter *router, GConfClient *gconf_client)
+{
+    MapReittiopas *self = MAP_REITTIOPAS(router);
+    gchar key_buf[sizeof(GCONF_REITTIOPAS_KEY_ALLOWED) + 5];
+    GConfValue *value;
+    gint i;
+
+    value = gconf_client_get(gconf_client, GCONF_REITTIOPAS_KEY_MARGIN, NULL);
+    if (value) {
+        self->margin = gconf_value_get_int(value);
+        gconf_value_free(value);
+    }
+
+    value = gconf_client_get(gconf_client, GCONF_REITTIOPAS_KEY_WALKSPEED, NULL);
+    if (value) {
+        self->walkspeed = gconf_value_get_int(value);
+        gconf_value_free(value);
+    }
+
+    value = gconf_client_get(gconf_client, GCONF_REITTIOPAS_KEY_OPTIMIZE, NULL);
+    if (value) {
+        self->optimize = gconf_value_get_int(value);
+        gconf_value_free(value);
+    }
+
+    for (i = 0; i < RO_TRANSPORT_TYPE_LAST; i++) {
+        g_snprintf(key_buf, sizeof(key_buf), "%s/%d", GCONF_REITTIOPAS_KEY_ALLOWED, i);
+        value = gconf_client_get(gconf_client, key_buf, NULL);
+        if (value) {
+            self->transport_allowed[i] = gconf_value_get_bool(value);
+            gconf_value_free(value);
+        }
+    }
+}
+
+static void
+map_reittiopas_save_options(MapRouter *router, GConfClient *gconf_client)
+{
+    MapReittiopas *self = MAP_REITTIOPAS(router);
+    gchar key_buf[sizeof(GCONF_REITTIOPAS_KEY_ALLOWED) + 5];
+    gint i;
+
+    gconf_client_set_int(gconf_client, GCONF_REITTIOPAS_KEY_MARGIN, self->margin, NULL);
+    gconf_client_set_int(gconf_client, GCONF_REITTIOPAS_KEY_WALKSPEED, self->walkspeed, NULL);
+    gconf_client_set_int(gconf_client, GCONF_REITTIOPAS_KEY_OPTIMIZE, self->optimize, NULL);
+
+    for (i = 0; i < RO_TRANSPORT_TYPE_LAST; i++) {
+        g_snprintf(key_buf, sizeof(key_buf), "%s/%d", GCONF_REITTIOPAS_KEY_ALLOWED, i);
+        gconf_client_set_bool(gconf_client, key_buf, self->transport_allowed[i], NULL);
+    }
+}
+
+static void
 router_iface_init(MapRouterIface *iface)
 {
     iface->get_name = map_reittiopas_get_name;
     iface->run_options_dialog = map_reittiopas_run_options_dialog;
     iface->calculate_route = map_reittiopas_calculate_route;
     iface->geocode = map_reittiopas_geocode;
+    iface->load_options = map_reittiopas_load_options;
+    iface->save_options = map_reittiopas_save_options;
 }
 
 static void

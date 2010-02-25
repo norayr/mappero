@@ -194,6 +194,9 @@ map_controller_init(MapController *controller)
     /* Load settings */
     settings_init(gconf_client);
 
+    /* Load router settings */
+    map_controller_load_routers_options(controller, gconf_client);
+
     /* Load repositories */
     map_controller_load_repositories(controller, gconf_client);
 
@@ -1069,3 +1072,34 @@ map_controller_get_default_router(MapController *self)
     return self->priv->default_router;
 }
 
+
+void
+map_controller_load_routers_options(MapController *self, GConfClient *gconf_client)
+{
+    GSList *p;
+
+    g_return_if_fail(MAP_IS_CONTROLLER(self));
+    p = self->priv->plugins;
+
+    while (p) {
+        MapRouter *router = p->data;
+        map_router_load_options(router, gconf_client);
+        p = p->next;
+    }
+}
+
+
+void
+map_controller_save_routers_options(MapController *self, GConfClient *gconf_client)
+{
+    GSList *p;
+
+    g_return_if_fail(MAP_IS_CONTROLLER(self));
+    p = self->priv->plugins;
+
+    while (p) {
+        MapRouter *router = p->data;
+        map_router_save_options(router, gconf_client);
+        p = p->next;
+    }
+}
