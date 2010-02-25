@@ -644,7 +644,7 @@ main(gint argc, gchar *argv[])
     /* Init Gnome-VFS. */
     gnome_vfs_init();
 
-#ifdef DEBUG
+#ifdef ENABLE_DEBUG
     /* This is just some helpful DBUS testing code. */
     if(argc >= 3)
     {

@@ -29,17 +29,6 @@
 #define _(String) gettext(String)
 #define H_(String) dgettext("hildon-libs", String)
 
-#ifndef DEBUG
-#define printf(...)
-#endif
-
-/* Set the below if to determine whether to get verbose output. */
-#if 1
-#define vprintf printf
-#else
-#define vprintf(...)
-#endif
-
 #define BOUND(x, a, b) { \
     if((x) < (a)) \
         (x) = (a); \
@@ -256,7 +245,7 @@
 #define sqlite3_column_str(stmt, col) \
     ((const gchar *)sqlite3_column_text(stmt, col))
 
-#ifdef DEBUG
+#ifdef ENABLE_DEBUG
 
 #ifdef g_mutex_lock
 #undef g_mutex_lock
@@ -274,6 +263,6 @@
             g_warning("%s: %ld wait for %s", G_STRLOC, ms_diff, #mutex); \
     } G_STMT_END
 
-#endif /* DEBUG */
+#endif /* ENABLE_DEBUG */
 
 #endif /* ifndef MAEMO_MAPPER_DEFINES */
