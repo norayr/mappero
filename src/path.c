@@ -165,8 +165,6 @@ get_routers(MapController *controller)
 void
 path_resize(Path *path, gint size)
 {
-    printf("%s()\n", __PRETTY_FUNCTION__);
-
     if(path->head + size != path->cap)
     {
         Point *old_head = path->head;
@@ -187,8 +185,6 @@ path_resize(Path *path, gint size)
 void
 path_wresize(Path *path, gint wsize)
 {
-    printf("%s()\n", __PRETTY_FUNCTION__);
-
     if(path->whead + wsize != path->wcap)
     {
         WayPoint *old_whead = path->whead;
@@ -201,8 +197,6 @@ path_wresize(Path *path, gint wsize)
 static void
 read_path_from_db(Path *path, sqlite3_stmt *select_stmt)
 {
-    printf("%s()\n", __PRETTY_FUNCTION__);
-
     MACRO_PATH_INIT(*path);
     while(SQLITE_ROW == sqlite3_step(select_stmt))
     {
@@ -250,7 +244,7 @@ write_path_to_db(Path *path,
     WayPoint *wcurr;
     gint num;
     gboolean success = TRUE;
-    printf("%s(%d)\n", __PRETTY_FUNCTION__, index_last_saved);
+    DEBUG("%d", index_last_saved);
 
     /* Start transaction. */
     sqlite3_step(_path_stmt_trans_begin);
@@ -394,7 +388,7 @@ route_update_nears(gboolean quick)
     Point *curr, *near;
     WayPoint *wcurr, *wnext;
     gint64 near_dist_squared;
-    printf("%s(%d)\n", __PRETTY_FUNCTION__, quick);
+    DEBUG("%d", quick);
 
     /* If we have waypoints (_next_way != NULL), then determine the "next
      * waypoint", which is defined as the waypoint after the nearest point,
@@ -507,8 +501,6 @@ route_update_nears(gboolean quick)
 void
 route_find_nearest_point()
 {
-    printf("%s()\n", __PRETTY_FUNCTION__);
-
     /* Initialize _near_point to first non-zero point. */
     _near_point = _route.head;
     while(!_near_point->unit.y && _near_point != _route.tail)
@@ -541,7 +533,6 @@ route_show_distance_to(Point *point)
     gchar buffer[80];
     gdouble lat1, lon1, lat2, lon2;
     gdouble sum = 0.0;
-    printf("%s()\n", __PRETTY_FUNCTION__);
 
     /* If point is NULL, use the next waypoint. */
     if(point == NULL && _next_way)
@@ -601,8 +592,6 @@ route_show_distance_to(Point *point)
 void
 route_show_distance_to_next()
 {
-    printf("%s()\n", __PRETTY_FUNCTION__);
-
     if(!route_show_distance_to(NULL))
     {
         MACRO_BANNER_SHOW_INFO(_window, _("There is no next waypoint."));
@@ -612,8 +601,6 @@ route_show_distance_to_next()
 void
 route_show_distance_to_last()
 {
-    printf("%s()\n", __PRETTY_FUNCTION__);
-
     if(_route.head != _route.tail)
     {
         /* Find last non-zero point. */
@@ -656,8 +643,6 @@ track_show_distance_from(Point *point)
 void
 track_show_distance_from_last()
 {
-    printf("%s()\n", __PRETTY_FUNCTION__);
-
     /* Find last zero point. */
     if(_track.head != _track.tail)
     {
@@ -675,8 +660,6 @@ track_show_distance_from_last()
 void
 track_show_distance_from_first()
 {
-    printf("%s()\n", __PRETTY_FUNCTION__);
-
     /* Find last zero point. */
     if(_track.head != _track.tail)
         track_show_distance_from(_track.head);
@@ -731,8 +714,6 @@ auto_route_dl_idle()
 void
 path_reset_route()
 {
-    printf("%s()\n", __PRETTY_FUNCTION__);
-
     route_find_nearest_point();
 }
 
@@ -754,8 +735,8 @@ track_add(time_t time, gboolean newly_fixed)
     gboolean show_directions = TRUE;
     gint announce_thres_unsquared;
     gboolean ret = FALSE;
-    printf("%s(%d, %d, %d, %d)\n", __PRETTY_FUNCTION__,
-            (guint)time, newly_fixed, _pos.unit.x, _pos.unit.y);
+    DEBUG("%d, %d, %d, %d", (guint)time, newly_fixed,
+          _pos.unit.x, _pos.unit.y);
 
     gboolean moving = FALSE;
     gboolean approaching_waypoint = FALSE;
@@ -1006,8 +987,6 @@ track_clear()
 void
 track_insert_break(gboolean temporary)
 {
-    printf("%s()\n", __PRETTY_FUNCTION__);
-
     if(_track.tail->unit.y)
     {
         MACRO_PATH_INCREMENT_TAIL(_track);
@@ -1032,7 +1011,7 @@ track_insert_break(gboolean temporary)
 void
 cancel_autoroute()
 {
-    printf("%s()\n", __PRETTY_FUNCTION__);
+    DEBUG("");
 
     if(_autoroute_data.enabled)
     {
@@ -1056,7 +1035,7 @@ find_nearest_waypoint(gint unitx, gint unity)
     WayPoint *wnear;
     gint64 nearest_squared;
     MapPoint pos = { unitx, unity };
-    printf("%s()\n", __PRETTY_FUNCTION__);
+    DEBUG("");
 
     wcurr = wnear = _route.whead;
     if(wcurr && wcurr <= _route.wtail)
@@ -1490,8 +1469,6 @@ route_add_way_dialog(gint unitx, gint unity)
     static GtkWidget *txt_desc = NULL;
     static int last_deg_format = 0;
     
-    printf("%s()\n", __PRETTY_FUNCTION__);
-
     unit2latlon(unitx, unity, lat, lon);
     
     gint fallback_deg_format = _degformat;
@@ -1663,7 +1640,6 @@ void
 path_init()
 {
     gchar *settings_dir;
-    printf("%s()\n", __PRETTY_FUNCTION__);
 
     /* Initialize settings_dir. */
     settings_dir = gnome_vfs_expand_initial_tilde(CONFIG_DIR_NAME);
@@ -1777,8 +1753,6 @@ path_init()
 void
 path_destroy()
 {
-    printf("%s()\n", __PRETTY_FUNCTION__);
-
     /* Save paths. */
     if(_track.tail->unit.y)
         track_insert_break(FALSE);

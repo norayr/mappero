@@ -54,7 +54,7 @@ static CustomKey
 get_custom_key_from_keyval(gint keyval)
 {
     CustomKey custom_key;
-    printf("%s(%d)\n", __PRETTY_FUNCTION__, keyval);
+    DEBUG("%d", keyval);
 
     switch(keyval)
     {
@@ -97,7 +97,6 @@ window_cb_key_press(GtkWidget* widget, GdkEventKey *event)
 {
     MapController *controller;
     CustomKey custom_key;
-    printf("%s()\n", __PRETTY_FUNCTION__);
 
     controller = map_controller_get_instance();
     custom_key = get_custom_key_from_keyval(event->keyval);
@@ -268,7 +267,6 @@ window_cb_key_release(GtkWidget* widget, GdkEventKey *event)
 {
     MapController *controller = map_controller_get_instance();
     CustomKey custom_key;
-    printf("%s()\n", __PRETTY_FUNCTION__);
 
     custom_key = get_custom_key_from_keyval(event->keyval);
     if(custom_key == -1)
@@ -289,8 +287,6 @@ window_cb_key_release(GtkWidget* widget, GdkEventKey *event)
 void
 input_init()
 {
-    printf("%s():\n", __PRETTY_FUNCTION__);
-
     g_signal_connect(G_OBJECT(_window), "key_press_event",
             G_CALLBACK(window_cb_key_press), NULL);
 

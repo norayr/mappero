@@ -97,7 +97,6 @@ static void
 gpx_chars(SaxData *data, const xmlChar *ch, int len)
 {
     gint i;
-    vprintf("%s()\n", __PRETTY_FUNCTION__);
 
     switch(data->state)
     {
@@ -112,7 +111,7 @@ gpx_chars(SaxData *data, const xmlChar *ch, int len)
         case INSIDE_PATH_POINT_CMT:
             for(i = 0; i < len; i++)
                 data->chars = g_string_append_c(data->chars, ch[i]);
-            vprintf("%s\n", data->chars->str);
+            DEBUG("%s", data->chars->str);
             break;
         default:
             break;
@@ -126,7 +125,6 @@ gpx_chars(SaxData *data, const xmlChar *ch, int len)
 static xmlEntityPtr
 gpx_get_entity(SaxData *data, const xmlChar *name)
 {
-    vprintf("%s()\n", __PRETTY_FUNCTION__);
     return xmlGetPredefinedEntity(name);
 }
 
@@ -136,7 +134,7 @@ gpx_get_entity(SaxData *data, const xmlChar *name)
 static void
 gpx_error(SaxData *data, const gchar *msg, ...)
 {
-    vprintf("%s()\n", __PRETTY_FUNCTION__);
+    DEBUG("");
     data->state = ERROR;
 }
 
@@ -223,7 +221,7 @@ static void
 gpx_path_start_element(PathSaxData *data,
         const xmlChar *name, const xmlChar **attrs)
 {
-    vprintf("%s(%s)\n", __PRETTY_FUNCTION__, name);
+    DEBUG("%s", name);
 
     switch(data->sax_data.state)
     {
@@ -330,7 +328,7 @@ gpx_path_start_element(PathSaxData *data,
 static void
 gpx_path_end_element(PathSaxData *data, const xmlChar *name)
 {
-    vprintf("%s(%s)\n", __PRETTY_FUNCTION__, name);
+    DEBUG("%s", name);
 
     switch(data->sax_data.state)
     {
@@ -509,7 +507,6 @@ gpx_path_parse(Path *to_replace, gchar *buffer, gint size, gint policy_old)
 {
     PathSaxData data;
     xmlSAXHandler sax_handler;
-    printf("%s()\n", __PRETTY_FUNCTION__);
     MapPathMergePolicy policy;
 
     MACRO_PATH_INIT(data.path);
@@ -558,7 +555,6 @@ gpx_path_write(Path *path, GnomeVFSHandle *handle)
     Point *curr = NULL;
     WayPoint *wcurr = NULL;
     gboolean trkseg_break = FALSE;
-    printf("%s()\n", __PRETTY_FUNCTION__);
 
     /* Find first non-zero point. */
     for(curr = path->head - 1, wcurr = path->whead; curr++ != path->tail; )
@@ -679,7 +675,7 @@ static void
 gpx_poi_start_element(PoiSaxData *data,
         const xmlChar *name, const xmlChar **attrs)
 {
-    vprintf("%s(%s)\n", __PRETTY_FUNCTION__, name);
+    DEBUG("%s", name);
 
     switch(data->sax_data.state)
     {
@@ -765,7 +761,7 @@ gpx_poi_start_element(PoiSaxData *data,
 static void
 gpx_poi_end_element(PoiSaxData *data, const xmlChar *name)
 {
-    vprintf("%s(%s)\n", __PRETTY_FUNCTION__, name);
+    DEBUG("%s", name);
 
     switch(data->sax_data.state)
     {
@@ -843,7 +839,6 @@ gpx_poi_parse(gchar *buffer, gint size, GList **poi_list)
 {
     PoiSaxData data;
     xmlSAXHandler sax_handler;
-    printf("%s()\n", __PRETTY_FUNCTION__);
 
     data.poi_list = *poi_list;
     data.sax_data.state = START;
@@ -883,7 +878,6 @@ gpx_poi_write(GtkTreeModel *model, GnomeVFSHandle *handle)
 {
     gint num_written = 0;
     GtkTreeIter iter;
-    printf("%s()\n", __PRETTY_FUNCTION__);
 
     /* Write the header. */
     gpx_write_string(handle,
@@ -952,8 +946,6 @@ gpx_poi_write(GtkTreeModel *model, GnomeVFSHandle *handle)
 void
 gpx_init()
 {
-    printf("%s()\n", __PRETTY_FUNCTION__);
-
     /* set XML_TZONE */
     {   
         time_t time1;

@@ -93,7 +93,7 @@ static void
 conic_conn_event(ConIcConnection *connection, ConIcConnectionEvent *event)
 {
     ConIcConnectionStatus status;
-    printf("%s()\n", __PRETTY_FUNCTION__);
+    DEBUG("");
 
     /* we are only interested in CONNECTED and DISCONNECTED */
     status = con_ic_connection_event_get_status(event);
@@ -138,7 +138,7 @@ conic_conn_event(ConIcConnection *connection, ConIcConnectionEvent *event)
 void
 conic_recommend_connected()
 {
-    printf("%s()\n", __PRETTY_FUNCTION__);
+    DEBUG("");
 
 #if defined(__arm__) && defined(CONIC)
     g_mutex_lock(_conic_connection_mutex);
@@ -155,7 +155,7 @@ conic_recommend_connected()
 gboolean
 conic_ensure_connected()
 {
-    printf("%s()\n", __PRETTY_FUNCTION__);
+    DEBUG("");
 
 #if defined(__arm__) && defined(CONIC)
     if (_window && !_conic_is_connected)
@@ -186,8 +186,6 @@ conic_ensure_connected()
 static void
 maemo_mapper_destroy()
 {
-    printf("%s()\n", __PRETTY_FUNCTION__);
-
     /* _program and widgets have already been destroyed. */
     _window = NULL;
 
@@ -221,7 +219,6 @@ static void
 maemo_mapper_init(gint argc, gchar **argv)
 {
     GtkWidget *hbox, *label, *vbox;
-    printf("%s()\n", __PRETTY_FUNCTION__);
 
     /* Set enum-based constants. */
     UNITS_ENUM_TEXT[UNITS_KM] = _("km");
@@ -586,10 +583,10 @@ osso_cb_hw_state_idle(osso_hw_state_t *state)
 {
     MapController *controller = map_controller_get_instance();
 
-    printf("%s(inact=%d, save=%d, shut=%d, memlow=%d, state=%d)\n",
-            __PRETTY_FUNCTION__, state->system_inactivity_ind,
-            state->save_unsaved_data_ind, state->shutdown_ind,
-            state->memory_low_ind, state->sig_device_mode_ind);
+    DEBUG("inact=%d, save=%d, shut=%d, memlow=%d, state=%d",
+          state->system_inactivity_ind,
+          state->save_unsaved_data_ind, state->shutdown_ind,
+          state->memory_low_ind, state->sig_device_mode_ind);
 
     if(state->shutdown_ind)
     {
@@ -611,7 +608,7 @@ osso_cb_hw_state_idle(osso_hw_state_t *state)
 static void
 osso_cb_hw_state(osso_hw_state_t *state, gpointer data)
 {
-    printf("%s()\n", __PRETTY_FUNCTION__);
+    DEBUG("");
     osso_hw_state_t *state_copy = g_new(osso_hw_state_t, 1);
     memcpy(state_copy, state, sizeof(osso_hw_state_t));
     g_idle_add((GSourceFunc)osso_cb_hw_state_idle, state_copy);
@@ -620,8 +617,6 @@ osso_cb_hw_state(osso_hw_state_t *state, gpointer data)
 gint
 main(gint argc, gchar *argv[])
 {
-    printf("%s()\n", __PRETTY_FUNCTION__);
-
     /* Initialize localization. */
     setlocale(LC_ALL, "");
     bindtextdomain(GETTEXT_PACKAGE, LOCALEDIR);

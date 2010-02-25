@@ -118,7 +118,6 @@ poi_db_connect()
     gchar **pszResult;
     gint nRow, nColumn;
     gchar *db_dirname = NULL;
-    printf("%s()\n", __PRETTY_FUNCTION__);
 
     if(_poi_db)
     {
@@ -339,7 +338,7 @@ poi_db_connect()
 gboolean
 get_nearest_poi(gint unitx, gint unity, PoiInfo *poi)
 {
-    printf("%s(%d, %d)\n", __PRETTY_FUNCTION__, unitx, unity);
+    DEBUG("%d, %d", unitx, unity);
     gboolean result;
     gdouble lat, lon;
     unit2latlon(unitx, unity, lat, lon);
@@ -540,7 +539,7 @@ select_poi(gint unitx, gint unity, PoiInfo *poi, gboolean quick)
     gint num_cats;
     MapArea area;
 
-    printf("%s()\n", __PRETTY_FUNCTION__);
+    DEBUG("%d, %d", unitx, unity);
 
     area.x1 = unitx - pixel2unit(3 * _draw_width);
     area.y1 = unity - pixel2unit(3 * _draw_width);
@@ -579,7 +578,6 @@ category_delete(GtkWidget *widget, DeletePOI *dpoi)
     GtkWidget *confirm;
     gint i;
     gchar *buffer;
-    printf("%s()\n", __PRETTY_FUNCTION__);
 
     buffer = g_strdup_printf("%s\n\t%s\n%s",
             _("Delete category?"),
@@ -636,7 +634,6 @@ category_edit_dialog(GtkWidget *parent, gint cat_id)
     GtkTextIter begin, end;
     gboolean results = TRUE;
     DeletePOI dpoi = {NULL, NULL, 0};
-    printf("%s()\n", __PRETTY_FUNCTION__);
 
     if(cat_id > 0)
     {
@@ -811,7 +808,6 @@ category_toggled(GtkCellRendererToggle *cell, gchar *path, GtkListStore *data)
     GtkTreeIter iter;
     gboolean cat_enabled;
     gint cat_id;
-    printf("%s()\n", __PRETTY_FUNCTION__);
 
     GtkTreeModel *model = GTK_TREE_MODEL(data);
     if( !gtk_tree_model_get_iter_from_string(model, &iter, path) )
@@ -845,7 +841,6 @@ generate_store()
 {
     GtkTreeIter iter;
     GtkListStore *store;
-    printf("%s()\n", __PRETTY_FUNCTION__);
 
     store = gtk_list_store_new(CAT_NUM_COLUMNS,
                                G_TYPE_UINT,
@@ -874,7 +869,6 @@ static gboolean
 category_add(GtkWidget *widget, PoiCategoryEditInfo *pcedit)
 {
     GtkListStore *store;
-    printf("%s()\n", __PRETTY_FUNCTION__);
 
     if(category_edit_dialog(pcedit->dialog, 0))
     {
@@ -893,7 +887,6 @@ category_edit(GtkWidget *widget, PoiCategoryEditInfo *pcedit)
     GtkTreeIter iter;
     GtkTreeModel *store;
     GtkTreeSelection *selection;
-    printf("%s()\n", __PRETTY_FUNCTION__);
 
     store = gtk_tree_view_get_model(GTK_TREE_VIEW(pcedit->tree_view));
     selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(pcedit->tree_view));
@@ -926,7 +919,6 @@ category_list_dialog(GtkWidget *parent)
     static GtkCellRenderer *renderer = NULL;
     static GtkListStore *store;
     static PoiCategoryEditInfo pcedit;
-    printf("%s()\n", __PRETTY_FUNCTION__);
 
     store = generate_store();
 
@@ -1028,7 +1020,6 @@ poi_delete(GtkWidget *widget, DeletePOI *dpoi)
     GtkWidget *confirm;
     gint i;
     gchar *buffer;
-    printf("%s()\n", __PRETTY_FUNCTION__);
 
     buffer = g_strdup_printf("%s\n%s", _("Delete POI?"), dpoi->txt_label);
     confirm = hildon_note_new_confirmation(GTK_WINDOW(dpoi->dialog), buffer);
@@ -1060,7 +1051,6 @@ poi_populate_categories(GtkListStore *store, gint cat_id,
         GtkTreeIter *out_active)
 {
     gboolean has_active = FALSE;
-    printf("%s()\n", __PRETTY_FUNCTION__);
 
     gtk_list_store_clear(store);
 
@@ -1088,7 +1078,6 @@ poi_populate_categories(GtkListStore *store, gint cat_id,
 static gboolean
 poi_edit_cat(GtkWidget *widget, PoiCategoryEditInfo *data)
 {
-    printf("%s()\n", __PRETTY_FUNCTION__);
     if(category_list_dialog(data->dialog))
     {
         GtkTreeIter active;
@@ -1108,7 +1097,6 @@ poi_create_cat_combo()
 {
     GtkWidget *cmb_category;
     GtkTreeModel *model;
-    printf("%s()\n", __PRETTY_FUNCTION__);
 
     model = GTK_TREE_MODEL(gtk_list_store_new(2,
                 G_TYPE_INT,      /* Category ID */
@@ -1153,7 +1141,7 @@ poi_add_dialog(GtkWidget *parent, gint unitx, gint unity)
     static PoiCategoryEditInfo pcedit;
     static int last_deg_format = 0;
     
-    printf("%s()\n", __PRETTY_FUNCTION__);
+    DEBUG("%d, %d", unitx, unity);
 
     unit2latlon(unitx, unity, poi.lat, poi.lon);
 
@@ -1427,8 +1415,6 @@ poi_view_dialog(GtkWidget *parent, PoiInfo *poi)
     static PoiCategoryEditInfo pcedit;
     static int last_deg_format = 0;
     
-    printf("%s()\n", __PRETTY_FUNCTION__);
-    
     gint fallback_deg_format = _degformat;
     
     if(!coord_system_check_lat_lon (poi->lat, poi->lon, &fallback_deg_format))
@@ -1668,7 +1654,6 @@ poi_list_insert(GtkWidget *parent, GList *poi_list, GtkComboBox *cmb_category)
     gint num_inserts = 0;
     GList *curr;
     GtkTreeIter iter;
-    printf("%s()\n", __PRETTY_FUNCTION__);
 
     /* Get defaults from the given GtkComboBox */
     if(!gtk_combo_box_get_active_iter(
@@ -1745,7 +1730,6 @@ static void
 poi_list_free(GList *poi_list)
 {
     GList *curr;
-    printf("%s()\n", __PRETTY_FUNCTION__);
 
     for(curr = poi_list; curr; curr = curr->next)
     {
@@ -1774,7 +1758,6 @@ poi_list_bearing_cell_data_func(
 {
     gchar buffer[80];
     gfloat f;
-    vprintf("%s()\n", __PRETTY_FUNCTION__);
 
     gtk_tree_model_get(tree_model, iter, POI_BEARING, &f, -1);
     snprintf(buffer, sizeof(buffer), "%.1f", f);
@@ -1790,7 +1773,6 @@ poi_list_distance_cell_data_func(
 {
     gchar buffer[80];
     gfloat f;
-    vprintf("%s()\n", __PRETTY_FUNCTION__);
 
     gtk_tree_model_get(tree_model, iter, POI_DISTANCE, &f, -1);
     snprintf(buffer, sizeof(buffer), "%.2f", f);
@@ -1802,7 +1784,6 @@ poi_list_row_selected(GtkCellRendererToggle *renderer,
         gchar *path_string, GtkTreeModel *tree_model)
 {
     GtkTreeIter iter;
-    vprintf("%s()\n", __PRETTY_FUNCTION__);
 
     if(gtk_tree_model_get_iter_from_string(tree_model, &iter, path_string))
     {
@@ -1823,7 +1804,6 @@ poi_list_set_category(GtkWidget *widget, PoiListInfo *pli)
     static GtkWidget *cmb_category = NULL;
     static GtkWidget *btn_catedit = NULL;
     static PoiCategoryEditInfo pcedit;
-    printf("%s()\n", __PRETTY_FUNCTION__);
 
     if(dialog == NULL)
     {
@@ -1945,7 +1925,6 @@ poi_list_select_all(GtkTreeViewColumn *column, PoiListInfo *pli)
 {
     GtkTreeIter iter;
     GtkListStore *store;
-    printf("%s()\n", __PRETTY_FUNCTION__);
 
     /* Iterate through the data store and select as desired. */
     store = GTK_LIST_STORE(gtk_tree_view_get_model(
@@ -1968,7 +1947,6 @@ poi_list_view(GtkWidget *widget, PoiListInfo *pli)
     GtkTreeIter iter;
     GtkTreeSelection *selection;
     GtkListStore *store;
-    printf("%s()\n", __PRETTY_FUNCTION__);
 
     selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(pli->tree_view));
     store = GTK_LIST_STORE(gtk_tree_view_get_model(
@@ -2016,8 +1994,6 @@ static void
 poi_list_row_activated(GtkTreeView *tree_view, GtkTreePath *path,
         GtkTreeViewColumn *column, PoiListInfo *pli)
 {
-    printf("%s()\n", __PRETTY_FUNCTION__);
-
     if(column != pli->select_column)
         poi_list_view(GTK_WIDGET(tree_view), pli);
 }
@@ -2028,7 +2004,6 @@ poi_list_goto(GtkWidget *widget, PoiListInfo *pli)
     GtkTreeIter iter;
     GtkTreeSelection *selection;
     GtkListStore *store;
-    printf("%s()\n", __PRETTY_FUNCTION__);
 
     selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(pli->tree_view));
     store = GTK_LIST_STORE(gtk_tree_view_get_model(
@@ -2059,7 +2034,6 @@ static gboolean
 poi_list_delete(GtkWidget *widget, PoiListInfo *pli)
 {
     GtkWidget *confirm;
-    printf("%s()\n", __PRETTY_FUNCTION__);
 
     confirm = hildon_note_new_confirmation(
             GTK_WINDOW(pli->dialog2), _("Delete selected POI?"));
@@ -2115,7 +2089,6 @@ static gboolean
 poi_list_export_gpx(GtkWidget *widget, PoiListInfo *pli)
 {
     GnomeVFSHandle *handle;
-    printf("%s()\n", __PRETTY_FUNCTION__);
 
     if(display_open_file(GTK_WINDOW(pli->dialog2), NULL, &handle, NULL,
                 NULL, NULL, GTK_FILE_CHOOSER_ACTION_SAVE))
@@ -2143,8 +2116,6 @@ poi_list_manage_checks(GtkWidget *widget, PoiListInfo *pli)
     GtkWidget *btn_category;
     GtkWidget *btn_delete;
     GtkWidget *btn_export_gpx;
-
-    printf("%s()\n", __PRETTY_FUNCTION__);
 
     pli->dialog2 = gtk_dialog_new_with_buttons(_("Checked POI Actions..."),
             GTK_WINDOW(pli->dialog), GTK_DIALOG_MODAL,
@@ -2203,7 +2174,6 @@ poi_list_dialog(GtkWidget *parent, gint unitx, gint unity, GList *poi_list)
     GtkTreeIter iter;
     GList *curr;
     gdouble src_lat, src_lon;
-    printf("%s()\n", __PRETTY_FUNCTION__);
 
     if(pli.dialog == NULL)
     {
@@ -2386,7 +2356,6 @@ poi_import_dialog(gint unitx, gint unity)
 {
     GtkWidget *dialog = NULL;
     gboolean success = FALSE;
-    printf("%s()\n", __PRETTY_FUNCTION__);
 
     dialog = hildon_file_chooser_dialog_new(GTK_WINDOW(_window),
             GTK_FILE_CHOOSER_ACTION_OPEN);
@@ -2498,7 +2467,6 @@ static gboolean
 poi_download_cat_selected(GtkComboBox *cmb_category, GtkEntry *txt_query)
 {
     GtkTreeIter iter;
-    printf("%s()\n", __PRETTY_FUNCTION__);
 
     if(gtk_combo_box_get_active_iter(GTK_COMBO_BOX(cmb_category), &iter))
     {
@@ -2534,8 +2502,6 @@ poi_download_cat_selected(GtkComboBox *cmb_category, GtkEntry *txt_query)
 static gboolean
 origin_type_selected(GtkWidget *toggle, OriginToggleInfo *oti)
 {
-    printf("%s()\n", __PRETTY_FUNCTION__);
-
     if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(toggle)))
         gtk_widget_set_sensitive(oti->txt_origin, toggle == oti->rad_use_text);
 
@@ -2554,7 +2520,6 @@ poi_download_dialog(gint unitx, gint unity)
     static GtkWidget *txt_source_url = NULL;
     static OriginToggleInfo oti;
     static GtkWidget *cmb_category;
-    printf("%s()\n", __PRETTY_FUNCTION__);
 
     conic_recommend_connected();
 
@@ -2885,7 +2850,6 @@ poi_browse_dialog(gint unitx, gint unity)
     static GtkWidget *label = NULL;
     static GtkWidget *cmb_category = NULL;
     static OriginToggleInfo oti;
-    printf("%s()\n", __PRETTY_FUNCTION__);
 
     if(!dialog)
     {
@@ -3246,8 +3210,6 @@ map_poi_render(MapArea *area, MapPoiRenderCb callback, gpointer user_data)
 void
 poi_destroy()
 {
-    printf("%s()\n", __PRETTY_FUNCTION__);
-
     if(_poi_db) 
     { 
         sqlite3_close(_poi_db); 

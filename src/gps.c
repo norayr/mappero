@@ -208,7 +208,7 @@ on_gps_changed(LocationGPSDevice *device, MapController *controller)
 void
 set_conn_state(ConnState new_conn_state)
 {
-    printf("%s(%d)\n", __PRETTY_FUNCTION__, new_conn_state);
+    DEBUG("%d", new_conn_state);
 
     switch(_gps_state = new_conn_state)
     {
@@ -246,7 +246,7 @@ set_conn_state(ConnState new_conn_state)
 void
 rcvr_disconnect()
 {
-    printf("%s()\n", __PRETTY_FUNCTION__);
+    DEBUG("");
 
     location_gpsd_control_stop(gpsd_control);
 
@@ -264,7 +264,7 @@ rcvr_disconnect()
 gboolean
 rcvr_connect()
 {
-    printf("%s(%d)\n", __PRETTY_FUNCTION__, _gps_state);
+    DEBUG("%d", _gps_state);
 
     if(_enable_gps && _gps_state == RCVR_OFF)
     {
@@ -279,7 +279,7 @@ rcvr_connect()
 void
 reset_bluetooth()
 {
-    printf("%s()\n", __PRETTY_FUNCTION__);
+    DEBUG("");
     if(system("/usr/bin/sudo -l | grep -q '/usr/sbin/hciconfig  *hci0  *reset'"
             " && sudo /usr/sbin/hciconfig hci0 reset"))
         popup_error(_window,
@@ -295,7 +295,7 @@ reset_bluetooth()
 void
 gps_init()
 {
-    printf("%s()\n", __PRETTY_FUNCTION__);
+    DEBUG("");
 
     if (!gpsd_control)
     {
@@ -331,7 +331,7 @@ void
 gps_destroy(gboolean last)
 {
     static GThread* tmp = NULL;
-    printf("%s()\n", __PRETTY_FUNCTION__);
+    DEBUG("");
 
     if(!last)
     {

@@ -65,8 +65,6 @@ cmenu_show_latlon(gint unitx, gint unity)
   gint fallback_deg_format = _degformat;
   gchar buffer[80], tmp1[LL_FMT_LEN], tmp2[LL_FMT_LEN];
   
-  printf("%s()\n", __PRETTY_FUNCTION__);
-
   unit2latlon(unitx, unity, lat, lon);
   
   // Check that the current coord system supports the select position
@@ -103,7 +101,6 @@ cmenu_clip_latlon(gint unitx, gint unity)
 {
     gchar buffer[80];
     gdouble lat, lon;
-    printf("%s()\n", __PRETTY_FUNCTION__);
 
     unit2latlon(unitx, unity, lat, lon);
 
@@ -120,7 +117,6 @@ cmenu_route_to(gint unitx, gint unity)
     gchar strlat[32];
     gchar strlon[32];
     gdouble lat, lon;
-    printf("%s()\n", __PRETTY_FUNCTION__);
 
     unit2latlon(unitx, unity, lat, lon);
 
@@ -136,7 +132,6 @@ cmenu_distance_to(gint unitx, gint unity)
 {
     gchar buffer[80];
     gdouble lat, lon;
-    printf("%s()\n", __PRETTY_FUNCTION__);
 
     unit2latlon(unitx, unity, lat, lon);
 
@@ -152,7 +147,6 @@ cmenu_add_route(gint unitx, gint unity)
 {
     MapController *controller = map_controller_get_instance();
 
-    printf("%s()\n", __PRETTY_FUNCTION__);
     MACRO_PATH_INCREMENT_TAIL(_route);
     _route.tail->unit.x = _cmenu_unitx;
     _route.tail->unit.y = _cmenu_unity;
@@ -164,7 +158,6 @@ static gboolean
 cmenu_cb_loc_show_latlon(GtkMenuItem *item)
 {
     gdouble lat, lon;
-    printf("%s()\n", __PRETTY_FUNCTION__);
 
     unit2latlon(_cmenu_unitx, _cmenu_unity, lat, lon);
 
@@ -176,8 +169,6 @@ cmenu_cb_loc_show_latlon(GtkMenuItem *item)
 static gboolean
 cmenu_cb_loc_route_to(GtkMenuItem *item)
 {
-    printf("%s()\n", __PRETTY_FUNCTION__);
-
     cmenu_route_to(_cmenu_unitx, _cmenu_unity);
 
     return TRUE;
@@ -186,8 +177,6 @@ cmenu_cb_loc_route_to(GtkMenuItem *item)
 static gboolean
 cmenu_cb_loc_download_poi(GtkMenuItem *item)
 {
-    printf("%s()\n", __PRETTY_FUNCTION__);
-
     poi_download_dialog(_cmenu_unitx, _cmenu_unity);
 
     return TRUE;
@@ -196,8 +185,6 @@ cmenu_cb_loc_download_poi(GtkMenuItem *item)
 static gboolean
 cmenu_cb_loc_browse_poi(GtkMenuItem *item)
 {
-    printf("%s()\n", __PRETTY_FUNCTION__);
-
     poi_browse_dialog(_cmenu_unitx, _cmenu_unity);
 
     return TRUE;
@@ -206,8 +193,6 @@ cmenu_cb_loc_browse_poi(GtkMenuItem *item)
 static gboolean
 cmenu_cb_loc_distance_to(GtkMenuItem *item)
 {
-    printf("%s()\n", __PRETTY_FUNCTION__);
-
     cmenu_distance_to(_cmenu_unitx, _cmenu_unity);
 
     return TRUE;
@@ -216,8 +201,6 @@ cmenu_cb_loc_distance_to(GtkMenuItem *item)
 static gboolean
 cmenu_cb_loc_add_route(GtkMenuItem *item)
 {
-    printf("%s()\n", __PRETTY_FUNCTION__);
-
     cmenu_add_route(_cmenu_unitx, _cmenu_unity);
 
     return TRUE;
@@ -226,8 +209,6 @@ cmenu_cb_loc_add_route(GtkMenuItem *item)
 static gboolean
 cmenu_cb_loc_add_way(GtkMenuItem *item)
 {
-    printf("%s()\n", __PRETTY_FUNCTION__);
-
     route_add_way_dialog(_cmenu_unitx, _cmenu_unity);
 
     return TRUE;
@@ -236,8 +217,6 @@ cmenu_cb_loc_add_way(GtkMenuItem *item)
 static gboolean
 cmenu_cb_loc_add_poi(GtkMenuItem *item)
 {
-    printf("%s()\n", __PRETTY_FUNCTION__);
-
     poi_add_dialog(_window, _cmenu_unitx, _cmenu_unity);
 
     return TRUE;
@@ -246,8 +225,6 @@ cmenu_cb_loc_add_poi(GtkMenuItem *item)
 static gboolean
 cmenu_cb_loc_set_gps(GtkMenuItem *item)
 {
-    printf("%s()\n", __PRETTY_FUNCTION__);
-
     _pos.unit.x = _cmenu_unitx;
     _pos.unit.y = _cmenu_unity;
     unit2latlon(_pos.unit.x, _pos.unit.y, _gps.lat, _gps.lon);
@@ -272,7 +249,6 @@ static gboolean
 cmenu_cb_way_show_latlon(GtkMenuItem *item)
 {
     WayPoint *way;
-    printf("%s()\n", __PRETTY_FUNCTION__);
 
     if((way = find_nearest_waypoint(_cmenu_unitx, _cmenu_unity)))
         cmenu_show_latlon(way->point->unit.x, way->point->unit.y);
@@ -289,7 +265,6 @@ static gboolean
 cmenu_cb_way_show_desc(GtkMenuItem *item)
 {
     WayPoint *way;
-    printf("%s()\n", __PRETTY_FUNCTION__);
 
     if((way = find_nearest_waypoint(_cmenu_unitx, _cmenu_unity)))
     {
@@ -307,7 +282,6 @@ static gboolean
 cmenu_cb_way_clip_latlon(GtkMenuItem *item)
 {
     WayPoint *way;
-    printf("%s()\n", __PRETTY_FUNCTION__);
 
     if((way = find_nearest_waypoint(_cmenu_unitx, _cmenu_unity)))
         cmenu_clip_latlon(way->point->unit.x, way->point->unit.y);
@@ -323,7 +297,6 @@ static gboolean
 cmenu_cb_way_clip_desc(GtkMenuItem *item)
 {
     WayPoint *way;
-    printf("%s()\n", __PRETTY_FUNCTION__);
 
     if((way = find_nearest_waypoint(_cmenu_unitx, _cmenu_unity)))
         gtk_clipboard_set_text(
@@ -340,7 +313,6 @@ static gboolean
 cmenu_cb_way_route_to(GtkMenuItem *item)
 {
     WayPoint *way;
-    printf("%s()\n", __PRETTY_FUNCTION__);
 
     if((way = find_nearest_waypoint(_cmenu_unitx, _cmenu_unity)))
         cmenu_route_to(way->point->unit.x, way->point->unit.y);
@@ -356,7 +328,6 @@ static gboolean
 cmenu_cb_way_distance_to(GtkMenuItem *item)
 {
     WayPoint *way;
-    printf("%s()\n", __PRETTY_FUNCTION__);
 
     if((way = find_nearest_waypoint(_cmenu_unitx, _cmenu_unity)))
         route_show_distance_to(way->point);
@@ -436,7 +407,6 @@ static gboolean
 cmenu_cb_way_delete(GtkMenuItem *item)
 {
     WayPoint *way;
-    printf("%s()\n", __PRETTY_FUNCTION__);
 
     if((way = find_nearest_waypoint(_cmenu_unitx, _cmenu_unity)))
     {
@@ -454,7 +424,6 @@ static gboolean
 cmenu_cb_way_add_poi(GtkMenuItem *item)
 {
     WayPoint *way;
-    printf("%s()\n", __PRETTY_FUNCTION__);
 
     if((way = find_nearest_waypoint(_cmenu_unitx, _cmenu_unity)))
         poi_add_dialog(_window, way->point->unit.x, way->point->unit.y);
@@ -470,7 +439,6 @@ static gboolean
 cmenu_cb_poi_route_to(GtkMenuItem *item)
 {
     PoiInfo poi;
-    printf("%s()\n", __PRETTY_FUNCTION__);
 
     if(select_poi(_cmenu_unitx, _cmenu_unity, &poi, FALSE))
         /* FALSE = not quick */
@@ -487,7 +455,6 @@ static gboolean
 cmenu_cb_poi_distance_to(GtkMenuItem *item)
 {
     PoiInfo poi;
-    printf("%s()\n", __PRETTY_FUNCTION__);
 
     if(select_poi(_cmenu_unitx, _cmenu_unity, &poi, FALSE))
     {
@@ -503,7 +470,6 @@ static gboolean
 cmenu_cb_poi_add_route(GtkMenuItem *item)
 {
     PoiInfo poi;
-    printf("%s()\n", __PRETTY_FUNCTION__);
 
     if(select_poi(_cmenu_unitx, _cmenu_unity, &poi, FALSE))
     {
@@ -519,7 +485,6 @@ static gboolean
 cmenu_cb_poi_add_way(GtkMenuItem *item)
 {
     PoiInfo poi;
-    printf("%s()\n", __PRETTY_FUNCTION__);
 
     if(select_poi(_cmenu_unitx, _cmenu_unity, &poi, FALSE))
     {
@@ -535,7 +500,6 @@ static gboolean
 cmenu_cb_poi_edit_poi(GtkMenuItem *item)
 {
     PoiInfo poi;
-    printf("%s()\n", __PRETTY_FUNCTION__);
 
     memset(&poi, 0, sizeof(poi));
     select_poi(_cmenu_unitx, _cmenu_unity, &poi, FALSE);
@@ -553,8 +517,6 @@ cmenu_cb_poi_edit_poi(GtkMenuItem *item)
 static gboolean
 cmenu_cb_hide(GtkMenuItem *item)
 {
-    printf("%s()\n", __PRETTY_FUNCTION__);
-
     if(_mouse_is_down)
         g_mutex_unlock(_mouse_mutex);
     _mouse_is_down = _mouse_is_dragging = FALSE;
@@ -567,7 +529,6 @@ void cmenu_init()
     /* Create needed handles. */
     GtkWidget *submenu;
     GtkWidget *menu_item;
-    printf("%s()\n", __PRETTY_FUNCTION__);
 
     /* Setup the context menu. */
     _map_cmenu = GTK_MENU(gtk_menu_new());

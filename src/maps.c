@@ -200,8 +200,7 @@ mapdb_exists(TileSource *source, gint zoom, gint tilex, gint tiley)
 {
     gchar filename[200];
     gboolean exists = FALSE;
-    printf("%s(%s, %d, %d, %d)\n", __PRETTY_FUNCTION__,
-            source->name, zoom, tilex, tiley);
+    DEBUG("%s, %d, %d, %d", source->name, zoom, tilex, tiley);
 
     build_tile_filename(filename, sizeof(filename), source, zoom, tilex, tiley);
     if (!is_tile_expired(filename, source->refresh))
@@ -215,8 +214,7 @@ mapdb_get(TileSource *source, gint zoom, gint tilex, gint tiley)
 {
     gchar filename[200];
     GdkPixbuf *pixbuf = NULL;
-    printf("%s(%s, %d, %d, %d)\n", __PRETTY_FUNCTION__,
-            source->name, zoom, tilex, tiley);
+    DEBUG("%s, %d, %d, %d", source->name, zoom, tilex, tiley);
 
     build_tile_filename(filename, sizeof(filename), source, zoom, tilex, tiley);
     if (!is_tile_expired(filename, source->refresh))
@@ -231,8 +229,7 @@ mapdb_update(TileSource *source, gint zoom, gint tilex, gint tiley,
 {
     gint success = TRUE;
     gchar filename[200], path[200];
-    printf("%s(%s, %d, %d, %d)\n", __PRETTY_FUNCTION__,
-            source->name, zoom, tilex, tiley);
+    DEBUG("%s, %d, %d, %d", source->name, zoom, tilex, tiley);
 
     build_tile_path(path, sizeof(path), source, zoom, tilex, tiley);
     g_mkdir_with_parents(path, 0766);
@@ -247,8 +244,7 @@ mapdb_delete(TileSource *source, gint zoom, gint tilex, gint tiley)
 {
     gchar filename[200];
     gint success = FALSE;
-    printf("%s(%s, %d, %d, %d)\n", __PRETTY_FUNCTION__,
-            source->name, zoom, tilex, tiley);
+    DEBUG("%s, %d, %d, %d", source->name, zoom, tilex, tiley);
 
     build_tile_filename(filename, sizeof(filename), source, zoom, tilex, tiley);
     g_remove(filename);
@@ -531,7 +527,7 @@ map_update_task_remove_all(const GError *error)
 gboolean
 thread_proc_mut()
 {
-    printf("%s()\n", __PRETTY_FUNCTION__);
+    DEBUG("");
 
     /* Make sure things are inititalized. */
     gnome_vfs_init();
@@ -708,8 +704,7 @@ mapman_by_area(gdouble start_lat, gdouble start_lon,
     GtkWidget *confirm;
     Repository* rd = map_controller_get_repository(map_controller_get_instance());
 
-    printf("%s(%f, %f, %f, %f)\n", __PRETTY_FUNCTION__, start_lat, start_lon,
-            end_lat, end_lon);
+    DEBUG("%f, %f, %f, %f", start_lat, start_lon, end_lat, end_lon);
 
     latlon2unit(start_lat, start_lon, start_unitx, start_unity);
     latlon2unit(end_lat, end_lon, end_unitx, end_unity);
@@ -809,7 +804,7 @@ mapman_by_route(MapmanInfo *mapman_info, MapUpdateType update_type,
     Repository* rd = map_controller_get_repository(map_controller_get_instance());
     gint radius = hildon_number_editor_get_value(
             HILDON_NUMBER_EDITOR(mapman_info->num_route_radius));
-    printf("%s()\n", __PRETTY_FUNCTION__);
+    DEBUG("");
 
     /* First, get the number of maps to download. */
     for(z = 0; z <= MAX_ZOOM; ++z)
@@ -928,7 +923,6 @@ static void
 mapman_clear(GtkWidget *widget, MapmanInfo *mapman_info)
 {
     gint z;
-    printf("%s()\n", __PRETTY_FUNCTION__);
     if(gtk_notebook_get_current_page(GTK_NOTEBOOK(mapman_info->notebook)))
         /* This is the second page (the "Zoom" page) - clear the checks. */
         for(z = 0; z <= MAX_ZOOM; ++z)
@@ -946,7 +940,6 @@ mapman_clear(GtkWidget *widget, MapmanInfo *mapman_info)
 
 void mapman_update_state(GtkWidget *widget, MapmanInfo *mapman_info)
 {
-    printf("%s()\n", __PRETTY_FUNCTION__);
     gtk_widget_set_sensitive( mapman_info->chk_overwrite,
             gtk_toggle_button_get_active(
                 GTK_TOGGLE_BUTTON(mapman_info->rad_download)));
@@ -988,9 +981,6 @@ mapman_dialog()
     gint prev_degformat = _degformat;
     gint fallback_deg_format = _degformat;
     gdouble top_left_lat, top_left_lon, bottom_right_lat, bottom_right_lon;
-
-    
-    printf("%s()\n", __PRETTY_FUNCTION__);
 
     map_controller_get_center(controller, &center);
     allocation =

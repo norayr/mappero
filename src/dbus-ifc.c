@@ -49,7 +49,7 @@ static gint
 dbus_ifc_cb_default(const gchar *interface, const gchar *method,
         GArray *args, gpointer data, osso_rpc_t *retval)
 {
-    printf("%s()\n", __PRETTY_FUNCTION__);
+    DEBUG("%s", method);
 
     /* TODO: study this code and figure out if this callback can be removed */
     retval->type = DBUS_TYPE_INVALID;
@@ -61,8 +61,8 @@ static gboolean
 dbus_ifc_set_view_position_idle(SetViewPositionArgs *args)
 {
     MapPoint center;
-    printf("%s(%f, %f, %d, %f)\n", __PRETTY_FUNCTION__, args->new_lat,
-            args->new_lon, args->new_zoom, args->new_viewing_angle);
+    DEBUG("%f, %f, %d, %f", args->new_lat, args->new_lon,
+          args->new_zoom, args->new_viewing_angle);
 
     if(!_mouse_is_down)
     {
@@ -82,7 +82,7 @@ dbus_ifc_set_view_position_idle(SetViewPositionArgs *args)
 static gint
 dbus_ifc_handle_set_view_center(GArray *args, osso_rpc_t *retval)
 {
-    printf("%s()\n", __PRETTY_FUNCTION__);
+    DEBUG("%s");
     SetViewPositionArgs *svca = g_new(SetViewPositionArgs, 1);
 
     /* Argument 3: int: zoom.  Get this first because we might need it to
@@ -141,7 +141,7 @@ static gint
 dbus_ifc_controller(const gchar *interface, const gchar *method,
         GArray *args, gpointer data, osso_rpc_t *retval)
 {
-    printf("%s(%s)\n", __PRETTY_FUNCTION__, method);
+    DEBUG("%s", method);
 
     /* Method: set_view_center */
     if(!strcmp(method, MM_DBUS_METHOD_SET_VIEW_POSITION))
@@ -165,8 +165,8 @@ dbus_ifc_fire_view_position_changed(
 {
     DBusMessage *message = NULL;
     gdouble new_lat, new_lon;
-    printf("%s(%d, %d, %d, %f)\n", __PRETTY_FUNCTION__, new_center.x,
-            new_center.y, new_zoom, new_viewing_angle);
+    DEBUG("%d, %d, %d, %f", new_center.x, new_center.y,
+          new_zoom, new_viewing_angle);
 
     unit2latlon(new_center.x, new_center.y, new_lat, new_lon);
 
@@ -192,8 +192,7 @@ dbus_ifc_fire_view_dimensions_changed(
         gint new_view_width_pixels, gint new_view_height_pixels)
 {
     DBusMessage *message = NULL;
-    printf("%s(%d, %d)\n", __PRETTY_FUNCTION__,
-            new_view_width_pixels, new_view_height_pixels);
+    DEBUG("%d, %d", new_view_width_pixels, new_view_height_pixels);
 
     if(NULL == (message = dbus_message_new_signal(MM_DBUS_PATH,
                     MM_DBUS_INTERFACE, MM_DBUS_SIGNAL_VIEW_DIMENSIONS_CHANGED))
@@ -218,7 +217,6 @@ void
 dbus_ifc_init()
 {
     DBusError error;
-    printf("%s()\n", __PRETTY_FUNCTION__);
 
     if(OSSO_OK != osso_rpc_set_default_cb_f(_osso, dbus_ifc_cb_default, NULL))
         g_printerr("osso_rpc_set_default_cb_f failed.\n");

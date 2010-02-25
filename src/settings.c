@@ -77,7 +77,6 @@ settings_save()
     GConfClient *gconf_client;
     MapController *controller = map_controller_get_instance();
     gchar buffer[16];
-    printf("%s()\n", __PRETTY_FUNCTION__);
 
     /* Initialize settings_dir. */
     settings_dir = gnome_vfs_expand_initial_tilde(CONFIG_DIR_NAME);
@@ -375,7 +374,6 @@ static gboolean
 settings_dialog_browse_forfile(GtkWidget *button)
 {
     GtkWidget *dialog, *parent;
-    printf("%s()\n", __PRETTY_FUNCTION__);
 
     parent = gtk_widget_get_toplevel(button);
     dialog = GTK_WIDGET(
@@ -403,7 +401,6 @@ static gboolean
 settings_dialog_hardkeys_reset(GtkWidget *widget, KeysDialogInfo *cdi)
 {
     GtkWidget *confirm;
-    printf("%s()\n", __PRETTY_FUNCTION__);
 
     confirm = hildon_note_new_confirmation(GTK_WINDOW(_window),
             _("Reset all hardware keys to their original defaults?"));
@@ -429,7 +426,6 @@ settings_dialog_hardkeys(GtkWindow *parent)
     static GtkWidget *label = NULL;
     static KeysDialogInfo bdi;
     static GtkWidget *btn_defaults = NULL;
-    printf("%s()\n", __PRETTY_FUNCTION__);
 
     if(dialog == NULL)
     {
@@ -515,7 +511,6 @@ static gboolean
 settings_dialog_colors_reset(GtkWidget *widget, ColorsDialogInfo *cdi)
 {
     GtkWidget *confirm;
-    printf("%s()\n", __PRETTY_FUNCTION__);
 
     confirm = hildon_note_new_confirmation(GTK_WINDOW(_window),
             _("Reset all colors to their original defaults?"));
@@ -543,7 +538,6 @@ settings_dialog_colors(GtkWindow *parent)
     static GtkWidget *label = NULL;
     static GtkWidget *btn_defaults = NULL;
     static ColorsDialogInfo cdi;
-    printf("%s()\n", __PRETTY_FUNCTION__);
 
     if(dialog == NULL)
     {
@@ -1349,7 +1343,6 @@ settings_init(GConfClient *gconf_client)
     GConfValue *value;
     MapController *controller = map_controller_get_instance();
     gchar *str;
-    printf("%s()\n", __PRETTY_FUNCTION__);
 
     /* Initialize some constants. */
     CUSTOM_KEY_GCONF[CUSTOM_KEY_UP] = GCONF_KEY_PREFIX"/key_up";

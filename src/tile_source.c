@@ -78,7 +78,6 @@ map_convert_coords_to_quadtree_string(gint x, gint y, gint zoomlevel,
 {
     gchar *ptr = buffer;
     gint n;
-    printf("%s()\n", __PRETTY_FUNCTION__);
 
     if (initial)
         *ptr++ = initial;

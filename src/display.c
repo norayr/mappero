@@ -92,7 +92,6 @@ gboolean
 gps_display_details(void)
 {
     gchar *buffer, litbuf[LL_FMT_LEN], buffer2[LL_FMT_LEN];
-    printf("%s()\n", __PRETTY_FUNCTION__);
 
     if(_gps.fix < 2)
     {
@@ -235,7 +234,6 @@ void
 gps_display_data(void)
 {
     gchar *buffer, litbuf[LL_FMT_LEN], buffer2[LL_FMT_LEN];
-    printf("%s()\n", __PRETTY_FUNCTION__);
 
     if(_gps.fix < 2)
     {
@@ -314,8 +312,6 @@ gps_display_data(void)
 void
 gps_hide_text(void)
 {
-    printf("%s()\n", __PRETTY_FUNCTION__);
-
     /* Clear gps data */
     _gps.fix = 1;
     _gps.satinuse = 0;
@@ -328,8 +324,6 @@ gps_hide_text(void)
 void
 gps_show_info(void)
 {
-    printf("%s()\n", __PRETTY_FUNCTION__);
-
     if(_gps_info && _enable_gps)
         gtk_widget_show_all(GTK_WIDGET(_gps_widget));
     else
@@ -347,7 +341,6 @@ draw_sat_info(GtkWidget *widget, gint x0, gint y0,
     gint step, i, j, snr_height, bymargin, xoffset, yoffset;
     gint x, y, x1, y1;
     gchar *tmp = NULL;
-    printf("%s()\n", __PRETTY_FUNCTION__);
 
     xoffset = x0;
     yoffset = y0;
@@ -435,7 +428,6 @@ draw_sat_details(GtkWidget *widget, gint x0, gint y0,
     GdkColor color;
     GdkGC *gc1, *gc2, *gc3, *gc;
     gchar *buffer = NULL;
-    printf("%s()\n", __PRETTY_FUNCTION__);
 
     size = MIN(width, height);
     halfsize = size/2;
@@ -594,7 +586,6 @@ sat_details_panel_expose(GtkWidget *widget, GdkEventExpose *event)
 {
     gint width, height, x, y;
     gchar *buffer = NULL;
-    printf("%s()\n", __PRETTY_FUNCTION__);
 
     width = widget->allocation.width;
     height = widget->allocation.height * 0.9;
@@ -653,7 +644,6 @@ gps_details(void)
     static GtkWidget *table = NULL;
     static GtkWidget *label = NULL;
     static GtkWidget *notebook = NULL;
-    printf("%s()\n", __PRETTY_FUNCTION__);
 
     if(dialog == NULL)
     {
@@ -839,8 +829,6 @@ map_pan(gint delta_unitx, gint delta_unity)
     MapPoint new_center;
     MapController *controller = map_controller_get_instance();
 
-    printf("%s(%d, %d)\n", __PRETTY_FUNCTION__, delta_unitx, delta_unity);
-
     map_controller_disable_auto_center(controller);
     new_center.x = _center.x + delta_unitx;
     new_center.y = _center.y + delta_unity;
@@ -917,8 +905,6 @@ map_set_zoom(gint new_zoom)
 {
     MapController *controller;
 
-    printf("%s(%d)\n", __PRETTY_FUNCTION__, _zoom);
-
     /* This if condition also checks for new_zoom >= 0. */
     if((unsigned)new_zoom > MAX_ZOOM)
         return;
@@ -932,7 +918,6 @@ sat_panel_expose(GtkWidget *widget, GdkEventExpose *event)
 {
     gchar *tmp = NULL;
     gint x, y;
-    printf("%s()\n", __PRETTY_FUNCTION__);
 
     draw_sat_info(widget,
         0, 0,
@@ -976,7 +961,6 @@ heading_panel_expose(GtkWidget *widget, GdkEventExpose *event)
     gint dir;
     gfloat tmp;
     gchar *text;
-    printf("%s()\n", __PRETTY_FUNCTION__);
 
     size = MIN(widget->allocation.width, widget->allocation.height);
     if(widget->allocation.width > widget->allocation.height)
@@ -1175,8 +1159,6 @@ latlon_dialog(gdouble lat, gdouble lon)
     gint fallback_deg_format = _degformat;
     gint i;
     
-    printf("%s()\n", __PRETTY_FUNCTION__);
-
     // Check that the current coord system supports the select position
     if(!coord_system_check_lat_lon (lat, lon, &fallback_deg_format))
     {
@@ -1292,7 +1274,6 @@ display_open_file(GtkWindow *parent, gchar **bytes_out,
 {
     GtkWidget *dialog;
     gboolean success = FALSE;
-    printf("%s()\n", __PRETTY_FUNCTION__);
 
     dialog = hildon_file_chooser_dialog_new(parent, chooser_action);
 
@@ -1375,7 +1356,6 @@ display_init()
     PangoContext *pango_context;
     PangoFontDescription *pango_font;
     GdkColor color;
-    printf("%s()\n", __PRETTY_FUNCTION__);
 
     /* draw_sat_info() */
     _sat_info_gc1 = gdk_gc_new(_window->window);

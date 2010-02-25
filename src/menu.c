@@ -71,7 +71,6 @@ menu_cb_route_open(GtkMenuItem *item)
 {
     gchar *buffer;
     gint size;
-    printf("%s()\n", __PRETTY_FUNCTION__);
 
     if(display_open_file(GTK_WINDOW(_window), &buffer, NULL, &size,
                 &_route_dir_uri, NULL, GTK_FILE_CHOOSER_ACTION_OPEN))
@@ -103,7 +102,6 @@ menu_cb_route_open(GtkMenuItem *item)
 static gboolean
 menu_cb_route_download(GtkMenuItem *item)
 {
-    printf("%s()\n", __PRETTY_FUNCTION__);
     route_download(NULL);
     return TRUE;
 }
@@ -112,7 +110,6 @@ static gboolean
 menu_cb_route_save(GtkMenuItem *item)
 {
     GnomeVFSHandle *handle;
-    printf("%s()\n", __PRETTY_FUNCTION__);
 
     if(display_open_file(GTK_WINDOW(_window), NULL, &handle, NULL,
                 &_route_dir_uri, NULL, GTK_FILE_CHOOSER_ACTION_SAVE))
@@ -132,8 +129,6 @@ menu_cb_route_save(GtkMenuItem *item)
 static gboolean
 menu_cb_route_distnext(GtkMenuItem *item)
 {
-    printf("%s()\n", __PRETTY_FUNCTION__);
-
     route_show_distance_to_next();
 
     return TRUE;
@@ -142,8 +137,6 @@ menu_cb_route_distnext(GtkMenuItem *item)
 static gboolean
 menu_cb_route_distlast(GtkMenuItem *item)
 {
-    printf("%s()\n", __PRETTY_FUNCTION__);
-
     route_show_distance_to_last();
 
     return TRUE;
@@ -152,8 +145,6 @@ menu_cb_route_distlast(GtkMenuItem *item)
 gboolean
 menu_cb_route_reset(GtkMenuItem *item)
 {
-    printf("%s()\n", __PRETTY_FUNCTION__);
-
     path_reset_route();
 
     return TRUE;
@@ -163,7 +154,6 @@ static gboolean
 menu_cb_route_clear(GtkMenuItem *item)
 {
     MapController *controller = map_controller_get_instance();
-    printf("%s()\n", __PRETTY_FUNCTION__);
 
     cancel_autoroute();
     MACRO_PATH_FREE(_route);
@@ -188,7 +178,6 @@ menu_cb_track_open(GtkMenuItem *item)
 {
     gchar *buffer;
     gint size;
-    printf("%s()\n", __PRETTY_FUNCTION__);
 
     if(display_open_file(GTK_WINDOW(_window), &buffer, NULL, &size,
                 NULL, &_track_file_uri, GTK_FILE_CHOOSER_ACTION_OPEN))
@@ -211,7 +200,6 @@ static gboolean
 menu_cb_track_save(GtkMenuItem *item)
 {
     GnomeVFSHandle *handle;
-    printf("%s()\n", __PRETTY_FUNCTION__);
 
     if(display_open_file(GTK_WINDOW(_window), NULL, &handle, NULL,
                 NULL, &_track_file_uri, GTK_FILE_CHOOSER_ACTION_SAVE))
@@ -231,8 +219,6 @@ menu_cb_track_save(GtkMenuItem *item)
 static gboolean
 menu_cb_track_insert_break(GtkMenuItem *item)
 {
-    printf("%s()\n", __PRETTY_FUNCTION__);
-
     track_insert_break(TRUE);
 
     return TRUE;
@@ -249,7 +235,6 @@ menu_cb_track_insert_mark(GtkMenuItem *item)
     static GtkWidget *lbl_latlon = NULL;
     static GtkWidget *txt_scroll = NULL;
     static GtkWidget *txt_desc = NULL;
-    printf("%s()\n", __PRETTY_FUNCTION__);
 
     if(dialog == NULL)
     {
@@ -343,8 +328,6 @@ menu_cb_track_insert_mark(GtkMenuItem *item)
 static gboolean
 menu_cb_track_distlast(GtkMenuItem *item)
 {
-    printf("%s()\n", __PRETTY_FUNCTION__);
-
     track_show_distance_from_last();
 
     return TRUE;
@@ -353,8 +336,6 @@ menu_cb_track_distlast(GtkMenuItem *item)
 static gboolean
 menu_cb_track_distfirst(GtkMenuItem *item)
 {
-    printf("%s()\n", __PRETTY_FUNCTION__);
-
     track_show_distance_from_first();
 
     return TRUE;
@@ -363,8 +344,6 @@ menu_cb_track_distfirst(GtkMenuItem *item)
 static gboolean
 menu_cb_track_clear(GtkMenuItem *item)
 {
-    printf("%s()\n", __PRETTY_FUNCTION__);
-
     track_clear();
 
     return TRUE;
@@ -389,8 +368,6 @@ static gboolean
 menu_cb_track_enable_tracking(GtkCheckMenuItem *item)
 {
     gboolean enable;
-
-    printf("%s()\n", __PRETTY_FUNCTION__);
 
     enable = gtk_check_menu_item_get_active(item);
     track_enable_tracking(enable);
@@ -424,8 +401,6 @@ on_enable_tracking_toggled(GtkToggleButton *button)
 static gboolean
 menu_cb_poi_import(GtkMenuItem *item)
 {
-    printf("%s()\n", __PRETTY_FUNCTION__);
-
     if(poi_import_dialog(_center.x, _center.y))
         map_force_redraw();
 
@@ -435,8 +410,6 @@ menu_cb_poi_import(GtkMenuItem *item)
 static gboolean
 menu_cb_poi_download(GtkMenuItem *item)
 {
-    printf("%s()\n", __PRETTY_FUNCTION__);
-
     if(poi_download_dialog(0, 0)) /* 0, 0 means no default origin */
         map_force_redraw();
 
@@ -446,8 +419,6 @@ menu_cb_poi_download(GtkMenuItem *item)
 static gboolean
 menu_cb_poi_browse(GtkMenuItem *item)
 {
-    printf("%s()\n", __PRETTY_FUNCTION__);
-
     if(poi_browse_dialog(0, 0)) /* 0, 0 means no default origin */
         map_force_redraw();
 
@@ -457,8 +428,6 @@ menu_cb_poi_browse(GtkMenuItem *item)
 static gboolean
 menu_cb_poi_categories(GtkMenuItem *item)
 {
-    printf("%s()\n", __PRETTY_FUNCTION__);
-
     if(category_list_dialog(_window))
         map_force_redraw();
 
@@ -475,7 +444,6 @@ menu_cb_poi_categories(GtkMenuItem *item)
 static gboolean
 menu_cb_maps_repoman(GtkMenuItem *item)
 {
-    printf("%s()\n", __PRETTY_FUNCTION__);
     repository_list_edit_dialog();
     return TRUE;
 }
@@ -484,7 +452,6 @@ menu_cb_maps_repoman(GtkMenuItem *item)
 static gboolean
 menu_cb_maps_tile_sources(GtkMenuItem *item)
 {
-    printf("%s()\n", __PRETTY_FUNCTION__);
     tile_source_list_edit_dialog();
     return TRUE;
 }
@@ -493,8 +460,6 @@ menu_cb_maps_tile_sources(GtkMenuItem *item)
 static gboolean
 menu_cb_maps_select(GtkMenuItem *item, gpointer new_repo)
 {
-    printf("%s()\n", __PRETTY_FUNCTION__);
-
     if(gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(item)))
     {
         map_controller_set_repository(map_controller_get_instance(), new_repo);
@@ -506,8 +471,6 @@ menu_cb_maps_select(GtkMenuItem *item, gpointer new_repo)
 static gboolean
 menu_cb_maps_mapman(GtkMenuItem *item)
 {
-    printf("%s()\n", __PRETTY_FUNCTION__);
-
     mapman_dialog();
 
     return TRUE;
@@ -516,8 +479,6 @@ menu_cb_maps_mapman(GtkMenuItem *item)
 static gboolean
 menu_cb_maps_auto_download(GtkMenuItem *item)
 {
-    printf("%s()\n", __PRETTY_FUNCTION__);
-
     if((_auto_download = gtk_check_menu_item_get_active(
             GTK_CHECK_MENU_ITEM(_menu_maps_auto_download_item))))
     {
@@ -538,8 +499,6 @@ menu_cb_maps_auto_download(GtkMenuItem *item)
 static gboolean
 menu_cb_layers_toggle(GtkCheckMenuItem *item, RepositoryLayer *repo_layer)
 {
-    printf("%s()\n", __PRETTY_FUNCTION__);
-
     map_controller_toggle_layer_visibility(map_controller_get_instance(), repo_layer);
 
     return TRUE;
@@ -556,8 +515,6 @@ menu_cb_layers_toggle(GtkCheckMenuItem *item, RepositoryLayer *repo_layer)
 static gboolean
 menu_cb_view_zoom_in(GtkMenuItem *item)
 {
-    printf("%s()\n", __PRETTY_FUNCTION__);
-
     if(_zoom > MIN_ZOOM)
     {
         gchar buffer[80];
@@ -573,8 +530,6 @@ menu_cb_view_zoom_in(GtkMenuItem *item)
 static gboolean
 menu_cb_view_zoom_out(GtkMenuItem *item)
 {
-    printf("%s()\n", __PRETTY_FUNCTION__);
-
     if(_zoom < MAX_ZOOM)
     {
         gchar buffer[80];
@@ -598,8 +553,6 @@ menu_cb_view_zoom_out(GtkMenuItem *item)
 static gboolean
 menu_cb_view_rotate_clock(GtkMenuItem *item)
 {
-    printf("%s()\n", __PRETTY_FUNCTION__);
-
     map_rotate(-ROTATE_DEGREES);
 
     return TRUE;
@@ -608,8 +561,6 @@ menu_cb_view_rotate_clock(GtkMenuItem *item)
 static gboolean
 menu_cb_view_rotate_counter(GtkMenuItem *item)
 {
-    printf("%s()\n", __PRETTY_FUNCTION__);
-
     map_rotate(ROTATE_DEGREES);
 
     return TRUE;
@@ -618,8 +569,6 @@ menu_cb_view_rotate_counter(GtkMenuItem *item)
 static gboolean
 menu_cb_view_rotate_reset(GtkMenuItem *item)
 {
-    printf("%s()\n", __PRETTY_FUNCTION__);
-
     map_rotate(-_next_map_rotate_angle);
 
     return TRUE;
@@ -628,8 +577,6 @@ menu_cb_view_rotate_reset(GtkMenuItem *item)
 static gboolean
 menu_cb_view_rotate_auto(GtkMenuItem *item)
 {
-    printf("%s()\n", __PRETTY_FUNCTION__);
-
     if(gtk_check_menu_item_get_active(
                 GTK_CHECK_MENU_ITEM(_menu_view_rotate_auto_item)))
     {
@@ -660,7 +607,6 @@ menu_cb_view_pan_up(GtkMenuItem *item)
 {
 #if 0 /* TODO: remove */
     gfloat panx_adj, pany_adj;
-    printf("%s()\n", __PRETTY_FUNCTION__);
 
     /* Adjust for rotate angle. */
     gdk_pixbuf_rotate_vector(&panx_adj, &pany_adj, _map_reverse_matrix,
@@ -678,7 +624,6 @@ menu_cb_view_pan_down(GtkMenuItem *item)
 {
 #if 0 /* TODO: remove */
     gfloat panx_adj, pany_adj;
-    printf("%s()\n", __PRETTY_FUNCTION__);
 
     /* Adjust for rotate angle. */
     gdk_pixbuf_rotate_vector(&panx_adj, &pany_adj, _map_reverse_matrix,
@@ -696,7 +641,6 @@ menu_cb_view_pan_left(GtkMenuItem *item)
 {
 #if 0 /* TODO: remove */
     gfloat panx_adj, pany_adj;
-    printf("%s()\n", __PRETTY_FUNCTION__);
 
     /* Adjust for rotate angle. */
     gdk_pixbuf_rotate_vector(&panx_adj, &pany_adj, _map_reverse_matrix,
@@ -714,7 +658,6 @@ menu_cb_view_pan_right(GtkMenuItem *item)
 {
 #if 0 /* TODO: remove */
     gfloat panx_adj, pany_adj;
-    printf("%s()\n", __PRETTY_FUNCTION__);
 
     /* Adjust for rotate angle. */
     gdk_pixbuf_rotate_vector(&panx_adj, &pany_adj, _map_reverse_matrix,
@@ -730,8 +673,6 @@ menu_cb_view_pan_right(GtkMenuItem *item)
 static gboolean
 menu_cb_view_pan_north(GtkMenuItem *item)
 {
-    printf("%s()\n", __PRETTY_FUNCTION__);
-
     map_pan(0, -pixel2unit(PAN_PIXELS));
 
     return TRUE;
@@ -740,8 +681,6 @@ menu_cb_view_pan_north(GtkMenuItem *item)
 static gboolean
 menu_cb_view_pan_south(GtkMenuItem *item)
 {
-    printf("%s()\n", __PRETTY_FUNCTION__);
-
     map_pan(0, pixel2unit(PAN_PIXELS));
 
     return TRUE;
@@ -750,8 +689,6 @@ menu_cb_view_pan_south(GtkMenuItem *item)
 static gboolean
 menu_cb_view_pan_west(GtkMenuItem *item)
 {
-    printf("%s()\n", __PRETTY_FUNCTION__);
-
     map_pan(-pixel2unit(PAN_PIXELS), 0);
 
     return TRUE;
@@ -760,8 +697,6 @@ menu_cb_view_pan_west(GtkMenuItem *item)
 static gboolean
 menu_cb_view_pan_east(GtkMenuItem *item)
 {
-    printf("%s()\n", __PRETTY_FUNCTION__);
-
     map_pan(pixel2unit(PAN_PIXELS), 0);
 
     return TRUE;
@@ -783,7 +718,6 @@ menu_cb_view_goto_latlon(GtkMenuItem *item)
     static GtkWidget *label = NULL;
     static GtkWidget *txt_lat = NULL;
     static GtkWidget *txt_lon = NULL;
-    printf("%s()\n", __PRETTY_FUNCTION__);
 
     if(dialog == NULL)
     {
@@ -988,8 +922,6 @@ menu_cb_view_goto_gps(GtkMenuItem *item)
 {
     MapController *controller = map_controller_get_instance();
 
-    printf("%s()\n", __PRETTY_FUNCTION__);
-
     map_controller_disable_auto_center(controller);
     map_controller_set_center(controller, _pos.unit, -1);
 
@@ -1001,8 +933,6 @@ menu_cb_view_goto_nextway(GtkMenuItem *item)
 {
     WayPoint *next_way;
     MapController *controller = map_controller_get_instance();
-
-    printf("%s()\n", __PRETTY_FUNCTION__);
 
     next_way = path_get_next_way();
 
@@ -1022,8 +952,6 @@ menu_cb_view_goto_nextway(GtkMenuItem *item)
 gboolean
 menu_cb_view_goto_nearpoi(GtkMenuItem *item)
 {
-    printf("%s()\n", __PRETTY_FUNCTION__);
-
     if(_poi_enabled)
     {
         PoiInfo poi;
@@ -1067,8 +995,6 @@ menu_cb_view_goto_nearpoi(GtkMenuItem *item)
 static gboolean
 menu_cb_view_ac_lead(GtkMenuItem *item)
 {
-    printf("%s()\n", __PRETTY_FUNCTION__);
-
     if(gtk_check_menu_item_get_active(
                 GTK_CHECK_MENU_ITEM(_menu_view_ac_lead_item)))
     {
@@ -1083,8 +1009,6 @@ menu_cb_view_ac_lead(GtkMenuItem *item)
 static gboolean
 menu_cb_view_ac_latlon(GtkMenuItem *item)
 {
-    printf("%s()\n", __PRETTY_FUNCTION__);
-
     if(gtk_check_menu_item_get_active(
                 GTK_CHECK_MENU_ITEM(_menu_view_ac_latlon_item)))
     {
@@ -1099,8 +1023,6 @@ menu_cb_view_ac_latlon(GtkMenuItem *item)
 static gboolean
 menu_cb_view_ac_none(GtkMenuItem *item)
 {
-    printf("%s()\n", __PRETTY_FUNCTION__);
-
     if(gtk_check_menu_item_get_active(
                 GTK_CHECK_MENU_ITEM(_menu_view_ac_none_item)))
     {
@@ -1118,8 +1040,6 @@ menu_cb_view_ac_none(GtkMenuItem *item)
 static gboolean
 menu_cb_view_fullscreen(GtkMenuItem *item)
 {
-    printf("%s()\n", __PRETTY_FUNCTION__);
-
     if((_fullscreen = gtk_check_menu_item_get_active(
                 GTK_CHECK_MENU_ITEM(_menu_view_fullscreen_item))))
         gtk_window_fullscreen(GTK_WINDOW(_window));
@@ -1136,8 +1056,6 @@ menu_cb_view_fullscreen(GtkMenuItem *item)
 static gboolean
 menu_cb_gps_enable(GtkMenuItem *item)
 {
-    printf("%s()\n", __PRETTY_FUNCTION__);
-
     if((_enable_gps = gtk_check_menu_item_get_active(
                 GTK_CHECK_MENU_ITEM(_menu_gps_enable_item))))
         rcvr_connect();
@@ -1155,8 +1073,6 @@ menu_cb_gps_enable(GtkMenuItem *item)
 static gboolean
 menu_cb_gps_show_info(GtkMenuItem *item)
 {
-    printf("%s()\n", __PRETTY_FUNCTION__);
-
     _gps_info = gtk_check_menu_item_get_active(
                 GTK_CHECK_MENU_ITEM(_menu_gps_show_info_item));
 
@@ -1168,8 +1084,6 @@ menu_cb_gps_show_info(GtkMenuItem *item)
 static gboolean
 menu_cb_gps_details(GtkMenuItem *item)
 {
-    printf("%s()\n", __PRETTY_FUNCTION__);
-
     gps_details();
 
     return TRUE;
@@ -1178,8 +1092,6 @@ menu_cb_gps_details(GtkMenuItem *item)
 static gboolean
 menu_cb_gps_reset(GtkMenuItem *item)
 {
-    printf("%s()\n", __PRETTY_FUNCTION__);
-
     reset_bluetooth();
 
     return TRUE;
@@ -1192,8 +1104,6 @@ menu_cb_gps_reset(GtkMenuItem *item)
 static gboolean
 menu_cb_settings(GtkMenuItem *item)
 {
-    printf("%s()\n", __PRETTY_FUNCTION__);
-
     if(settings_dialog())
     {
         /* Settings have changed - reconnect to receiver. */
@@ -1210,8 +1120,6 @@ menu_cb_settings(GtkMenuItem *item)
 static gboolean
 menu_cb_help(GtkMenuItem *item)
 {
-    printf("%s()\n", __PRETTY_FUNCTION__);
-
 #ifndef LEGACY
 #else
     ossohelp_show(_osso, HELP_ID_INTRO, 0);
@@ -1223,8 +1131,6 @@ menu_cb_help(GtkMenuItem *item)
 static gboolean
 menu_cb_about(GtkMenuItem *item)
 {
-    printf("%s()\n", __PRETTY_FUNCTION__);
-
 #ifndef LEGACY
 #else
     ossohelp_show(_osso, HELP_ID_ABOUT, OSSO_HELP_SHOW_DIALOG);
@@ -1239,7 +1145,6 @@ void
 menu_maps_remove_repos()
 {
     GList *child;
-    printf("%s()\n", __PRETTY_FUNCTION__);
 
     /* Delete one menu item for each repo. */
     while ((child = gtk_container_get_children(GTK_CONTAINER(_menu_maps_submenu))))
@@ -1253,7 +1158,6 @@ void
 menu_layers_remove_repos()
 {
     GList *child;
-    printf("%s()\n", __PRETTY_FUNCTION__);
 
     /* Delete one menu item for each repo. */
     while ((child = gtk_container_get_children(GTK_CONTAINER(_menu_layers_submenu))))
@@ -1266,7 +1170,7 @@ menu_maps_add_repos()
 {
     GList *curr, *repo_list = map_controller_get_repo_list(map_controller_get_instance());
     GtkWidget *last_repo = NULL;
-    printf("%s()\n", __PRETTY_FUNCTION__);
+    DEBUG("");
     Repository *cur_repo = map_controller_get_repository(map_controller_get_instance());
 
     for(curr = g_list_last(repo_list); curr; curr = curr->prev)
@@ -1311,7 +1215,7 @@ menu_layers_add_repos()
 {
     GList *curr;
 
-    printf("%s()\n", __PRETTY_FUNCTION__);
+    DEBUG("");
 
     menu_layers_remove_repos();
 
@@ -1369,7 +1273,6 @@ menu_init()
     GtkWidget *submenu;
     GtkWidget *submenu2;
     GtkWidget *menu_item;
-    printf("%s()\n", __PRETTY_FUNCTION__);
 
     /* Get the menu of our view. */
     menu = GTK_MENU(gtk_menu_new());

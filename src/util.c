@@ -53,7 +53,7 @@ void
 popup_error(GtkWidget *window, const gchar *error)
 {
     GtkWidget *dialog;
-    printf("%s(\"%s\")\n", __PRETTY_FUNCTION__, error);
+    DEBUG("(\"%s\")", error);
 
     dialog = hildon_note_new_information(GTK_WINDOW(window), error);
 
@@ -66,7 +66,6 @@ deg_format(gdouble coor, gchar *scoor, gchar neg_char, gchar pos_char)
 {
     gdouble min;
     gdouble acoor = fabs(coor);
-    printf("%s()\n", __PRETTY_FUNCTION__);
 
     switch(_degformat)
     {
@@ -141,7 +140,6 @@ MapPoint locate_address(GtkWidget *parent, const gchar *addr)
     gchar *bytes = NULL;
     gchar *addr_escaped;
     gchar *buffer;
-    printf("%s(%s)\n", __PRETTY_FUNCTION__, addr);
 
     addr_escaped = gnome_vfs_escape_string(addr);
     buffer = g_strdup_printf(_route_dl_url_table[_route_dl_index].url, addr_escaped, addr_escaped);
@@ -245,7 +243,6 @@ force_min_visible_bars(HildonControlbar *control_bar, gint num_bars)
 {
 #ifdef LEGACY
     GValue val;
-    printf("%s()\n", __PRETTY_FUNCTION__);
     memset(&val, 0, sizeof(val));
     g_value_init(&val, G_TYPE_INT);
     g_value_set_int(&val, num_bars);
