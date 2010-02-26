@@ -332,6 +332,9 @@ settings_save()
                                 map_router_get_name(router), NULL);
     }
 
+    /* Save routers configurations */
+    map_controller_save_routers_options(controller, gconf_client);
+
     /* Save Route Download Radius. */
     gconf_client_set_int(gconf_client,
             GCONF_KEY_ROUTE_DL_RADIUS, _route_dl_radius, NULL);

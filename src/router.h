@@ -22,13 +22,18 @@
 #ifndef MAP_ROUTER_H
 #define MAP_ROUTER_H
 
+#include <gconf/gconf-client.h>
+
 #include "types.h"
+#include "settings.h"
 
 #include <glib.h>
 #include <glib-object.h>
 #include <gtk/gtk.h>
  
 G_BEGIN_DECLS
+
+#define GCONF_ROUTER_KEY_PREFIX GCONF_KEY_PREFIX"/routers"
 
 #define MAP_TYPE_ROUTER         (map_router_get_type())
 #define MAP_ROUTER(o)           (G_TYPE_CHECK_INSTANCE_CAST((o), MAP_TYPE_ROUTER, MapRouter))
@@ -63,6 +68,8 @@ struct _MapRouterIface
     GTypeInterface parent;
 
     const gchar *(*get_name)(MapRouter *router);
+    void (*save_options)(MapRouter *route, GConfClient *gconf_client);
+    void (*load_options)(MapRouter *route, GConfClient *gconf_client);
     void (*run_options_dialog)(MapRouter *router, GtkWindow *parent);
     void (*calculate_route)(MapRouter *router, const MapRouterQuery *query,
                             MapRouterCalculateRouteCb callback,
@@ -84,6 +91,9 @@ void map_router_calculate_route(MapRouter *router,
                                 gpointer user_data);
 void map_router_geocode(MapRouter *router, const gchar *address,
                         MapRouterGeocodeCb callback, gpointer user_data);
+
+void map_router_load_options(MapRouter *router, GConfClient *gconf_client);
+void map_router_save_options(MapRouter *router, GConfClient *gconf_client);
 
 G_END_DECLS
 #endif /* MAP_ROUTER_H */
