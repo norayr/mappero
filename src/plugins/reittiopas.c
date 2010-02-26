@@ -26,6 +26,7 @@
 #include "reittiopas.h"
 
 #include "data.h"
+#include "debug.h"
 #include "defines.h"
 #include "dialog.h"
 #include "error.h"
@@ -1414,7 +1415,7 @@ download_route(MapReittiopas *self, RoRoutes *routes, const RoQuery *q,
     }
 
     query = g_string_free(string, FALSE);
-    DBUG("URL: %s", query);
+    DEBUG("URL: %s", query);
 
     /* Attempt to download the route from the server. */
     vfs_result = gnome_vfs_read_entire_file(query, &size, &bytes);

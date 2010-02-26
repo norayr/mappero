@@ -48,6 +48,7 @@
 
 #include "types.h"
 #include "data.h"
+#include "debug.h"
 #include "defines.h"
 
 #include "display.h"

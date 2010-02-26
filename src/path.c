@@ -42,6 +42,7 @@
 
 #include "types.h"
 #include "data.h"
+#include "debug.h"
 #include "defines.h"
 #include "dialog.h"
 #include "display.h"

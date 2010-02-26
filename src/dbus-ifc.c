@@ -35,6 +35,7 @@
 #include "types.h"
 #include "data.h"
 #include "defines.h"
+#include "debug.h"
 
 #include "display.h"
 #include "dbus-ifc.h"
@@ -82,7 +83,7 @@ dbus_ifc_set_view_position_idle(SetViewPositionArgs *args)
 static gint
 dbus_ifc_handle_set_view_center(GArray *args, osso_rpc_t *retval)
 {
-    DEBUG("%s");
+    DEBUG("");
     SetViewPositionArgs *svca = g_new(SetViewPositionArgs, 1);
 
     /* Argument 3: int: zoom.  Get this first because we might need it to
