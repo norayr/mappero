@@ -16,6 +16,7 @@
 
 #include "controller.h"
 #include "data.h"
+#include "debug.h"
 #include "defines.h"
 #include "display.h"
 #include "menu.h"
@@ -32,6 +33,16 @@
 #define REPO_LAYER_ENTRY	"Layer"
 #define REPO_PRIMARY_ENTRY	"Primary"
 
+
+static gboolean
+repository_is_valid(Repository *repo)
+{
+    g_return_val_if_fail(repo != NULL, FALSE);
+
+    return repo->name != NULL &&
+        repo->max_zoom >= repo->min_zoom &&
+        repo->primary != NULL;
+}
 
 static void
 append_int(xmlNodePtr parent, const gchar *name, int val)
@@ -173,6 +184,13 @@ tree_to_repository(xmlDocPtr doc, xmlNodePtr repo_node)
             }
         }
         xmlFree(s);
+    }
+
+    if (!repository_is_valid(repo))
+    {
+        DEBUG("Invalid repository %s", repo->name);
+        repository_free(repo);
+        repo = NULL;
     }
 
     return repo;

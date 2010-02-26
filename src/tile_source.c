@@ -11,6 +11,7 @@
 
 #include "controller.h"
 #include "data.h"
+#include "debug.h"
 #include "defines.h"
 #include "display.h"
 #include "menu.h"
@@ -66,6 +67,18 @@ static const TileFormatMapEntry tile_format_map[] = {
     { NULL, }
 };
 
+
+static gboolean
+tile_source_is_valid(TileSource *ts)
+{
+    g_return_val_if_fail(ts != NULL, FALSE);
+
+    return ts->name != NULL &&
+        ts->id != NULL &&
+        ts->cache_dir != NULL &&
+        ts->url != NULL &&
+        ts->type != NULL;
+}
 
 /**
  * Given the xyz coordinates of our map coordinate system, write the qrst
@@ -343,6 +356,13 @@ tree_to_tile_source(xmlDocPtr doc, xmlNodePtr ts_node)
 
     if (!ts->cache_dir && ts->id)
         ts->cache_dir = g_strdup(ts->id);
+
+    if (!tile_source_is_valid(ts))
+    {
+        DEBUG("Invalid TileSource %s (%s)", ts->name, ts->id);
+        tile_source_free(ts);
+        ts = NULL;
+    }
 
     return ts;
 }
