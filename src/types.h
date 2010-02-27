@@ -358,7 +358,6 @@ typedef void (*TileSourceUnitToLatlon)(gint x, gint y, gdouble *lat, gdouble *lo
 typedef struct
 {
     const gchar *name;
-    guint world_size;                /* Size of world in units */
     TileSourceURLFormatFunc get_url; /* compose the URL of the tile do dowload */
     TileSourceLatlonToUnit latlon_to_unit;
     TileSourceUnitToLatlon unit_to_latlon;

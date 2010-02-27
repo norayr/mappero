@@ -60,37 +60,31 @@ static void unit2latlon_yandex(gint x, gint y, gdouble *lat, gdouble *lon);
 /* Supported repository types table */
 static const TileSourceType tile_source_types[] = {
     { name 		: "XYZ",
-      world_size 	: WORLD_SIZE_UNITS_GOOGLE,
       get_url 		: xyz_get_url,
       latlon_to_unit 	: latlon2unit_google,
       unit_to_latlon 	: unit2latlon_google,
     },
     { name 		: "XYZ_SIGNED",
-      world_size 	: WORLD_SIZE_UNITS_GOOGLE,
       get_url		: xyz_signed_get_url,
       latlon_to_unit 	: latlon2unit_google,
       unit_to_latlon 	: unit2latlon_google,
     },
     { name		: "XYZ_INV",
-      world_size 	: WORLD_SIZE_UNITS_GOOGLE,
       get_url		: xyz_inv_get_url,
       latlon_to_unit 	: latlon2unit_google,
       unit_to_latlon 	: unit2latlon_google,
     },
     { name		: "QUAD_QRST",
-      world_size 	: WORLD_SIZE_UNITS_GOOGLE,
       get_url		: quad_qrst_get_url,
       latlon_to_unit 	: latlon2unit_google,
       unit_to_latlon 	: unit2latlon_google,
     },
     { name		: "QUAD_ZERO",
-      world_size 	: WORLD_SIZE_UNITS_GOOGLE,
       get_url		: quad_zero_get_url,
       latlon_to_unit 	: latlon2unit_google,
       unit_to_latlon 	: unit2latlon_google,
     },
     { name		: "YANDEX",
-      world_size	: WORLD_SIZE_UNITS_YANDEX,
       get_url		: yandex_get_url,
       latlon_to_unit	: latlon2unit_yandex,
       unit_to_latlon	: unit2latlon_yandex,
@@ -224,9 +218,9 @@ void latlon2unit_google(gdouble lat, gdouble lon, gint *unitx, gint *unity)
 {
     gdouble tmp;
 
-    *unitx = (lon + 180.0) * (WORLD_SIZE_UNITS_GOOGLE / 360.0) + 0.5;
+    *unitx = (lon + 180.0) * (WORLD_SIZE_UNITS / 360.0) + 0.5;
     tmp = sin(deg2rad(lat));
-    *unity = 0.5 + (WORLD_SIZE_UNITS_GOOGLE / MERCATOR_SPAN) *
+    *unity = 0.5 + (WORLD_SIZE_UNITS / MERCATOR_SPAN) *
         (log((1.0 + tmp) / (1.0 - tmp)) * 0.5 - MERCATOR_TOP);
 }
 
@@ -246,8 +240,8 @@ void latlon2unit_yandex(gdouble lat, gdouble lon, gint *unitx, gint *unity)
 void unit2latlon_google(gint unitx, gint unity, gdouble *lat, gdouble *lon)
 {
     gdouble tmp;
-    *lon = (unitx * (360.0 / WORLD_SIZE_UNITS_GOOGLE)) - 180.0;
-    tmp = (unity * (MERCATOR_SPAN / WORLD_SIZE_UNITS_GOOGLE)) + MERCATOR_TOP;
+    *lon = (unitx * (360.0 / WORLD_SIZE_UNITS)) - 180.0;
+    tmp = (unity * (MERCATOR_SPAN / WORLD_SIZE_UNITS)) + MERCATOR_TOP;
     *lat = (360.0 * (atan(exp(tmp)))) * (1.0 / PI) - 90.0;
 }
 

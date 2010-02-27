@@ -89,8 +89,7 @@
 #define GPSD_PORT_DEFAULT (2947)
 
 #define NUM_DOWNLOAD_THREADS (4)
-#define WORLD_SIZE_UNITS_GOOGLE (2 << (MAX_ZOOM + TILE_SIZE_P2))
-#define WORLD_SIZE_UNITS_YANDEX (0x7FFFFFFF)
+#define WORLD_SIZE_UNITS (2 << (MAX_ZOOM + TILE_SIZE_P2))
 
 #define HOURGLASS_SEPARATION (7)
 
@@ -150,8 +149,6 @@
     (tile_source_get_primary_type()->latlon_to_unit(lat, lon, &unitx, &unity))
 #define unit2latlon(unitx, unity, lat, lon) \
     (tile_source_get_primary_type()->unit_to_latlon(unitx, unity, &lat, &lon))
-
-#define WORLD_SIZE_UNITS (tile_source_get_primary_type()->world_size)
 
 
 #define MACRO_PATH_INIT(path) { \
