@@ -290,8 +290,8 @@ map_update_tile_int(MapTileSpec *tile, gint priority, MapUpdateType update_type,
     MapUpdateTask *old_mut;
     MapUpdateCbData *cb_data = NULL;
 
-    printf("%s(%s, %d, %d, %d, %d)\n", G_STRFUNC,
-            tile->source->name, tile->zoom, tile->tilex, tile->tiley, update_type);
+    DEBUG("%s (%d, %d, %d, %d)", tile->source->name, tile->zoom,
+          tile->tilex, tile->tiley, update_type);
 
     mut = g_slice_new0(MapUpdateTask);
     if (!mut)
@@ -315,7 +315,7 @@ map_update_tile_int(MapTileSpec *tile, gint priority, MapUpdateType update_type,
     old_mut = g_hash_table_lookup(_mut_exists_table, mut);
     if (old_mut)
     {
-        printf("Task already queued, adding listener\n");
+        DEBUG("Task already queued, adding listener");
 
         if (cb_data)
             old_mut->callbacks = g_slist_prepend(old_mut->callbacks, cb_data);
@@ -323,7 +323,7 @@ map_update_tile_int(MapTileSpec *tile, gint priority, MapUpdateType update_type,
         /* Check if the priority of the new task is higher */
         if (old_mut->priority > mut->priority && !old_mut->downloading)
         {
-            printf("re-insert, old priority = %d\n", old_mut->priority);
+            DEBUG("re-insert, old priority = %d", old_mut->priority);
             /* It is, so remove the task from the tree, update its priority and
              * re-insert it with the new one */
             g_tree_remove(_mut_priority_tree, old_mut);
@@ -404,8 +404,8 @@ map_update_task_completed(MapUpdateTask *mut)
 {
     MapTileSpec *tile = &mut->tile;
 
-    printf("%s(%s, %d, %d, %d)\n", G_STRFUNC,
-            tile->source->name, tile->zoom, tile->tilex, tile->tiley);
+    DEBUG("%s, %d, %d, %d", tile->source->name, tile->zoom,
+          tile->tilex, tile->tiley);
 
     g_mutex_lock(_mut_priority_mutex);
     g_hash_table_remove(_mut_exists_table, mut);
@@ -454,8 +454,8 @@ download_tile(MapTileSpec *tile, gchar **bytes, gint *size,
     GdkPixbufLoader *loader = NULL;
     gint ret;
 
-    printf("%s (%s, %d, %d, %d)\n", G_STRFUNC,
-            tile->source->name, tile->zoom, tile->tilex, tile->tiley);
+    DEBUG("%s, %d, %d, %d", tile->source->name, tile->zoom,
+          tile->tilex, tile->tiley);
 
     /* First, construct the URL from which we will get the data. */
     ret = map_construct_url(src_url, sizeof(src_url), tile->source,
@@ -500,7 +500,7 @@ l_error:
 static void
 map_update_task_remove_all(const GError *error)
 {
-    printf("%s\n", G_STRFUNC);
+    DEBUG("");
 
     while (1)
     {
@@ -556,8 +556,8 @@ thread_proc_mut()
         g_tree_remove(_mut_priority_tree, mut);
         g_mutex_unlock(_mut_priority_mutex);
 
-        printf("%s %p (%s, %d, %d, %d)\n", G_STRFUNC, mut,
-                tile->source->name, tile->zoom, tile->tilex, tile->tiley);
+        DEBUG("%p (%s, %d, %d, %d)", mut,
+              tile->source->name, tile->zoom, tile->tilex, tile->tiley);
 
         mut->pixbuf = NULL;
         mut->error = NULL;
@@ -597,7 +597,7 @@ thread_proc_mut()
                                   &mut->pixbuf, &mut->error);
                     if (mut->pixbuf) break;
 
-                    printf("Download failed, retrying\n");
+                    DEBUG("Download failed, retrying");
                 }
 
                 /* Copy database-relevant mut data before we release it. */
@@ -605,9 +605,9 @@ thread_proc_mut()
                 tilex = tile->tilex;
                 tiley = tile->tiley;
 
-                printf("%s(%s, %d, %d, %d): %s\n", G_STRFUNC,
-                        tile->source->name, tile->zoom, tile->tilex, tile->tiley,
-                        mut->pixbuf ? "Success" : "Failed");
+                DEBUG("%s, %d, %d, %d: %s", tile->source->name, tile->zoom,
+                      tile->tilex, tile->tiley,
+                      mut->pixbuf ? "Success" : "Failed");
                 g_idle_add_full(G_PRIORITY_HIGH_IDLE,
                                 (GSourceFunc)map_update_task_completed, mut,
                                 NULL);
