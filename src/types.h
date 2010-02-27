@@ -359,7 +359,6 @@ typedef struct
 {
     const gchar *name;
     guint world_size;                /* Size of world in units */
-    gint zoom_delta;                 /* zoom delta relative to goole zoom */
     TileSourceURLFormatFunc get_url; /* compose the URL of the tile do dowload */
     TileSourceLatlonToUnit latlon_to_unit;
     TileSourceUnitToLatlon unit_to_latlon;

@@ -839,7 +839,6 @@ map_controller_set_repository(MapController *self, Repository *repo)
     MapControllerPrivate *priv;
     Repository *curr_repo;
     MapPoint center;
-    gint new_zoom;
     const TileSourceType *curr_type, *new_type;
 
     g_return_if_fail(MAP_IS_CONTROLLER(self));
@@ -847,14 +846,9 @@ map_controller_set_repository(MapController *self, Repository *repo)
     priv = self->priv;
     center = priv->center;
     curr_repo = priv->repository;
-    new_zoom = priv->zoom;
 
     curr_type = curr_repo->primary->type;
     new_type = repo->primary->type;
-
-    /* Adjust zoom */
-    new_zoom -= curr_type->zoom_delta;
-    new_zoom += new_type->zoom_delta;
 
     /* if new repo coordinate system differs from current one,
        recalculate map center, current track and route (if needed) */
@@ -871,7 +865,7 @@ map_controller_set_repository(MapController *self, Repository *repo)
     }
 
     priv->repository = repo;
-    map_controller_set_center(self, center, new_zoom);
+    map_controller_set_center(self, center, priv->zoom);
 }
 
 GList *

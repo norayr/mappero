@@ -91,7 +91,6 @@ static const TileSourceType tile_source_types[] = {
     },
     { name		: "YANDEX",
       world_size	: WORLD_SIZE_UNITS_YANDEX,
-      zoom_delta	: 2,
       get_url		: yandex_get_url,
       latlon_to_unit	: latlon2unit_yandex,
       unit_to_latlon	: unit2latlon_yandex,
@@ -202,7 +201,7 @@ yandex_get_url(TileSource *source, gchar *buffer, gint len,
                gint zoom, gint tilex, gint tiley)
 {
     return g_snprintf(buffer, len, source->url,
-                      tilex, tiley,  MAX_ZOOM + 3 - zoom);
+                      tilex, tiley,  MAX_ZOOM + 1 - zoom);
 }
 
 
@@ -213,7 +212,7 @@ yandex_get_url(TileSource *source, gchar *buffer, gint len,
 #define YANDEX_Rn (6378137.0)
 #define YANDEX_E (0.0818191908426)
 #define YANDEX_A (20037508.342789)
-#define YANDEX_F (53.5865938)
+#define YANDEX_F (53.5865938 / 4) /* the 4 divisor accounts for 2 zoom levels */
 #define YANDEX_AB (0.00335655146887969400)
 #define YANDEX_BB (0.00000657187271079536)
 #define YANDEX_CB (0.00000001764564338702)
