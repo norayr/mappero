@@ -1,5 +1,6 @@
 #
-# Copyright (C) 2006, 2007 John Costigan.
+# Copyright (C) 2006-2009 John Costigan.
+# Copyright (C) 2009-2010 Alberto Mardegan.
 #
 # This file is part of Maemo Mapper.
 #
@@ -18,7 +19,7 @@
 #
 
 AC_INIT(Makefile.am)
-AM_INIT_AUTOMAKE(maemo-mapper, 3.0+alpha7)
+AM_INIT_AUTOMAKE(maemo-mapper, 3.0+alpha8)
 
 AC_PROG_CPP
 AC_CONFIG_HEADERS(src/config.h)
