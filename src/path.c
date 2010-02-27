@@ -742,8 +742,15 @@ track_add(time_t time, gboolean newly_fixed)
     gboolean moving = FALSE;
     gboolean approaching_waypoint = FALSE;
     gint xdiff, ydiff, dopcand;
+    gboolean late = FALSE, out_of_route = FALSE;
 
     announce_thres_unsquared = (20+_gps.speed) * _announce_notice_ratio*32;
+
+    /* Check if we are late, with a tolerance of 3 minutes */
+    if (_near_point && _near_point->time != 0 && _pos.time != 0 &&
+        _pos.time > _near_point->time + 60 * 3)
+        late = TRUE;
+    DEBUG("Late: %d", late);
 
     if(!_track.tail->unit.y
             || ((xdiff = _pos.unit.x - _track.tail->unit.x), /* comma op */
@@ -844,27 +851,33 @@ track_add(time_t time, gboolean newly_fixed)
             if(MIN(route_dist_squared_1, route_dist_squared_2)
                     > (2000 * 2000))
             {
-                /* Prevent announcments from occurring. */
-                announce_thres_unsquared = INT_MAX;
-
-                if(_autoroute_data.enabled && !_autoroute_data.in_progress)
-                {
-                    MACRO_BANNER_SHOW_INFO(_window,
-                            _("Recalculating directions..."));
-                    _autoroute_data.in_progress = TRUE;
-                    show_directions = FALSE;
-                    g_idle_add((GSourceFunc)auto_route_dl_idle, NULL);
-                }
-                else
-                {
-                    /* Reset the route to try and find the nearest point.*/
-                    path_reset_route();
-                }
+                out_of_route = TRUE;
             }
         }
 
         /* Keep the display on. */
         moving = TRUE;
+    }
+
+    /* check if we need to recalculate the route */
+    if (late || out_of_route)
+    {
+        /* Prevent announcments from occurring. */
+        announce_thres_unsquared = INT_MAX;
+
+        if(_autoroute_data.enabled && !_autoroute_data.in_progress)
+        {
+            MACRO_BANNER_SHOW_INFO(_window,
+                                   _("Recalculating directions..."));
+            _autoroute_data.in_progress = TRUE;
+            show_directions = FALSE;
+            g_idle_add((GSourceFunc)auto_route_dl_idle, NULL);
+        }
+        else
+        {
+            /* Reset the route to try and find the nearest point.*/
+            path_reset_route();
+        }
     }
 
     if(_initial_distance_waypoint
