@@ -508,12 +508,11 @@ route_find_nearest_point()
         _near_point++;
 
     /* Initialize _next_way. */
-    if(_route.wtail < _route.whead
-            || (_autoroute_data.enabled && _route.wtail == _route.whead))
+    if(_route.wtail < _route.whead)
         _next_way = NULL;
     else
         /* We have at least one waypoint. */
-        _next_way = _autoroute_data.enabled ? _route.whead + 1 : _route.whead;
+        _next_way = _route.whead;
     _next_way_dist_squared = INT64_MAX;
 
     /* Initialize _next_wpt. */
