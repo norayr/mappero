@@ -385,6 +385,7 @@ path_update_track_in_db()
 static gboolean
 route_update_nears(gboolean quick)
 {
+    MapController *controller = map_controller_get_instance();
     gboolean ret = FALSE;
     Point *curr, *near;
     WayPoint *wcurr, *wnext;
@@ -491,6 +492,8 @@ route_update_nears(gboolean quick)
                     DISTANCE_SQUARED(_pos.unit, _next_wpt->unit);
         }
     }
+
+    map_controller_set_next_waypoint(controller, _next_way);
 
     return ret;
 }
@@ -751,6 +754,7 @@ track_add(time_t time, gboolean newly_fixed)
     MapController *controller = map_controller_get_instance();
     gboolean show_directions = TRUE;
     gint announce_thres_unsquared;
+    gboolean refresh_panel = FALSE;
     gboolean ret = FALSE;
     DEBUG("%d, %d, %d, %d", (guint)time, newly_fixed,
           _pos.unit.x, _pos.unit.y);
@@ -787,6 +791,7 @@ track_add(time_t time, gboolean newly_fixed)
     {
         /* We moved enough to actually register a move. */
         ret = TRUE;
+        refresh_panel = TRUE;
 
         /* Update the nearest-waypoint data. */
         if(_route.head != _route.tail
@@ -989,6 +994,12 @@ track_add(time_t time, gboolean newly_fixed)
             path_update_track_in_db();
             last_track_db_update = time;
         }
+    }
+
+    if (refresh_panel)
+    {
+        MapScreen *screen = map_controller_get_screen(controller);
+        map_screen_refresh_panel(screen);
     }
 
     return ret;
