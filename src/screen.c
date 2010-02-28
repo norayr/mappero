@@ -434,7 +434,7 @@ draw_path(MapScreen *screen, cairo_t *cr, Path *path, Colorable base)
     gint waypoint_count = 0;
 #endif
 
-    printf ("%s", G_STRFUNC);
+    DEBUG("");
 
     set_source_color(cr, &_color[base]);
     cairo_set_line_width(cr, _draw_width);

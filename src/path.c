@@ -918,8 +918,7 @@ track_add(time_t time, gboolean newly_fixed)
                         hildon_play_system_sound(
                             "/usr/share/sounds/ui-information_note.wav");
                         sleep(1);
-                        printf("%s %s\n", _voice_synth_path,
-                                _last_spoken_phrase);
+                        DEBUG("%s %s", _voice_synth_path, _last_spoken_phrase);
                         execl(_voice_synth_path, basename(_voice_synth_path),
                                 "-t", _last_spoken_phrase, (char *)NULL);
                         /* No good?  Try to launch it with /bin/sh */
@@ -1346,7 +1345,7 @@ route_download(gchar *to)
     gint active_origin_row, row;
     MapRouter *router, *default_router;
 
-    printf("%s", G_STRFUNC);
+    DEBUG("");
     conic_recommend_connected();
 
     dialog = map_dialog_new(_("Download Route"), GTK_WINDOW(_window), TRUE);

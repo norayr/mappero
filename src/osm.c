@@ -24,6 +24,7 @@
 #include "osm.h"
 
 #include "controller.h"
+#include "debug.h"
 #include "defines.h"
 #include "menu.h"
 #include <clutter-gtk/clutter-gtk.h>
@@ -113,7 +114,7 @@ hide_timeout_cb(MapOsm *self)
 {
     MapOsmPrivate *priv = self->priv;
 
-    printf("%s called", G_STRFUNC);
+    DEBUG("");
     /* TODO: nice animation to hide the menu */
     clutter_actor_hide(CLUTTER_ACTOR(self));
     priv->id_hide_timeout = 0;
