@@ -524,16 +524,15 @@ route_find_nearest_point()
 }
 
 /**
- * Show the distance from the current GPS location to the given point,
+ * Calculates the distance from the current GPS location to the given point,
  * following the route.  If point is NULL, then the distance is shown to the
  * next waypoint.
  */
 gboolean
-route_show_distance_to(Point *point)
+route_calc_distance_to(const Point *point, gfloat *distance)
 {
-    gchar buffer[80];
     gdouble lat1, lon1, lat2, lon2;
-    gdouble sum = 0.0;
+    gfloat sum = 0.0;
 
     /* If point is NULL, use the next waypoint. */
     if(point == NULL && _next_way)
@@ -582,6 +581,24 @@ route_show_distance_to(Point *point)
         unit2latlon(_near_point->unit.x, _near_point->unit.y, lat2, lon2);
         sum += calculate_distance(lat1, lon1, lat2, lon2);
     }
+
+    *distance = sum;
+    return TRUE;
+}
+
+/**
+ * Show the distance from the current GPS location to the given point,
+ * following the route.  If point is NULL, then the distance is shown to the
+ * next waypoint.
+ */
+gboolean
+route_show_distance_to(Point *point)
+{
+    gchar buffer[80];
+    gfloat sum;
+
+    if (!route_calc_distance_to(point, &sum))
+        return FALSE;
 
     snprintf(buffer, sizeof(buffer), "%s: %.02f %s", _("Distance"),
             sum * UNITS_CONVERT[_units], UNITS_ENUM_TEXT[_units]);

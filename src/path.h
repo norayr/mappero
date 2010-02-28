@@ -30,6 +30,7 @@ void path_wresize(Path *path, gint wsize);
 void path_save_route_to_db(void);
 
 void route_find_nearest_point(void);
+gboolean route_calc_distance_to(const Point *point, gfloat *distance);
 gboolean route_show_distance_to(Point *point);
 void route_show_distance_to_next(void);
 void route_show_distance_to_last(void);
