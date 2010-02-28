@@ -1653,7 +1653,6 @@ map_menu_route()
         ROUTE_OPEN,
         ROUTE_DOWNLOAD,
         ROUTE_SAVE,
-        ROUTE_DISTANCE_TO_WAYPOINT,
         ROUTE_DISTANCE_TO_END,
         ROUTE_RESET,
         ROUTE_CLEAR,
@@ -1668,8 +1667,6 @@ map_menu_route()
     map_dialog_create_button(dlg, _("Open..."), ROUTE_OPEN);
     map_dialog_create_button(dlg, _("Download..."), ROUTE_DOWNLOAD);
     map_dialog_create_button(dlg, _("Save..."), ROUTE_SAVE);
-    map_dialog_create_button(dlg, _("Show Distance to Next Waypoint"),
-                             ROUTE_DISTANCE_TO_WAYPOINT);
     map_dialog_create_button(dlg, _("Show Distance to End of Route"),
                              ROUTE_DISTANCE_TO_END);
     map_dialog_create_button(dlg, _("Reset"), ROUTE_RESET);
@@ -1684,8 +1681,6 @@ map_menu_route()
         menu_cb_route_download(NULL); break;
     case ROUTE_SAVE:
         menu_cb_route_save(NULL); break;
-    case ROUTE_DISTANCE_TO_WAYPOINT:
-        menu_cb_route_distnext(NULL); break;
     case ROUTE_DISTANCE_TO_END:
         menu_cb_route_distlast(NULL); break;
     case ROUTE_RESET:
