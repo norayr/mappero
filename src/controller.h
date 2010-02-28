@@ -133,6 +133,9 @@ void map_controller_set_zoom(MapController *self, gint zoom);
 gint map_controller_get_zoom(MapController *self);
 void map_controller_calc_best_center(MapController *self, MapPoint *new_center);
 
+void map_controller_set_next_waypoint(MapController *self,
+                                      const WayPoint *next);
+const WayPoint *map_controller_get_next_waypoint(MapController *self);
 void map_controller_refresh_paths(MapController *controller);
 void map_controller_update_gps(MapController *self);
 
