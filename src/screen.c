@@ -414,10 +414,9 @@ draw_break(cairo_t *cr, GdkColor *color, gint x, gint y)
 {
     cairo_save(cr);
     cairo_new_sub_path(cr);
-    cairo_arc(cr, x, y, _draw_width, 0, 2 * PI);
-    cairo_set_line_width(cr, _draw_width);
+    cairo_arc(cr, x, y, _draw_width * 3 / 2, 0, 2 * PI);
     set_source_color(cr, color);
-    cairo_stroke(cr);
+    cairo_fill(cr);
     cairo_restore(cr);
 }
 
