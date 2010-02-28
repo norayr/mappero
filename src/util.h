@@ -59,4 +59,7 @@ gint convert_str_to_int(const gchar *str);
 
 gint gint_sqrt(gint num);
 
+size_t time_to_string(gchar *string, size_t size, const gchar *format,
+                      time_t time);
+
 #endif /* ifndef MAEMO_MAPPER_UTIL_H */

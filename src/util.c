@@ -1011,3 +1011,12 @@ gint gint_sqrt(gint num)
     return res;
 }
 
+size_t
+time_to_string(gchar *string, size_t size, const gchar *format, time_t time)
+{
+    struct tm tm;
+
+    tm = *localtime(&time);
+    return strftime(string, size, format, &tm);
+}
+
