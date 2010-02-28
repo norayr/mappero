@@ -852,18 +852,21 @@ ro_route_to_path(const RoRoute *route, Path *path)
             MACRO_PATH_INCREMENT_TAIL(*path);
         *path->tail = path_point;
 
-        /* the first point is always a waypoint */
-        MACRO_PATH_INCREMENT_WTAIL(*path);
-        path->wtail->point = path->tail;
-        if (line->code)
+        if (point->name)
         {
-            path->wtail->desc =
-                g_strdup_printf("%s\n%s %.4s", point->name,
-                                transport_type(line->transport),
-                                line->code);
+            /* the first point is always a waypoint */
+            MACRO_PATH_INCREMENT_WTAIL(*path);
+            path->wtail->point = path->tail;
+            if (line->code)
+            {
+                path->wtail->desc =
+                    g_strdup_printf("%s\n%s %.4s", point->name,
+                                    transport_type(line->transport),
+                                    line->code);
+            }
+            else
+                path->wtail->desc = g_strdup(point->name);
         }
-        else
-            path->wtail->desc = g_strdup(point->name);
 
         for (i = 1; i < line->points->len; i++)
         {
