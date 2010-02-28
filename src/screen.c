@@ -45,6 +45,9 @@
 #define ZOOM_WIDTH      25
 #define ZOOM_HEIGHT     SCALE_HEIGHT
 
+#define PANEL_WIDTH     200
+#define PANEL_BORDER    2
+
 /* duration of one step of the zoom animation */
 #define ZOOM_DURATION   500
 
@@ -74,6 +77,8 @@ struct _MapScreenPrivate
 
     ClutterActor *message_box;
 
+    ClutterActor *panel;
+
     /* marker for the GPS position/speed */
     ClutterActor *mark;
 
@@ -94,6 +99,7 @@ struct _MapScreenPrivate
     gint zoom;
 
     guint source_overlay_redraw;
+    guint source_panel_redraw;
 
     ClutterTimeline *rotate_tl;
     gint rotate_angle_start;
@@ -788,6 +794,112 @@ create_mark(MapScreen *screen)
     priv->mark = g_object_new(MAP_TYPE_MARK, NULL);
 }
 
+static gboolean
+panel_redraw_real(MapScreen *self)
+{
+    MapController *controller = map_controller_get_instance();
+    MapScreenPrivate *priv;
+    PangoContext *context;
+    PangoLayout *layout, *wp_layout = NULL;
+    PangoFontDescription *wp_font;
+    const WayPoint *waypoint;
+    gint panel_height, panel_x, panel_y, x, y, w, h;
+    gint icon_width, icon_height, wp_height = 0;
+    gboolean has_data = FALSE;
+    cairo_t *cr;
+
+    priv = self->priv;
+    priv->source_panel_redraw = 0;
+
+    /* before drawing, calculate the height of the panel */
+    panel_height = 0;
+    icon_width = icon_height = _draw_width * 4;
+    context = gtk_widget_get_pango_context(GTK_WIDGET(self));
+    waypoint = map_controller_get_next_waypoint(controller);
+    if (waypoint)
+    {
+        gchar *text, buffer[32], *ptr;
+        gfloat distance = 0.0;
+
+        layout = pango_layout_new(context);
+        pango_layout_set_width(layout,
+                               (PANEL_WIDTH - icon_width) * PANGO_SCALE);
+        wp_font = pango_font_description_from_string("Sans 14");
+        pango_layout_set_font_description(layout, wp_font);
+
+        ptr = buffer;
+        if (waypoint->point->time != 0)
+            ptr += time_to_string(buffer, sizeof(buffer), "%H:%M ",
+                                  waypoint->point->time);
+        route_calc_distance_to(waypoint->point, &distance);
+        snprintf(ptr, sizeof(buffer) - (ptr - buffer), "%.1f %s",
+                 distance * UNITS_CONVERT[_units], UNITS_ENUM_TEXT[_units]);
+        text = g_strdup_printf("<b>%s</b>\n%s", buffer,
+                               waypoint->desc ? waypoint->desc : "");
+        pango_layout_set_markup(layout, text, -1);
+        g_free(text);
+        pango_layout_get_pixel_size(layout, &w, &h);
+        wp_layout = layout;
+
+        pango_font_description_free(wp_font);
+
+        wp_height += MAX(icon_height, h);
+        has_data = TRUE;
+    }
+    panel_height = PANEL_BORDER * 2 + wp_height;
+
+    if (!has_data)
+    {
+        /* nothing to display, hide the panel */
+        clutter_actor_hide(priv->panel);
+        return FALSE;
+    }
+
+    clutter_cairo_texture_set_surface_size(CLUTTER_CAIRO_TEXTURE(priv->panel),
+                                           PANEL_WIDTH, panel_height);
+    clutter_cairo_texture_clear(CLUTTER_CAIRO_TEXTURE(priv->panel));
+
+    cr = clutter_cairo_texture_create(CLUTTER_CAIRO_TEXTURE(priv->panel));
+    g_assert(cr != NULL);
+
+    cairo_rectangle(cr, 0, 0, PANEL_WIDTH, panel_height);
+    cairo_set_source_rgba(cr, 1, 1, 1, 0.6);
+    cairo_fill(cr);
+
+    panel_x = panel_y = PANEL_BORDER;
+
+    cairo_set_source_rgb(cr, 0, 0, 0);
+
+    if (waypoint)
+    {
+        x = panel_x, y = panel_y;
+
+        draw_break(cr, &_color[COLORABLE_ROUTE],
+                   x + _draw_width * 3 / 2, y + _draw_width * 3 / 2);
+        x += icon_width;
+
+        cairo_move_to(cr, x, y);
+        pango_cairo_show_layout(cr, wp_layout);
+        g_object_unref(wp_layout);
+
+        y += wp_height;
+    }
+
+    cairo_destroy(cr);
+
+    clutter_actor_show(priv->panel);
+    return FALSE;
+}
+
+static void
+create_panel(MapScreen *screen)
+{
+    MapScreenPrivate *priv = screen->priv;
+
+    priv->panel = clutter_cairo_texture_new(PANEL_WIDTH, 1);
+    clutter_actor_set_anchor_point(priv->panel, PANEL_WIDTH, 0);
+}
+
 static void
 map_screen_size_allocate(GtkWidget *widget, GtkAllocation *allocation)
 {
@@ -818,6 +930,11 @@ map_screen_size_allocate(GtkWidget *widget, GtkAllocation *allocation)
     clutter_actor_set_position(priv->zoom_box,
                                allocation->width / 2,
                                allocation->height);
+
+    /* route info, upper right corner */
+    clutter_actor_set_position(priv->panel,
+                               allocation->width - HILDON_MARGIN_HALF,
+                               HILDON_MARGIN_HALF);
 
     /* resize the OSM */
     map_osm_set_screen_size(MAP_OSM(priv->osm),
@@ -860,6 +977,12 @@ map_screen_dispose(GObject *object)
     {
         g_source_remove (priv->source_overlay_redraw);
         priv->source_overlay_redraw = 0;
+    }
+
+    if (priv->source_panel_redraw != 0)
+    {
+        g_source_remove (priv->source_panel_redraw);
+        priv->source_panel_redraw = 0;
     }
 
     G_OBJECT_CLASS(map_screen_parent_class)->dispose(object);
@@ -919,6 +1042,10 @@ map_screen_init(MapScreen *screen)
 
     create_mark(screen);
     clutter_container_add_actor(CLUTTER_CONTAINER(priv->map), priv->mark);
+
+    /* Route Info */
+    create_panel(screen);
+    clutter_container_add_actor(CLUTTER_CONTAINER(stage), priv->panel);
 
     /* On-screen Menu */
     priv->osm = g_object_new(MAP_TYPE_OSM,
@@ -1399,6 +1526,19 @@ map_screen_refresh_pois(MapScreen *self, MapArea *poi_area)
         map_poi_render(poi_area, (MapPoiRenderCb)map_screen_add_poi, self);
         clutter_actor_show(priv->poi_group);
     }
+}
+
+void
+map_screen_refresh_panel(MapScreen *self)
+{
+    MapScreenPrivate *priv;
+
+    g_return_if_fail(MAP_IS_SCREEN(self));
+    priv = self->priv;
+
+    if (priv->source_panel_redraw == 0 && GTK_WIDGET_REALIZED(self))
+        priv->source_panel_redraw =
+            g_idle_add((GSourceFunc)panel_redraw_real, self);
 }
 
 void

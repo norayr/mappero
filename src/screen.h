@@ -85,6 +85,7 @@ void map_screen_redraw_overlays(MapScreen *self);
 void map_screen_refresh_map(MapScreen *self);
 void map_screen_refresh_tiles(MapScreen *self);
 void map_screen_refresh_pois(MapScreen *self, MapArea *poi_area);
+void map_screen_refresh_panel(MapScreen *self);
 
 void map_screen_track_append(MapScreen *self, const Point *p);
 void map_screen_toggle_layers_visibility (MapScreen *self);
