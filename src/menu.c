@@ -1066,7 +1066,6 @@ menu_cb_gps_enable(GtkMenuItem *item)
     map_move_mark();
     gps_show_info();
     gtk_widget_set_sensitive(GTK_WIDGET(_menu_gps_details_item), _enable_gps);
-    gtk_widget_set_sensitive(GTK_WIDGET(_menu_gps_reset_item), _enable_gps);
 
     return TRUE;
 }
@@ -1086,14 +1085,6 @@ static gboolean
 menu_cb_gps_details(GtkMenuItem *item)
 {
     gps_details();
-
-    return TRUE;
-}
-
-static gboolean
-menu_cb_gps_reset(GtkMenuItem *item)
-{
-    reset_bluetooth();
 
     return TRUE;
 }
@@ -1492,9 +1483,6 @@ menu_init()
     gtk_menu_append(submenu, _menu_gps_details_item
             = gtk_menu_item_new_with_label(_("Details...")));
     gtk_widget_set_sensitive(GTK_WIDGET(_menu_gps_details_item), _enable_gps);
-    gtk_menu_append(submenu, _menu_gps_reset_item
-        = gtk_menu_item_new_with_label(_("Reset Bluetooth")));
-    gtk_widget_set_sensitive(GTK_WIDGET(_menu_gps_reset_item), _enable_gps);
 
     gtk_menu_append(menu, gtk_separator_menu_item_new());
 
@@ -1628,8 +1616,6 @@ menu_init()
                       G_CALLBACK(menu_cb_gps_show_info), NULL);
     g_signal_connect(G_OBJECT(_menu_gps_details_item), "activate",
                       G_CALLBACK(menu_cb_gps_details), NULL);
-    g_signal_connect(G_OBJECT(_menu_gps_reset_item), "activate",
-                      G_CALLBACK(menu_cb_gps_reset), NULL);
 
     /* Connect the other menu item signals. */
     g_signal_connect(G_OBJECT(_menu_settings_item), "activate",

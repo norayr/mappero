@@ -280,7 +280,6 @@ GtkWidget *_menu_view_goto_nearpoi_item = NULL;
 GtkWidget *_menu_gps_enable_item = NULL;
 GtkWidget *_menu_gps_show_info_item = NULL;
 GtkWidget *_menu_gps_details_item = NULL;
-GtkWidget *_menu_gps_reset_item = NULL;
 
 /* Menu items for the other menu items. */
 GtkWidget *_menu_settings_item = NULL;

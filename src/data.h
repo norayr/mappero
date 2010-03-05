@@ -256,7 +256,6 @@ extern GtkWidget *_menu_view_goto_nearpoi_item;
 extern GtkWidget *_menu_gps_enable_item;
 extern GtkWidget *_menu_gps_show_info_item;
 extern GtkWidget *_menu_gps_details_item;
-extern GtkWidget *_menu_gps_reset_item;
 
 /* Menu items for the other menu items. */
 extern GtkWidget *_menu_settings_item;

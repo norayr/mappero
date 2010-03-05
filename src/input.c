@@ -208,10 +208,6 @@ window_cb_key_press(GtkWidget* widget, GdkEventKey *event)
             /* TODO: change to next next-able repository (do we really need this?) */
             break;
 
-        case CUSTOM_ACTION_RESET_BLUETOOTH:
-            reset_bluetooth();
-            break;
-
         case CUSTOM_ACTION_ROUTE_DISTNEXT:
             route_show_distance_to_next();
             break;

@@ -50,15 +50,6 @@
 
 #include "display.h"
 #include "gps.h"
-
-#ifdef HAVE_LIBGPSBT
-#    include "gpsbt.h"
-#endif
-
-#ifdef HAVE_LIBGPSMGR
-#    include "gpsmgr.h"
-#endif
-
 #include "path.h"
 #include "util.h"
 
@@ -67,35 +58,6 @@
 
 static LocationGPSDControl *gpsd_control = NULL;
 static LocationGPSDevice *gps_device = NULL;
-
-static volatile GThread *_gps_thread = NULL;
-static GMutex *_gps_init_mutex = NULL;
-
-static gint _gmtoffset = 0;
-
-#define MACRO_PARSE_INT(tofill, str) { \
-    gchar *error_check; \
-    (tofill) = strtol((str), &error_check, 10); \
-    if(error_check == (str)) \
-    { \
-        g_printerr("Line %d: Failed to parse string as int: %s\n", \
-                __LINE__, str); \
-        MACRO_BANNER_SHOW_INFO(_window, \
-                _("Invalid NMEA input from receiver!")); \
-        return; \
-    } \
-}
-#define MACRO_PARSE_FLOAT(tofill, str) { \
-    gchar *error_check; \
-    (tofill) = g_ascii_strtod((str), &error_check); \
-    if(error_check == (str)) \
-    { \
-        g_printerr("Failed to parse string as float: %s\n", str); \
-        MACRO_BANNER_SHOW_INFO(_window, \
-                _("Invalid NMEA input from receiver!")); \
-        return; \
-    } \
-}
 
 static void update_satellite_info(LocationGPSDeviceSatellite *satellite,
                                   int satellite_index)
@@ -278,22 +240,6 @@ rcvr_connect()
 }
 
 void
-reset_bluetooth()
-{
-    DEBUG("");
-    if(system("/usr/bin/sudo -l | grep -q '/usr/sbin/hciconfig  *hci0  *reset'"
-            " && sudo /usr/sbin/hciconfig hci0 reset"))
-        popup_error(_window,
-                _("An error occurred while trying to reset the bluetooth "
-                "radio.\n\n"
-                "Did you make sure to modify\nthe /etc/sudoers file?"));
-    else if(_gps_state != RCVR_OFF)
-    {
-        rcvr_connect();
-    }
-}
-
-void
 gps_init()
 {
     DEBUG("");
@@ -307,42 +253,11 @@ gps_init()
 	g_signal_connect (gps_device, "changed",
 			  G_CALLBACK(on_gps_changed), controller);
     }
-
-    _gps_init_mutex = g_mutex_new();
-
-    /* Fix a stupid PATH bug in libgps. */
-    {
-        gchar *path_env = getenv("PATH");
-        gchar *new_path = g_strdup_printf("%s:%s", path_env, "/usr/sbin");
-        setenv("PATH", new_path, 1);
-        g_free(new_path);
-    }
-
-    /* set _gpsoffset */
-    {   
-        time_t time1;
-        struct tm time2;
-        time1 = time(NULL);
-        localtime_r(&time1, &time2);
-        _gmtoffset = time2.tm_gmtoff;
-    }
 }
 
 void
 gps_destroy(gboolean last)
 {
-    static GThread* tmp = NULL;
     DEBUG("");
-
-    if(!last)
-    {
-        if(_gps_thread)
-        {
-            tmp = (GThread*)_gps_thread;
-            _gps_thread = NULL;
-        }
-    }
-    else if(tmp)
-        g_thread_join(tmp);
 }
 
