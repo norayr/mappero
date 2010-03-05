@@ -46,26 +46,7 @@
 
 #define VELVEC_SIZE_FACTOR (4)
 
-struct _MapControllerPrivate
-{
-    GList *repositories_list;
-    GList *tile_sources_list;
-    Repository *repository;
-    MapScreen *screen;
-    MapPoint center;
-    gint rotation_angle;
-    gint zoom;
-
-    GSList *plugins;
-
-    MapRouter *default_router;
-
-    const WayPoint *next_waypoint;
-
-    guint source_map_center;
-    guint is_disposed : 1;
-    guint device_active : 1;
-};
+#include "controller-priv.h"
 
 G_DEFINE_TYPE(MapController, map_controller, G_TYPE_OBJECT);
 

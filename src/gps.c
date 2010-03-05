@@ -53,6 +53,8 @@
 #include "path.h"
 #include "util.h"
 
+#include "controller-priv.h"
+
 #include <location/location-gpsd-control.h>
 #include <location/location-gps-device.h>
 
