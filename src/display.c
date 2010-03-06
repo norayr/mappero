@@ -615,22 +615,13 @@ sat_details_panel_expose(GtkWidget *widget, GdkEventExpose *event)
         (height/6) - y/2,
         _sat_details_expose_layout);
     g_free(buffer);
-    buffer = g_strdup_printf("PDOP: %.01f", _gps.pdop);
-    pango_layout_set_text(_sat_details_expose_layout, buffer, -1);
-    pango_layout_get_pixel_size(_sat_details_expose_layout, &x, &y);
-    gdk_draw_layout(widget->window,
-        widget->style->fg_gc[GTK_WIDGET_STATE(widget)],
-        (width/8) - x/2,
-        (height/6) - y/2 + 20,
-        _sat_details_expose_layout);
-    g_free(buffer);
     buffer = g_strdup_printf("VDOP: %.01f", _gps.vdop);
     pango_layout_set_text(_sat_details_expose_layout, buffer, -1);
     pango_layout_get_pixel_size(_sat_details_expose_layout, &x, &y);
     gdk_draw_layout(widget->window,
         widget->style->fg_gc[GTK_WIDGET_STATE(widget)],
         (width/8) - x/2,
-        (height/6) - y/2 + 40,
+        (height/6) - y/2 + 20,
         _sat_details_expose_layout);
     g_free(buffer);
 

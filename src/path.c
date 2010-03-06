@@ -784,9 +784,8 @@ track_add(time_t time, gboolean newly_fixed)
                  * P/HDOP (completely arbitrary, I know), but I also
                  * want to keep the threshold at a minimum of 2
                  * zoom-level-4 pixel, and I want dop's of less than 2 to
-                 * also have a 1-pixel threshold.  I also throw in some
-                 * PDOP into the mix, just for fun. */
-                || ((dopcand = 8 * (_gps.pdop - 6 +(_gps.hdop*_gps.hdop))),
+                 * also have a 1-pixel threshold. */
+                || ((dopcand = 8 * (-6 +(_gps.hdop*_gps.hdop))),
                     ((xdiff * xdiff) + (ydiff * ydiff)
                          >= (MAX(2, dopcand) << 8))))))
     {

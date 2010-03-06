@@ -400,7 +400,6 @@ struct _GpsData {
     gfloat maxspeed;    /* in km/h */
     gfloat heading;
     gint hdop;  /* in metres */
-    gfloat pdop;
     gfloat vdop;  /* in metres */
     gint satinview;
     gint satinuse;
