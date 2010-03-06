@@ -56,12 +56,6 @@
 
 #include "controller-priv.h"
 
-#include <location/location-gpsd-control.h>
-#include <location/location-gps-device.h>
-
-static LocationGPSDControl *gpsd_control = NULL;
-static LocationGPSDevice *gps_device = NULL;
-
 static void update_satellite_info(LocationGPSDeviceSatellite *satellite,
                                   int satellite_index)
 {
@@ -210,25 +204,18 @@ set_conn_state(ConnState new_conn_state)
  * that might be associated with the receiver.
  */
 void
-rcvr_disconnect()
+map_controller_gps_disconnect(MapController *self)
 {
     DEBUG("");
 
-    location_gpsd_control_stop(gpsd_control);
+    location_gpsd_control_stop(self->priv->gpsd_control);
 
     if(_window)
         set_conn_state(RCVR_OFF);
 }
 
-/**
- * Connect to the receiver.
- * This method assumes that _fd is -1 and _channel is NULL.  If unsure, call
- * rcvr_disconnect() first.
- * Since this is an idle function, this function returns whether or not it
- * should be called again, which is always FALSE.
- */
-gboolean
-rcvr_connect()
+void
+map_controller_gps_connect(MapController *self)
 {
     DEBUG("%d", _gps_state);
 
@@ -236,31 +223,36 @@ rcvr_connect()
     {
         set_conn_state(RCVR_DOWN);
 
-	location_gpsd_control_start(gpsd_control);
+	location_gpsd_control_start(self->priv->gpsd_control);
     }
-
-    return FALSE;
 }
 
 void
-gps_init()
+map_controller_gps_init(MapController *self)
 {
-    DEBUG("");
+    MapControllerPrivate *priv = self->priv;
 
-    if (!gpsd_control)
+    priv->gpsd_control = location_gpsd_control_get_default();
+    priv->gps_device = g_object_new(LOCATION_TYPE_GPS_DEVICE, NULL);
+    g_signal_connect(priv->gps_device, "changed",
+                     G_CALLBACK(on_gps_changed), self);
+}
+
+void
+map_controller_gps_dispose(MapController *self)
+{
+    MapControllerPrivate *priv = self->priv;
+
+    if (priv->gps_device)
     {
-        MapController *controller = map_controller_get_instance();
-	gpsd_control = location_gpsd_control_get_default();
-
-	gps_device = g_object_new(LOCATION_TYPE_GPS_DEVICE, NULL);
-	g_signal_connect (gps_device, "changed",
-			  G_CALLBACK(on_gps_changed), controller);
+        g_object_unref(priv->gps_device);
+        priv->gps_device = NULL;
     }
-}
 
-void
-gps_destroy(gboolean last)
-{
-    DEBUG("");
+    if (priv->gpsd_control)
+    {
+        g_object_unref(priv->gpsd_control);
+        priv->gpsd_control = NULL;
+    }
 }
 

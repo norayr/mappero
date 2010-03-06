@@ -21,6 +21,9 @@
 #ifndef CONTROLLER_PRIV_H
 #define CONTROLLER_PRIV_H
 
+#include <location/location-gpsd-control.h>
+#include <location/location-gps-device.h>
+
 struct _MapControllerPrivate
 {
     GList *repositories_list;
@@ -36,6 +39,9 @@ struct _MapControllerPrivate
     MapRouter *default_router;
 
     const WayPoint *next_waypoint;
+
+    LocationGPSDControl *gpsd_control;
+    LocationGPSDevice *gps_device;
 
     guint source_map_center;
     guint is_disposed : 1;

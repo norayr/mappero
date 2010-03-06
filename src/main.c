@@ -62,7 +62,6 @@
 #include "controller.h"
 #include "dbus-ifc.h"
 #include "display.h"
-#include "gps.h"
 #include "gpx.h"
 #include "input.h"
 #include "main.h"
@@ -190,8 +189,6 @@ maemo_mapper_destroy()
     /* _program and widgets have already been destroyed. */
     _window = NULL;
 
-    gps_destroy(FALSE);
-
     path_destroy();
 
     settings_save();
@@ -209,8 +206,6 @@ maemo_mapper_destroy()
     g_mutex_unlock(_conic_connection_mutex);
 #endif
     g_thread_pool_free(_mut_thread_pool, TRUE, TRUE);
-
-    gps_destroy(TRUE);
 }
 
 /**
@@ -518,7 +513,6 @@ maemo_mapper_init(gint argc, gchar **argv)
     menu_init();
     cmenu_init();
     path_init();
-    gps_init();
     input_init();
     poi_db_connect();
     display_init();

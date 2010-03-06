@@ -56,11 +56,11 @@ G_DEFINE_TYPE(MapController, map_controller, G_TYPE_OBJECT);
 static MapController *instance = NULL;
 
 static gboolean
-activate_gps()
+activate_gps(MapController *self)
 {
     /* Connect to receiver. */
     if (_enable_gps)
-        rcvr_connect();
+        map_controller_gps_connect(self);
     return FALSE;
 }
 
@@ -132,6 +132,8 @@ map_controller_dispose(GObject *object)
 
     priv->is_disposed = TRUE;
 
+    map_controller_gps_dispose(MAP_CONTROLLER(object));
+
     if (priv->source_map_center != 0)
     {
         g_source_remove(priv->source_map_center);
@@ -193,7 +195,8 @@ map_controller_init(MapController *controller)
     /* TODO: eliminate global _next_center, _next_zoom, _center, _zoom, etc values */
     map_controller_set_center(controller, _next_center, _next_zoom);
 
-    g_idle_add(activate_gps, NULL);
+    map_controller_gps_init(controller);
+    g_idle_add((GSourceFunc)activate_gps, controller);
 
     gconf_client_clear_cache(gconf_client);
     g_object_unref(gconf_client);
@@ -320,9 +323,9 @@ map_controller_set_gps_enabled(MapController *self, gboolean enabled)
     _enable_gps = enabled;
 
     if (enabled)
-        rcvr_connect();
+        map_controller_gps_connect(self);
     else
-        rcvr_disconnect();
+        map_controller_gps_disconnect(self);
 
     map_move_mark();
     gps_show_info();
