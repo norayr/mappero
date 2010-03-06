@@ -224,10 +224,14 @@ map_mark_update(MapMark *self)
 {
     MapMarkPrivate *priv = self->priv;
     MapController *controller = map_controller_get_instance();
+    const MapGpsData *gps;
     cairo_t *cr;
     Colorable color;
     gfloat x, y, sqrt_speed;
     gint zoom;
+
+    gps = map_controller_get_gps_data(controller);
+    g_return_if_fail(gps != NULL);
 
     clutter_actor_get_anchor_point(priv->dot, &x, &y);
     cr = clutter_cairo_texture_create(CLUTTER_CAIRO_TEXTURE(priv->dot));
@@ -240,7 +244,7 @@ map_mark_update(MapMark *self)
     cairo_stroke(cr);
 
     /* draw the speed vector */
-    sqrt_speed = VELVEC_SIZE_FACTOR * sqrtf(10 + _gps.speed);
+    sqrt_speed = VELVEC_SIZE_FACTOR * sqrtf(10 + gps->speed);
     cairo_move_to(cr, x, y);
     cairo_line_to(cr, x, y - sqrt_speed);
     cairo_set_line_width(cr, _draw_width);
@@ -260,7 +264,7 @@ map_mark_update(MapMark *self)
                                unit2zpixel(_pos.unit.x, zoom),
                                unit2zpixel(_pos.unit.y, zoom));
     clutter_actor_set_rotation(priv->dot,
-                               CLUTTER_Z_AXIS, _gps.heading, 0, 0, 0);
+                               CLUTTER_Z_AXIS, gps->heading, 0, 0, 0);
 
     /* set the uncertainty ellipse */
     if (_gps_state == RCVR_FIXED)
@@ -273,8 +277,8 @@ map_mark_update(MapMark *self)
         /* TODO: make it an ellipse, considering that near the poles the the
          * density of x units is higher */
 
-        /* _gps.hdop is in m */
-        y = _gps.hdop * units_per_metre_y;
+        /* hdop is in m */
+        y = gps->hdop * units_per_metre_y;
 
         x = y;
 

@@ -337,6 +337,13 @@ map_controller_get_gps_enabled(MapController *self)
     return _enable_gps;
 }
 
+const MapGpsData *
+map_controller_get_gps_data(MapController *self)
+{
+    g_return_val_if_fail(MAP_IS_CONTROLLER(self), NULL);
+    return &_gps;
+}
+
 void
 map_controller_set_center_mode(MapController *self, CenterMode mode)
 {

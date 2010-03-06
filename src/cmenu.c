@@ -53,11 +53,6 @@
 #include "poi.h"
 #include "util.h"
 
-#define GCONF_SUPL_KEY_PREFIX "/system/osso/supl"
-#define GCONF_KEY_SUPL_LAT GCONF_SUPL_KEY_PREFIX"/pos_latitude"
-#define GCONF_KEY_SUPL_LON GCONF_SUPL_KEY_PREFIX"/pos_longitude"
-#define GCONF_KEY_SUPL_TIME GCONF_SUPL_KEY_PREFIX"/pos_timestamp"
-
 static void
 cmenu_show_latlon(gint unitx, gint unity)
 {
@@ -131,13 +126,15 @@ cmenu_route_to(gint unitx, gint unity)
 static void
 cmenu_distance_to(gint unitx, gint unity)
 {
+    MapController *controller = map_controller_get_instance();
+    const MapGpsData *gps = map_controller_get_gps_data(controller);
     gchar buffer[80];
     gdouble lat, lon;
 
     unit2latlon(unitx, unity, lat, lon);
 
     snprintf(buffer, sizeof(buffer), "%s: %.02f %s", _("Distance"),
-            calculate_distance(_gps.lat, _gps.lon, lat, lon)
+            calculate_distance(gps->lat, gps->lon, lat, lon)
               * UNITS_CONVERT[_units],
             UNITS_ENUM_TEXT[_units]);
     MACRO_BANNER_SHOW_INFO(_window, buffer);
@@ -226,22 +223,15 @@ cmenu_cb_loc_add_poi(GtkMenuItem *item)
 static gboolean
 cmenu_cb_loc_set_gps(GtkMenuItem *item)
 {
+    MapController *controller = map_controller_get_instance();
+    const MapGpsData *gps = map_controller_get_gps_data(controller);
+
     _pos.unit.x = _cmenu_unitx;
     _pos.unit.y = _cmenu_unity;
     unit2latlon(_pos.unit.x, _pos.unit.y, _gps.lat, _gps.lon);
 
     /* Move mark to new location. */
     map_refresh_mark(_center_mode > 0);
-
-    GConfClient *gconf_client = gconf_client_get_default();
-    GTimeVal curtime;
-
-    gconf_client_set_float(gconf_client, GCONF_KEY_SUPL_LON, _gps.lon, NULL);
-    gconf_client_set_float(gconf_client, GCONF_KEY_SUPL_LAT, _gps.lat, NULL);
-    g_get_current_time(&curtime);
-    gconf_client_set_float(gconf_client, GCONF_KEY_SUPL_TIME, curtime.tv_sec, NULL);
-
-    g_object_unref(gconf_client);
 
     return TRUE;
 }
