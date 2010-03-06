@@ -224,14 +224,11 @@ static gboolean
 cmenu_cb_loc_set_gps(GtkMenuItem *item)
 {
     MapController *controller = map_controller_get_instance();
-    const MapGpsData *gps = map_controller_get_gps_data(controller);
+    MapPoint p;
 
-    _pos.unit.x = _cmenu_unitx;
-    _pos.unit.y = _cmenu_unity;
-    unit2latlon(_pos.unit.x, _pos.unit.y, _gps.lat, _gps.lon);
-
-    /* Move mark to new location. */
-    map_refresh_mark(_center_mode > 0);
+    p.x = _cmenu_unitx;
+    p.y = _cmenu_unity;
+    map_controller_set_gps_position(controller, &p);
 
     return TRUE;
 }

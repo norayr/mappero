@@ -337,6 +337,20 @@ map_controller_get_gps_enabled(MapController *self)
     return _enable_gps;
 }
 
+void
+map_controller_set_gps_position(MapController *self, const MapPoint *p)
+{
+    g_return_if_fail(MAP_IS_CONTROLLER(self));
+
+    _pos.unit = *p;
+    unit2latlon(_pos.unit.x, _pos.unit.y, _gps.lat, _gps.lon);
+
+    /* Move mark to new location. */
+    map_refresh_mark(_center_mode > 0);
+
+    /* TODO: update the GConf keys under /system/nokia/location/lastknown */
+}
+
 const MapGpsData *
 map_controller_get_gps_data(MapController *self)
 {
