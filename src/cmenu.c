@@ -1,6 +1,7 @@
 /* vi: set et sw=4 ts=4 cino=t0,(0: */
 /*
  * Copyright (C) 2006, 2007 John Costigan.
+ * Copyright (C) 2010 Alberto Mardegan <mardy@users.sourceforge.net>
  *
  * POI and GPS-Info code originally written by Cezary Jackiewicz.
  *

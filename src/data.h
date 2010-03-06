@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2006, 2007 John Costigan.
+ * Copyright (C) 2009-2010 Alberto Mardegan <mardy@users.sourceforge.net>
  *
  * POI and GPS-Info code originally written by Cezary Jackiewicz.
  *

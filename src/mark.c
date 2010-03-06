@@ -1,7 +1,7 @@
 /* vi: set et sw=4 ts=4 cino=t0,(0: */
 /* -*- Mode: C; indent-tabs-mode: nil; c-basic-offset: 4; tab-width: 4 -*- */
 /*
- * Copyright (C) 2009 Alberto Mardegan.
+ * Copyright (C) 2009-2010 Alberto Mardegan <mardy@users.sourceforge.net>
  *
  * This file is part of Maemo Mapper.
  *

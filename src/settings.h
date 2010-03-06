@@ -1,9 +1,7 @@
 /*
  * Copyright (C) 2006, 2007 John Costigan.
- *
- * POI and GPS-Info code originally written by Cezary Jackiewicz.
- *
- * Default map data provided by http://www.openstreetmap.org/
+ * Copyright (C) 2010 Max Lapan
+ * Copyright (C) 2010 Alberto Mardegan <mardy@users.sourceforge.net>
  *
  * This file is part of Maemo Mapper.
  *
