@@ -46,7 +46,6 @@
 
 #include "dbus-ifc.h"
 #include "display.h"
-#include "gps.h"
 #include "path.h"
 #include "poi.h"
 #include "screen.h"

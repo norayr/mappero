@@ -1056,22 +1056,6 @@ menu_cb_view_fullscreen(GtkMenuItem *item)
  ****************************************************************************/
 
 static gboolean
-menu_cb_gps_enable(GtkMenuItem *item)
-{
-    if((_enable_gps = gtk_check_menu_item_get_active(
-                GTK_CHECK_MENU_ITEM(_menu_gps_enable_item))))
-        rcvr_connect();
-    else
-        rcvr_disconnect();
-
-    map_move_mark();
-    gps_show_info();
-    gtk_widget_set_sensitive(GTK_WIDGET(_menu_gps_details_item), _enable_gps);
-
-    return TRUE;
-}
-
-static gboolean
 menu_cb_gps_show_info(GtkMenuItem *item)
 {
     _gps_info = gtk_check_menu_item_get_active(
@@ -1097,15 +1081,7 @@ menu_cb_gps_details(GtkMenuItem *item)
 static gboolean
 menu_cb_settings(GtkMenuItem *item)
 {
-    if(settings_dialog())
-    {
-        /* Settings have changed - reconnect to receiver. */
-        if(_enable_gps)
-        {
-            rcvr_disconnect();
-            rcvr_connect();
-        }
-    }
+    settings_dialog();
 
     return TRUE;
 }
@@ -1473,10 +1449,6 @@ menu_init()
             = gtk_menu_item_new_with_label(_("GPS")));
     gtk_menu_item_set_submenu(GTK_MENU_ITEM(menu_item),
             submenu = gtk_menu_new());
-    gtk_menu_append(submenu, _menu_gps_enable_item
-            = gtk_check_menu_item_new_with_label(_("Enable GPS")));
-    gtk_check_menu_item_set_active(
-            GTK_CHECK_MENU_ITEM(_menu_gps_enable_item), _enable_gps);
     gtk_menu_append(submenu, _menu_gps_show_info_item
             = gtk_check_menu_item_new_with_label(_("Show Information")));
     gtk_check_menu_item_set_active(
@@ -1611,8 +1583,6 @@ menu_init()
                       G_CALLBACK(menu_cb_view_fullscreen), NULL);
 
     /* Connect the "GPS" signals. */
-    g_signal_connect(G_OBJECT(_menu_gps_enable_item), "toggled",
-                      G_CALLBACK(menu_cb_gps_enable), NULL);
     g_signal_connect(G_OBJECT(_menu_gps_show_info_item), "toggled",
                       G_CALLBACK(menu_cb_gps_show_info), NULL);
     g_signal_connect(G_OBJECT(_menu_gps_details_item), "activate",

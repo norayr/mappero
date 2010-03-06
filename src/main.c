@@ -312,7 +312,6 @@ maemo_mapper_init(gint argc, gchar **argv)
         = _("Show Distance from Last Break");
     CUSTOM_ACTION_ENUM_TEXT[CUSTOM_ACTION_TRACK_DISTFIRST]
         = _("Show Distance from Beginning");
-    CUSTOM_ACTION_ENUM_TEXT[CUSTOM_ACTION_TOGGLE_GPS] = _("Toggle GPS");
     CUSTOM_ACTION_ENUM_TEXT[CUSTOM_ACTION_TOGGLE_GPSINFO]=_("Toggle GPS Info");
     CUSTOM_ACTION_ENUM_TEXT[CUSTOM_ACTION_TOGGLE_SPEEDLIMIT]
         = _("Toggle Speed Limit");
