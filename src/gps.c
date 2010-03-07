@@ -171,7 +171,7 @@ on_gps_changed(LocationGPSDevice *device, MapController *controller)
          * uncertainty is greater than 200m, don't add it (TODO: this should be
          * a configuration option). */
         if (gps->hdop < 200)
-            track_add(_pos.time, newly_fixed);
+            track_add(gps, newly_fixed);
 
         /* Move mark to new location. */
         map_controller_update_gps(controller);

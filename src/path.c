@@ -750,33 +750,38 @@ path_reset_route()
  * "break" in the track).
  */
 gboolean
-track_add(time_t time, gboolean newly_fixed)
+track_add(const MapGpsData *gps, gboolean newly_fixed)
 {
     MapController *controller = map_controller_get_instance();
-    const MapGpsData *gps = map_controller_get_gps_data(controller);
     gboolean show_directions = TRUE;
     gint announce_thres_unsquared;
     gboolean refresh_panel = FALSE;
     gboolean ret = FALSE;
-    DEBUG("%d, %d, %d, %d", (guint)time, newly_fixed,
-          _pos.unit.x, _pos.unit.y);
+    DEBUG("%d, %d, %d, %d", (guint)gps->time, newly_fixed,
+          gps->unit.x, gps->unit.y);
 
     gboolean moving = FALSE;
     gboolean approaching_waypoint = FALSE;
     gint xdiff, ydiff, dopcand;
     gboolean late = FALSE, out_of_route = FALSE;
+    Point pos = _point_null;
 
     announce_thres_unsquared = (20+gps->speed) * _announce_notice_ratio*32;
 
+    pos.unit = gps->unit;
+    if (gps->fields & MAP_GPS_ALTITUDE)
+        pos.altitude = gps->altitude;
+    pos.time = gps->time;
+
     /* Check if we are late, with a tolerance of 3 minutes */
-    if (_near_point && _near_point->time != 0 && _pos.time != 0 &&
-        _pos.time > _near_point->time + 60 * 3)
+    if (_near_point && _near_point->time != 0 && pos.time != 0 &&
+        pos.time > _near_point->time + 60 * 3)
         late = TRUE;
     DEBUG("Late: %d", late);
 
     if(!_track.tail->unit.y
-            || ((xdiff = _pos.unit.x - _track.tail->unit.x), /* comma op */
-                (ydiff = _pos.unit.y - _track.tail->unit.y), /* comma op */
+            || ((xdiff = pos.unit.x - _track.tail->unit.x), /* comma op */
+                (ydiff = pos.unit.y - _track.tail->unit.y), /* comma op */
                 /* Check if xdiff or ydiff are huge. */
                 ((abs(xdiff) >> 12) || (abs(ydiff) >> 12)
                 /* Okay, let's see if we've moved enough to justify adding
@@ -806,9 +811,9 @@ track_add(time_t time, gboolean newly_fixed)
         {
             MapScreen *screen = map_controller_get_screen(controller);
 
-            map_screen_track_append(screen, &_pos);
+            map_screen_track_append(screen, &pos);
             MACRO_PATH_INCREMENT_TAIL(_track);
-            *_track.tail = _pos;
+            *_track.tail = pos;
             map_path_optimize(&_track);
         }
 
@@ -834,13 +839,13 @@ track_add(time_t time, gboolean newly_fixed)
                 if(route_x1 == route_x2)
                 {
                     /* Vertical line special case. */
-                    route_dist_squared_1 = (_pos.unit.x - route_x1)
-                        * (_pos.unit.x - route_x1);
+                    route_dist_squared_1 = (pos.unit.x - route_x1)
+                        * (pos.unit.x - route_x1);
                 }
                 else
                 {
-                    route_dist_squared_1 = abs((slope * _pos.unit.x)
-                        - _pos.unit.y + (route_y1 - (slope * route_x1)));
+                    route_dist_squared_1 = abs((slope * pos.unit.x)
+                        - pos.unit.y + (route_y1 - (slope * route_x1)));
                     route_dist_squared_1 =
                         route_dist_squared_1 * route_dist_squared_1
                         / ((slope * slope) + 1);
@@ -856,13 +861,13 @@ track_add(time_t time, gboolean newly_fixed)
                 if(route_x1 == route_x2)
                 {
                     /* Vertical line special case. */
-                    route_dist_squared_2 = (_pos.unit.x - route_x1)
-                        * (_pos.unit.x - route_x1);
+                    route_dist_squared_2 = (pos.unit.x - route_x1)
+                        * (pos.unit.x - route_x1);
                 }
                 else
                 {
-                    route_dist_squared_2 = abs((slope * _pos.unit.x)
-                        - _pos.unit.y + (route_y1 - (slope * route_x1)));
+                    route_dist_squared_2 = abs((slope * pos.unit.x)
+                        - pos.unit.y + (route_y1 - (slope * route_x1)));
                     route_dist_squared_2 =
                         route_dist_squared_2 * route_dist_squared_2
                         / ((slope * slope) + 1);
@@ -989,11 +994,11 @@ track_add(time_t time, gboolean newly_fixed)
     /* Maybe update the track database. */
     {
         static time_t last_track_db_update = 0;
-        if(!time || (time - last_track_db_update > 60
+        if (!gps->time || (gps->time - last_track_db_update > 60
                 && _track.tail - _track.head + 1 > _track_index_last_saved))
         {
             path_update_track_in_db();
-            last_track_db_update = time;
+            last_track_db_update = gps->time;
         }
     }
 
