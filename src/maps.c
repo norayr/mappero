@@ -974,6 +974,7 @@ mapman_dialog()
     static MapmanInfo mapman_info;
     static gint last_deg_format = 0;
     MapController *controller = map_controller_get_instance();
+    const MapGpsData *gps = map_controller_get_gps_data(controller);
     GtkAllocation *allocation;
     MapPoint center;
     gint half_screen;
@@ -1317,10 +1318,8 @@ mapman_dialog()
     
     gchar buffer1[15];
     gchar buffer2[15];
-    format_lat_lon(_gps.lat, _gps.lon, buffer1, buffer2);
-    //lat_format(_gps.lat, buffer);
+    format_lat_lon(gps->lat, gps->lon, buffer1, buffer2);
     gtk_label_set_text(GTK_LABEL(lbl_gps_lat), buffer1);
-    //lon_format(_gps.lon, buffer);
     if(DEG_FORMAT_ENUM_TEXT[_degformat].field_2_in_use)
     	gtk_label_set_text(GTK_LABEL(lbl_gps_lon), buffer2);
     

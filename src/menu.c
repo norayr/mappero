@@ -48,7 +48,6 @@
 #include "dialog.h"
 #include "display.h"
 #include "error.h"
-#include "gps.h"
 #include "gpx.h"
 #include "maps.h"
 #include "menu.h"

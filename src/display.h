@@ -35,7 +35,6 @@ typedef struct {
 
 gboolean gps_display_details(void);
 void gps_display_data(void);
-void gps_hide_text(void);
 void gps_show_info(void);
 void gps_details(void);
 

@@ -78,6 +78,7 @@ settings_save()
     gchar *settings_dir;
     GConfClient *gconf_client;
     MapController *controller = map_controller_get_instance();
+    const MapGpsData *gps = map_controller_get_gps_data(controller);
     gchar buffer[16];
 
     /* Initialize settings_dir. */
@@ -213,11 +214,11 @@ settings_save()
 
     /* Save last saved latitude. */
     gconf_client_set_float(gconf_client,
-            GCONF_KEY_LAST_LAT, _gps.lat, NULL);
+            GCONF_KEY_LAST_LAT, gps->lat, NULL);
 
     /* Save last saved longitude. */
     gconf_client_set_float(gconf_client,
-            GCONF_KEY_LAST_LON, _gps.lon, NULL);
+            GCONF_KEY_LAST_LON, gps->lon, NULL);
 
     /* Save last saved altitude. */
     gconf_client_set_int(gconf_client,
@@ -225,11 +226,11 @@ settings_save()
 
     /* Save last saved speed. */
     gconf_client_set_float(gconf_client,
-            GCONF_KEY_LAST_SPEED, _gps.speed, NULL);
+            GCONF_KEY_LAST_SPEED, gps->speed, NULL);
 
     /* Save last saved heading. */
     gconf_client_set_float(gconf_client,
-            GCONF_KEY_LAST_HEADING, _gps.heading, NULL);
+            GCONF_KEY_LAST_HEADING, gps->heading, NULL);
 
     /* Save last saved timestamp. */
     gconf_client_set_float(gconf_client,
@@ -1347,6 +1348,7 @@ settings_init(GConfClient *gconf_client)
 {
     GConfValue *value;
     MapController *controller = map_controller_get_instance();
+    const MapGpsData *gps = map_controller_get_gps_data(controller);
     gchar *str;
 
     /* Initialize some constants. */
@@ -1613,7 +1615,7 @@ settings_init(GConfClient *gconf_client)
         else
         {
             _is_first_time = TRUE;
-            center_lat = _gps.lat;
+            center_lat = gps->lat;
         }
 
         /* Get last saved longitude.  Default is last saved longitude. */
@@ -1624,7 +1626,7 @@ settings_init(GConfClient *gconf_client)
             gconf_value_free(value);
         }
         else
-            center_lon = _gps.lon;
+            center_lon = gps->lon;
 
         latlon2unit(center_lat, center_lon, _center.x, _center.y);
         _next_center = _center;

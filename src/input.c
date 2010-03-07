@@ -45,7 +45,6 @@
 #include "defines.h"
 
 #include "display.h"
-#include "gps.h"
 #include "input.h"
 #include "maps.h"
 #include "path.h"

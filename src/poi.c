@@ -2522,6 +2522,8 @@ poi_download_dialog(gint unitx, gint unity)
     static GtkWidget *txt_source_url = NULL;
     static OriginToggleInfo oti;
     static GtkWidget *cmb_category;
+    MapController *controller = map_controller_get_instance();
+    const MapGpsData *gps = map_controller_get_gps_data(controller);
 
     conic_recommend_connected();
 
@@ -2727,9 +2729,9 @@ poi_download_dialog(gint unitx, gint unity)
         {
             gchar strlat[32];
             gchar strlon[32];
-            latlon2unit(_gps.lat, _gps.lon, unitx, unity);
-            g_ascii_formatd(strlat, 32, "%.06f", _gps.lat);
-            g_ascii_formatd(strlon, 32, "%.06f", _gps.lon);
+            latlon2unit(gps->lat, gps->lon, unitx, unity);
+            g_ascii_formatd(strlat, 32, "%.06f", gps->lat);
+            g_ascii_formatd(strlon, 32, "%.06f", gps->lon);
             snprintf(origin_buffer, sizeof(origin_buffer),
                     "%s, %s", strlat, strlon);
             origin = origin_buffer;
@@ -2852,6 +2854,8 @@ poi_browse_dialog(gint unitx, gint unity)
     static GtkWidget *label = NULL;
     static GtkWidget *cmb_category = NULL;
     static OriginToggleInfo oti;
+    MapController *controller = map_controller_get_instance();
+    const MapGpsData *gps = map_controller_get_gps_data(controller);
 
     if(!dialog)
     {
@@ -3027,9 +3031,9 @@ poi_browse_dialog(gint unitx, gint unity)
         {
             gchar strlat[32];
             gchar strlon[32];
-            latlon2unit(_gps.lat, _gps.lon, unitx, unity);
-            g_ascii_formatd(strlat, 32, "%.06f", _gps.lat);
-            g_ascii_formatd(strlon, 32, "%.06f", _gps.lon);
+            latlon2unit(gps->lat, gps->lon, unitx, unity);
+            g_ascii_formatd(strlat, 32, "%.06f", gps->lat);
+            g_ascii_formatd(strlon, 32, "%.06f", gps->lon);
             snprintf(buffer, sizeof(buffer), "%s, %s", strlat, strlon);
             origin = buffer;
         }

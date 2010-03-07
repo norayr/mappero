@@ -91,9 +91,11 @@ PangoLayout *_sat_details_expose_layout = NULL;
 gboolean
 gps_display_details(void)
 {
+    MapController *controller = map_controller_get_instance();
+    const MapGpsData *gps = map_controller_get_gps_data(controller);
     gchar *buffer, litbuf[LL_FMT_LEN], buffer2[LL_FMT_LEN];
 
-    if(_gps.fix < 2)
+    if(gps->fix < 2)
     {
         /* no fix no fun */
         gtk_label_set_label(GTK_LABEL(_sdi_lat), " --- ");
@@ -105,17 +107,14 @@ gps_display_details(void)
     }
     else
     {
-        gfloat speed = _gps.speed * UNITS_CONVERT[_units];
+        gfloat speed = gps->speed * UNITS_CONVERT[_units];
 
-        format_lat_lon(_gps.lat, _gps.lon, litbuf, buffer2);
+        format_lat_lon(gps->lat, gps->lon, litbuf, buffer2);
         
         /* latitude */
-        //lat_format(_gps.lat, litbuf);
         gtk_label_set_label(GTK_LABEL(_sdi_lat), litbuf);
 
         /* longitude */
-        //lon_format(_gps.lon, litbuf);
-        //gtk_label_set_label(GTK_LABEL(_sdi_lon), litbuf);
         if(DEG_FORMAT_ENUM_TEXT[_degformat].field_2_in_use)
         	gtk_label_set_label(GTK_LABEL(_sdi_lon), buffer2);
 
@@ -151,7 +150,7 @@ gps_display_details(void)
         g_free(buffer);
 
         /* heading */
-        buffer = g_strdup_printf("%0.0f°", _gps.heading);
+        buffer = g_strdup_printf("%0.0f°", gps->heading);
         gtk_label_set_label(GTK_LABEL(_sdi_hea), buffer);
         g_free(buffer);
 
@@ -161,30 +160,30 @@ gps_display_details(void)
     }
 
     /* Sat in view */
-    buffer = g_strdup_printf("%d", _gps.satinview);
+    buffer = g_strdup_printf("%d", gps->satinview);
     gtk_label_set_label(GTK_LABEL(_sdi_vie), buffer);
     g_free(buffer);
 
     /* Sat in use */
-    buffer = g_strdup_printf("%d", _gps.satinuse);
+    buffer = g_strdup_printf("%d", gps->satinuse);
     gtk_label_set_label(GTK_LABEL(_sdi_use), buffer);
     g_free(buffer);
 
     /* fix */
-    switch(_gps.fix)
+    switch(gps->fix)
     {
         case 2:
-        case 3: buffer = g_strdup_printf("%dD fix", _gps.fix); break;
+        case 3: buffer = g_strdup_printf("%dD fix", gps->fix); break;
         default: buffer = g_strdup_printf("nofix"); break;
     }
     gtk_label_set_label(GTK_LABEL(_sdi_fix), buffer);
     g_free(buffer);
 
-    if(_gps.fix == 1)
+    if(gps->fix == 1)
         buffer = g_strdup("none");
     else
     {
-        switch (_gps.fixquality)
+        switch (gps->fixquality)
         {
             case 1 : buffer = g_strdup_printf(_("SPS")); break;
             case 2 : buffer = g_strdup_printf(_("DGPS")); break;
@@ -202,7 +201,7 @@ gps_display_details(void)
 
     /* max speed */
     {
-        gfloat maxspeed = _gps.maxspeed * UNITS_CONVERT[_units];
+        gfloat maxspeed = gps->maxspeed * UNITS_CONVERT[_units];
 
         /* speed */
         switch(_units)
@@ -233,9 +232,11 @@ gps_display_details(void)
 void
 gps_display_data(void)
 {
+    MapController *controller = map_controller_get_instance();
+    const MapGpsData *gps = map_controller_get_gps_data(controller);
     gchar *buffer, litbuf[LL_FMT_LEN], buffer2[LL_FMT_LEN];
 
-    if(_gps.fix < 2)
+    if(gps->fix < 2)
     {
         /* no fix no fun */
         gtk_label_set_label(GTK_LABEL(_text_lat), " --- ");
@@ -246,16 +247,16 @@ gps_display_data(void)
     }
     else
     {
-        gfloat speed = _gps.speed * UNITS_CONVERT[_units];
+        gfloat speed = gps->speed * UNITS_CONVERT[_units];
 
-        format_lat_lon(_gps.lat, _gps.lon, litbuf, buffer2);
+        format_lat_lon(gps->lat, gps->lon, litbuf, buffer2);
         
         /* latitude */
-        //lat_format(_gps.lat, litbuf);
+        //lat_format(gps->lat, litbuf);
         gtk_label_set_label(GTK_LABEL(_text_lat), litbuf);
 
         /* longitude */
-        //lon_format(_gps.lon, litbuf);
+        //lon_format(gps->lon, litbuf);
         if(DEG_FORMAT_ENUM_TEXT[_degformat].field_2_in_use)
         	gtk_label_set_label(GTK_LABEL(_text_lon), buffer2);	
 
@@ -310,33 +311,20 @@ gps_display_data(void)
 }
 
 void
-gps_hide_text(void)
-{
-    /* Clear gps data */
-    _gps.fix = 1;
-    _gps.satinuse = 0;
-    _gps.satinview = 0;
-
-    if(_gps_info)
-        gps_display_data();
-}
-
-void
 gps_show_info(void)
 {
     if(_gps_info && _enable_gps)
         gtk_widget_show_all(GTK_WIDGET(_gps_widget));
     else
-    {
-        gps_hide_text();
         gtk_widget_hide(GTK_WIDGET(_gps_widget));
-    }
 }
 
 static void
 draw_sat_info(GtkWidget *widget, gint x0, gint y0,
         gint width, gint height, gboolean showsnr)
 {
+    MapController *controller = map_controller_get_instance();
+    const MapGpsData *gps = map_controller_get_gps_data(controller);
     GdkGC *gc;
     gint step, i, j, snr_height, bymargin, xoffset, yoffset;
     gint x, y, x1, y1;
@@ -357,18 +345,18 @@ draw_sat_info(GtkWidget *widget, gint x0, gint y0,
         xoffset + 5, yoffset + bymargin - 1,
         xoffset + width - 10 - 2, yoffset + bymargin - 1);
 
-    if(_gps.satinview > 0 )
+    if(gps->satinview > 0 )
     {
         /* Left margin - 5pix, Right margin - 5pix */
-        step = (width - 10) / _gps.satinview;
+        step = (width - 10) / gps->satinview;
 
-        for(i = 0; i < _gps.satinview; i++)
+        for(i = 0; i < gps->satinview; i++)
         {
             /* Sat used or not */
             gc = _sat_info_gc1;
-            for(j = 0; j < _gps.satinuse ; j++)
+            for(j = 0; j < gps->satinuse ; j++)
             {
-                if(_gps.satforfix[j] == _gps_sat[i].prn)
+                if(gps->satforfix[j] == _gps_sat[i].prn)
                 {
                     gc = _sat_info_gc2;
                     break;
@@ -422,6 +410,8 @@ static void
 draw_sat_details(GtkWidget *widget, gint x0, gint y0,
         gint width, gint height)
 {
+    MapController *controller = map_controller_get_instance();
+    const MapGpsData *gps = map_controller_get_gps_data(controller);
     gint i, j, x, y, size, halfsize, xoffset, yoffset;
     gint x1, y1;
     gfloat tmp;
@@ -539,13 +529,13 @@ draw_sat_details(GtkWidget *widget, gint x0, gint y0,
     gc3 = gdk_gc_new (widget->window);
     gdk_gc_set_rgb_fg_color (gc3, &color);
 
-    for(i = 0; i < _gps.satinview; i++)
+    for(i = 0; i < gps->satinview; i++)
     {
         /* Sat used or not */
         gc = gc1;
-        for(j = 0; j < _gps.satinuse ; j++)
+        for(j = 0; j < gps->satinuse ; j++)
         {
-            if(_gps.satforfix[j] == _gps_sat[i].prn)
+            if(gps->satforfix[j] == _gps_sat[i].prn)
             {
                 gc = gc2;
                 break;
@@ -584,6 +574,8 @@ draw_sat_details(GtkWidget *widget, gint x0, gint y0,
 static gboolean
 sat_details_panel_expose(GtkWidget *widget, GdkEventExpose *event)
 {
+    MapController *controller = map_controller_get_instance();
+    const MapGpsData *gps = map_controller_get_gps_data(controller);
     gint width, height, x, y;
     gchar *buffer = NULL;
 
@@ -595,8 +587,8 @@ sat_details_panel_expose(GtkWidget *widget, GdkEventExpose *event)
 
     buffer = g_strdup_printf(
         "%s: %d; %s: %d",
-        _("Satellites in view"), _gps.satinview,
-        _("in use"), _gps.satinuse);
+        _("Satellites in view"), gps->satinview,
+        _("in use"), gps->satinuse);
     pango_layout_set_text(_sat_details_expose_layout, buffer, -1);
     pango_layout_get_pixel_size(_sat_details_expose_layout, &x, &y);
     gdk_draw_layout(widget->window,
@@ -606,7 +598,7 @@ sat_details_panel_expose(GtkWidget *widget, GdkEventExpose *event)
         _sat_details_expose_layout);
     g_free(buffer);
 
-    buffer = g_strdup_printf("HDOP: %d", _gps.hdop);
+    buffer = g_strdup_printf("HDOP: %d", gps->hdop);
     pango_layout_set_text(_sat_details_expose_layout, buffer, -1);
     pango_layout_get_pixel_size(_sat_details_expose_layout, &x, &y);
     gdk_draw_layout(widget->window,
@@ -615,7 +607,7 @@ sat_details_panel_expose(GtkWidget *widget, GdkEventExpose *event)
         (height/6) - y/2,
         _sat_details_expose_layout);
     g_free(buffer);
-    buffer = g_strdup_printf("VDOP: %.01f", _gps.vdop);
+    buffer = g_strdup_printf("VDOP: %.01f", gps->vdop);
     pango_layout_set_text(_sat_details_expose_layout, buffer, -1);
     pango_layout_get_pixel_size(_sat_details_expose_layout, &x, &y);
     gdk_draw_layout(widget->window,
@@ -817,15 +809,6 @@ map_rotate(gint rotate_angle)
 void
 map_pan(gint delta_unitx, gint delta_unity)
 {
-    MapPoint new_center;
-    MapController *controller = map_controller_get_instance();
-
-    map_controller_disable_auto_center(controller);
-    new_center.x = _center.x + delta_unitx;
-    new_center.y = _center.y + delta_unity;
-    map_center_unit_full(new_center, _next_zoom,
-            _center_mode > 0 && _center_rotate
-            ? _gps.heading : _next_map_rotate_angle);
 }
 
 /**
@@ -907,8 +890,12 @@ map_set_zoom(gint new_zoom)
 gboolean
 sat_panel_expose(GtkWidget *widget, GdkEventExpose *event)
 {
+    MapController *controller = map_controller_get_instance();
+    const MapGpsData *gps = map_controller_get_gps_data(controller);
     gchar *tmp = NULL;
     gint x, y;
+
+    g_return_val_if_fail(gps != NULL, FALSE);
 
     draw_sat_info(widget,
         0, 0,
@@ -917,8 +904,8 @@ sat_panel_expose(GtkWidget *widget, GdkEventExpose *event)
         FALSE);
 
     /* Sat View/In Use */
-    tmp = g_strdup_printf("%d/%d %dm", _gps.satinuse, _gps.satinview,
-                          _gps.hdop);
+    tmp = g_strdup_printf("%d/%d %dm", gps->satinuse, gps->satinview,
+                          gps->hdop);
     pango_layout_set_text(_sat_panel_layout, tmp, -1);
     pango_layout_set_alignment(_sat_panel_layout, PANGO_ALIGN_LEFT);
     gdk_draw_layout(widget->window,
@@ -927,10 +914,10 @@ sat_panel_expose(GtkWidget *widget, GdkEventExpose *event)
         _sat_panel_layout);
     g_free(tmp);
 
-    switch(_gps.fix)
+    switch(gps->fix)
     {
         case 2:
-        case 3: tmp = g_strdup_printf("%dD fix", _gps.fix); break;
+        case 3: tmp = g_strdup_printf("%dD fix", gps->fix); break;
         default: tmp = g_strdup_printf("nofix"); break;
     }
     pango_layout_set_text(_sat_panel_layout, tmp, -1);
@@ -948,6 +935,8 @@ sat_panel_expose(GtkWidget *widget, GdkEventExpose *event)
 gboolean
 heading_panel_expose(GtkWidget *widget, GdkEventExpose *event)
 {
+    MapController *controller = map_controller_get_instance();
+    const MapGpsData *gps = map_controller_get_gps_data(controller);
     gint size, xoffset, yoffset, i, x, y;
     gint dir;
     gfloat tmp;
@@ -969,7 +958,7 @@ heading_panel_expose(GtkWidget *widget, GdkEventExpose *event)
             _heading_panel_fontdesc);
     pango_layout_set_alignment(_heading_panel_layout, PANGO_ALIGN_CENTER);
 
-    text = g_strdup_printf("%3.0f°", _gps.heading);
+    text = g_strdup_printf("%3.0f°", gps->heading);
     pango_layout_set_text(_heading_panel_layout, text, -1);
     pango_layout_get_pixel_size(_heading_panel_layout, &x, &y);
 
@@ -1019,7 +1008,7 @@ heading_panel_expose(GtkWidget *widget, GdkEventExpose *event)
     gint fsize[5] = {0,4,10,4,0};
     for(i = 0; i < 5; i++)
     {
-        dir = (gint)(_gps.heading/45)*45 + angle[i];
+        dir = (gint)(gps->heading/45)*45 + angle[i];
 
         switch(dir)
         {
@@ -1047,7 +1036,7 @@ heading_panel_expose(GtkWidget *widget, GdkEventExpose *event)
                 break;
         }
 
-        tmp = deg2rad(dir - _gps.heading);
+        tmp = deg2rad(dir - gps->heading);
         gdk_draw_line(widget->window,
             widget->style->fg_gc[GTK_WIDGET_STATE(widget)],
             xoffset + size/2 + ((size/2 - 5) * sinf(tmp)),
@@ -1056,8 +1045,8 @@ heading_panel_expose(GtkWidget *widget, GdkEventExpose *event)
             yoffset + size - ((size/2 + 5) * cosf(tmp)));
 
         x = fsize[i];
-        if(abs((gint)(_gps.heading/45)*45 - _gps.heading)
-                > abs((gint)(_gps.heading/45)*45 + 45 - _gps.heading)
+        if(abs((gint)(gps->heading/45)*45 - gps->heading)
+                > abs((gint)(gps->heading/45)*45 + 45 - gps->heading)
                 && (i > 0))
             x = fsize[i - 1];
 

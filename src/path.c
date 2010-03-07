@@ -753,6 +753,7 @@ gboolean
 track_add(time_t time, gboolean newly_fixed)
 {
     MapController *controller = map_controller_get_instance();
+    const MapGpsData *gps = map_controller_get_gps_data(controller);
     gboolean show_directions = TRUE;
     gint announce_thres_unsquared;
     gboolean refresh_panel = FALSE;
@@ -765,7 +766,7 @@ track_add(time_t time, gboolean newly_fixed)
     gint xdiff, ydiff, dopcand;
     gboolean late = FALSE, out_of_route = FALSE;
 
-    announce_thres_unsquared = (20+_gps.speed) * _announce_notice_ratio*32;
+    announce_thres_unsquared = (20+gps->speed) * _announce_notice_ratio*32;
 
     /* Check if we are late, with a tolerance of 3 minutes */
     if (_near_point && _near_point->time != 0 && _pos.time != 0 &&
@@ -785,7 +786,7 @@ track_add(time_t time, gboolean newly_fixed)
                  * want to keep the threshold at a minimum of 2
                  * zoom-level-4 pixel, and I want dop's of less than 2 to
                  * also have a 1-pixel threshold. */
-                || ((dopcand = 8 * (-6 +(_gps.hdop*_gps.hdop))),
+                || ((dopcand = 8 * (-6 +(gps->hdop*gps->hdop))),
                     ((xdiff * xdiff) + (ydiff * ydiff)
                          >= (MAX(2, dopcand) << 8))))))
     {

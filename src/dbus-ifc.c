@@ -130,8 +130,7 @@ dbus_ifc_handle_set_view_center(GArray *args, osso_rpc_t *retval)
             = (gint)(g_array_index(args, osso_rpc_t, 2).value.d + 0.5) % 360;
     }
     else
-        svca->new_viewing_angle = _center_mode > 0 && _center_rotate
-            ? _gps.heading : _next_map_rotate_angle;
+        svca->new_viewing_angle = _next_map_rotate_angle;
 
     g_idle_add((GSourceFunc)dbus_ifc_set_view_position_idle, svca);
     retval->type = DBUS_TYPE_INVALID;
