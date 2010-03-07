@@ -56,6 +56,14 @@
 #include "util.h"
 #include "screen.h"
 
+/* uncertainty below which a GPS position is considered to be precise enough 
+ * to be added to the track (in metres) */
+#define MAX_UNCERTAINTY 200
+
+/* minimum distance the GPS position must have from the previous track point in
+ * order to be registered in the track (in metres) */
+#define MIN_TRACK_DISTANCE 10
+
 typedef union {
     gint field;
     struct {
@@ -951,60 +959,84 @@ map_path_route_step(const MapGpsData *gps, gboolean newly_fixed)
 }
 
 /**
- * Add a point to the _track list.  This function is slightly overloaded,
- * since it is what houses the check for "have we moved
- * significantly": it also initiates the re-calculation of the _near_point
- * data, as well as calling osso_display_state_on() when we have the focus.
- *
- * If a non-zero time is given, then the current position (as taken from the
- * _pos variable) is appended to _track with the given time.  If time is zero,
- * then _point_null is appended to _track with time zero (this produces a
- * "break" in the track).
+ * Returns TRUE if the point needs to be added to the path.
  */
-gboolean
-track_add(const MapGpsData *gps, gboolean newly_fixed)
+static gboolean
+point_is_significant(const MapGpsData *gps, const Path *path)
+{
+    gint xdiff, ydiff, min_distance_units;
+
+    /* check if the track is empty or was in a break */
+    if (!path->tail->unit.y)
+        return TRUE;
+
+    /* check how much time has passed since last update */
+    if (gps->time - path->tail->time > 60)
+        return TRUE;
+
+    /* Have we moved enough? */
+    xdiff = abs(gps->unit.x - path->tail->unit.x);
+    ydiff = abs(gps->unit.y - path->tail->unit.y);
+
+    /* check if the distances are obviously big enough */
+    if (xdiff >= METRES_TO_UNITS(300) ||
+        ydiff >= METRES_TO_UNITS(300))
+        return TRUE;
+
+    /* Euristics to compute the minimum distance: we use MIN_TRACK_DISTANCE +
+     * a fraction of the error. */
+    min_distance_units = METRES_TO_UNITS(MIN_TRACK_DISTANCE + gps->hdop / 3);
+    if (SQUARE(xdiff) + SQUARE(ydiff) >= SQUARE(min_distance_units))
+        return TRUE;
+
+    return FALSE;
+}
+
+/**
+ * Add a point to the _track list.
+ */
+void
+map_path_track_update(const MapGpsData *gps)
 {
     MapController *controller = map_controller_get_instance();
-    gboolean ret = FALSE;
-    DEBUG("%d, %d, %d, %d", (guint)gps->time, newly_fixed,
-          gps->unit.x, gps->unit.y);
-
-    gint xdiff, ydiff, dopcand;
     Point pos = _point_null;
+    gboolean must_add = FALSE;
 
-    pos.unit = gps->unit;
-    if (gps->fields & MAP_GPS_ALTITUDE)
-        pos.altitude = gps->altitude;
-    pos.time = gps->time;
+    DEBUG("%d, %d, %d (fix = %d)", (guint)gps->time,
+          gps->unit.x, gps->unit.y, gps->fields & MAP_GPS_LATLON);
 
-    if(!_track.tail->unit.y
-            || ((xdiff = pos.unit.x - _track.tail->unit.x), /* comma op */
-                (ydiff = pos.unit.y - _track.tail->unit.y), /* comma op */
-                /* Check if xdiff or ydiff are huge. */
-                ((abs(xdiff) >> 12) || (abs(ydiff) >> 12)
-                /* Okay, let's see if we've moved enough to justify adding
-                 * to the track.  It depends on our error.  I'd like to
-                 * make the threshold roughly linear with respect to the
-                 * P/HDOP (completely arbitrary, I know), but I also
-                 * want to keep the threshold at a minimum of 2
-                 * zoom-level-4 pixel, and I want dop's of less than 2 to
-                 * also have a 1-pixel threshold. */
-                || ((dopcand = 8 * (-6 +(gps->hdop*gps->hdop))),
-                    ((xdiff * xdiff) + (ydiff * ydiff)
-                         >= (MAX(2, dopcand) << 8))))))
+    if (gps->fields & MAP_GPS_LATLON)
     {
-        /* We moved enough to actually register a move. */
-        ret = TRUE;
-
-        if(_enable_tracking)
+        /* Add the point to the track only if it's not too inaccurate: if the
+         * uncertainty is greater than 200m, don't add it (TODO: this should be
+         * a configuration option). */
+        if (gps->hdop < MAX_UNCERTAINTY && point_is_significant(gps, &_track))
         {
             MapScreen *screen = map_controller_get_screen(controller);
 
+            must_add = TRUE;
+
+            pos.unit = gps->unit;
+            if (gps->fields & MAP_GPS_ALTITUDE)
+                pos.altitude = gps->altitude;
+
+            /* Draw the line immediately */
             map_screen_track_append(screen, &pos);
-            MACRO_PATH_INCREMENT_TAIL(_track);
-            *_track.tail = pos;
-            map_path_optimize(&_track);
         }
+    }
+    else
+    {
+        /* insert a break, if there isn't one already */
+        if (_track.tail->unit.y != 0)
+            must_add = TRUE;
+    }
+    pos.time = gps->time;
+
+    if (must_add)
+    {
+        MACRO_PATH_INCREMENT_TAIL(_track);
+        *_track.tail = pos;
+        map_path_optimize(&_track);
     }
 
     /* Maybe update the track database. */
@@ -1017,8 +1049,6 @@ track_add(const MapGpsData *gps, gboolean newly_fixed)
             last_track_db_update = gps->time;
         }
     }
-
-    return ret;
 }
 
 void

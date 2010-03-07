@@ -155,6 +155,9 @@ on_gps_changed(LocationGPSDevice *device, MapController *controller)
 
     _pos.unit = gps->unit;
 
+    if (_enable_tracking)
+        map_path_track_update(gps);
+
     /* We consider a fix only if the geocoordinates are given */
     if (device->status >= LOCATION_GPS_DEVICE_STATUS_FIX)
     {
@@ -167,19 +170,11 @@ on_gps_changed(LocationGPSDevice *device, MapController *controller)
             set_conn_state(RCVR_FIXED);
         }
 
-        /* Add the point to the track only if it's not too inaccurate: if the
-         * uncertainty is greater than 200m, don't add it (TODO: this should be
-         * a configuration option). */
-        if (gps->hdop < 200)
-        {
-            track_add(gps, newly_fixed);
-            map_path_route_step(gps, newly_fixed);
-        }
+        map_path_route_step(gps, newly_fixed);
 
         /* Move mark to new location. */
         map_controller_update_gps(controller);
     } else {
-        track_insert_break(FALSE);
         gps->speed = 0;
         gps->fix = 0;
         set_conn_state(RCVR_UP);

@@ -88,6 +88,9 @@
 #define NUM_DOWNLOAD_THREADS (4)
 #define WORLD_SIZE_UNITS (2 << (MAX_ZOOM + TILE_SIZE_P2))
 
+/* This gets more and more wrong as the latitude increases */
+#define METRES_TO_UNITS(m) ((gint64)(m) * WORLD_SIZE_UNITS / EARTH_CIRCUMFERENCE)
+
 #define HOURGLASS_SEPARATION (7)
 
 #define deg2rad(deg) ((deg) * (PI / 180.0))
@@ -178,6 +181,8 @@
         path_wresize(&(route), \
                 (route).wcap - (route).whead + ARRAY_CHUNK_SIZE); \
 }
+
+#define SQUARE(n) ((n) * (n))
 
 #define DISTANCE_SQUARED(a, b) \
    ((guint64)((((gint64)(b).x)-(a).x)*(((gint64)(b).x)-(a).x))\

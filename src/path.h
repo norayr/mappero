@@ -35,7 +35,7 @@ void route_show_distance_to_last(void);
 void track_show_distance_from_last(void);
 void track_show_distance_from_first(void);
 
-gboolean track_add(const MapGpsData *gps, gboolean newly_fixed);
+void map_path_track_update(const MapGpsData *gps);
 void track_clear(void);
 void track_insert_break(gboolean temporary);
 
