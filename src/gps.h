@@ -26,7 +26,7 @@ void set_conn_state(ConnState new_conn_state);
 void map_controller_gps_connect(MapController *self);
 void map_controller_gps_disconnect(MapController *self);
 
-void map_controller_gps_init(MapController *self);
+void map_controller_gps_init(MapController *self, GConfClient *gconf_client);
 void map_controller_gps_dispose(MapController *self);
 
 #endif /* ifndef MAEMO_MAPPER_GPS_H */

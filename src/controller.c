@@ -181,6 +181,10 @@ map_controller_init(MapController *controller)
      * controller for transformations. */
     map_controller_load_repositories(controller, gconf_client);
 
+    /* init GPS */
+    map_controller_gps_init(controller, gconf_client);
+    g_idle_add((GSourceFunc)activate_gps, controller);
+
     /* Load settings */
     settings_init(gconf_client);
 
@@ -194,9 +198,6 @@ map_controller_init(MapController *controller)
 
     /* TODO: eliminate global _next_center, _next_zoom, _center, _zoom, etc values */
     map_controller_set_center(controller, _next_center, _next_zoom);
-
-    map_controller_gps_init(controller);
-    g_idle_add((GSourceFunc)activate_gps, controller);
 
     gconf_client_clear_cache(gconf_client);
     g_object_unref(gconf_client);

@@ -1592,30 +1592,9 @@ settings_init(GConfClient *gconf_client)
         _info_font_size = i;
     }
 
-    /* Get last saved latitude.  Default is 50.f. */
-    value = gconf_client_get(gconf_client, GCONF_KEY_LAST_LAT, NULL);
-    if(value)
-    {
-        _gps.lat = gconf_value_get_float(value);
-        gconf_value_free(value);
-    }
-    else
-        _gps.lat = 50.f;
-
-    /* Get last saved longitude.  Default is 0. */
-    _gps.lon = gconf_client_get_float(gconf_client, GCONF_KEY_LAST_LON, NULL);
-
     /* Get last saved altitude.  Default is 0. */
     _pos.altitude = gconf_client_get_int(
             gconf_client, GCONF_KEY_LAST_ALT, NULL);
-
-    /* Get last saved speed.  Default is 0. */
-    _gps.speed = gconf_client_get_float(
-            gconf_client, GCONF_KEY_LAST_SPEED, NULL);
-
-    /* Get last saved speed.  Default is 0. */
-    _gps.heading = gconf_client_get_float(
-            gconf_client, GCONF_KEY_LAST_HEADING, NULL);
 
     /* Get last saved timestamp.  Default is 0. */
     _pos.time= gconf_client_get_float(gconf_client, GCONF_KEY_LAST_TIME, NULL);
@@ -1868,10 +1847,5 @@ settings_init(GConfClient *gconf_client)
                 _color[i] = COLORABLE_DEFAULT[i];
         }
     }
-
-    /* GPS data init */
-    _gps.fix = 1;
-    _gps.satinuse = 0;
-    _gps.satinview = 0;
 }
 

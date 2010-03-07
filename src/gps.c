@@ -56,6 +56,33 @@
 
 #include "controller-priv.h"
 
+static void
+load_settings(MapGpsData *gps, GConfClient *gconf_client)
+{
+    GConfValue *value;
+
+    memset(gps, 0, sizeof(MapGpsData));
+
+    /* Get last saved latitude.  Default is 50.f. */
+    value = gconf_client_get(gconf_client, GCONF_KEY_LAST_LAT, NULL);
+    if (value)
+    {
+        gps->lat = gconf_value_get_float(value);
+        gconf_value_free(value);
+    }
+    else
+        gps->lat = 50.f;
+
+    /* Get last saved longitude.  Default is 0. */
+    gps->lon = gconf_client_get_float(gconf_client, GCONF_KEY_LAST_LON, NULL);
+
+    gps->speed = gconf_client_get_float(gconf_client,
+                                        GCONF_KEY_LAST_SPEED, NULL);
+
+    gps->heading = gconf_client_get_float(gconf_client,
+                                          GCONF_KEY_LAST_HEADING, NULL);
+}
+
 static void update_satellite_info(LocationGPSDeviceSatellite *satellite,
                                   int satellite_index)
 {
@@ -228,7 +255,7 @@ map_controller_gps_connect(MapController *self)
 }
 
 void
-map_controller_gps_init(MapController *self)
+map_controller_gps_init(MapController *self, GConfClient *gconf_client)
 {
     MapControllerPrivate *priv = self->priv;
 
@@ -236,6 +263,10 @@ map_controller_gps_init(MapController *self)
     priv->gps_device = g_object_new(LOCATION_TYPE_GPS_DEVICE, NULL);
     g_signal_connect(priv->gps_device, "changed",
                      G_CALLBACK(on_gps_changed), self);
+
+    load_settings(&_gps, gconf_client);
+
+    latlon2unit(_gps.lat, _gps.lon, _pos.unit.x, _pos.unit.y);
 }
 
 void
