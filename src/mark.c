@@ -269,16 +269,13 @@ map_mark_update(MapMark *self)
     /* set the uncertainty ellipse */
     if (_gps_state == RCVR_FIXED)
     {
-        gint units_per_metre_y;
         gint x, y;
 
-        units_per_metre_y = WORLD_SIZE_UNITS / (EARTH_CIRCUMFERENCE / 2);
-
-        /* TODO: make it an ellipse, considering that near the poles the the
+        /* TODO: make it an ellipse, considering that near the poles the
          * density of x units is higher */
 
         /* hdop is in m */
-        y = gps->hdop * units_per_metre_y;
+        y = METRES_TO_UNITS(gps->hdop) * 2;
 
         x = y;
 
