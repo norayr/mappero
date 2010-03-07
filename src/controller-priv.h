@@ -42,6 +42,7 @@ struct _MapControllerPrivate
 
     LocationGPSDControl *gpsd_control;
     LocationGPSDevice *gps_device;
+    MapGpsData gps_data;
 
     guint source_map_center;
     guint is_disposed : 1;

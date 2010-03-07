@@ -61,8 +61,6 @@ load_settings(MapGpsData *gps, GConfClient *gconf_client)
 {
     GConfValue *value;
 
-    memset(gps, 0, sizeof(MapGpsData));
-
     /* Get last saved latitude.  Default is 50.f. */
     value = gconf_client_get(gconf_client, GCONF_KEY_LAST_LAT, NULL);
     if (value)
@@ -84,7 +82,7 @@ load_settings(MapGpsData *gps, GConfClient *gconf_client)
 }
 
 static void update_satellite_info(LocationGPSDeviceSatellite *satellite,
-                                  int satellite_index)
+                                  MapGpsData *gps, int satellite_index)
 {
     if (satellite_index >= MAX_SATELLITES)
         return;
@@ -94,13 +92,13 @@ static void update_satellite_info(LocationGPSDeviceSatellite *satellite,
     _gps_sat[satellite_index].azimuth	= satellite->azimuth;
 
     _gps_sat[satellite_index].snr	= satellite->signal_strength;
-    _gps.satforfix[satellite_index]	= satellite->in_use ?
-        satellite->prn : 0;
+    gps->satforfix[satellite_index] = satellite->in_use ? satellite->prn : 0;
 }
 
 static void
 on_gps_changed(LocationGPSDevice *device, MapController *controller)
 {
+    MapGpsData *gps = &controller->priv->gps_data;
     int i;
     gboolean newly_fixed = FALSE;
 
@@ -109,18 +107,18 @@ on_gps_changed(LocationGPSDevice *device, MapController *controller)
         return;
 
     if (device->fix->fields & LOCATION_GPS_DEVICE_LATLONG_SET) {
-        _gps.lat = device->fix->latitude;
-        _gps.lon = device->fix->longitude;
+        gps->lat = device->fix->latitude;
+        gps->lon = device->fix->longitude;
     }
 
     if (device->fix->fields & LOCATION_GPS_DEVICE_SPEED_SET) {
-        _gps.speed = device->fix->speed;
+        gps->speed = device->fix->speed;
     }
 
     if (device->fix->fields & LOCATION_GPS_DEVICE_TRACK_SET) {
-        _gps.heading = device->fix->track;
+        gps->heading = device->fix->track;
         if (map_controller_get_auto_rotate(controller))
-            map_controller_set_rotation(controller, _gps.heading);
+            map_controller_set_rotation(controller, gps->heading);
     }
 
     /* fetch timestamp from gps if available, otherwise create one. */
@@ -139,18 +137,18 @@ on_gps_changed(LocationGPSDevice *device, MapController *controller)
      * Horizontal accuracy, liblocation provides the value in
      * centimeters
      */
-    _gps.hdop = device->fix->eph / 100;
+    gps->hdop = device->fix->eph / 100;
 
     /* Vertical inaccuracy, in meters */
-    _gps.vdop = device->fix->epv;
+    gps->vdop = device->fix->epv;
 
     /* Translate data into integers. */
-    latlon2unit(_gps.lat, _gps.lon, _pos.unit.x, _pos.unit.y);
+    latlon2unit(gps->lat, gps->lon, _pos.unit.x, _pos.unit.y);
 
     /* We consider a fix only if the geocoordinates are given */
     if (device->status >= LOCATION_GPS_DEVICE_STATUS_FIX)
     {
-        _gps.fix = device->fix->mode;
+        gps->fix = device->fix->mode;
 
         /* Data is valid. */
         if (_gps_state < RCVR_FIXED)
@@ -162,24 +160,24 @@ on_gps_changed(LocationGPSDevice *device, MapController *controller)
         /* Add the point to the track only if it's not too inaccurate: if the
          * uncertainty is greater than 200m, don't add it (TODO: this should be
          * a configuration option). */
-        if (_gps.hdop < 200)
+        if (gps->hdop < 200)
             track_add(_pos.time, newly_fixed);
 
         /* Move mark to new location. */
         map_controller_update_gps(controller);
     } else {
         track_insert_break(FALSE);
-        _gps.speed = 0;
-        _gps.fix = 0;
+        gps->speed = 0;
+        gps->fix = 0;
         set_conn_state(RCVR_UP);
         map_move_mark();
     }
 
     for(i = 0; device->satellites && i < device->satellites->len; i++)
         update_satellite_info((LocationGPSDeviceSatellite *)
-                              device->satellites->pdata[i], i);
-    _gps.satinuse = device->satellites_in_use;
-    _gps.satinview = device->satellites_in_view;
+                              device->satellites->pdata[i], gps, i);
+    gps->satinuse = device->satellites_in_use;
+    gps->satinview = device->satellites_in_view;
 
     if(_gps_info)
         gps_display_data();
@@ -264,9 +262,10 @@ map_controller_gps_init(MapController *self, GConfClient *gconf_client)
     g_signal_connect(priv->gps_device, "changed",
                      G_CALLBACK(on_gps_changed), self);
 
-    load_settings(&_gps, gconf_client);
+    load_settings(&priv->gps_data, gconf_client);
 
-    latlon2unit(_gps.lat, _gps.lon, _pos.unit.x, _pos.unit.y);
+    latlon2unit(priv->gps_data.lat, priv->gps_data.lon,
+                _pos.unit.x, _pos.unit.y);
 }
 
 void

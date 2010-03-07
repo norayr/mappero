@@ -95,7 +95,6 @@ void map_controller_activate_menu_point(MapController *self, const MapPoint *p);
 void map_controller_set_gps_enabled(MapController *self, gboolean enabled);
 gboolean map_controller_get_gps_enabled(MapController *self);
 void map_controller_set_gps_position(MapController *self, const MapPoint *p);
-typedef struct _GpsData MapGpsData;
 const MapGpsData *map_controller_get_gps_data(MapController *self);
 
 void map_controller_set_center_mode(MapController *self, CenterMode mode);

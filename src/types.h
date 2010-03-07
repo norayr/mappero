@@ -390,8 +390,8 @@ struct _Repository {
 
 /** GPS Data and Satellite **/
 #define MAX_SATELLITES 24
-typedef struct _GpsData GpsData;
-struct _GpsData {
+typedef struct _MapGpsData MapGpsData;
+struct _MapGpsData {
     gint fix;
     gint fixquality;
     gdouble lat;

@@ -81,7 +81,6 @@ extern GtkWidget *_heading_panel;
 extern Point _pos;
 extern const Point _point_null;
 
-extern GpsData _gps;
 extern GpsSatelliteData _gps_sat[MAX_SATELLITES];
 extern gboolean _satdetails_on;
 

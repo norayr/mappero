@@ -341,10 +341,14 @@ map_controller_get_gps_enabled(MapController *self)
 void
 map_controller_set_gps_position(MapController *self, const MapPoint *p)
 {
+    MapControllerPrivate *priv;
+
     g_return_if_fail(MAP_IS_CONTROLLER(self));
+    priv = self->priv;
 
     _pos.unit = *p;
-    unit2latlon(_pos.unit.x, _pos.unit.y, _gps.lat, _gps.lon);
+    unit2latlon(_pos.unit.x, _pos.unit.y,
+                priv->gps_data.lat, priv->gps_data.lon);
 
     /* Move mark to new location. */
     map_refresh_mark(_center_mode > 0);
@@ -356,7 +360,7 @@ const MapGpsData *
 map_controller_get_gps_data(MapController *self)
 {
     g_return_val_if_fail(MAP_IS_CONTROLLER(self), NULL);
-    return &_gps;
+    return &self->priv->gps_data;
 }
 
 void
@@ -682,19 +686,23 @@ map_controller_calc_best_center(MapController *self, MapPoint *new_center)
     {
     case CENTER_LEAD:
         {
-            gfloat tmp = deg2rad(_gps.heading);
+            gfloat heading, speed;
+            heading = priv->gps_data.heading;
+            speed = priv->gps_data.speed;
+
+            gfloat tmp = deg2rad(heading);
             gfloat screen_pixels = _view_width_pixels
                 + (((gint)_view_height_pixels
                             - (gint)_view_width_pixels)
                         * fabsf(cosf(deg2rad(
                                 (_center_rotate ? 0
                              : (_next_map_rotate_angle
-                                 - (gint)(_gps.heading)))))));
+                                 - (gint)(heading)))))));
             gfloat lead_pixels = 0.0025f
                 * pixel2zunit((gint)screen_pixels, priv->zoom)
                 * _lead_ratio
                 * VELVEC_SIZE_FACTOR
-                * (_lead_is_fixed ? 7 : sqrtf(_gps.speed));
+                * (_lead_is_fixed ? 7 : sqrtf(speed));
 
             new_center->x = _pos.unit.x + (gint)(lead_pixels * sinf(tmp));
             new_center->y = _pos.unit.y - (gint)(lead_pixels * cosf(tmp));

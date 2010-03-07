@@ -100,7 +100,6 @@ GtkWidget *_heading_panel = NULL;
 Point _pos = { { 0, 0 }, 0, 0, SHRT_MIN};
 const Point _point_null = { { 0, 0 }, 0, SCHAR_MAX, 0};
 
-GpsData _gps;
 GpsSatelliteData _gps_sat[MAX_SATELLITES];
 gboolean _satdetails_on = FALSE;
 
