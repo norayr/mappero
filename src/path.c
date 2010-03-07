@@ -738,40 +738,19 @@ path_reset_route()
     route_find_nearest_point();
 }
 
-/**
- * Add a point to the _track list.  This function is slightly overloaded,
- * since it is what houses the check for "have we moved
- * significantly": it also initiates the re-calculation of the _near_point
- * data, as well as calling osso_display_state_on() when we have the focus.
- *
- * If a non-zero time is given, then the current position (as taken from the
- * _pos variable) is appended to _track with the given time.  If time is zero,
- * then _point_null is appended to _track with time zero (this produces a
- * "break" in the track).
- */
-gboolean
-track_add(const MapGpsData *gps, gboolean newly_fixed)
+void
+map_path_route_step(const MapGpsData *gps, gboolean newly_fixed)
 {
     MapController *controller = map_controller_get_instance();
     gboolean show_directions = TRUE;
     gint announce_thres_unsquared;
     gboolean refresh_panel = FALSE;
-    gboolean ret = FALSE;
-    DEBUG("%d, %d, %d, %d", (guint)gps->time, newly_fixed,
-          gps->unit.x, gps->unit.y);
-
     gboolean moving = FALSE;
     gboolean approaching_waypoint = FALSE;
-    gint xdiff, ydiff, dopcand;
     gboolean late = FALSE, out_of_route = FALSE;
     Point pos = _point_null;
 
     announce_thres_unsquared = (20+gps->speed) * _announce_notice_ratio*32;
-
-    pos.unit = gps->unit;
-    if (gps->fields & MAP_GPS_ALTITUDE)
-        pos.altitude = gps->altitude;
-    pos.time = gps->time;
 
     /* Check if we are late, with a tolerance of 3 minutes */
     if (_near_point && _near_point->time != 0 && pos.time != 0 &&
@@ -779,24 +758,7 @@ track_add(const MapGpsData *gps, gboolean newly_fixed)
         late = TRUE;
     DEBUG("Late: %d", late);
 
-    if(!_track.tail->unit.y
-            || ((xdiff = pos.unit.x - _track.tail->unit.x), /* comma op */
-                (ydiff = pos.unit.y - _track.tail->unit.y), /* comma op */
-                /* Check if xdiff or ydiff are huge. */
-                ((abs(xdiff) >> 12) || (abs(ydiff) >> 12)
-                /* Okay, let's see if we've moved enough to justify adding
-                 * to the track.  It depends on our error.  I'd like to
-                 * make the threshold roughly linear with respect to the
-                 * P/HDOP (completely arbitrary, I know), but I also
-                 * want to keep the threshold at a minimum of 2
-                 * zoom-level-4 pixel, and I want dop's of less than 2 to
-                 * also have a 1-pixel threshold. */
-                || ((dopcand = 8 * (-6 +(gps->hdop*gps->hdop))),
-                    ((xdiff * xdiff) + (ydiff * ydiff)
-                         >= (MAX(2, dopcand) << 8))))))
     {
-        /* We moved enough to actually register a move. */
-        ret = TRUE;
         refresh_panel = TRUE;
 
         /* Update the nearest-waypoint data. */
@@ -805,16 +767,6 @@ track_add(const MapGpsData *gps, gboolean newly_fixed)
                                 : route_update_nears(TRUE)))
         {
             /* FIXME: rewrite this condition */
-        }
-
-        if(_enable_tracking)
-        {
-            MapScreen *screen = map_controller_get_screen(controller);
-
-            map_screen_track_append(screen, &pos);
-            MACRO_PATH_INCREMENT_TAIL(_track);
-            *_track.tail = pos;
-            map_path_optimize(&_track);
         }
 
         /* Calculate distance to route. (point to line) */
@@ -991,6 +943,70 @@ track_add(const MapGpsData *gps, gboolean newly_fixed)
 
     UNBLANK_SCREEN(moving, approaching_waypoint);
 
+    if (refresh_panel)
+    {
+        MapScreen *screen = map_controller_get_screen(controller);
+        map_screen_refresh_panel(screen);
+    }
+}
+
+/**
+ * Add a point to the _track list.  This function is slightly overloaded,
+ * since it is what houses the check for "have we moved
+ * significantly": it also initiates the re-calculation of the _near_point
+ * data, as well as calling osso_display_state_on() when we have the focus.
+ *
+ * If a non-zero time is given, then the current position (as taken from the
+ * _pos variable) is appended to _track with the given time.  If time is zero,
+ * then _point_null is appended to _track with time zero (this produces a
+ * "break" in the track).
+ */
+gboolean
+track_add(const MapGpsData *gps, gboolean newly_fixed)
+{
+    MapController *controller = map_controller_get_instance();
+    gboolean ret = FALSE;
+    DEBUG("%d, %d, %d, %d", (guint)gps->time, newly_fixed,
+          gps->unit.x, gps->unit.y);
+
+    gint xdiff, ydiff, dopcand;
+    Point pos = _point_null;
+
+    pos.unit = gps->unit;
+    if (gps->fields & MAP_GPS_ALTITUDE)
+        pos.altitude = gps->altitude;
+    pos.time = gps->time;
+
+    if(!_track.tail->unit.y
+            || ((xdiff = pos.unit.x - _track.tail->unit.x), /* comma op */
+                (ydiff = pos.unit.y - _track.tail->unit.y), /* comma op */
+                /* Check if xdiff or ydiff are huge. */
+                ((abs(xdiff) >> 12) || (abs(ydiff) >> 12)
+                /* Okay, let's see if we've moved enough to justify adding
+                 * to the track.  It depends on our error.  I'd like to
+                 * make the threshold roughly linear with respect to the
+                 * P/HDOP (completely arbitrary, I know), but I also
+                 * want to keep the threshold at a minimum of 2
+                 * zoom-level-4 pixel, and I want dop's of less than 2 to
+                 * also have a 1-pixel threshold. */
+                || ((dopcand = 8 * (-6 +(gps->hdop*gps->hdop))),
+                    ((xdiff * xdiff) + (ydiff * ydiff)
+                         >= (MAX(2, dopcand) << 8))))))
+    {
+        /* We moved enough to actually register a move. */
+        ret = TRUE;
+
+        if(_enable_tracking)
+        {
+            MapScreen *screen = map_controller_get_screen(controller);
+
+            map_screen_track_append(screen, &pos);
+            MACRO_PATH_INCREMENT_TAIL(_track);
+            *_track.tail = pos;
+            map_path_optimize(&_track);
+        }
+    }
+
     /* Maybe update the track database. */
     {
         static time_t last_track_db_update = 0;
@@ -1000,12 +1016,6 @@ track_add(const MapGpsData *gps, gboolean newly_fixed)
             path_update_track_in_db();
             last_track_db_update = gps->time;
         }
-    }
-
-    if (refresh_panel)
-    {
-        MapScreen *screen = map_controller_get_screen(controller);
-        map_screen_refresh_panel(screen);
     }
 
     return ret;

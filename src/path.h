@@ -39,6 +39,7 @@ gboolean track_add(const MapGpsData *gps, gboolean newly_fixed);
 void track_clear(void);
 void track_insert_break(gboolean temporary);
 
+void map_path_route_step(const MapGpsData *gps, gboolean newly_fixed);
 void path_reset_route(void);
 
 void cancel_autoroute(void);
