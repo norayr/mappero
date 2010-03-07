@@ -106,31 +106,42 @@ on_gps_changed(LocationGPSDevice *device, MapController *controller)
     if (!_enable_gps)
         return;
 
+    gps->fields = 0;
+
     if (device->fix->fields & LOCATION_GPS_DEVICE_LATLONG_SET) {
         gps->lat = device->fix->latitude;
         gps->lon = device->fix->longitude;
+        gps->fields |= MAP_GPS_LATLON;
+
+        latlon2unit(gps->lat, gps->lon, gps->unit.x, gps->unit.y);
     }
 
     if (device->fix->fields & LOCATION_GPS_DEVICE_SPEED_SET) {
         gps->speed = device->fix->speed;
+        gps->fields |= MAP_GPS_SPEED;
     }
 
     if (device->fix->fields & LOCATION_GPS_DEVICE_TRACK_SET) {
         gps->heading = device->fix->track;
+        gps->fields |= MAP_GPS_HEADING;
         if (map_controller_get_auto_rotate(controller))
             map_controller_set_rotation(controller, gps->heading);
     }
 
     /* fetch timestamp from gps if available, otherwise create one. */
     if (device->fix->fields & LOCATION_GPS_DEVICE_TIME_SET) {
-        _pos.time = (time_t)device->fix->time;
+        gps->time = (time_t)device->fix->time;
     } else {
-        _pos.time = time(NULL);
+        gps->time = time(NULL);
     }
+    _pos.time = gps->time;
 
     /* fetch altitude in meters from gps */
     if (device->fix->fields & LOCATION_GPS_DEVICE_ALTITUDE_SET) {
-        _pos.altitude = (gint)device->fix->altitude;
+        gps->altitude = (gint)device->fix->altitude;
+        gps->fields |= MAP_GPS_ALTITUDE;
+
+        _pos.altitude = gps->altitude;
     }
 
     /*
@@ -142,8 +153,7 @@ on_gps_changed(LocationGPSDevice *device, MapController *controller)
     /* Vertical inaccuracy, in meters */
     gps->vdop = device->fix->epv;
 
-    /* Translate data into integers. */
-    latlon2unit(gps->lat, gps->lon, _pos.unit.x, _pos.unit.y);
+    _pos.unit = gps->unit;
 
     /* We consider a fix only if the geocoordinates are given */
     if (device->status >= LOCATION_GPS_DEVICE_STATUS_FIX)

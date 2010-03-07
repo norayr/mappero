@@ -389,13 +389,24 @@ struct _Repository {
 };
 
 /** GPS Data and Satellite **/
+typedef enum {
+    MAP_GPS_LATLON = 1 << 0,
+    MAP_GPS_ALTITUDE = 1 << 1,
+    MAP_GPS_SPEED = 1 << 2,
+    MAP_GPS_HEADING = 1 << 3,
+} MapGpsDataFields;
+
 #define MAX_SATELLITES 24
 typedef struct _MapGpsData MapGpsData;
 struct _MapGpsData {
+    MapGpsDataFields fields;
     gint fix;
     gint fixquality;
     gdouble lat;
     gdouble lon;
+    MapPoint unit;
+    gint16 altitude;
+    time_t time;
     gfloat speed;    /* in km/h */
     gfloat maxspeed;    /* in km/h */
     gfloat heading;
