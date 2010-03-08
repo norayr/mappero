@@ -746,6 +746,30 @@ path_reset_route()
     route_find_nearest_point();
 }
 
+/* calculates the square of the distance from the point p0 to the line which
+ * contains p1 and p2 */
+static inline gint64
+point_line_distance_squared(MapPoint p0, MapPoint p1, MapPoint p2)
+{
+    if (p1.x == p2.x)
+    {
+        /* Vertical line special case. */
+        return SQUARE(p0.x - p1.x);
+    }
+    else
+    {
+        gint x2_x1, y2_y1, x1_x0, y1_y0, num;
+
+        x2_x1 = p2.x - p1.x;
+        y2_y1 = p2.y - p1.y;
+        x1_x0 = p1.x - p0.x;
+        y1_y0 = p1.y - p0.y;
+
+        num = x2_x1 * y1_y0 - x1_x0 * y2_y1;
+        return SQUARE(num) / (SQUARE(x2_x1) + SQUARE(y2_y1));
+    }
+}
+
 void
 map_path_route_step(const MapGpsData *gps, gboolean newly_fixed)
 {
@@ -780,58 +804,23 @@ map_path_route_step(const MapGpsData *gps, gboolean newly_fixed)
         /* Calculate distance to route. (point to line) */
         if(_near_point)
         {
-            gint route_x1, route_x2, route_y1, route_y2;
             gint64 route_dist_squared_1 = INT64_MAX;
             gint64 route_dist_squared_2 = INT64_MAX;
-            gfloat slope;
-
-            route_x1 = _near_point->unit.x;
-            route_y1 = _near_point->unit.y;
 
             /* Try previous point first. */
             if(_near_point != _route.head && _near_point[-1].unit.y)
             {
-                route_x2 = _near_point[-1].unit.x;
-                route_y2 = _near_point[-1].unit.y;
-                slope = (gfloat)(route_y2 - route_y1)
-                    / (gfloat)(route_x2 - route_x1);
-
-                if(route_x1 == route_x2)
-                {
-                    /* Vertical line special case. */
-                    route_dist_squared_1 = (pos.unit.x - route_x1)
-                        * (pos.unit.x - route_x1);
-                }
-                else
-                {
-                    route_dist_squared_1 = abs((slope * pos.unit.x)
-                        - pos.unit.y + (route_y1 - (slope * route_x1)));
-                    route_dist_squared_1 =
-                        route_dist_squared_1 * route_dist_squared_1
-                        / ((slope * slope) + 1);
-                }
+                route_dist_squared_1 =
+                    point_line_distance_squared(pos.unit,
+                                                _near_point->unit,
+                                                _near_point[-1].unit);
             }
             if(_near_point != _route.tail && _near_point[1].unit.y)
             {
-                route_x2 = _near_point[1].unit.x;
-                route_y2 = _near_point[1].unit.y;
-                slope = (gfloat)(route_y2 - route_y1)
-                    / (gfloat)(route_x2 - route_x1);
-
-                if(route_x1 == route_x2)
-                {
-                    /* Vertical line special case. */
-                    route_dist_squared_2 = (pos.unit.x - route_x1)
-                        * (pos.unit.x - route_x1);
-                }
-                else
-                {
-                    route_dist_squared_2 = abs((slope * pos.unit.x)
-                        - pos.unit.y + (route_y1 - (slope * route_x1)));
-                    route_dist_squared_2 =
-                        route_dist_squared_2 * route_dist_squared_2
-                        / ((slope * slope) + 1);
-                }
+                route_dist_squared_2 =
+                    point_line_distance_squared(pos.unit,
+                                                _near_point->unit,
+                                                _near_point[1].unit);
             }
 
             /* Check if our distance from the route is large. */
