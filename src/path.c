@@ -787,7 +787,6 @@ map_path_route_step(const MapGpsData *gps, gboolean newly_fixed)
     gboolean moving = FALSE;
     gboolean approaching_waypoint = FALSE;
     gboolean late = FALSE, out_of_route = FALSE;
-    Point pos = _point_null;
 
     /* if we don't have a route to follow, nothing to do */
     if (_route.head == _route.tail) return;
@@ -801,8 +800,8 @@ map_path_route_step(const MapGpsData *gps, gboolean newly_fixed)
     announce_thres_unsquared = (20+gps->speed) * _announce_notice_ratio*32;
 
     /* Check if we are late, with a tolerance of 3 minutes */
-    if (_near_point && _near_point->time != 0 && pos.time != 0 &&
-        pos.time > _near_point->time + 60 * 3)
+    if (_near_point && _near_point->time != 0 && gps->time != 0 &&
+        gps->time > _near_point->time + 60 * 3)
         late = TRUE;
     DEBUG("Late: %d", late);
 
