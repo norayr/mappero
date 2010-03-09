@@ -807,6 +807,8 @@ map_path_route_step(const MapGpsData *gps, gboolean newly_fixed)
 
     if (!late) /* if we are late, we can skip this distance check */
     {
+        /* TODO: do this check only if we have actually moved */
+
         /* Calculate distance to route. (point to line) */
         if (_near_point)
         {
@@ -827,9 +829,6 @@ map_path_route_step(const MapGpsData *gps, gboolean newly_fixed)
             DEBUG("out_of_route: %d (max distance = %d)",
                   out_of_route, max_distance);
         }
-
-        /* Keep the display on. */
-        moving = TRUE;
     }
 
     /* check if we need to recalculate the route */
@@ -853,10 +852,9 @@ map_path_route_step(const MapGpsData *gps, gboolean newly_fixed)
         }
     }
 
-    if(_initial_distance_waypoint
-           && (_next_way != _initial_distance_waypoint
-           ||  _next_way_dist_squared > (_initial_distance_from_waypoint
-                                       * _initial_distance_from_waypoint)))
+    if (_initial_distance_waypoint
+        && (_next_way != _initial_distance_waypoint
+            || _next_way_dist_squared > SQUARE(_initial_distance_from_waypoint)))
     {
         /* We've moved on to the next waypoint, or we're really far from
          * the current waypoint. */
@@ -872,7 +870,7 @@ map_path_route_step(const MapGpsData *gps, gboolean newly_fixed)
     /* Check if we should announce upcoming waypoints. */
     if(_enable_announce
             && (_initial_distance_waypoint || _next_way_dist_squared
-                < (announce_thres_unsquared * announce_thres_unsquared)))
+                < SQUARE(announce_thres_unsquared)))
     {
         if(show_directions)
         {
@@ -904,27 +902,7 @@ map_path_route_step(const MapGpsData *gps, gboolean newly_fixed)
                 _initial_distance_from_waypoint
                     = sqrtf(_next_way_dist_squared);
                 _initial_distance_waypoint = _next_way;
-                if(_next_wpt && _next_wpt->unit.y != 0)
-                {
-                    /* Create a banner for us the show progress. */
-                    _waypoint_banner = hildon_banner_show_progress(
-                            _window, NULL, _next_way->desc);
-                }
-                else
-                {
-                    /* This is the last point in a segment, i.e.
-                     * "Arrive at ..." - just announce. */
-                    MACRO_BANNER_SHOW_INFO(_window, _next_way->desc);
-                }
-            }
-            else if(_waypoint_banner);
-            {
-                /* We're already close to this waypoint. */
-                gdouble fraction = 1.f - (sqrtf(_next_way_dist_squared)
-                        / _initial_distance_from_waypoint);
-                BOUND(fraction, 0.f, 1.f);
-                hildon_banner_set_fraction(
-                        HILDON_BANNER(_waypoint_banner), fraction);
+                MACRO_BANNER_SHOW_INFO(_window, _next_way->desc);
             }
         }
         approaching_waypoint = TRUE;
