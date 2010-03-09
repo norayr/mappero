@@ -782,6 +782,15 @@ map_path_route_step(const MapGpsData *gps, gboolean newly_fixed)
     gboolean late = FALSE, out_of_route = FALSE;
     Point pos = _point_null;
 
+    /* if we don't have a route to follow, nothing to do */
+    if (_route.head == _route.tail) return;
+
+    /* Update the nearest-waypoint data. */
+    if (newly_fixed)
+        route_find_nearest_point();
+    else
+        route_update_nears(TRUE);
+
     announce_thres_unsquared = (20+gps->speed) * _announce_notice_ratio*32;
 
     /* Check if we are late, with a tolerance of 3 minutes */
@@ -791,16 +800,6 @@ map_path_route_step(const MapGpsData *gps, gboolean newly_fixed)
     DEBUG("Late: %d", late);
 
     {
-        refresh_panel = TRUE;
-
-        /* Update the nearest-waypoint data. */
-        if(_route.head != _route.tail
-                && (newly_fixed ? (route_find_nearest_point(), TRUE)
-                                : route_update_nears(TRUE)))
-        {
-            /* FIXME: rewrite this condition */
-        }
-
         /* Calculate distance to route. (point to line) */
         if(_near_point)
         {
