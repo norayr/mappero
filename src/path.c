@@ -854,7 +854,7 @@ map_path_route_step(const MapGpsData *gps, gboolean newly_fixed)
 
     if (_initial_distance_waypoint
         && (_next_way != _initial_distance_waypoint
-            || _next_way_dist_squared > SQUARE(_initial_distance_from_waypoint)))
+            || _next_way_dist_squared > SQUARE(announce_thres_unsquared)))
     {
         /* We've moved on to the next waypoint, or we're really far from
          * the current waypoint. */
