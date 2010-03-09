@@ -401,38 +401,38 @@ route_update_nears(gboolean quick)
     gint64 near_dist_squared;
     DEBUG("%d", quick);
 
+    /* First, set near_dist_squared with the new distance from
+     * _near_point. */
+    near = _near_point;
+    near_dist_squared = DISTANCE_SQUARED(_pos.unit, near->unit);
+
+    /* Now, search _route for a closer point.  If quick is TRUE, then we'll
+     * only search forward, only as long as we keep finding closer points.
+     */
+    for(curr = _near_point; curr++ != _route.tail; )
+    {
+        if(curr->unit.y)
+        {
+            gint64 dist_squared = DISTANCE_SQUARED(_pos.unit, curr->unit);
+            if(dist_squared <= near_dist_squared)
+            {
+                near = curr;
+                near_dist_squared = dist_squared;
+            }
+            else if(quick)
+                break;
+        }
+    }
+
+    /* Update _near_point. */
+    _near_point = near;
+
     /* If we have waypoints (_next_way != NULL), then determine the "next
      * waypoint", which is defined as the waypoint after the nearest point,
      * UNLESS we've passed that waypoint, in which case the waypoint after
      * that waypoint becomes the "next" waypoint. */
     if(_next_way)
     {
-        /* First, set near_dist_squared with the new distance from
-         * _near_point. */
-        near = _near_point;
-        near_dist_squared = DISTANCE_SQUARED(_pos.unit, near->unit);
-
-        /* Now, search _route for a closer point.  If quick is TRUE, then we'll
-         * only search forward, only as long as we keep finding closer points.
-         */
-        for(curr = _near_point; curr++ != _route.tail; )
-        {
-            if(curr->unit.y)
-            {
-                gint64 dist_squared = DISTANCE_SQUARED(_pos.unit, curr->unit);
-                if(dist_squared <= near_dist_squared)
-                {
-                    near = curr;
-                    near_dist_squared = dist_squared;
-                }
-                else if(quick)
-                    break;
-            }
-        }
-
-        /* Update _near_point. */
-        _near_point = near;
-
         for(wnext = wcurr = _next_way; wcurr < _route.wtail; wcurr++)
         {
             if(wcurr->point < near
