@@ -799,6 +799,7 @@ map_path_route_step(const MapGpsData *gps, gboolean newly_fixed)
         late = TRUE;
     DEBUG("Late: %d", late);
 
+    if (!late) /* if we are late, we can skip this distance check */
     {
         /* Calculate distance to route. (point to line) */
         if(_near_point)
