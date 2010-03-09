@@ -746,28 +746,35 @@ path_reset_route()
     route_find_nearest_point();
 }
 
-/* calculates the square of the distance from the point p0 to the line which
- * contains p1 and p2 */
-static inline gint64
-point_line_distance_squared(MapPoint p0, MapPoint p1, MapPoint p2)
+/* Checks whether the point p lies near the segment p0-p1 or p0-p2. This is
+ * implemented by checking whether p is inside the ellipse having foci in p0
+ * and p1 and having @distance as the distance between each focus and the
+ * closest point on the major axis. Same for p0-p2. */
+static gboolean
+point_near_segments(const MapPoint *p, const MapPoint *p0, const MapPoint *p1,
+                    const MapPoint *p2, guint distance)
 {
-    if (p1.x == p2.x)
-    {
-        /* Vertical line special case. */
-        return SQUARE(p0.x - p1.x);
-    }
-    else
-    {
-        gint x2_x1, y2_y1, x1_x0, y1_y0, num;
+    gint p_p0, p_p1, p_p2, p0_p1, p0_p2;
 
-        x2_x1 = p2.x - p1.x;
-        y2_y1 = p2.y - p1.y;
-        x1_x0 = p1.x - p0.x;
-        y1_y0 = p1.y - p0.y;
-
-        num = x2_x1 * y1_y0 - x1_x0 * y2_y1;
-        return SQUARE(num) / (SQUARE(x2_x1) + SQUARE(y2_y1));
+    p_p0 = sqrtf(DISTANCE_SQUARED(*p, *p0));
+    if (p1 != NULL)
+    {
+        p_p1 = sqrtf(DISTANCE_SQUARED(*p, *p1));
+        p0_p1 = sqrtf(DISTANCE_SQUARED(*p0, *p1));
+        /* the ellipse diameter is the distance between the two foci plus 2
+         * times @distance */
+        if (p_p0 + p_p1 <= p0_p1 + 2 * distance)
+            return TRUE;
     }
+    if (p2 != NULL)
+    {
+        p_p2 = sqrtf(DISTANCE_SQUARED(*p, *p2));
+        p0_p2 = sqrtf(DISTANCE_SQUARED(*p0, *p2));
+        if (p_p0 + p_p2 <= p0_p2 + 2 * distance)
+            return TRUE;
+    }
+
+    return FALSE;
 }
 
 void
@@ -802,33 +809,24 @@ map_path_route_step(const MapGpsData *gps, gboolean newly_fixed)
     if (!late) /* if we are late, we can skip this distance check */
     {
         /* Calculate distance to route. (point to line) */
-        if(_near_point)
+        if (_near_point)
         {
-            gint64 route_dist_squared_1 = INT64_MAX;
-            gint64 route_dist_squared_2 = INT64_MAX;
+            const MapPoint *n1 = NULL, *n2 = NULL;
+            gint max_distance;
 
             /* Try previous point first. */
             if(_near_point != _route.head && _near_point[-1].unit.y)
-            {
-                route_dist_squared_1 =
-                    point_line_distance_squared(pos.unit,
-                                                _near_point->unit,
-                                                _near_point[-1].unit);
-            }
+                n1 = &_near_point[-1].unit;
             if(_near_point != _route.tail && _near_point[1].unit.y)
-            {
-                route_dist_squared_2 =
-                    point_line_distance_squared(pos.unit,
-                                                _near_point->unit,
-                                                _near_point[1].unit);
-            }
+                n2 = &_near_point[1].unit;
 
             /* Check if our distance from the route is large. */
-            if(MIN(route_dist_squared_1, route_dist_squared_2)
-                    > (2000 * 2000))
-            {
-                out_of_route = TRUE;
-            }
+            max_distance = METRES_TO_UNITS(100 + gps->hdop);
+            out_of_route =
+                !point_near_segments(&gps->unit, &_near_point->unit, n1, n2,
+                                     max_distance);
+            DEBUG("out_of_route: %d (max distance = %d)",
+                  out_of_route, max_distance);
         }
 
         /* Keep the display on. */
