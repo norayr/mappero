@@ -68,12 +68,12 @@ static gint quad_zero_get_url(TileSource *source, gchar *buffer, gint len,
                               gint zoom, gint tilex, gint tiley);
 
 /* TileSourceLatlonToUnit routines */
-static void latlon2unit_google(gdouble lat, gdouble lon, gint *x, gint *y);
-static void latlon2unit_yandex(gdouble lat, gdouble lon, gint *x, gint *y);
+static void latlon2unit_google(MapGeo lat, MapGeo lon, gint *x, gint *y);
+static void latlon2unit_yandex(MapGeo lat, MapGeo lon, gint *x, gint *y);
 
 /* TileSourceUnit2Latlon routines */
-static void unit2latlon_google(gint x, gint y, gdouble *lat, gdouble *lon);
-static void unit2latlon_yandex(gint x, gint y, gdouble *lat, gdouble *lon);
+static void unit2latlon_google(gint x, gint y, MapGeo *lat, MapGeo *lon);
+static void unit2latlon_yandex(gint x, gint y, MapGeo *lat, MapGeo *lon);
 
 
 /* Supported repository types table */
@@ -233,47 +233,47 @@ yandex_get_url(TileSource *source, gchar *buffer, gint len,
 
 
 /* Latlon <-> Units conversion routines for different tile source types */
-void latlon2unit_google(gdouble lat, gdouble lon, gint *unitx, gint *unity)
+void latlon2unit_google(MapGeo lat, MapGeo lon, gint *unitx, gint *unity)
 {
-    gdouble tmp;
+    MapGeo tmp;
 
     *unitx = (lon + 180.0) * (WORLD_SIZE_UNITS / 360.0) + 0.5;
-    tmp = sin(deg2rad(lat));
+    tmp = GSIN(deg2rad(lat));
     *unity = 0.5 + (WORLD_SIZE_UNITS / MERCATOR_SPAN) *
-        (log((1.0 + tmp) / (1.0 - tmp)) * 0.5 - MERCATOR_TOP);
+        (GLOG((1.0 + tmp) / (1.0 - tmp)) * 0.5 - MERCATOR_TOP);
 }
 
 
-void latlon2unit_yandex(gdouble lat, gdouble lon, gint *unitx, gint *unity)
+void latlon2unit_yandex(MapGeo lat, MapGeo lon, gint *unitx, gint *unity)
 {
-    gdouble tmp, pow_tmp;
+    MapGeo tmp, pow_tmp;
 
-    tmp = tan(M_PI_4 + deg2rad(lat) / 2.0);
-    pow_tmp = pow(tan(M_PI_4 + asin(YANDEX_E * sin(deg2rad(lat))) / 2.0),
-                  YANDEX_E);
+    tmp = GTAN(M_PI_4 + deg2rad(lat) / 2.0);
+    pow_tmp = GPOW(GTAN(M_PI_4 + GASIN(YANDEX_E * GSIN(deg2rad(lat))) / 2.0),
+                   YANDEX_E);
     *unitx = (YANDEX_Rn * deg2rad(lon) + YANDEX_A) * YANDEX_F;
-    *unity = (YANDEX_A - (YANDEX_Rn * log(tmp / pow_tmp))) * YANDEX_F;
+    *unity = (YANDEX_A - (YANDEX_Rn * GLOG(tmp / pow_tmp))) * YANDEX_F;
 }
 
 
-void unit2latlon_google(gint unitx, gint unity, gdouble *lat, gdouble *lon)
+void unit2latlon_google(gint unitx, gint unity, MapGeo *lat, MapGeo *lon)
 {
-    gdouble tmp;
+    MapGeo tmp;
     *lon = (unitx * (360.0 / WORLD_SIZE_UNITS)) - 180.0;
     tmp = (unity * (MERCATOR_SPAN / WORLD_SIZE_UNITS)) + MERCATOR_TOP;
-    *lat = (360.0 * (atan(exp(tmp)))) * (1.0 / PI) - 90.0;
+    *lat = (360.0 * (GATAN(GEXP(tmp)))) * (1.0 / PI) - 90.0;
 }
 
 
-void unit2latlon_yandex(gint unitx, gint unity, gdouble *lat, gdouble *lon)
+void unit2latlon_yandex(gint unitx, gint unity, MapGeo *lat, MapGeo *lon)
 {
-    gdouble xphi, x, y;
+    MapGeo xphi, x, y;
 
     x = (unitx / YANDEX_F) - YANDEX_A;
     y = YANDEX_A - (unity / YANDEX_F);
-    xphi = M_PI_2 - 2.0 * atan(1.0 / exp(y / YANDEX_Rn));
-    *lat = xphi + YANDEX_AB * sin(2.0 * xphi) + YANDEX_BB * sin(4.0 * xphi) +
-        YANDEX_CB * sin(6.0 * xphi) + YANDEX_DB * sin(8.0 * xphi);
+    xphi = M_PI_2 - 2.0 * GATAN(1.0 / GEXP(y / YANDEX_Rn));
+    *lat = xphi + YANDEX_AB * GSIN(2.0 * xphi) + YANDEX_BB * GSIN(4.0 * xphi) +
+        YANDEX_CB * GSIN(6.0 * xphi) + YANDEX_DB * GSIN(8.0 * xphi);
     *lon = x / YANDEX_Rn;
     *lat = rad2deg(abs(*lat) > M_PI_2 ? M_PI_2 : *lat);
     *lon = rad2deg(abs(*lon) > M_PI_2 ? M_PI_2 : *lon);

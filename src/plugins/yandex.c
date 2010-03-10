@@ -56,7 +56,7 @@ get_address(const MapLocation *loc, gchar *buffer, gsize len)
         return loc->address;
     else
     {
-        gdouble lat, lon;
+        MapGeo lat, lon;
         unit2latlon(loc->point.x, loc->point.y, lat, lon);
         snprintf(buffer, len, "%.06f, %0.6f", lat, lon);
         return buffer;

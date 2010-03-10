@@ -228,7 +228,7 @@ menu_cb_track_insert_break(GtkMenuItem *item)
 static gboolean
 menu_cb_track_insert_mark(GtkMenuItem *item)
 {
-    gdouble lat, lon;
+    MapGeo lat, lon;
     gchar tmp1[LL_FMT_LEN], tmp2[LL_FMT_LEN], *p_latlon;
     static GtkWidget *dialog = NULL;
     static GtkWidget *table = NULL;
@@ -778,7 +778,7 @@ menu_cb_view_goto_latlon(GtkMenuItem *item)
     {
         gchar buffer1[32];
         gchar buffer2[32];
-        gdouble lat, lon;
+        MapGeo lat, lon;
         unit2latlon(_center.x, _center.y, lat, lon);
         //lat_format(lat, buffer1);
         //lon_format(lon, buffer2);
@@ -793,7 +793,7 @@ menu_cb_view_goto_latlon(GtkMenuItem *item)
     {
         const gchar *text;
         gchar *error_check;
-        gdouble lat, lon;
+        MapGeo lat, lon;
         MapPoint sel_unit;
         MapController *controller = map_controller_get_instance();
 

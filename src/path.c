@@ -209,7 +209,7 @@ map_path_calculate_distances(Path *path)
 {
     Point *curr;
     gfloat total = 0;
-    gdouble lat, lon, last_lat, last_lon;
+    MapGeo lat, lon, last_lat, last_lon;
 
 #ifdef ENABLE_DEBUG
     struct timespec ts0, ts1;
@@ -587,7 +587,7 @@ route_find_nearest_point()
 gboolean
 route_calc_distance_to(const Point *point, gfloat *distance)
 {
-    gdouble lat1, lon1, lat2, lon2;
+    MapGeo lat1, lon1, lat2, lon2;
     gfloat sum = 0.0;
 
     /* If point is NULL, use the next waypoint. */
@@ -692,8 +692,8 @@ static void
 track_show_distance_from(Point *point)
 {
     gchar buffer[80];
-    gdouble lat1, lon1, lat2, lon2;
-    gdouble sum = 0.0;
+    MapGeo lat1, lon1, lat2, lon2;
+    MapGeo sum = 0.0;
     Point *curr;
     unit2latlon(_pos.unit.x, _pos.unit.y, lat1, lon1);
 
@@ -1564,7 +1564,7 @@ route_download(gchar *to)
 void
 route_add_way_dialog(gint unitx, gint unity)
 {
-    gdouble lat, lon;
+    MapGeo lat, lon;
     gchar tmp1[LL_FMT_LEN], tmp2[LL_FMT_LEN], *p_latlon;
     static GtkWidget *dialog = NULL;
     static GtkWidget *table = NULL;
@@ -1975,7 +1975,7 @@ map_path_merge(Path *src_path, Path *dest_path, MapPathMergePolicy policy)
         if (dest->last_lat != 0 && dest->last_lon != 0 &&
             src_first->unit.y != 0)
         {
-            gdouble lat, lon;
+            MapGeo lat, lon;
             unit2latlon(src_first->unit.x, src_first->unit.y, lat, lon);
             src_first->distance =
                 calculate_distance(dest->last_lat, dest->last_lon, lat, lon);

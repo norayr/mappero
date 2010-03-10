@@ -52,8 +52,8 @@
 typedef struct _SetViewPositionArgs SetViewPositionArgs;
 struct _SetViewPositionArgs
 {
-    gdouble new_lat;
-    gdouble new_lon;
+    MapGeo new_lat;
+    MapGeo new_lon;
     gint new_zoom;
     gdouble new_viewing_angle; /* i.e. rotation */
 };
@@ -68,8 +68,8 @@ struct _SetViewPositionArgs
 typedef struct _ViewPositionChangedArgs ViewPositionChangedArgs;
 struct _ViewPositionChangedArgs
 {
-    gdouble new_lat;
-    gdouble new_lon;
+    MapGeo new_lat;
+    MapGeo new_lon;
     gint new_zoom;
     gdouble new_viewing_angle; /* i.e. rotation */
 };

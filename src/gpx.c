@@ -262,7 +262,7 @@ gpx_path_start_element(PathSaxData *data,
             {
                 const xmlChar **curr_attr;
                 gchar *error_check;
-                gdouble lat = 0.0, lon = 0.0;
+                MapGeo lat = 0.0, lon = 0.0;
                 gboolean has_lat, has_lon;
                 has_lat = FALSE;
                 has_lon = FALSE;
@@ -578,7 +578,7 @@ gpx_path_write(Path *path, GnomeVFSHandle *handle)
     /* Curr points to first non-zero point. */
     for(curr--; curr++ != path->tail; )
     {
-        gdouble lat, lon;
+        MapGeo lat, lon;
         if(curr->unit.y)
         {
             gchar buffer[80];
@@ -697,7 +697,7 @@ gpx_poi_start_element(PoiSaxData *data,
             {
                 const xmlChar **curr_attr;
                 gchar *error_check;
-                gdouble lat = 0.0, lon = 0.0;
+                MapGeo lat = 0.0, lon = 0.0;
                 gboolean has_lat, has_lon;
                 has_lat = FALSE;
                 has_lon = FALSE;

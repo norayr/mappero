@@ -686,7 +686,7 @@ static void
 compute_scale_text(gchar *buffer, gsize len, gint zoom)
 {
     gfloat distance;
-    gdouble lat1, lon1, lat2, lon2;
+    MapGeo lat1, lon1, lat2, lon2;
 
     unit2latlon(_center.x - pixel2zunit(SCALE_WIDTH / 2 - 4, zoom),
                 _center.y, lat1, lon1);

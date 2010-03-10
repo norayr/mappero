@@ -280,6 +280,12 @@ typedef enum
     GPS_RCVR_ENUM_COUNT
 } GpsRcvrType;
 
+#ifdef USE_DOUBLES_FOR_LATLON
+typedef gdouble MapGeo;
+#else
+typedef gfloat MapGeo;
+#endif
+
 /** A general definition of a point in the Maemo Mapper unit system. */
 typedef struct _MapPoint MapPoint;
 struct _MapPoint {
@@ -332,8 +338,8 @@ typedef struct _PoiInfo PoiInfo;
 struct _PoiInfo {
     gint poi_id;
     gint cat_id;
-    gdouble lat;
-    gdouble lon;
+    MapGeo lat;
+    MapGeo lon;
     gchar *label;
     gchar *desc;
     gchar *clabel;
@@ -349,8 +355,8 @@ typedef struct _TileSource TileSource;
 typedef gint (*TileSourceURLFormatFunc)(TileSource *source, gchar *buffer, gint len,
                                         gint zoom, gint tilex, gint tiley);
 
-typedef void (*TileSourceLatlonToUnit)(gdouble lat, gdouble lon, gint *x, gint *y);
-typedef void (*TileSourceUnitToLatlon)(gint x, gint y, gdouble *lat, gdouble *lon);
+typedef void (*TileSourceLatlonToUnit)(MapGeo lat, MapGeo lon, gint *x, gint *y);
+typedef void (*TileSourceUnitToLatlon)(gint x, gint y, MapGeo *lat, MapGeo *lon);
 
 
 /** This enumerated type defines the supported types of repositories. */
@@ -406,8 +412,8 @@ struct _MapGpsData {
     MapGpsDataFields fields;
     gint fix;
     gint fixquality;
-    gdouble lat;
-    gdouble lon;
+    MapGeo lat;
+    MapGeo lon;
     MapPoint unit;
     gint16 altitude;
     time_t time;

@@ -695,8 +695,8 @@ mut_priority_comparefunc(gconstpointer _a, gconstpointer _b)
 
 
 static gboolean
-mapman_by_area(gdouble start_lat, gdouble start_lon,
-        gdouble end_lat, gdouble end_lon, MapmanInfo *mapman_info,
+mapman_by_area(MapGeo start_lat, MapGeo start_lon,
+        MapGeo end_lat, MapGeo end_lon, MapmanInfo *mapman_info,
         MapUpdateType update_type,
         gint download_batch_id)
 {
@@ -980,11 +980,11 @@ mapman_dialog()
     gint half_screen;
     
     gchar buffer[80];
-    gdouble lat, lon;
+    MapGeo lat, lon;
     gint z;
     gint prev_degformat = _degformat;
     gint fallback_deg_format = _degformat;
-    gdouble top_left_lat, top_left_lon, bottom_right_lat, bottom_right_lon;
+    MapGeo top_left_lat, top_left_lon, bottom_right_lat, bottom_right_lon;
 
     map_controller_get_center(controller, &center);
     allocation =
@@ -1387,7 +1387,7 @@ mapman_dialog()
         {
             const gchar *text_lon, *text_lat;
             //gchar *error_check;
-            gdouble start_lat, start_lon, end_lat, end_lon;
+            MapGeo start_lat, start_lon, end_lat, end_lon;
 
             text_lat = gtk_entry_get_text(GTK_ENTRY(mapman_info.txt_topleft_lat));
             text_lon = gtk_entry_get_text(GTK_ENTRY(mapman_info.txt_topleft_lon));

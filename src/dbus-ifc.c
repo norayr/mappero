@@ -165,7 +165,7 @@ dbus_ifc_fire_view_position_changed(
         MapPoint new_center, gint new_zoom, gdouble new_viewing_angle)
 {
     DBusMessage *message = NULL;
-    gdouble new_lat, new_lon;
+    MapGeo new_lat, new_lon;
     DEBUG("%d, %d, %d, %f", new_center.x, new_center.y,
           new_zoom, new_viewing_angle);
 

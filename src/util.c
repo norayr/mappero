@@ -46,7 +46,8 @@
 #include "gpx.h"
 #include "util.h"
 
-gboolean convert_iaru_loc_to_lat_lon(const gchar* txt_lon, gdouble* lat, gdouble* lon);
+gboolean convert_iaru_loc_to_lat_lon(const gchar* txt_lon,
+                                     MapGeo *lat, MapGeo *lon);
 
 /**
  * Pop up a modal dialog box with simple error information in it.
@@ -64,10 +65,10 @@ popup_error(GtkWidget *window, const gchar *error)
 }
 
 void
-deg_format(gdouble coor, gchar *scoor, gchar neg_char, gchar pos_char)
+deg_format(MapGeo coor, gchar *scoor, gchar neg_char, gchar pos_char)
 {
-    gdouble min;
-    gdouble acoor = fabs(coor);
+    MapGeo min;
+    MapGeo acoor = fabs(coor);
 
     switch(_degformat)
     {
@@ -196,10 +197,10 @@ MapPoint locate_address(GtkWidget *parent, const gchar *addr)
  * Calculate the distance between two lat/lon pairs.  The distance is returned
  * in kilometers and should be converted using UNITS_CONVERT[_units].
  */
-gdouble
-calculate_distance(gdouble lat1, gdouble lon1, gdouble lat2, gdouble lon2)
+MapGeo
+calculate_distance(MapGeo lat1, MapGeo lon1, MapGeo lat2, MapGeo lon2)
 {
-    gdouble dlat, dlon, slat, slon, a;
+    MapGeo dlat, dlon, slat, slon, a;
 
     /* Convert to radians. */
     lat1 = deg2rad(lat1);
@@ -210,29 +211,29 @@ calculate_distance(gdouble lat1, gdouble lon1, gdouble lat2, gdouble lon2)
     dlat = lat2 - lat1;
     dlon = lon2 - lon1;
 
-    slat = sin(dlat / 2.0);
-    slon = sin(dlon / 2.0);
-    a = (slat * slat) + (cos(lat1) * cos(lat2) * slon * slon);
+    slat = GSIN(dlat / 2.0);
+    slon = GSIN(dlon / 2.0);
+    a = (slat * slat) + (GCOS(lat1) * GCOS(lat2) * slon * slon);
 
-    return ((2.0 * atan2(sqrt(a), sqrt(1.0 - a))) * EARTH_RADIUS);
+    return ((2.0 * GATAN2(GSQTR(a), GSQTR(1.0 - a))) * EARTH_RADIUS);
 }
 
 /**
  * Calculate the bearing between two lat/lon pairs.  The bearing is returned
  * as the angle from lat1/lon1 to lat2/lon2.
  */
-gdouble
-calculate_bearing(gdouble lat1, gdouble lon1, gdouble lat2, gdouble lon2)
+MapGeo
+calculate_bearing(MapGeo lat1, MapGeo lon1, MapGeo lat2, MapGeo lon2)
 {
-    gdouble x, y;
-    gdouble dlon = deg2rad(lon2 - lon1);
+    MapGeo x, y;
+    MapGeo dlon = deg2rad(lon2 - lon1);
     lat1 = deg2rad(lat1);
     lat2 = deg2rad(lat2);
 
-    y = sin(dlon) * cos(lat2);
-    x = (cos(lat1) * sin(lat2)) - (sin(lat1) * cos(lat2) * cos(dlon));
+    y = GSIN(dlon) * GCOS(lat2);
+    x = (GCOS(lat1) * GSIN(lat2)) - (GSIN(lat1) * GCOS(lat2) * GCOS(dlon));
 
-    dlon = rad2deg(atan2(y, x));
+    dlon = rad2deg(GATAN2(y, x));
     if(dlon < 0.0)
         dlon += 360.0;
     return dlon;
@@ -275,11 +276,11 @@ force_min_visible_bars(HildonControlbar *control_bar, gint num_bars)
  *
  */
 static gint
-strdmstod_1(gdouble *d, gchar *nptr, gchar **endptr, gchar *sep, gint utf8_deg)
+strdmstod_1(MapGeo *d, gchar *nptr, gchar **endptr, gchar *sep, gint utf8_deg)
 {
     guchar *p;
     gint v_flag, f_flag;
-    gdouble v;
+    MapGeo v;
 
     p = (guchar *)nptr;
 
@@ -300,7 +301,7 @@ strdmstod_1(gdouble *d, gchar *nptr, gchar **endptr, gchar *sep, gint utf8_deg)
 
     if (v_flag) {
         if (*p && (*p == '.' || *p == ',')) {
-            gdouble f;
+            MapGeo f;
             gint n;
 
             p++;
@@ -336,12 +337,12 @@ strdmstod_1(gdouble *d, gchar *nptr, gchar **endptr, gchar *sep, gint utf8_deg)
     return *p == 0;
 }
 
-static gdouble
+static MapGeo
 strdmstod_2(gchar *nptr, gchar **endptr)
 {
     gint ret;
     gchar *p;
-    gdouble d, m, s;
+    MapGeo d, m, s;
 
     p = nptr;
 
@@ -390,13 +391,13 @@ strdmstod_2(gchar *nptr, gchar **endptr)
  *   and N or W are treated as positive, S or E are treated as negative,
  *   they may occur only once.
  */
-gdouble
+MapGeo
 strdmstod(const gchar *nptr, gchar **endptr)
 {
     gint s;
     gchar *p, *end;
     gchar *sign = 0;
-    gdouble d;
+    MapGeo d;
 
     p = (char *)nptr;
 
@@ -462,7 +463,7 @@ gboolean os_grid_check_lat_lon(double lat, double lon)
 	}
 }
 
-gboolean coord_system_check_lat_lon (gdouble lat, gdouble lon, gint *fallback_deg_format)
+gboolean coord_system_check_lat_lon (MapGeo lat, MapGeo lon, gint *fallback_deg_format)
 {
 	// Is the current coordinate system applicable to the provided lat and lon?
 	gboolean valid = FALSE;
@@ -538,9 +539,9 @@ gboolean convert_lat_long_to_os_grid(double lat, double lon, int *easting, int *
 
 gboolean convert_os_grid_to_bng(gint easting, gint northing, gchar* bng)
 {
-	gdouble eX = (gdouble)easting / 500000.0;
-	gdouble nX = (gdouble)northing / 500000.0;
-	gdouble tmp = floor(eX) - 5.0 * floor(nX) + 17.0;
+	MapGeo eX = (MapGeo)easting / 500000.0;
+	MapGeo nX = (MapGeo)northing / 500000.0;
+	MapGeo tmp = floor(eX) - 5.0 * floor(nX) + 17.0;
 	gchar eing[12];
 	gchar ning[12];
 	
@@ -580,12 +581,12 @@ gint convert_str_to_int(const gchar *str)
 	
 	return result;
 }
-gboolean convert_os_xy_to_latlon(const gchar *easting, const gchar *northing, gdouble *d_lat, gdouble *d_lon)
+gboolean convert_os_xy_to_latlon(const gchar *easting, const gchar *northing, MapGeo *d_lat, MapGeo *d_lon)
 {
     const double deg2rad_multi = (2 * PI / 360);
     
-	const gdouble N = (gdouble)convert_str_to_int(northing);
-	const gdouble E = (gdouble)convert_str_to_int(easting);
+	const MapGeo N = (MapGeo)convert_str_to_int(northing);
+	const MapGeo E = (MapGeo)convert_str_to_int(easting);
 
 	const gdouble a = 6377563.396, b = 6356256.910;              // Airy 1830 major & minor semi-axes
 	const gdouble F0 = 0.9996012717;                             // NatGrid scale factor on central meridian
@@ -634,7 +635,7 @@ gboolean convert_os_xy_to_latlon(const gchar *easting, const gchar *northing, gd
 	return TRUE;
 }
 
-gboolean convert_os_ngr_to_latlon(const gchar *text, gdouble *d_lat, gdouble *d_lon)
+gboolean convert_os_ngr_to_latlon(const gchar *text, MapGeo *d_lat, MapGeo *d_lon)
 {
 	// get numeric values of letter references, mapping A->0, B->1, C->2, etc:
 	gint l1;
@@ -711,7 +712,7 @@ gboolean convert_os_ngr_to_latlon(const gchar *text, gdouble *d_lat, gdouble *d_
 
 // Attempt to convert any user entered grid reference to a double lat/lon
 // return TRUE on valid
-gboolean parse_coords(const gchar* txt_lat, const gchar* txt_lon, gdouble* lat, gdouble* lon)
+gboolean parse_coords(const gchar* txt_lat, const gchar* txt_lon, MapGeo *lat, MapGeo *lon)
 {
 	gboolean valid = FALSE;
 	
@@ -762,7 +763,8 @@ gboolean parse_coords(const gchar* txt_lat, const gchar* txt_lon, gdouble* lat, 
 	return valid;
 }
 
-gboolean convert_iaru_loc_to_lat_lon(const gchar* txt_lon, gdouble* lat, gdouble* lon)
+gboolean convert_iaru_loc_to_lat_lon(const gchar* txt_lon,
+                                     MapGeo *lat, MapGeo *lon)
 {
 	gint u_first = 0;
 	gint u_second = 0;
@@ -824,10 +826,10 @@ gboolean convert_iaru_loc_to_lat_lon(const gchar* txt_lon, gdouble* lat, gdouble
 	return TRUE;
 }
 
-void convert_lat_lon_to_iaru_loc(gdouble d_lat, gdouble d_lon, gchar *loc)
+void convert_lat_lon_to_iaru_loc(MapGeo d_lat, MapGeo d_lon, gchar *loc)
 {
-	const gdouble d_a_lat = (d_lat+90.0);
-	const gdouble d_a_lon = (d_lon+180.0);
+	const MapGeo d_a_lat = (d_lat+90.0);
+	const MapGeo d_a_lon = (d_lon+180.0);
 		
 	const gint i_first  = (gint)floor(d_a_lon/20.0);
 	const gint i_second = (gint)floor(d_a_lat/10.0);
@@ -853,7 +855,7 @@ void convert_lat_lon_to_iaru_loc(gdouble d_lat, gdouble d_lon, gchar *loc)
 			i_eighth);
 }
 
-gboolean convert_lat_lon_to_bng(gdouble lat, gdouble lon, gchar* bng)
+gboolean convert_lat_lon_to_bng(MapGeo lat, MapGeo lon, gchar* bng)
 {
 	gint easting, northing;
 
@@ -869,7 +871,7 @@ gboolean convert_lat_lon_to_bng(gdouble lat, gdouble lon, gchar* bng)
 }
 
 
-void format_lat_lon(gdouble d_lat, gdouble d_lon, gchar* lat, gchar* lon)
+void format_lat_lon(MapGeo d_lat, MapGeo d_lon, gchar* lat, gchar* lon)
 {
 	gint east = 0;
 	gint north = 0;

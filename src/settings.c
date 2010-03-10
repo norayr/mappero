@@ -238,7 +238,7 @@ settings_save()
 
     /* Save last center point. */
     {
-        gdouble center_lat, center_lon;
+        MapGeo center_lat, center_lon;
         gint zoom;
 
         map_controller_get_center(controller, &_center);
@@ -1603,7 +1603,7 @@ settings_init(GConfClient *gconf_client)
 
     /* Get last center point. */
     {
-        gdouble center_lat, center_lon;
+        MapGeo center_lat, center_lon;
 
         /* Get last saved latitude.  Default is last saved latitude. */
         value = gconf_client_get(gconf_client, GCONF_KEY_CENTER_LAT, NULL);

@@ -56,7 +56,7 @@
 static void
 cmenu_show_latlon(gint unitx, gint unity)
 {
-  gdouble lat, lon;
+  MapGeo lat, lon;
   gint tmp_degformat = _degformat;
   gint fallback_deg_format = _degformat;
   gchar buffer[80], tmp1[LL_FMT_LEN], tmp2[LL_FMT_LEN];
@@ -96,7 +96,7 @@ static void
 cmenu_clip_latlon(gint unitx, gint unity)
 {
     gchar buffer[80];
-    gdouble lat, lon;
+    MapGeo lat, lon;
 
     unit2latlon(unitx, unity, lat, lon);
 
@@ -112,7 +112,7 @@ cmenu_route_to(gint unitx, gint unity)
     gchar buffer[80];
     gchar strlat[32];
     gchar strlon[32];
-    gdouble lat, lon;
+    MapGeo lat, lon;
 
     unit2latlon(unitx, unity, lat, lon);
 
@@ -129,7 +129,7 @@ cmenu_distance_to(gint unitx, gint unity)
     MapController *controller = map_controller_get_instance();
     const MapGpsData *gps = map_controller_get_gps_data(controller);
     gchar buffer[80];
-    gdouble lat, lon;
+    MapGeo lat, lon;
 
     unit2latlon(unitx, unity, lat, lon);
 
@@ -155,7 +155,7 @@ cmenu_add_route(gint unitx, gint unity)
 static gboolean
 cmenu_cb_loc_show_latlon(GtkMenuItem *item)
 {
-    gdouble lat, lon;
+    MapGeo lat, lon;
 
     unit2latlon(_cmenu_unitx, _cmenu_unity, lat, lon);
 

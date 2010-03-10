@@ -860,7 +860,7 @@ static void
 update_path_coords(Repository *from, Repository *to, Path *path)
 {
     Point *curr = path->head;
-    gdouble lat, lon;
+    MapGeo lat, lon;
 
     while (curr != path->tail) {
         if (curr->unit.x || curr->unit.y) {
@@ -892,7 +892,7 @@ map_controller_set_repository(MapController *self, Repository *repo)
     /* if new repo coordinate system differs from current one,
        recalculate map center, current track and route (if needed) */
     if (curr_repo && curr_type->latlon_to_unit != new_type->latlon_to_unit) {
-        gdouble lat, lon;
+        MapGeo lat, lon;
 
         curr_type->unit_to_latlon(center.x, center.y, &lat, &lon);
         new_type->latlon_to_unit(lat, lon, &center.x, &center.y);

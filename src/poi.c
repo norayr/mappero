@@ -342,7 +342,7 @@ get_nearest_poi(gint unitx, gint unity, PoiInfo *poi)
 {
     DEBUG("%d, %d", unitx, unity);
     gboolean result;
-    gdouble lat, lon;
+    MapGeo lat, lon;
     unit2latlon(unitx, unity, lat, lon);
 
     if(SQLITE_OK == sqlite3_bind_double(_stmt_select_nearest_poi, 1, lat)
@@ -370,7 +370,7 @@ poi_get_model_for_area(MapArea *area)
     GtkListStore *store;
     GtkTreeIter iter;
     gchar tmp1[LL_FMT_LEN], tmp2[LL_FMT_LEN];
-    gdouble lat1, lon1, lat2, lon2;
+    MapGeo lat1, lon1, lat2, lon2;
     gint i = 0;
 
     /* note that we invert the y */
@@ -401,7 +401,7 @@ poi_get_model_for_area(MapArea *area)
 
     while(SQLITE_ROW == sqlite3_step(_stmt_select_poi))
     {
-        gdouble lat, lon;
+        MapGeo lat, lon;
         lat = sqlite3_column_double(_stmt_select_poi, 0);
         lon = sqlite3_column_double(_stmt_select_poi, 1);
         
@@ -2015,7 +2015,7 @@ poi_list_goto(GtkWidget *widget, PoiListInfo *pli)
     if(gtk_tree_selection_get_selected(selection, NULL, &iter))
     {
         MapController *controller = map_controller_get_instance();
-        gdouble lat, lon;
+        MapGeo lat, lon;
         MapPoint unit;
 
         gtk_tree_model_get(GTK_TREE_MODEL(store), &iter,
@@ -2175,7 +2175,7 @@ poi_list_dialog(GtkWidget *parent, gint unitx, gint unity, GList *poi_list)
     static GtkListStore *store;
     GtkTreeIter iter;
     GList *curr;
-    gdouble src_lat, src_lon;
+    MapGeo src_lat, src_lon;
 
     if(pli.dialog == NULL)
     {
@@ -2660,7 +2660,7 @@ poi_download_dialog(gint unitx, gint unity)
         gchar buffer[80];
         gchar strlat[32];
         gchar strlon[32];
-        gdouble lat, lon;
+        MapGeo lat, lon;
 
         unit2latlon(unitx, unity, lat, lon);
 
@@ -2742,7 +2742,7 @@ poi_download_dialog(gint unitx, gint unity)
             gchar strlat[32];
             gchar strlon[32];
             Point *p;
-            gdouble lat, lon;
+            MapGeo lat, lon;
 
             /* Use last non-zero route point. */
             for(p = _route.tail; !p->unit.y; p--) { }
@@ -2974,7 +2974,7 @@ poi_browse_dialog(gint unitx, gint unity)
         gchar buffer[80];
         gchar strlat[32];
         gchar strlon[32];
-        gdouble lat, lon;
+        MapGeo lat, lon;
 
         unit2latlon(unitx, unity, lat, lon);
 
@@ -3021,7 +3021,7 @@ poi_browse_dialog(gint unitx, gint unity)
     {
         gchar buffer[BUFFER_SIZE];
         const gchar *origin, *query;
-        gdouble lat, lon;
+        MapGeo lat, lon;
         GList *poi_list = NULL;
         gint cat_id;
         gboolean is_cat = FALSE;
@@ -3043,7 +3043,7 @@ poi_browse_dialog(gint unitx, gint unity)
             gchar strlat[32];
             gchar strlon[32];
             Point *p;
-            gdouble lat, lon;
+            MapGeo lat, lon;
 
             /* Use last non-zero route point. */
             for(p = _route.tail; !p->unit.y; p--) { }
@@ -3157,7 +3157,7 @@ void
 map_poi_render(MapArea *area, MapPoiRenderCb callback, gpointer user_data)
 {
     MapPoint p;
-    gdouble lat1, lat2, lon1, lon2;
+    MapGeo lat1, lat2, lon1, lon2;
     gchar buffer[100];
     GdkPixbuf *pixbuf;
 

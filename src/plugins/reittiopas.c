@@ -231,7 +231,7 @@ location2units(const MapLocation *loc, MapPoint *u)
 
     if (loc->address)
     {
-        gdouble lat, lon;
+        MapGeo lat, lon;
         gchar *end;
         gchar *str = loc->address;
 
@@ -261,10 +261,10 @@ location2units(const MapLocation *loc, MapPoint *u)
 }
 
 static void
-wgslatlon2kkjlatlon(gdouble wlat, gdouble wlon, gdouble *klat, gdouble *klon)
+wgslatlon2kkjlatlon(MapGeo wlat, MapGeo wlon, MapGeo *klat, MapGeo *klon)
 {
-    gdouble la, lo;
-    gdouble dla, dlo;
+    MapGeo la, lo;
+    MapGeo dla, dlo;
 
     la = rad2deg(wlat);
     lo = rad2deg(wlon);
@@ -290,10 +290,10 @@ wgslatlon2kkjlatlon(gdouble wlat, gdouble wlon, gdouble *klat, gdouble *klon)
 }
 
 static void
-kkjlatlon2kkjxy(gdouble KKJradla, gdouble KKJradlo,
-                gint ZoneNumber, gdouble Long0, KKJ2 *k)
+kkjlatlon2kkjxy(MapGeo KKJradla, MapGeo KKJradlo,
+                gint ZoneNumber, MapGeo Long0, KKJ2 *k)
 {
-    gdouble Lo, a, b, f, bb, c, ee, n, nn, cosLa, cosLaF, LaF, t, A, A1, A2, A3, A4, X, Y, NN;
+    MapGeo Lo, a, b, f, bb, c, ee, n, nn, cosLa, cosLaF, LaF, t, A, A1, A2, A3, A4, X, Y, NN;
 
     Lo = KKJradlo - Long0;
     a  = 6378388.0;
@@ -322,9 +322,9 @@ kkjlatlon2kkjxy(gdouble KKJradla, gdouble KKJradlo,
 }
 
 static void
-KKJlalo_to_WGSlalo(gdouble kla, gdouble klo, gdouble *lat, gdouble *lon)
+KKJlalo_to_WGSlalo(MapGeo kla, MapGeo klo, MapGeo *lat, MapGeo *lon)
 {
-    gdouble La, Lo, dLa, dLo;
+    MapGeo La, Lo, dLa, dLo;
 
     La = rad2deg(kla);
     Lo = rad2deg(klo);
@@ -347,12 +347,12 @@ KKJlalo_to_WGSlalo(gdouble kla, gdouble klo, gdouble *lat, gdouble *lon)
 }
 
 static void
-KKJxy_to_KKJlalo(const KKJ2 *k, gint ZoneNumber, gdouble Long0,
-                 gdouble *kla, gdouble *klo)
+KKJxy_to_KKJlalo(const KKJ2 *k, gint ZoneNumber, MapGeo Long0,
+                 MapGeo *kla, MapGeo *klo)
 {
-    gdouble klat, klon;
-    gdouble MinLa, MaxLa, MinLo, MaxLo;
-    gdouble DeltaLa, DeltaLo;
+    MapGeo klat, klon;
+    MapGeo MinLa, MaxLa, MinLo, MaxLo;
+    MapGeo DeltaLa, DeltaLo;
     KKJ2 KKJt;
     gint i;
 
@@ -393,11 +393,11 @@ KKJxy_to_KKJlalo(const KKJ2 *k, gint ZoneNumber, gdouble Long0,
 }
 
 static void
-kkj22latlon(const KKJ2 *k, gdouble *lat, gdouble *lon)
+kkj22latlon(const KKJ2 *k, MapGeo *lat, MapGeo *lon)
 {
-    gdouble rlat, rlon;
-    gdouble klat, klon;
-    gdouble long0;
+    MapGeo rlat, rlon;
+    MapGeo klat, klon;
+    MapGeo long0;
 
     long0 = deg2rad(24);
     KKJxy_to_KKJlalo(k, 2, long0, &klat, &klon);
@@ -409,7 +409,7 @@ kkj22latlon(const KKJ2 *k, gdouble *lat, gdouble *lon)
 static void
 kkj22unit(const KKJ2 *k, MapPoint *p)
 {
-    gdouble lat, lon;
+    MapGeo lat, lon;
 
     kkj22latlon(k, &lat, &lon);
 
@@ -417,11 +417,11 @@ kkj22unit(const KKJ2 *k, MapPoint *p)
 }
 
 static void
-latlon2kkj2(gdouble lat, gdouble lon, KKJ2 *k)
+latlon2kkj2(MapGeo lat, MapGeo lon, KKJ2 *k)
 {
-    gdouble rlat, rlon;
-    gdouble klat, klon;
-    gdouble long0;
+    MapGeo rlat, rlon;
+    MapGeo klat, klon;
+    MapGeo long0;
 
     rlat = deg2rad(lat);
     rlon = deg2rad(lon);
@@ -434,7 +434,7 @@ latlon2kkj2(gdouble lat, gdouble lon, KKJ2 *k)
 static void
 unit2kkj2(const MapPoint *p, KKJ2 *k)
 {
-    gdouble lat, lon;
+    MapGeo lat, lon;
 
     unit2latlon(p->x, p->y, lat, lon);
 
