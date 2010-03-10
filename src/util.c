@@ -1021,3 +1021,33 @@ time_to_string(gchar *string, size_t size, const gchar *format, time_t time)
     return strftime(string, size, format, &tm);
 }
 
+void
+map_set_fast_mode(gboolean fast)
+{
+#ifdef __arm__
+  if (fast)
+  {
+    int tmp;
+    __asm__ volatile(
+        "fmrx       %[tmp], fpscr\n"
+        "orr        %[tmp], %[tmp], #(1 << 24)\n" /* flush-to-zero */
+        "orr        %[tmp], %[tmp], #(1 << 25)\n" /* default NaN */
+        "bic        %[tmp], %[tmp], #((1 << 15) | (1 << 12) | (1 << 11) | (1 << 10) | (1 << 9) | (1 << 8))\n" /* clear exception bits */
+        "fmxr       fpscr, %[tmp]\n"
+        : [tmp] "=r" (tmp)
+      );
+  }
+  else
+  {
+    int tmp;
+    __asm__ volatile(
+        "fmrx       %[tmp], fpscr\n"
+        "bic        %[tmp], %[tmp], #(1 << 24)\n" /* flush-to-zero */
+        "bic        %[tmp], %[tmp], #(1 << 25)\n" /* default NaN */
+        "fmxr       fpscr, %[tmp]\n"
+        : [tmp] "=r" (tmp)
+      );
+  }
+#endif /* if __arm__ */
+}
+

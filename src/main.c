@@ -625,6 +625,7 @@ main(gint argc, gchar *argv[])
         return 1;
     }
 
+    map_set_fast_mode(TRUE);
     gtk_clutter_init(&argc, &argv);
 
     /* Init gconf. */

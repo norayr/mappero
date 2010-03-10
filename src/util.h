@@ -59,4 +59,6 @@ gint gint_sqrt(gint num);
 size_t time_to_string(gchar *string, size_t size, const gchar *format,
                       time_t time);
 
+void map_set_fast_mode(gboolean fast);
+
 #endif /* ifndef MAEMO_MAPPER_UTIL_H */
