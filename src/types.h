@@ -302,6 +302,7 @@ struct _Point {
     time_t time;
     gchar zoom; /* zoom level at which this point becomes visible */
     gint16 altitude;
+    gfloat distance; /* distance from previous point */
 };
 
 /** A WayPoint, which is a Point with a description. */
@@ -320,6 +321,9 @@ struct _Path {
     WayPoint *whead; /* points to first element in array; NULL if empty. */
     WayPoint *wtail; /* points to last element in array. */
     WayPoint *wcap; /* points after last slot in array. */
+    gfloat length; /* length of the path, in metres */
+    gfloat last_lat; /* coordinates of the last point */
+    gfloat last_lon;
     gint points_optimized;
 };
 

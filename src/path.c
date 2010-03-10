@@ -205,6 +205,49 @@ path_wresize(Path *path, gint wsize)
 }
 
 static void
+map_path_calculate_distances(Path *path)
+{
+    Point *curr;
+    gfloat total = 0;
+    gdouble lat, lon, last_lat, last_lon;
+
+#ifdef ENABLE_DEBUG
+    struct timespec ts0, ts1;
+    long ms_diff;
+
+    clock_gettime(CLOCK_THREAD_CPUTIME_ID, &ts0);
+#endif
+
+    /* find first non 0 point */
+    for (curr = path->head; curr <= path->tail; curr++)
+        if (curr->unit.y != 0) break;
+
+    unit2latlon(curr->unit.x, curr->unit.y, last_lat, last_lon);
+
+    for (curr++; curr <= path->tail; curr++)
+    {
+        if (curr->unit.y == 0) continue;
+
+        unit2latlon(curr->unit.x, curr->unit.y, lat, lon);
+        curr->distance = calculate_distance(last_lat, last_lon, lat, lon);
+        total += curr->distance;
+        last_lat = lat;
+        last_lon = lon;
+    }
+
+    path->last_lat = last_lat;
+    path->last_lon = last_lon;
+    path->length = total;
+
+#ifdef ENABLE_DEBUG
+    clock_gettime(CLOCK_THREAD_CPUTIME_ID, &ts1);
+    ms_diff = (ts1.tv_sec - ts0.tv_sec) * 1000 +
+        (ts1.tv_nsec - ts0.tv_nsec) / 1000000;
+    DEBUG("%ld ms for %d points", ms_diff, path->tail - path->head);
+#endif
+}
+
+static void
 read_path_from_db(Path *path, sqlite3_stmt *select_stmt)
 {
     MACRO_PATH_INIT(*path);
@@ -220,6 +263,7 @@ read_path_from_db(Path *path, sqlite3_stmt *select_stmt)
         mix.field = sqlite3_column_int(select_stmt, 3);
         path->tail->zoom = mix.s.zoom;
         path->tail->altitude = mix.s.altitude;
+        path->tail->distance = 0;
 
         desc = (const gchar *)sqlite3_column_text(select_stmt, 4);
         if(desc)
@@ -239,6 +283,7 @@ read_path_from_db(Path *path, sqlite3_stmt *select_stmt)
     }
 
     map_path_optimize(path);
+    map_path_calculate_distances(path);
 }
 
 /* Returns the new next_update_index. */
@@ -709,6 +754,7 @@ auto_calculate_route_cb(MapRouter *router, Path *path, const GError *error)
         cancel_autoroute();
     else
     {
+        map_path_calculate_distances(path);
         map_path_merge(path, &_route, MAP_PATH_MERGE_POLICY_REPLACE);
         path_save_route_to_db();
 
@@ -994,12 +1040,20 @@ map_path_track_update(const MapGpsData *gps)
         if (_track.tail->unit.y != 0)
             must_add = TRUE;
     }
-    pos.time = gps->time;
 
     if (must_add)
     {
         MACRO_PATH_INCREMENT_TAIL(_track);
+        if (_track.last_lat != 0 && _track.last_lon != 0 && pos.unit.y != 0)
+        {
+            pos.distance = calculate_distance(_track.last_lat, _track.last_lon,
+                                              gps->lat, gps->lon);
+        }
+        pos.time = gps->time;
         *_track.tail = pos;
+        _track.last_lat = gps->lat;
+        _track.last_lon = gps->lon;
+        _track.length += pos.distance;
         map_path_optimize(&_track);
     }
 
@@ -1215,6 +1269,7 @@ calculate_route_cb(MapRouter *router, Path *path, const GError *error,
     /* Cancel any autoroute that might be occurring. */
     cancel_autoroute();
 
+    map_path_calculate_distances(path);
     map_path_merge(path, &_route,
                    rdi->replace ? MAP_PATH_MERGE_POLICY_REPLACE :
                    MAP_PATH_MERGE_POLICY_APPEND);
@@ -1886,6 +1941,7 @@ map_path_merge(Path *src_path, Path *dest_path, MapPathMergePolicy policy)
 {
     map_path_optimize(src_path);
 
+    DEBUG("src length %.2f, dest %.2f", src_path->length, dest_path->length);
     if (policy != MAP_PATH_MERGE_POLICY_REPLACE
         && dest_path->head != dest_path->tail)
     {
@@ -1914,6 +1970,17 @@ map_path_merge(Path *src_path, Path *dest_path, MapPathMergePolicy policy)
         for(src_first = src->head - 1; src_first++ != src->tail; )
             if(src_first->unit.y)
                 break;
+
+        /* update the distance of the first point */
+        if (dest->last_lat != 0 && dest->last_lon != 0 &&
+            src_first->unit.y != 0)
+        {
+            gdouble lat, lon;
+            unit2latlon(src_first->unit.x, src_first->unit.y, lat, lon);
+            src_first->distance =
+                calculate_distance(dest->last_lat, dest->last_lon, lat, lon);
+            dest->length += src_first->distance;
+        }
 
         /* Append route points from src to dest. */
         if(src->tail >= src_first)
@@ -1944,6 +2011,10 @@ map_path_merge(Path *src_path, Path *dest_path, MapPathMergePolicy policy)
 
         }
 
+        dest->length += src->length;
+        dest->last_lat = src->last_lat;
+        dest->last_lon = src->last_lon;
+
         /* Kill old route - don't use MACRO_PATH_FREE(), because that
          * would free the string desc's that we just moved to data.route. */
         g_free(src->head);
@@ -1961,5 +2032,6 @@ map_path_merge(Path *src_path, Path *dest_path, MapPathMergePolicy policy)
         path_wresize(dest_path,
                 dest_path->wtail - dest_path->whead + 1 + ARRAY_CHUNK_SIZE);
     }
+    DEBUG("total length: %.2f", dest_path->length);
 }
 
