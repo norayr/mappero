@@ -607,36 +607,21 @@ route_calc_distance_to(const Point *point, gfloat *distance)
         /* Skip _near_point in case we have already passed it. */
         for(curr = _near_point + 1; curr <= point; ++curr)
         {
-            if(curr->unit.y)
-            {
-                unit2latlon(curr->unit.x, curr->unit.y, lat2, lon2);
-                sum += calculate_distance(lat1, lon1, lat2, lon2);
-                lat1 = lat2;
-                lon1 = lon2;
-            }
+            sum += curr->distance;
         }
     }
     else if(point < _near_point)
     {
         Point *curr;
-        /* Skip _near_point in case we have already passed it. */
-        for(curr = _near_point - 1; curr >= point; --curr)
+        for (curr = _near_point; curr > point; --curr)
         {
-            if(curr->unit.y)
-            {
-                unit2latlon(curr->unit.x, curr->unit.y, lat2, lon2);
-                sum += calculate_distance(lat1, lon1, lat2, lon2);
-                lat1 = lat2;
-                lon1 = lon2;
-            }
+            sum += curr->distance;
         }
     }
-    else
-    {
-        /* Waypoint _is_ the nearest point. */
-        unit2latlon(_near_point->unit.x, _near_point->unit.y, lat2, lon2);
-        sum += calculate_distance(lat1, lon1, lat2, lon2);
-    }
+
+    /* sum the distance to _near_point */
+    unit2latlon(_near_point->unit.x, _near_point->unit.y, lat2, lon2);
+    sum += calculate_distance(lat1, lon1, lat2, lon2);
 
     *distance = sum;
     return TRUE;
