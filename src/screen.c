@@ -809,12 +809,15 @@ panel_create_layouts(MapPanelData *pd, PangoContext *context)
 {
     MapController *controller = map_controller_get_instance();
     PangoLayout *layout;
-    PangoFontDescription *wp_font;
+    static PangoFontDescription *font = NULL;
     const WayPoint *waypoint;
     gint w, h;
     gboolean has_data = FALSE;
 
     pd->icon_width = pd->icon_height = _draw_width * 4;
+    if (!font)
+        font = pango_font_description_from_string("Sans 14");
+
     waypoint = map_controller_get_next_waypoint(controller);
     if (waypoint)
     {
@@ -824,8 +827,7 @@ panel_create_layouts(MapPanelData *pd, PangoContext *context)
         layout = pango_layout_new(context);
         pango_layout_set_width(layout,
                                (PANEL_WIDTH - pd->icon_width) * PANGO_SCALE);
-        wp_font = pango_font_description_from_string("Sans 14");
-        pango_layout_set_font_description(layout, wp_font);
+        pango_layout_set_font_description(layout, font);
 
         ptr = buffer;
         if (waypoint->point->time != 0)
@@ -841,7 +843,6 @@ panel_create_layouts(MapPanelData *pd, PangoContext *context)
         pango_layout_get_pixel_size(layout, &w, &h);
         pd->wp_layout = layout;
 
-        pango_font_description_free(wp_font);
 
         pd->wp_height += MAX(pd->icon_height, h);
         has_data = TRUE;
