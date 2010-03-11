@@ -39,6 +39,7 @@
 #include <cairo/cairo.h>
 #include <hildon/hildon-banner.h>
 #include <hildon/hildon-defines.h>
+#include <string.h>
 
 #define SCALE_WIDTH     100
 #define SCALE_HEIGHT    22
@@ -124,6 +125,15 @@ struct _MapScreenPrivate
 
     guint is_disposed : 1;
 };
+
+typedef struct {
+    gint icon_width;
+    gint icon_height;
+
+    /* waypoint layout */
+    PangoLayout *wp_layout;
+    gint wp_height;
+} MapPanelData;
 
 G_DEFINE_TYPE(MapScreen, map_screen, GTK_CLUTTER_TYPE_EMBED);
 
@@ -795,26 +805,16 @@ create_mark(MapScreen *screen)
 }
 
 static gboolean
-panel_redraw_real(MapScreen *self)
+panel_create_layouts(MapPanelData *pd, PangoContext *context)
 {
     MapController *controller = map_controller_get_instance();
-    MapScreenPrivate *priv;
-    PangoContext *context;
-    PangoLayout *layout, *wp_layout = NULL;
+    PangoLayout *layout;
     PangoFontDescription *wp_font;
     const WayPoint *waypoint;
-    gint panel_height, panel_x, panel_y, x, y, w, h;
-    gint icon_width, icon_height, wp_height = 0;
+    gint w, h;
     gboolean has_data = FALSE;
-    cairo_t *cr;
 
-    priv = self->priv;
-    priv->source_panel_redraw = 0;
-
-    /* before drawing, calculate the height of the panel */
-    panel_height = 0;
-    icon_width = icon_height = _draw_width * 4;
-    context = gtk_widget_get_pango_context(GTK_WIDGET(self));
+    pd->icon_width = pd->icon_height = _draw_width * 4;
     waypoint = map_controller_get_next_waypoint(controller);
     if (waypoint)
     {
@@ -823,7 +823,7 @@ panel_redraw_real(MapScreen *self)
 
         layout = pango_layout_new(context);
         pango_layout_set_width(layout,
-                               (PANEL_WIDTH - icon_width) * PANGO_SCALE);
+                               (PANEL_WIDTH - pd->icon_width) * PANGO_SCALE);
         wp_font = pango_font_description_from_string("Sans 14");
         pango_layout_set_font_description(layout, wp_font);
 
@@ -839,22 +839,41 @@ panel_redraw_real(MapScreen *self)
         pango_layout_set_markup(layout, text, -1);
         g_free(text);
         pango_layout_get_pixel_size(layout, &w, &h);
-        wp_layout = layout;
+        pd->wp_layout = layout;
 
         pango_font_description_free(wp_font);
 
-        wp_height += MAX(icon_height, h);
+        pd->wp_height += MAX(pd->icon_height, h);
         has_data = TRUE;
     }
-    panel_height = PANEL_BORDER * 2 + wp_height;
 
-    if (!has_data)
+    return has_data;
+}
+
+static gboolean
+panel_redraw_real(MapScreen *self)
+{
+    MapScreenPrivate *priv;
+    PangoContext *context;
+    gint panel_height, panel_x, panel_y, x, y;
+    MapPanelData pd;
+    cairo_t *cr;
+
+    priv = self->priv;
+    priv->source_panel_redraw = 0;
+
+    /* before drawing, calculate the height of the panel */
+    context = gtk_widget_get_pango_context(GTK_WIDGET(self));
+    memset(&pd, 0, sizeof(pd));
+
+    if (!panel_create_layouts(&pd, context))
     {
         /* nothing to display, hide the panel */
         clutter_actor_hide(priv->panel);
         return FALSE;
     }
 
+    panel_height = PANEL_BORDER * 2 + pd.wp_height;
     clutter_cairo_texture_set_surface_size(CLUTTER_CAIRO_TEXTURE(priv->panel),
                                            PANEL_WIDTH, panel_height);
     clutter_cairo_texture_clear(CLUTTER_CAIRO_TEXTURE(priv->panel));
@@ -870,19 +889,19 @@ panel_redraw_real(MapScreen *self)
 
     cairo_set_source_rgb(cr, 0, 0, 0);
 
-    if (waypoint)
+    if (pd.wp_layout)
     {
         x = panel_x, y = panel_y;
 
         draw_break(cr, &_color[COLORABLE_ROUTE],
                    x + _draw_width * 3 / 2, y + _draw_width * 3 / 2);
-        x += icon_width;
+        x += pd.icon_width;
 
         cairo_move_to(cr, x, y);
-        pango_cairo_show_layout(cr, wp_layout);
-        g_object_unref(wp_layout);
+        pango_cairo_show_layout(cr, pd.wp_layout);
+        g_object_unref(pd.wp_layout);
 
-        y += wp_height;
+        y += pd.wp_height;
     }
 
     cairo_destroy(cr);
