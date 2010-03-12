@@ -450,13 +450,14 @@ map_update_task_completed(MapUpdateTask *mut)
     return FALSE;
 }
 
-static void
+static gboolean
 download_tile(MapTileSpec *tile, gchar **bytes, gint *size,
               GdkPixbuf **pixbuf, GError **error)
 {
     gchar src_url[256];         /* 256 may become too little, somtetimes, I guess */
     GnomeVFSResult vfs_result;
     GdkPixbufLoader *loader = NULL;
+    gboolean can_retry = FALSE;
     gint ret;
 
     DEBUG("%s, %d, %d, %d", tile->source->name, tile->zoom,
@@ -476,6 +477,14 @@ download_tile(MapTileSpec *tile, gchar **bytes, gint *size,
         /* it might not be very proper, but let's use GFile error codes */
         g_set_error(error, g_file_error_quark(), G_FILE_ERROR_FAULT,
                     "%s", gnome_vfs_result_to_string(vfs_result));
+        switch (vfs_result) {
+        case GNOME_VFS_ERROR_NOT_FOUND:
+        case GNOME_VFS_ERROR_ACCESS_DENIED:
+        case GNOME_VFS_ERROR_NOT_PERMITTED:
+            can_retry = FALSE; break;
+        default:
+            can_retry = TRUE;
+        }
         goto l_error;
     }
 
@@ -494,13 +503,14 @@ download_tile(MapTileSpec *tile, gchar **bytes, gint *size,
     }
     g_object_ref(*pixbuf);
     g_object_unref(loader);
-    return;
+    return can_retry;
 
 l_error:
     if (loader)
         g_object_unref(loader);
     g_free(*bytes);
     *bytes = NULL;
+    return can_retry;
 }
 
 static void
@@ -598,10 +608,11 @@ thread_proc_mut()
 
                 for (retries = source->transparent ? 1 : INITIAL_DOWNLOAD_RETRIES; retries > 0; --retries)
                 {
+                    gboolean can_retry;
                     g_clear_error(&mut->error);
-                    download_tile(tile, &bytes, &size,
-                                  &mut->pixbuf, &mut->error);
-                    if (mut->pixbuf) break;
+                    can_retry = download_tile(tile, &bytes, &size,
+                                              &mut->pixbuf, &mut->error);
+                    if (mut->pixbuf || !can_retry) break;
 
                     DEBUG("Download failed, retrying");
                 }
