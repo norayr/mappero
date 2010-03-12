@@ -134,6 +134,10 @@ typedef struct {
     PangoLayout *track_layout;
     gint track_height;
 
+    /* route layout */
+    PangoLayout *route_layout;
+    gint route_height;
+
     /* waypoint layout */
     PangoLayout *wp_layout;
     gint wp_height;
@@ -849,6 +853,39 @@ panel_create_layouts(MapPanelData *pd, PangoContext *context)
         has_data = TRUE;
     }
 
+    if (_route.head != _route.tail)
+    {
+        gchar *text, buffer[32];
+        gfloat distance = 0.0;
+        time_t time;
+        gint n = 0;
+        Point *p;
+
+        layout = pango_layout_new(context);
+        pango_layout_set_width(layout,
+                               (PANEL_WIDTH - pd->icon_width) * PANGO_SCALE);
+        pango_layout_set_font_description(layout, font);
+
+        /* Find last non-zero point. */
+        for(p = _route.tail; p->unit.y == 0; p--);
+        route_calc_distance_to(p, &distance);
+        n += distance_to_string(buffer + n, sizeof(buffer) - n, _route.length);
+
+        time = _route.tail->time;
+        if (time == 0) time = _route.tail[-1].time;
+        if (time != 0)
+            n += time_to_string(buffer + n, sizeof(buffer) - n, " %H:%M", time);
+
+        text = g_strdup_printf("<b>%s</b>", buffer);
+        pango_layout_set_markup(layout, text, -1);
+        g_free(text);
+        pango_layout_get_pixel_size(layout, &w, &h);
+        pd->route_layout = layout;
+
+        pd->route_height += MAX(pd->icon_height, h);
+        has_data = TRUE;
+    }
+
     waypoint = map_controller_get_next_waypoint(controller);
     if (waypoint)
     {
@@ -879,6 +916,22 @@ panel_create_layouts(MapPanelData *pd, PangoContext *context)
     }
 
     return has_data;
+}
+
+static void
+draw_icon_flag(cairo_t *cr, GdkColor *color, gint x, gint y, gint size)
+{
+    const gint size4 = size / 4;
+    cairo_save(cr);
+    cairo_move_to(cr, x + size4, y + size);
+    cairo_line_to(cr, x + size4, y);
+    cairo_line_to(cr, x + size - size4, y + size4);
+    cairo_line_to(cr, x + size4, y + size / 2);
+    set_source_color(cr, color);
+    cairo_set_line_width(cr, 2);
+    cairo_stroke_preserve(cr);
+    cairo_fill(cr);
+    cairo_restore(cr);
 }
 
 static void
@@ -919,7 +972,8 @@ panel_redraw_real(MapScreen *self)
         return FALSE;
     }
 
-    panel_height = PANEL_BORDER * 2 + pd.track_height + pd.wp_height;
+    panel_height = PANEL_BORDER * 2 +
+        pd.track_height + pd.route_height + pd.wp_height;
     clutter_cairo_texture_set_surface_size(CLUTTER_CAIRO_TEXTURE(priv->panel),
                                            PANEL_WIDTH, panel_height);
     clutter_cairo_texture_clear(CLUTTER_CAIRO_TEXTURE(priv->panel));
@@ -950,6 +1004,21 @@ panel_redraw_real(MapScreen *self)
         g_object_unref(pd.track_layout);
 
         y += pd.track_height;
+    }
+
+    if (pd.route_layout)
+    {
+        x = panel_x;
+
+        draw_icon_flag(cr, &_color[COLORABLE_ROUTE],
+                       x, y, pd.icon_height);
+        x += pd.icon_width;
+
+        cairo_move_to(cr, x, y);
+        pango_cairo_show_layout(cr, pd.route_layout);
+        g_object_unref(pd.route_layout);
+
+        y += pd.route_height;
     }
 
     if (pd.wp_layout)
