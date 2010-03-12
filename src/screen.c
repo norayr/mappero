@@ -133,14 +133,17 @@ typedef struct {
     /* track layout */
     PangoLayout *track_layout;
     gint track_height;
+    gint track_gap;
 
     /* route layout */
     PangoLayout *route_layout;
     gint route_height;
+    gint route_gap;
 
     /* waypoint layout */
     PangoLayout *wp_layout;
     gint wp_height;
+    gint wp_gap;
 } MapPanelData;
 
 G_DEFINE_TYPE(MapScreen, map_screen, GTK_CLUTTER_TYPE_EMBED);
@@ -830,6 +833,7 @@ panel_create_layouts(MapPanelData *pd, PangoContext *context)
         gchar *text, buffer[32], *ptr;
         guint duration;
 
+        if (has_data) pd->track_gap = PANEL_BORDER;
         layout = pango_layout_new(context);
         pango_layout_set_width(layout,
                                (PANEL_WIDTH - pd->icon_width) * PANGO_SCALE);
@@ -861,6 +865,7 @@ panel_create_layouts(MapPanelData *pd, PangoContext *context)
         gint n = 0;
         Point *p;
 
+        if (has_data) pd->route_gap = PANEL_BORDER;
         layout = pango_layout_new(context);
         pango_layout_set_width(layout,
                                (PANEL_WIDTH - pd->icon_width) * PANGO_SCALE);
@@ -893,6 +898,7 @@ panel_create_layouts(MapPanelData *pd, PangoContext *context)
         gfloat distance = 0.0;
         gint n = 0;
 
+        if (has_data) pd->wp_gap = PANEL_BORDER;
         layout = pango_layout_new(context);
         pango_layout_set_width(layout,
                                (PANEL_WIDTH - pd->icon_width) * PANGO_SCALE);
@@ -973,7 +979,9 @@ panel_redraw_real(MapScreen *self)
     }
 
     panel_height = PANEL_BORDER * 2 +
-        pd.track_height + pd.route_height + pd.wp_height;
+        pd.track_height + pd.track_gap +
+        pd.route_height + pd.route_gap +
+        pd.wp_height + pd.wp_gap;
     clutter_cairo_texture_set_surface_size(CLUTTER_CAIRO_TEXTURE(priv->panel),
                                            PANEL_WIDTH, panel_height);
     clutter_cairo_texture_clear(CLUTTER_CAIRO_TEXTURE(priv->panel));
@@ -994,6 +1002,7 @@ panel_redraw_real(MapScreen *self)
     if (pd.track_layout)
     {
         x = panel_x;
+        y += pd.track_gap;
 
         draw_icon_path(cr, &_color[COLORABLE_TRACK],
                        x, y, pd.icon_height);
@@ -1009,6 +1018,7 @@ panel_redraw_real(MapScreen *self)
     if (pd.route_layout)
     {
         x = panel_x;
+        y += pd.route_gap;
 
         draw_icon_flag(cr, &_color[COLORABLE_ROUTE],
                        x, y, pd.icon_height);
@@ -1024,6 +1034,7 @@ panel_redraw_real(MapScreen *self)
     if (pd.wp_layout)
     {
         x = panel_x;
+        y += pd.wp_gap;
 
         draw_break(cr, &_color[COLORABLE_ROUTE],
                    x + _draw_width * 3 / 2, y + _draw_width * 3 / 2);
