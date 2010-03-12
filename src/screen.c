@@ -852,20 +852,20 @@ panel_create_layouts(MapPanelData *pd, PangoContext *context)
     waypoint = map_controller_get_next_waypoint(controller);
     if (waypoint)
     {
-        gchar *text, buffer[32], *ptr;
+        gchar *text, buffer[32];
         gfloat distance = 0.0;
+        gint n = 0;
 
         layout = pango_layout_new(context);
         pango_layout_set_width(layout,
                                (PANEL_WIDTH - pd->icon_width) * PANGO_SCALE);
         pango_layout_set_font_description(layout, font);
 
-        ptr = buffer;
         if (waypoint->point->time != 0)
-            ptr += time_to_string(buffer, sizeof(buffer), "%H:%M ",
-                                  waypoint->point->time);
+            n += time_to_string(buffer + n, sizeof(buffer) - n, "%H:%M ",
+                                waypoint->point->time);
         route_calc_distance_to(waypoint->point, &distance);
-        distance_to_string(ptr, sizeof(buffer) - (ptr - buffer), distance);
+        distance_to_string(buffer + n, sizeof(buffer) - n, distance);
         text = g_strdup_printf("<b>%s</b>\n%s", buffer,
                                waypoint->desc ? waypoint->desc : "");
         pango_layout_set_markup(layout, text, -1);
