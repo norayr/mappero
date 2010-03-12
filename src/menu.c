@@ -49,6 +49,7 @@
 #include "display.h"
 #include "error.h"
 #include "gpx.h"
+#include "he-about-dialog.h"
 #include "maps.h"
 #include "menu.h"
 #include "path.h"
@@ -1099,10 +1100,18 @@ menu_cb_help(GtkMenuItem *item)
 static gboolean
 menu_cb_about(GtkMenuItem *item)
 {
-#ifndef LEGACY
-#else
-    ossohelp_show(_osso, HELP_ID_ABOUT, OSSO_HELP_SHOW_DIALOG);
-#endif
+    he_about_dialog_present(GTK_WINDOW(_window),
+                            "Mapper", "maemo-mapper", VERSION,
+                            _("Geographical mapping and driving directions"),
+                            _("This application is free software.\n"
+                              "Support its development by contributing code,\n"
+                              "accurate bug reporting or donating money.\n"
+                              "2009-2010 Alberto Mardegan\n"
+                              "2009-2010 Max Lapan\n"
+                              "2006-2009 John Costigan"),
+                            NULL,
+                            "https://garage.maemo.org/tracker/?group_id=29",
+                            "https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=DLKNAWDRW4WVG");
 
     return TRUE;
 }
