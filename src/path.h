@@ -29,11 +29,6 @@ void path_save_route_to_db(void);
 void route_find_nearest_point(void);
 gboolean route_calc_distance_to(const Point *point, gfloat *distance);
 gboolean route_show_distance_to(Point *point);
-void route_show_distance_to_next(void);
-void route_show_distance_to_last(void);
-
-void track_show_distance_from_last(void);
-void track_show_distance_from_first(void);
 
 void map_path_track_update(const MapGpsData *gps);
 void track_clear(void);

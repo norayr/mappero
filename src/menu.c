@@ -128,14 +128,6 @@ menu_cb_route_save(GtkMenuItem *item)
     return TRUE;
 }
 
-static gboolean
-menu_cb_route_distlast(GtkMenuItem *item)
-{
-    route_show_distance_to_last();
-
-    return TRUE;
-}
-
 gboolean
 menu_cb_route_reset(GtkMenuItem *item)
 {
@@ -315,22 +307,6 @@ menu_cb_track_insert_mark(GtkMenuItem *item)
         break;
     }
     gtk_widget_hide(dialog);
-
-    return TRUE;
-}
-
-static gboolean
-menu_cb_track_distlast(GtkMenuItem *item)
-{
-    track_show_distance_from_last();
-
-    return TRUE;
-}
-
-static gboolean
-menu_cb_track_distfirst(GtkMenuItem *item)
-{
-    track_show_distance_from_first();
 
     return TRUE;
 }
@@ -1487,7 +1463,6 @@ map_menu_route()
         ROUTE_OPEN,
         ROUTE_DOWNLOAD,
         ROUTE_SAVE,
-        ROUTE_DISTANCE_TO_END,
         ROUTE_RESET,
         ROUTE_CLEAR,
     };
@@ -1501,8 +1476,6 @@ map_menu_route()
     map_dialog_create_button(dlg, _("Open..."), ROUTE_OPEN);
     map_dialog_create_button(dlg, _("Download..."), ROUTE_DOWNLOAD);
     map_dialog_create_button(dlg, _("Save..."), ROUTE_SAVE);
-    map_dialog_create_button(dlg, _("Show Distance to End of Route"),
-                             ROUTE_DISTANCE_TO_END);
     map_dialog_create_button(dlg, _("Reset"), ROUTE_RESET);
     map_dialog_create_button(dlg, _("Clear"), ROUTE_CLEAR);
 
@@ -1515,8 +1488,6 @@ map_menu_route()
         menu_cb_route_download(NULL); break;
     case ROUTE_SAVE:
         menu_cb_route_save(NULL); break;
-    case ROUTE_DISTANCE_TO_END:
-        menu_cb_route_distlast(NULL); break;
     case ROUTE_RESET:
         menu_cb_route_reset(NULL); break;
     case ROUTE_CLEAR:
@@ -1536,8 +1507,6 @@ map_menu_track()
         TRACK_SAVE,
         TRACK_INSERT_BREAK,
         TRACK_INSERT_MARK,
-        TRACK_DISTANCE_FROM_LAST_MARK,
-        TRACK_DISTANCE_FROM_START,
         TRACK_CLEAR,
     };
 
@@ -1551,10 +1520,6 @@ map_menu_track()
     map_dialog_create_button(dlg, _("Save..."), TRACK_SAVE);
     map_dialog_create_button(dlg, _("Insert Break"), TRACK_INSERT_BREAK);
     map_dialog_create_button(dlg, _("Insert Mark..."), TRACK_INSERT_MARK);
-    map_dialog_create_button(dlg, _("Show Distance from Last Mark"),
-                             TRACK_DISTANCE_FROM_LAST_MARK);
-    map_dialog_create_button(dlg, _("Show Distance from Beginning"),
-                             TRACK_DISTANCE_FROM_START);
     map_dialog_create_button(dlg, _("Clear"), TRACK_CLEAR);
 
     button = gtk_toggle_button_new_with_label(_("Enable Tracking"));
@@ -1576,10 +1541,6 @@ map_menu_track()
         menu_cb_track_insert_break(NULL); break;
     case TRACK_INSERT_MARK:
         menu_cb_track_insert_mark(NULL); break;
-    case TRACK_DISTANCE_FROM_LAST_MARK:
-        menu_cb_track_distlast(NULL); break;
-    case TRACK_DISTANCE_FROM_START:
-        menu_cb_track_distfirst(NULL); break;
     case TRACK_CLEAR:
         menu_cb_track_clear(NULL); break;
     }

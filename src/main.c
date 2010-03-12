@@ -297,16 +297,8 @@ maemo_mapper_init(gint argc, gchar **argv)
     CUSTOM_ACTION_ENUM_TEXT[CUSTOM_ACTION_TOGGLE_POI] = _("Toggle POIs");
     CUSTOM_ACTION_ENUM_TEXT[CUSTOM_ACTION_CHANGE_REPO]
         = _("Select Next Repository");
-    CUSTOM_ACTION_ENUM_TEXT[CUSTOM_ACTION_ROUTE_DISTNEXT]
-        = _("Show Distance to Next Waypoint");
-    CUSTOM_ACTION_ENUM_TEXT[CUSTOM_ACTION_ROUTE_DISTLAST]
-        = _("Show Distance to End of Route");
     CUSTOM_ACTION_ENUM_TEXT[CUSTOM_ACTION_TRACK_BREAK]=_("Insert Track Break");
     CUSTOM_ACTION_ENUM_TEXT[CUSTOM_ACTION_TRACK_CLEAR] = _("Clear Track");
-    CUSTOM_ACTION_ENUM_TEXT[CUSTOM_ACTION_TRACK_DISTLAST]
-        = _("Show Distance from Last Break");
-    CUSTOM_ACTION_ENUM_TEXT[CUSTOM_ACTION_TRACK_DISTFIRST]
-        = _("Show Distance from Beginning");
     CUSTOM_ACTION_ENUM_TEXT[CUSTOM_ACTION_TOGGLE_GPSINFO]=_("Toggle GPS Info");
     CUSTOM_ACTION_ENUM_TEXT[CUSTOM_ACTION_TOGGLE_SPEEDLIMIT]
         = _("Toggle Speed Limit");

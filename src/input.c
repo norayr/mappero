@@ -208,28 +208,12 @@ window_cb_key_press(GtkWidget* widget, GdkEventKey *event)
             /* TODO: change to next next-able repository (do we really need this?) */
             break;
 
-        case CUSTOM_ACTION_ROUTE_DISTNEXT:
-            route_show_distance_to_next();
-            break;
-
-        case CUSTOM_ACTION_ROUTE_DISTLAST:
-            route_show_distance_to_last();
-            break;
-
         case CUSTOM_ACTION_TRACK_BREAK:
             track_insert_break(TRUE);
             break;
 
         case CUSTOM_ACTION_TRACK_CLEAR:
             track_clear();
-            break;
-
-        case CUSTOM_ACTION_TRACK_DISTLAST:
-            track_show_distance_from_last();
-            break;
-
-        case CUSTOM_ACTION_TRACK_DISTFIRST:
-            track_show_distance_from_first();
             break;
 
         case CUSTOM_ACTION_TOGGLE_GPSINFO:
