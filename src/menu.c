@@ -1087,17 +1087,6 @@ menu_cb_settings(GtkMenuItem *item)
 }
 
 static gboolean
-menu_cb_help(GtkMenuItem *item)
-{
-#ifndef LEGACY
-#else
-    ossohelp_show(_osso, HELP_ID_INTRO, 0);
-#endif
-
-    return TRUE;
-}
-
-static gboolean
 menu_cb_about(GtkMenuItem *item)
 {
     he_about_dialog_present(GTK_WINDOW(_window),
@@ -1471,12 +1460,8 @@ menu_init()
     gtk_menu_append(menu, _menu_settings_item
         = gtk_menu_item_new_with_label(_("Settings...")));
     gtk_menu_append(menu, gtk_separator_menu_item_new());
-    gtk_menu_append(menu, _menu_help_item
-        = gtk_menu_item_new_with_label(_("Help...")));
     gtk_menu_append(menu, _menu_about_item
         = gtk_menu_item_new_with_label(_("About...")));
-    gtk_menu_append(menu, _menu_close_item
-        = gtk_menu_item_new_with_label(_("Close")));
 
     /* We need to show menu items. */
     gtk_widget_show_all(GTK_WIDGET(menu));
@@ -1599,12 +1584,8 @@ menu_init()
     /* Connect the other menu item signals. */
     g_signal_connect(G_OBJECT(_menu_settings_item), "activate",
                       G_CALLBACK(menu_cb_settings), NULL);
-    g_signal_connect(G_OBJECT(_menu_help_item), "activate",
-                      G_CALLBACK(menu_cb_help), NULL);
     g_signal_connect(G_OBJECT(_menu_about_item), "activate",
                       G_CALLBACK(menu_cb_about), NULL);
-    g_signal_connect(G_OBJECT(_menu_close_item), "activate",
-                      G_CALLBACK(gtk_main_quit), NULL);
 }
 
 void

@@ -258,9 +258,7 @@ extern GtkWidget *_menu_gps_details_item;
 
 /* Menu items for the other menu items. */
 extern GtkWidget *_menu_settings_item;
-extern GtkWidget *_menu_help_item;
 extern GtkWidget *_menu_about_item;
-extern GtkWidget *_menu_close_item;
 
 /*********************
  * ABOVE: MENU ITEMS *

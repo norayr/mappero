@@ -282,9 +282,7 @@ GtkWidget *_menu_gps_details_item = NULL;
 
 /* Menu items for the other menu items. */
 GtkWidget *_menu_settings_item = NULL;
-GtkWidget *_menu_help_item = NULL;
 GtkWidget *_menu_about_item = NULL;
-GtkWidget *_menu_close_item = NULL;
 
 /*********************
  * ABOVE: MENU ITEMS *
