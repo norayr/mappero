@@ -830,8 +830,9 @@ panel_create_layouts(MapPanelData *pd, PangoContext *context)
 
     if (_track.head != _track.tail)
     {
-        gchar *text, buffer[32], *ptr;
+        gchar *text, buffer[32];
         guint duration;
+        gint n = 0;
 
         if (has_data) pd->track_gap = PANEL_BORDER;
         layout = pango_layout_new(context);
@@ -839,14 +840,13 @@ panel_create_layouts(MapPanelData *pd, PangoContext *context)
                                (PANEL_WIDTH - pd->icon_width) * PANGO_SCALE);
         pango_layout_set_font_description(layout, font);
 
-        ptr = buffer;
+        n += distance_to_string(buffer + n, sizeof(buffer) - n, _track.length);
         duration = map_path_get_duration(&_track);
         if (duration != 0)
         {
-            ptr += duration_to_string(buffer, sizeof(buffer), duration);
-            *ptr = ' '; ptr++;
+            buffer[n++] = ' ';
+            n += duration_to_string(buffer + n, sizeof(buffer) - n, duration);
         }
-        distance_to_string(ptr, sizeof(buffer) - (ptr - buffer), _track.length);
         text = g_strdup_printf("%s", buffer);
         pango_layout_set_markup(layout, text, -1);
         g_free(text);
