@@ -1,3 +1,14 @@
+maemo-mapper (3.0+beta1) unstable; urgency=low
+
+  * Add About dialog.
+  * Add panel with track and route informations.
+  * Remove obsolete menu items.
+  * Fix "Error saving maps. Disk full?" message (see
+    https://bugzilla.gnome.org/show_bug.cgi?id=612729).
+  * Do not retry downloading of tiles if we already know it will fail.
+
+ -- Alberto Mardegan <mardy@users.sourceforge.net>  Fri, 12 Mar 2010 21:56:48 +0200
+
 maemo-mapper (3.0+alpha8) unstable; urgency=low
 
   * Add support for Yandex maps.

@@ -17,16 +17,17 @@ Description: Geographical mapping and driving directions.
  geo-related information.  It focuses in part on in-car navigation and
  usability.  Home page: http://www.gnuite.com/nokia770/maemo-mapper
 XSBC-Maemo-Display-Name: Mapper
-XB-Maemo-Upgrade-Description: Yandex, traffic layers and reittiopas.fi
- Add support for Yandex maps.
+XB-Maemo-Upgrade-Description: New route/track info panel, About dialog
+ Add About dialog.
  .
- New dialogs for managing maps and layers.
+ Add an small panel which show basic information about the current track and
+ route.
  .
- Google and Yandex traffic layers available.
+ Fix "Error saving maps. Disk full?" message.
  .
- Fix downloading of maps.
+ Do not retry the download of non existing map tiles.
  .
- Helsinki region public transport routing via reittiopas.fi.
+ Remove a few obsolete menu items.
 XSBC-Bugtracker: https://garage.maemo.org/tracker/?group_id=29
 XB-Maemo-Icon-26:
  iVBORw0KGgoAAAANSUhEUgAAABoAAAAaCAYAAACpSkzOAAAF/ElEQVRIS42WyXMbxxXGf92z
