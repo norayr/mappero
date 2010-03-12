@@ -1023,6 +1023,27 @@ time_to_string(gchar *string, size_t size, const gchar *format, time_t time)
     return strftime(string, size, format, &tm);
 }
 
+size_t
+duration_to_string(gchar *string, size_t size, guint duration)
+{
+    gint seconds, minutes, hours;
+
+    seconds = duration % 60;
+    duration /= 60;
+    minutes = duration % 60;
+    duration /= 60;
+    hours = duration;
+
+    return snprintf(string, size, "%03d:%02d", hours, minutes);
+}
+
+size_t
+distance_to_string(gchar *string, size_t size, gfloat distance)
+{
+    return snprintf(string, size, "%.1f %s",
+                    distance * UNITS_CONVERT[_units], UNITS_ENUM_TEXT[_units]);
+}
+
 void
 map_set_fast_mode(gboolean fast)
 {

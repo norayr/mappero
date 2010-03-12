@@ -130,6 +130,10 @@ typedef struct {
     gint icon_width;
     gint icon_height;
 
+    /* track layout */
+    PangoLayout *track_layout;
+    gint track_height;
+
     /* waypoint layout */
     PangoLayout *wp_layout;
     gint wp_height;
@@ -814,9 +818,36 @@ panel_create_layouts(MapPanelData *pd, PangoContext *context)
     gint w, h;
     gboolean has_data = FALSE;
 
-    pd->icon_width = pd->icon_height = _draw_width * 4;
     if (!font)
         font = pango_font_description_from_string("Sans 14");
+
+    if (_track.head != _track.tail)
+    {
+        gchar *text, buffer[32], *ptr;
+        guint duration;
+
+        layout = pango_layout_new(context);
+        pango_layout_set_width(layout,
+                               (PANEL_WIDTH - pd->icon_width) * PANGO_SCALE);
+        pango_layout_set_font_description(layout, font);
+
+        ptr = buffer;
+        duration = map_path_get_duration(&_track);
+        if (duration != 0)
+        {
+            ptr += duration_to_string(buffer, sizeof(buffer), duration);
+            *ptr = ' '; ptr++;
+        }
+        distance_to_string(ptr, sizeof(buffer) - (ptr - buffer), _track.length);
+        text = g_strdup_printf("%s", buffer);
+        pango_layout_set_markup(layout, text, -1);
+        g_free(text);
+        pango_layout_get_pixel_size(layout, &w, &h);
+        pd->track_layout = layout;
+
+        pd->track_height += MAX(pd->icon_height, h);
+        has_data = TRUE;
+    }
 
     waypoint = map_controller_get_next_waypoint(controller);
     if (waypoint)
@@ -834,8 +865,7 @@ panel_create_layouts(MapPanelData *pd, PangoContext *context)
             ptr += time_to_string(buffer, sizeof(buffer), "%H:%M ",
                                   waypoint->point->time);
         route_calc_distance_to(waypoint->point, &distance);
-        snprintf(ptr, sizeof(buffer) - (ptr - buffer), "%.1f %s",
-                 distance * UNITS_CONVERT[_units], UNITS_ENUM_TEXT[_units]);
+        distance_to_string(ptr, sizeof(buffer) - (ptr - buffer), distance);
         text = g_strdup_printf("<b>%s</b>\n%s", buffer,
                                waypoint->desc ? waypoint->desc : "");
         pango_layout_set_markup(layout, text, -1);
@@ -849,6 +879,20 @@ panel_create_layouts(MapPanelData *pd, PangoContext *context)
     }
 
     return has_data;
+}
+
+static void
+draw_icon_path(cairo_t *cr, GdkColor *color, gint x, gint y, gint size)
+{
+    cairo_save(cr);
+    cairo_move_to(cr, x + 4, y);
+    cairo_line_to(cr, x + 12, y + 8);
+    cairo_line_to(cr, x + 2, y + 16);
+    cairo_line_to(cr, x + 8, y + size);
+    set_source_color(cr, color);
+    cairo_set_line_width(cr, 2);
+    cairo_stroke(cr);
+    cairo_restore(cr);
 }
 
 static gboolean
@@ -867,6 +911,7 @@ panel_redraw_real(MapScreen *self)
     context = gtk_widget_get_pango_context(GTK_WIDGET(self));
     memset(&pd, 0, sizeof(pd));
 
+    pd.icon_width = pd.icon_height = _draw_width * 4;
     if (!panel_create_layouts(&pd, context))
     {
         /* nothing to display, hide the panel */
@@ -874,7 +919,7 @@ panel_redraw_real(MapScreen *self)
         return FALSE;
     }
 
-    panel_height = PANEL_BORDER * 2 + pd.wp_height;
+    panel_height = PANEL_BORDER * 2 + pd.track_height + pd.wp_height;
     clutter_cairo_texture_set_surface_size(CLUTTER_CAIRO_TEXTURE(priv->panel),
                                            PANEL_WIDTH, panel_height);
     clutter_cairo_texture_clear(CLUTTER_CAIRO_TEXTURE(priv->panel));
@@ -890,9 +935,26 @@ panel_redraw_real(MapScreen *self)
 
     cairo_set_source_rgb(cr, 0, 0, 0);
 
+    x = panel_x, y = panel_y;
+
+    if (pd.track_layout)
+    {
+        x = panel_x;
+
+        draw_icon_path(cr, &_color[COLORABLE_TRACK],
+                       x, y, pd.icon_height);
+        x += pd.icon_width;
+
+        cairo_move_to(cr, x, y);
+        pango_cairo_show_layout(cr, pd.track_layout);
+        g_object_unref(pd.track_layout);
+
+        y += pd.track_height;
+    }
+
     if (pd.wp_layout)
     {
-        x = panel_x, y = panel_y;
+        x = panel_x;
 
         draw_break(cr, &_color[COLORABLE_ROUTE],
                    x + _draw_width * 3 / 2, y + _draw_width * 3 / 2);

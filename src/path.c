@@ -204,12 +204,16 @@ path_wresize(Path *path, gint wsize)
     }
 }
 
-static void
+void
 map_path_calculate_distances(Path *path)
 {
     Point *curr;
     gfloat total = 0;
     MapGeo lat, lon, last_lat, last_lon;
+
+    /* if the path has a length, consider it to already have distances */
+    if (path->length > 0)
+        return;
 
 #ifdef ENABLE_DEBUG
     struct timespec ts0, ts1;
@@ -1017,6 +1021,7 @@ map_path_track_update(const MapGpsData *gps)
 
             /* Draw the line immediately */
             map_screen_track_append(screen, &pos);
+            map_screen_refresh_panel(screen);
         }
     }
     else
@@ -1729,6 +1734,7 @@ path_get_next_way()
 void
 path_init()
 {
+    MapController *controller = map_controller_get_instance();
     gchar *settings_dir;
 
     /* Initialize settings_dir. */
@@ -1838,6 +1844,8 @@ path_init()
     g_free(settings_dir);
 
     _last_spoken_phrase = g_strdup("");
+
+    map_controller_refresh_paths(controller);
 }
 
 void
@@ -2018,5 +2026,23 @@ map_path_merge(Path *src_path, Path *dest_path, MapPathMergePolicy policy)
                 dest_path->wtail - dest_path->whead + 1 + ARRAY_CHUNK_SIZE);
     }
     DEBUG("total length: %.2f", dest_path->length);
+}
+
+guint
+map_path_get_duration(const Path *path)
+{
+    const Point *first, *last;
+    gint max_search;
+
+    max_search = MIN(path->tail - path->head, 5);
+
+    for (first = path->head; first < path->head + max_search; first++)
+        if (first->time != 0) break;
+    for (last = path->tail; last > path->tail - max_search; last--)
+        if (last->time != 0) break;
+
+    if (!first->time || !last->time) return 0;
+
+    return last->time - first->time;
 }
 

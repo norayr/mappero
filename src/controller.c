@@ -744,6 +744,7 @@ map_controller_refresh_paths(MapController *self)
     g_return_if_fail(MAP_IS_CONTROLLER(self));
 
     map_screen_redraw_overlays(self->priv->screen);
+    map_screen_refresh_panel(self->priv->screen);
 }
 
 /*

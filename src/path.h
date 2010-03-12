@@ -51,11 +51,13 @@ gboolean route_download(gchar *to);
 void route_add_way_dialog(gint unitx, gint unity);
 
 WayPoint* path_get_next_way(void);
+guint map_path_get_duration(const Path *path);
 
 void path_init(void);
 void path_destroy(void);
 
 void map_path_optimize(Path *path);
+void map_path_calculate_distances(Path *path);
 
 typedef enum {
     MAP_PATH_MERGE_POLICY_REPLACE = 0,

@@ -538,6 +538,7 @@ gpx_path_parse(Path *to_replace, gchar *buffer, gint size, gint policy_old)
         policy = MAP_PATH_MERGE_POLICY_APPEND;
     else
         policy = MAP_PATH_MERGE_POLICY_PREPEND;
+    map_path_calculate_distances(&data.path);
     map_path_merge(&data.path, to_replace, policy);
 
     return TRUE;
