@@ -129,14 +129,6 @@ menu_cb_route_save(GtkMenuItem *item)
 }
 
 static gboolean
-menu_cb_route_distnext(GtkMenuItem *item)
-{
-    route_show_distance_to_next();
-
-    return TRUE;
-}
-
-static gboolean
 menu_cb_route_distlast(GtkMenuItem *item)
 {
     route_show_distance_to_last();
@@ -347,32 +339,6 @@ static gboolean
 menu_cb_track_clear(GtkMenuItem *item)
 {
     track_clear();
-
-    return TRUE;
-}
-
-static void
-track_enable_tracking(gboolean enable)
-{
-    _enable_tracking = enable;
-    if(!enable)
-    {
-        track_insert_break(FALSE); /* FALSE = not temporary */
-        MACRO_BANNER_SHOW_INFO(_window, _("Tracking Disabled"));
-    }
-    else
-    {
-        MACRO_BANNER_SHOW_INFO(_window, _("Tracking Enabled"));
-    }
-}
-
-static gboolean
-menu_cb_track_enable_tracking(GtkCheckMenuItem *item)
-{
-    gboolean enable;
-
-    enable = gtk_check_menu_item_get_active(item);
-    track_enable_tracking(enable);
 
     return TRUE;
 }
@@ -1245,50 +1211,6 @@ menu_init()
 
     /* Create the menu items. */
 
-    /* The "Routes" submenu. */
-    gtk_menu_append(menu, menu_item
-            = gtk_menu_item_new_with_label(_("Route")));
-    gtk_menu_item_set_submenu(GTK_MENU_ITEM(menu_item),
-            submenu = gtk_menu_new());
-    gtk_menu_append(submenu, _menu_route_open_item
-            = gtk_menu_item_new_with_label(_("Open...")));
-    gtk_menu_append(submenu, _menu_route_download_item
-            = gtk_menu_item_new_with_label(_("Download...")));
-    gtk_menu_append(submenu, _menu_route_save_item
-            = gtk_menu_item_new_with_label(_("Save...")));
-    gtk_menu_append(submenu, _menu_route_distnext_item
-        = gtk_menu_item_new_with_label(_("Show Distance to Next Waypoint")));
-    gtk_menu_append(submenu, _menu_route_distlast_item
-        = gtk_menu_item_new_with_label(_("Show Distance to End of Route")));
-    gtk_menu_append(submenu, _menu_route_reset_item
-            = gtk_menu_item_new_with_label(_("Reset")));
-    gtk_menu_append(submenu, _menu_route_clear_item
-            = gtk_menu_item_new_with_label(_("Clear")));
-
-    /* The "Track" submenu. */
-    gtk_menu_append(menu, menu_item
-            = gtk_menu_item_new_with_label(_("Track")));
-    gtk_menu_item_set_submenu(GTK_MENU_ITEM(menu_item),
-            submenu = gtk_menu_new());
-    gtk_menu_append(submenu, _menu_track_open_item
-            = gtk_menu_item_new_with_label(_("Open...")));
-    gtk_menu_append(submenu, _menu_track_save_item
-            = gtk_menu_item_new_with_label(_("Save...")));
-    gtk_menu_append(submenu, _menu_track_insert_break_item
-            = gtk_menu_item_new_with_label(_("Insert Break")));
-    gtk_menu_append(submenu, _menu_track_insert_mark_item
-            = gtk_menu_item_new_with_label(_("Insert Mark...")));
-    gtk_menu_append(submenu, _menu_track_distlast_item
-            = gtk_menu_item_new_with_label(_("Show Distance from Last Mark")));
-    gtk_menu_append(submenu, _menu_track_distfirst_item
-            = gtk_menu_item_new_with_label(_("Show Distance from Beginning")));
-    gtk_menu_append(submenu, _menu_track_clear_item
-            = gtk_menu_item_new_with_label(_("Clear")));
-    gtk_menu_append(submenu, _menu_track_enable_tracking_item
-            = gtk_check_menu_item_new_with_label(_("Enable Tracking")));
-    gtk_check_menu_item_set_active(
-            GTK_CHECK_MENU_ITEM(_menu_track_enable_tracking_item), _enable_tracking);
-
     /* The "POI" submenu. */
     gtk_menu_append(menu, menu_item = _menu_poi_item
             = gtk_menu_item_new_with_label(_("POI")));
@@ -1467,40 +1389,6 @@ menu_init()
     gtk_widget_show_all(GTK_WIDGET(menu));
 
     hildon_window_set_menu(HILDON_WINDOW(_window), menu);
-
-    /* Connect the "Route" signals. */
-    g_signal_connect(G_OBJECT(_menu_route_open_item), "activate",
-                      G_CALLBACK(menu_cb_route_open), NULL);
-    g_signal_connect(G_OBJECT(_menu_route_download_item), "activate",
-                      G_CALLBACK(menu_cb_route_download), NULL);
-    g_signal_connect(G_OBJECT(_menu_route_save_item), "activate",
-                      G_CALLBACK(menu_cb_route_save), NULL);
-    g_signal_connect(G_OBJECT(_menu_route_distnext_item), "activate",
-                      G_CALLBACK(menu_cb_route_distnext), NULL);
-    g_signal_connect(G_OBJECT(_menu_route_distlast_item), "activate",
-                      G_CALLBACK(menu_cb_route_distlast), NULL);
-    g_signal_connect(G_OBJECT(_menu_route_reset_item), "activate",
-                      G_CALLBACK(menu_cb_route_reset), NULL);
-    g_signal_connect(G_OBJECT(_menu_route_clear_item), "activate",
-                      G_CALLBACK(menu_cb_route_clear), NULL);
-
-    /* Connect the "Track" signals. */
-    g_signal_connect(G_OBJECT(_menu_track_open_item), "activate",
-                      G_CALLBACK(menu_cb_track_open), NULL);
-    g_signal_connect(G_OBJECT(_menu_track_save_item), "activate",
-                      G_CALLBACK(menu_cb_track_save), NULL);
-    g_signal_connect(G_OBJECT(_menu_track_insert_break_item), "activate",
-                      G_CALLBACK(menu_cb_track_insert_break), NULL);
-    g_signal_connect(G_OBJECT(_menu_track_insert_mark_item), "activate",
-                      G_CALLBACK(menu_cb_track_insert_mark), NULL);
-    g_signal_connect(G_OBJECT(_menu_track_distlast_item), "activate",
-                      G_CALLBACK(menu_cb_track_distlast), NULL);
-    g_signal_connect(G_OBJECT(_menu_track_distfirst_item), "activate",
-                      G_CALLBACK(menu_cb_track_distfirst), NULL);
-    g_signal_connect(G_OBJECT(_menu_track_clear_item), "activate",
-                      G_CALLBACK(menu_cb_track_clear), NULL);
-    g_signal_connect(G_OBJECT(_menu_track_enable_tracking_item), "toggled",
-                      G_CALLBACK(menu_cb_track_enable_tracking), NULL);
 
     /* Connect the "POI" signals. */
     g_signal_connect(G_OBJECT(_menu_poi_import_item), "activate",

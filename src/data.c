@@ -211,25 +211,6 @@ gboolean _poi_enabled = FALSE;
  * BELOW: MENU ITEMS *
  *********************/
 
-/* Menu items for the "Route" submenu. */
-GtkWidget *_menu_route_open_item = NULL;
-GtkWidget *_menu_route_download_item = NULL;
-GtkWidget *_menu_route_save_item = NULL;
-GtkWidget *_menu_route_distnext_item = NULL;
-GtkWidget *_menu_route_distlast_item = NULL;
-GtkWidget *_menu_route_reset_item = NULL;
-GtkWidget *_menu_route_clear_item = NULL;
-
-/* Menu items for the "Track" submenu. */
-GtkWidget *_menu_track_open_item = NULL;
-GtkWidget *_menu_track_save_item = NULL;
-GtkWidget *_menu_track_insert_break_item = NULL;
-GtkWidget *_menu_track_insert_mark_item = NULL;
-GtkWidget *_menu_track_distlast_item = NULL;
-GtkWidget *_menu_track_distfirst_item = NULL;
-GtkWidget *_menu_track_clear_item = NULL;
-GtkWidget *_menu_track_enable_tracking_item = NULL;
-
 /* Menu items for the "POI" submenu. */
 GtkWidget *_menu_poi_item = NULL;
 GtkWidget *_menu_poi_import_item = NULL;

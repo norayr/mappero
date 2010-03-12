@@ -187,25 +187,6 @@ extern gboolean _poi_enabled;
  * BELOW: MENU ITEMS *
  *********************/
 
-/* Menu items for the "Route" submenu. */
-extern GtkWidget *_menu_route_open_item;
-extern GtkWidget *_menu_route_download_item;
-extern GtkWidget *_menu_route_save_item;
-extern GtkWidget *_menu_route_distnext_item;
-extern GtkWidget *_menu_route_distlast_item;
-extern GtkWidget *_menu_route_reset_item;
-extern GtkWidget *_menu_route_clear_item;
-
-/* Menu items for the "Track" submenu. */
-extern GtkWidget *_menu_track_open_item;
-extern GtkWidget *_menu_track_save_item;
-extern GtkWidget *_menu_track_insert_break_item;
-extern GtkWidget *_menu_track_insert_mark_item;
-extern GtkWidget *_menu_track_distlast_item;
-extern GtkWidget *_menu_track_distfirst_item;
-extern GtkWidget *_menu_track_clear_item;
-extern GtkWidget *_menu_track_enable_tracking_item;
-
 /* Menu items for the "POI" submenu. */
 extern GtkWidget *_menu_poi_item;
 extern GtkWidget *_menu_poi_import_item;
