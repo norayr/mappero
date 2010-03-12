@@ -28,6 +28,7 @@
 
 #define _GNU_SOURCE
 
+#include <errno.h>
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
@@ -234,7 +235,10 @@ mapdb_update(TileSource *source, gint zoom, gint tilex, gint tiley,
     DEBUG("%s, %d, %d, %d", source->name, zoom, tilex, tiley);
 
     build_tile_path(path, sizeof(path), source, zoom, tilex, tiley);
-    g_mkdir_with_parents(path, 0766);
+    /* the reason for this while loop is:
+     * https://bugzilla.gnome.org/show_bug.cgi?id=612729
+     */
+    while (g_mkdir_with_parents(path, 0766) < 0 && errno == EEXIST);
     build_tile_filename(filename, sizeof(filename), source, zoom, tilex, tiley);
     success = g_file_set_contents(filename, bytes, size, NULL);
 
