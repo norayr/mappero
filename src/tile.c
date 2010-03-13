@@ -200,6 +200,7 @@ map_tile_load(TileSource *source, gint zoom, gint x, gint y, gboolean *new_tile)
 {
     MapTile *tile;
     GdkPixbuf *pixbuf, *area;
+    gboolean must_clear = TRUE;
     gint zoff;
 
     tile = map_tile_get_instance(new_tile);
@@ -230,6 +231,7 @@ map_tile_load(TileSource *source, gint zoom, gint x, gint y, gboolean *new_tile)
                                                   TILE_SIZE_PIXELS,
                                                   GDK_INTERP_NEAREST);
                 g_object_unref (area);
+                must_clear = FALSE;
             }
             gtk_clutter_texture_set_from_pixbuf(CLUTTER_TEXTURE(tile),
                                                 pixbuf, NULL);
@@ -249,7 +251,8 @@ map_tile_load(TileSource *source, gint zoom, gint x, gint y, gboolean *new_tile)
         map_tile_download(tile);
 
         /* if this is not a new tile, it contains dirty data: clean it */
-        map_tile_clear(tile);
+        if (must_clear)
+            map_tile_clear(tile);
     }
 
     tile->priv->has_pixbuf = (zoff == 0);
