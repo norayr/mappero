@@ -1782,6 +1782,7 @@ path_init()
             read_path_from_db(&_route, _route_stmt_select);
             read_path_from_db(&_track, _track_stmt_select);
             _track_index_last_saved = _track.tail - _track.head - 1;
+            if (_track_index_last_saved < 0) _track_index_last_saved = 0;
         }
         g_free(path_db_file);
     }
