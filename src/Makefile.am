@@ -72,3 +72,9 @@ maemo_mapper_SOURCES = \
 run: all
 	scp maemo-mapper rover:/usr/bin
 	ssh rover su - user -c maemo-mapper
+
+eraseconf:
+	ssh rover su -c "'gconftool-2 --recursive-unset /apps/maemo/maemo-mapper'" - user
+
+erasemaps:
+	ssh rover su -c "'rm -r /home/user/MyDocs/.maps'" - user
