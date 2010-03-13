@@ -97,7 +97,7 @@ GtkWidget *_text_time = NULL;
 GtkWidget *_heading_panel = NULL;
 
 /** GPS data. */
-Point _pos = { { 0, 0 }, 0, 0, SHRT_MIN};
+Point _pos = { { 0, 0 }, 0, 0, SHRT_MIN, 0};
 const Point _point_null = { { 0, 0 }, 0, SCHAR_MAX, 0, 0};
 
 GpsSatelliteData _gps_sat[MAX_SATELLITES];

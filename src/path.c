@@ -210,6 +210,7 @@ map_path_calculate_distances(Path *path)
     Point *curr;
     gfloat total = 0;
     MapGeo lat, lon, last_lat, last_lon;
+    gboolean has_latlon = FALSE;
 
     /* if the path has a length, consider it to already have distances */
     if (path->length > 0)
@@ -222,25 +223,34 @@ map_path_calculate_distances(Path *path)
     clock_gettime(CLOCK_THREAD_CPUTIME_ID, &ts0);
 #endif
 
-    /* find first non 0 point */
     for (curr = path->head; curr <= path->tail; curr++)
-        if (curr->unit.y != 0) break;
-
-    unit2latlon(curr->unit.x, curr->unit.y, last_lat, last_lon);
-
-    for (curr++; curr <= path->tail; curr++)
     {
-        if (curr->unit.y == 0) continue;
+        if (curr->unit.y == 0)
+        {
+            has_latlon = FALSE;
+            continue;
+        }
 
         unit2latlon(curr->unit.x, curr->unit.y, lat, lon);
-        curr->distance = calculate_distance(last_lat, last_lon, lat, lon);
-        total += curr->distance;
+        if (has_latlon)
+        {
+            curr->distance = calculate_distance(last_lat, last_lon, lat, lon);
+            total += curr->distance;
+        }
+        else
+            curr->distance = 0;
         last_lat = lat;
         last_lon = lon;
+        has_latlon = TRUE;
     }
 
-    path->last_lat = last_lat;
-    path->last_lon = last_lon;
+    if (has_latlon)
+    {
+        path->last_lat = last_lat;
+        path->last_lon = last_lon;
+    }
+    else
+        path->last_lat = path->last_lon = 0;
     path->length = total;
 
 #ifdef ENABLE_DEBUG
@@ -956,8 +966,14 @@ map_path_track_update(const MapGpsData *gps)
     else
     {
         /* insert a break, if there isn't one already */
-        if (_track.tail->unit.y != 0)
+        if (_track.head != _track.tail && _track.tail->unit.y != 0)
+        {
             must_add = TRUE;
+            /* reset last latitude and longitude, because we don't want to
+             * calculate distances between breaks */
+            _track.last_lat = 0;
+            _track.last_lon = 0;
+        }
     }
 
     if (must_add)
