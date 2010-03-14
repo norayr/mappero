@@ -992,7 +992,7 @@ mapman_dialog()
     const MapGpsData *gps = map_controller_get_gps_data(controller);
     GtkAllocation *allocation;
     MapPoint center;
-    gint half_screen;
+    gint half_screen, zoom;
     
     gchar buffer[80];
     MapGeo lat, lon;
@@ -1008,15 +1008,16 @@ mapman_dialog()
 
     // - If the coord system has changed then we need to update certain values
     /* Initialize to the bounds of the screen. */
-    unit2latlon(center.x - pixel2unit(half_screen),
-                center.y - pixel2unit(half_screen),
+    zoom = map_controller_get_zoom(controller);
+    unit2latlon(center.x - pixel2zunit(half_screen, zoom),
+                center.y - pixel2zunit(half_screen, zoom),
                 top_left_lat, top_left_lon);
     BOUND(top_left_lat, -90.f, 90.f);
     BOUND(top_left_lon, -180.f, 180.f);
 
         
-    unit2latlon(center.x + pixel2unit(half_screen),
-                center.y + pixel2unit(half_screen),
+    unit2latlon(center.x + pixel2zunit(half_screen, zoom),
+                center.y + pixel2zunit(half_screen, zoom),
                 bottom_right_lat, bottom_right_lon);
     BOUND(bottom_right_lat, -90.f, 90.f);
     BOUND(bottom_right_lon, -180.f, 180.f);
@@ -1370,7 +1371,7 @@ mapman_dialog()
                     GTK_TOGGLE_BUTTON(mapman_info.chk_zoom_levels[i]), FALSE);
         }
     }
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(mapman_info.chk_zoom_levels[_zoom]), TRUE);
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(mapman_info.chk_zoom_levels[zoom]), TRUE);
 
     gtk_widget_show_all(dialog);
 
