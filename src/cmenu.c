@@ -53,15 +53,17 @@
 #include "poi.h"
 #include "util.h"
 
+static MapPoint _cmenu_unit;
+
 static void
-cmenu_show_latlon(gint unitx, gint unity)
+cmenu_show_latlon(const MapPoint *p)
 {
   MapGeo lat, lon;
   gint tmp_degformat = _degformat;
   gint fallback_deg_format = _degformat;
   gchar buffer[80], tmp1[LL_FMT_LEN], tmp2[LL_FMT_LEN];
   
-  unit2latlon(unitx, unity, lat, lon);
+  unit2latlon(p->x, p->y, lat, lon);
   
   // Check that the current coord system supports the select position
   if(!coord_system_check_lat_lon (lat, lon, &fallback_deg_format))
@@ -93,12 +95,12 @@ cmenu_show_latlon(gint unitx, gint unity)
 }
 
 static void
-cmenu_clip_latlon(gint unitx, gint unity)
+cmenu_clip_latlon(const MapPoint *p)
 {
     gchar buffer[80];
     MapGeo lat, lon;
 
-    unit2latlon(unitx, unity, lat, lon);
+    unit2latlon(p->x, p->y, lat, lon);
 
     snprintf(buffer, sizeof(buffer), "%.06f,%.06f", lat, lon);
 
@@ -107,14 +109,14 @@ cmenu_clip_latlon(gint unitx, gint unity)
 }
 
 static void
-cmenu_route_to(gint unitx, gint unity)
+cmenu_route_to(const MapPoint *p)
 {
     gchar buffer[80];
     gchar strlat[32];
     gchar strlon[32];
     MapGeo lat, lon;
 
-    unit2latlon(unitx, unity, lat, lon);
+    unit2latlon(p->x, p->y, lat, lon);
 
     g_ascii_formatd(strlat, 32, "%.06f", lat);
     g_ascii_formatd(strlon, 32, "%.06f", lon);
@@ -124,14 +126,14 @@ cmenu_route_to(gint unitx, gint unity)
 }
 
 static void
-cmenu_distance_to(gint unitx, gint unity)
+cmenu_distance_to(const MapPoint *p)
 {
     MapController *controller = map_controller_get_instance();
     const MapGpsData *gps = map_controller_get_gps_data(controller);
     gchar buffer[80];
     MapGeo lat, lon;
 
-    unit2latlon(unitx, unity, lat, lon);
+    unit2latlon(p->x, p->y, lat, lon);
 
     snprintf(buffer, sizeof(buffer), "%s: %.02f %s", _("Distance"),
             calculate_distance(gps->lat, gps->lon, lat, lon)
@@ -141,13 +143,9 @@ cmenu_distance_to(gint unitx, gint unity)
 }
 
 static void
-cmenu_add_route(gint unitx, gint unity)
+cmenu_add_route(const MapPoint *p)
 {
-    MapPoint p;
-
-    p.x = _cmenu_unitx;
-    p.y = _cmenu_unity;
-    map_path_append_unit(&_route, &p);
+    map_path_append_unit(&_route, p);
     route_find_nearest_point();
 }
 
@@ -156,7 +154,7 @@ cmenu_cb_loc_show_latlon(GtkMenuItem *item)
 {
     MapGeo lat, lon;
 
-    unit2latlon(_cmenu_unitx, _cmenu_unity, lat, lon);
+    unit2latlon(_cmenu_unit.x, _cmenu_unit.y, lat, lon);
 
     latlon_dialog(lat, lon);
 
@@ -166,7 +164,7 @@ cmenu_cb_loc_show_latlon(GtkMenuItem *item)
 static gboolean
 cmenu_cb_loc_route_to(GtkMenuItem *item)
 {
-    cmenu_route_to(_cmenu_unitx, _cmenu_unity);
+    cmenu_route_to(&_cmenu_unit);
 
     return TRUE;
 }
@@ -174,7 +172,7 @@ cmenu_cb_loc_route_to(GtkMenuItem *item)
 static gboolean
 cmenu_cb_loc_download_poi(GtkMenuItem *item)
 {
-    poi_download_dialog(_cmenu_unitx, _cmenu_unity);
+    poi_download_dialog(&_cmenu_unit);
 
     return TRUE;
 }
@@ -182,7 +180,7 @@ cmenu_cb_loc_download_poi(GtkMenuItem *item)
 static gboolean
 cmenu_cb_loc_browse_poi(GtkMenuItem *item)
 {
-    poi_browse_dialog(_cmenu_unitx, _cmenu_unity);
+    poi_browse_dialog(&_cmenu_unit);
 
     return TRUE;
 }
@@ -190,7 +188,7 @@ cmenu_cb_loc_browse_poi(GtkMenuItem *item)
 static gboolean
 cmenu_cb_loc_distance_to(GtkMenuItem *item)
 {
-    cmenu_distance_to(_cmenu_unitx, _cmenu_unity);
+    cmenu_distance_to(&_cmenu_unit);
 
     return TRUE;
 }
@@ -198,7 +196,7 @@ cmenu_cb_loc_distance_to(GtkMenuItem *item)
 static gboolean
 cmenu_cb_loc_add_route(GtkMenuItem *item)
 {
-    cmenu_add_route(_cmenu_unitx, _cmenu_unity);
+    cmenu_add_route(&_cmenu_unit);
 
     return TRUE;
 }
@@ -206,7 +204,7 @@ cmenu_cb_loc_add_route(GtkMenuItem *item)
 static gboolean
 cmenu_cb_loc_add_way(GtkMenuItem *item)
 {
-    route_add_way_dialog(_cmenu_unitx, _cmenu_unity);
+    route_add_way_dialog(&_cmenu_unit);
 
     return TRUE;
 }
@@ -214,7 +212,7 @@ cmenu_cb_loc_add_way(GtkMenuItem *item)
 static gboolean
 cmenu_cb_loc_add_poi(GtkMenuItem *item)
 {
-    poi_add_dialog(_window, _cmenu_unitx, _cmenu_unity);
+    poi_add_dialog(_window, &_cmenu_unit);
 
     return TRUE;
 }
@@ -223,11 +221,8 @@ static gboolean
 cmenu_cb_loc_set_gps(GtkMenuItem *item)
 {
     MapController *controller = map_controller_get_instance();
-    MapPoint p;
 
-    p.x = _cmenu_unitx;
-    p.y = _cmenu_unity;
-    map_controller_set_gps_position(controller, &p);
+    map_controller_set_gps_position(controller, &_cmenu_unit);
 
     return TRUE;
 }
@@ -237,8 +232,8 @@ cmenu_cb_way_show_latlon(GtkMenuItem *item)
 {
     WayPoint *way;
 
-    if((way = find_nearest_waypoint(_cmenu_unitx, _cmenu_unity)))
-        cmenu_show_latlon(way->point->unit.x, way->point->unit.y);
+    if((way = find_nearest_waypoint(&_cmenu_unit)))
+        cmenu_show_latlon(&way->point->unit);
     else
     {
         MACRO_BANNER_SHOW_INFO(_window, _("There are no waypoints."));
@@ -253,7 +248,7 @@ cmenu_cb_way_show_desc(GtkMenuItem *item)
 {
     WayPoint *way;
 
-    if((way = find_nearest_waypoint(_cmenu_unitx, _cmenu_unity)))
+    if((way = find_nearest_waypoint(&_cmenu_unit)))
     {
         MACRO_BANNER_SHOW_INFO(_window, way->desc);
     }
@@ -270,8 +265,8 @@ cmenu_cb_way_clip_latlon(GtkMenuItem *item)
 {
     WayPoint *way;
 
-    if((way = find_nearest_waypoint(_cmenu_unitx, _cmenu_unity)))
-        cmenu_clip_latlon(way->point->unit.x, way->point->unit.y);
+    if ((way = find_nearest_waypoint(&_cmenu_unit)))
+        cmenu_clip_latlon(&way->point->unit);
     else
     {
         MACRO_BANNER_SHOW_INFO(_window, _("There are no waypoints."));
@@ -285,7 +280,7 @@ cmenu_cb_way_clip_desc(GtkMenuItem *item)
 {
     WayPoint *way;
 
-    if((way = find_nearest_waypoint(_cmenu_unitx, _cmenu_unity)))
+    if ((way = find_nearest_waypoint(&_cmenu_unit)))
         gtk_clipboard_set_text(
                 gtk_clipboard_get(GDK_SELECTION_CLIPBOARD), way->desc, -1);
     else
@@ -301,8 +296,8 @@ cmenu_cb_way_route_to(GtkMenuItem *item)
 {
     WayPoint *way;
 
-    if((way = find_nearest_waypoint(_cmenu_unitx, _cmenu_unity)))
-        cmenu_route_to(way->point->unit.x, way->point->unit.y);
+    if ((way = find_nearest_waypoint(&_cmenu_unit)))
+        cmenu_route_to(&way->point->unit);
     else
     {
         MACRO_BANNER_SHOW_INFO(_window, _("There are no waypoints."));
@@ -316,7 +311,7 @@ cmenu_cb_way_distance_to(GtkMenuItem *item)
 {
     WayPoint *way;
 
-    if((way = find_nearest_waypoint(_cmenu_unitx, _cmenu_unity)))
+    if ((way = find_nearest_waypoint(&_cmenu_unit)))
         route_show_distance_to(way->point);
     else
     {
@@ -395,7 +390,7 @@ cmenu_cb_way_delete(GtkMenuItem *item)
 {
     WayPoint *way;
 
-    if((way = find_nearest_waypoint(_cmenu_unitx, _cmenu_unity)))
+    if ((way = find_nearest_waypoint(&_cmenu_unit)))
     {
         cmenu_way_delete(way);
     }
@@ -412,8 +407,8 @@ cmenu_cb_way_add_poi(GtkMenuItem *item)
 {
     WayPoint *way;
 
-    if((way = find_nearest_waypoint(_cmenu_unitx, _cmenu_unity)))
-        poi_add_dialog(_window, way->point->unit.x, way->point->unit.y);
+    if ((way = find_nearest_waypoint(&_cmenu_unit)))
+        poi_add_dialog(_window, &way->point->unit);
     else
     {
         MACRO_BANNER_SHOW_INFO(_window, _("There are no waypoints."));
@@ -427,12 +422,12 @@ cmenu_cb_poi_route_to(GtkMenuItem *item)
 {
     PoiInfo poi;
 
-    if(select_poi(_cmenu_unitx, _cmenu_unity, &poi, FALSE))
+    if (select_poi(&_cmenu_unit, &poi, FALSE))
         /* FALSE = not quick */
     {
-        gint unitx, unity;
-        latlon2unit(poi.lat, poi.lon, unitx, unity);
-        cmenu_route_to(unitx, unity);
+        MapPoint p;
+        latlon2unit(poi.lat, poi.lon, p.x, p.y);
+        cmenu_route_to(&p);
     }
 
     return TRUE;
@@ -443,11 +438,11 @@ cmenu_cb_poi_distance_to(GtkMenuItem *item)
 {
     PoiInfo poi;
 
-    if(select_poi(_cmenu_unitx, _cmenu_unity, &poi, FALSE))
+    if (select_poi(&_cmenu_unit, &poi, FALSE))
     {
-        gint unitx, unity;
-        latlon2unit(poi.lat, poi.lon, unitx, unity);
-        cmenu_distance_to(unitx, unity);
+        MapPoint p;
+        latlon2unit(poi.lat, poi.lon, p.x, p.y);
+        cmenu_distance_to(&p);
     }
 
     return TRUE;
@@ -458,11 +453,11 @@ cmenu_cb_poi_add_route(GtkMenuItem *item)
 {
     PoiInfo poi;
 
-    if(select_poi(_cmenu_unitx, _cmenu_unity, &poi, FALSE))
+    if (select_poi(&_cmenu_unit, &poi, FALSE))
     {
-        gint unitx, unity;
-        latlon2unit(poi.lat, poi.lon, unitx, unity);
-        cmenu_add_route(unitx, unity);
+        MapPoint p;
+        latlon2unit(poi.lat, poi.lon, p.x, p.y);
+        cmenu_add_route(&p);
     }
 
     return TRUE;
@@ -473,11 +468,11 @@ cmenu_cb_poi_add_way(GtkMenuItem *item)
 {
     PoiInfo poi;
 
-    if(select_poi(_cmenu_unitx, _cmenu_unity, &poi, FALSE))
+    if (select_poi(&_cmenu_unit, &poi, FALSE))
     {
-        gint unitx, unity;
-        latlon2unit(poi.lat, poi.lon, unitx, unity);
-        route_add_way_dialog(unitx, unity);
+        MapPoint p;
+        latlon2unit(poi.lat, poi.lon, p.x, p.y);
+        route_add_way_dialog(&p);
     }
 
     return TRUE;
@@ -489,7 +484,7 @@ cmenu_cb_poi_edit_poi(GtkMenuItem *item)
     PoiInfo poi;
 
     memset(&poi, 0, sizeof(poi));
-    select_poi(_cmenu_unitx, _cmenu_unity, &poi, FALSE);
+    select_poi(&_cmenu_unit, &poi, FALSE);
     poi_view_dialog(_window, &poi);
     if(poi.label)
         g_free(poi.label);
@@ -684,9 +679,7 @@ map_menu_point_map(const MapPoint *p)
                             FALSE);
     dlg = (MapDialog *)dialog;
 
-    /* TODO: rewrite these handlers to use the Point */
-    _cmenu_unitx = p->x;
-    _cmenu_unity = p->y;
+    _cmenu_unit = *p;
 
     button = map_dialog_create_button(dlg, _("Show Position"), SHOW_LATLON);
 
@@ -777,23 +770,23 @@ map_menu_point_waypoint(WayPoint *way)
     switch (response)
     {
     case SHOW_LATLON:
-        cmenu_show_latlon(way->point->unit.x, way->point->unit.y); break;
+        cmenu_show_latlon(&way->point->unit); break;
     case SHOW_DESC:
         MACRO_BANNER_SHOW_INFO(_window, way->desc); break;
     case CLIP_LATLON:
-        cmenu_clip_latlon(way->point->unit.x, way->point->unit.y); break;
+        cmenu_clip_latlon(&way->point->unit); break;
     case CLIP_DESC:
         gtk_clipboard_set_text(
                 gtk_clipboard_get(GDK_SELECTION_CLIPBOARD), way->desc, -1);
         break;
     case ROUTE_TO:
-        cmenu_route_to(way->point->unit.x, way->point->unit.y); break;
+        cmenu_route_to(&way->point->unit); break;
     case DISTANCE_TO:
         route_show_distance_to(way->point); break;
     case DELETE:
         cmenu_way_delete(way); break;
     case ADD_POI:
-        poi_add_dialog(_window, way->point->unit.x, way->point->unit.y); break;
+        poi_add_dialog(_window, &way->point->unit); break;
     }
 }
 
@@ -804,7 +797,7 @@ map_menu_point_poi(PoiInfo *poi)
     MapController *controller;
     MapDialog *dlg;
     gint response;
-    gint unitx, unity;
+    MapPoint point;
     enum {
         SHOW_EDIT = 0,
         DISTANCE_TO,
@@ -830,20 +823,20 @@ map_menu_point_poi(PoiInfo *poi)
 
     /* the POI coordinates in units are needed for most of the handlers, so
      * let's calculate them here */
-    latlon2unit(poi->lat, poi->lon, unitx, unity);
+    latlon2unit(poi->lat, poi->lon, point.x, point.y);
 
     switch (response)
     {
     case SHOW_EDIT:
         poi_view_dialog(_window, poi); break;
     case DISTANCE_TO:
-        cmenu_distance_to(unitx, unity); break;
+        cmenu_distance_to(&point); break;
     case ROUTE_TO:
-        cmenu_route_to(unitx, unity); break;
+        cmenu_route_to(&point); break;
     case ADD_ROUTE:
-        cmenu_add_route(unitx, unity); break;
+        cmenu_add_route(&point); break;
     case ADD_WAYPOINT:
-        route_add_way_dialog(unitx, unity); break;
+        route_add_way_dialog(&point); break;
     }
 }
 
@@ -899,7 +892,7 @@ map_menu_point(const MapPoint *p, MapArea *area)
     WayPoint *way;
 
     /* check whether a waypoint is nearby */
-    way = find_nearest_waypoint(p->x, p->y);
+    way = find_nearest_waypoint(p);
 
     /* check whether some POI is nearby */
     model = poi_get_model_for_area(area);

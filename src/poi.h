@@ -23,17 +23,17 @@
 
 void poi_db_connect(void);
 
-gboolean get_nearest_poi(gint unitx, gint unity, PoiInfo *poi);
+gboolean get_nearest_poi(const MapPoint *point, PoiInfo *poi);
 
-gboolean select_poi(gint unitx, gint unity, PoiInfo *poi, gboolean quick);
+gboolean select_poi(const MapPoint *point, PoiInfo *poi, gboolean quick);
 
 gboolean category_list_dialog(GtkWidget *parent);
 
-gboolean poi_add_dialog(GtkWidget *parent, gint unitx, gint unity);
+gboolean poi_add_dialog(GtkWidget *parent, const MapPoint *point);
 gboolean poi_view_dialog(GtkWidget *parent, PoiInfo *poi);
-gboolean poi_import_dialog(gint unitx, gint unity);
-gboolean poi_download_dialog(gint unitx, gint unity);
-gboolean poi_browse_dialog(gint unitx, gint unity);
+gboolean poi_import_dialog(const MapPoint *point);
+gboolean poi_download_dialog(const MapPoint *point);
+gboolean poi_browse_dialog(const MapPoint *point);
 
 gboolean poi_run_select_dialog(GtkTreeModel *model, PoiInfo *poi);
 GtkTreeModel *poi_get_model_for_area(MapArea *area);

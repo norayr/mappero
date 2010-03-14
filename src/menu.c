@@ -345,7 +345,7 @@ on_enable_tracking_toggled(GtkToggleButton *button)
 static gboolean
 menu_cb_poi_import(GtkMenuItem *item)
 {
-    if(poi_import_dialog(_center.x, _center.y))
+    if (poi_import_dialog(&_center))
         map_force_redraw();
 
     return TRUE;
@@ -354,7 +354,8 @@ menu_cb_poi_import(GtkMenuItem *item)
 static gboolean
 menu_cb_poi_download(GtkMenuItem *item)
 {
-    if(poi_download_dialog(0, 0)) /* 0, 0 means no default origin */
+    MapPoint p = { 0, 0 }; /* 0, 0 means no default origin */
+    if (poi_download_dialog(&p))
         map_force_redraw();
 
     return TRUE;
@@ -363,7 +364,8 @@ menu_cb_poi_download(GtkMenuItem *item)
 static gboolean
 menu_cb_poi_browse(GtkMenuItem *item)
 {
-    if(poi_browse_dialog(0, 0)) /* 0, 0 means no default origin */
+    MapPoint p = { 0, 0 }; /* 0, 0 means no default origin */
+    if (poi_browse_dialog(&p))
         map_force_redraw();
 
     return TRUE;
@@ -901,8 +903,8 @@ menu_cb_view_goto_nearpoi(GtkMenuItem *item)
         PoiInfo poi;
         gchar *banner;
 
-        if((_center_mode > 0 ? get_nearest_poi(_pos.unit.x, _pos.unit.y, &poi)
-                    : get_nearest_poi(_center.x, _center.y, &poi) ))
+        if ((_center_mode > 0 ? get_nearest_poi(&_pos.unit, &poi)
+                    : get_nearest_poi(&_center, &poi) ))
         {
             /* Auto-Center is enabled - use the GPS position. */
             MapPoint unit;

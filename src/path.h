@@ -40,10 +40,10 @@ void path_reset_route(void);
 void cancel_autoroute(void);
 gboolean autoroute_enabled(void);
 
-WayPoint * find_nearest_waypoint(gint unitx, gint unity);
+WayPoint * find_nearest_waypoint(const MapPoint *p);
 
 gboolean route_download(gchar *to);
-void route_add_way_dialog(gint unitx, gint unity);
+void route_add_way_dialog(const MapPoint *p);
 
 WayPoint* path_get_next_way(void);
 guint map_path_get_duration(const Path *path);

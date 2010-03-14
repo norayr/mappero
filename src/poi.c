@@ -338,12 +338,12 @@ poi_db_connect()
 }
 
 gboolean
-get_nearest_poi(gint unitx, gint unity, PoiInfo *poi)
+get_nearest_poi(const MapPoint *point, PoiInfo *poi)
 {
-    DEBUG("%d, %d", unitx, unity);
+    DEBUG("%d, %d", point->x, point->y);
     gboolean result;
     MapGeo lat, lon;
-    unit2latlon(unitx, unity, lat, lon);
+    unit2latlon(point->x, point->y, lat, lon);
 
     if(SQLITE_OK == sqlite3_bind_double(_stmt_select_nearest_poi, 1, lat)
     && SQLITE_OK == sqlite3_bind_double(_stmt_select_nearest_poi, 2, lon)
@@ -534,7 +534,7 @@ poi_run_select_dialog(GtkTreeModel *model, PoiInfo *poi)
 }
 
 gboolean
-select_poi(gint unitx, gint unity, PoiInfo *poi, gboolean quick)
+select_poi(const MapPoint *point, PoiInfo *poi, gboolean quick)
 {
     MapController *controller = map_controller_get_instance();
     GtkTreeModel *model = NULL;
@@ -543,14 +543,14 @@ select_poi(gint unitx, gint unity, PoiInfo *poi, gboolean quick)
     MapArea area;
     gint radius_unit, zoom;
 
-    DEBUG("%d, %d", unitx, unity);
+    DEBUG("%d, %d", point->x, point->y);
 
     zoom = map_controller_get_zoom(controller);
     radius_unit = pixel2zunit(TOUCH_RADIUS, zoom);
-    area.x1 = unitx - radius_unit;
-    area.y1 = unity - radius_unit;
-    area.y2 = unity + radius_unit;
-    area.x2 = unitx + radius_unit;
+    area.x1 = point->x - radius_unit;
+    area.y1 = point->y - radius_unit;
+    area.y2 = point->y + radius_unit;
+    area.x2 = point->x + radius_unit;
 
     model = poi_get_model_for_area(&area);
     if (!model)
@@ -567,7 +567,7 @@ select_poi(gint unitx, gint unity, PoiInfo *poi, gboolean quick)
     {
         g_object_unref(model);
         /* automatic selection */
-        return get_nearest_poi(unitx, unity, poi);
+        return get_nearest_poi(point, poi);
     }
 
     selected = poi_run_select_dialog(model, poi);
@@ -1127,7 +1127,7 @@ poi_create_cat_combo()
 }
 
 gboolean
-poi_add_dialog(GtkWidget *parent, gint unitx, gint unity)
+poi_add_dialog(GtkWidget *parent, const MapPoint *point)
 {
     static PoiInfo poi;
     static GtkWidget *dialog;
@@ -1147,9 +1147,9 @@ poi_add_dialog(GtkWidget *parent, gint unitx, gint unity)
     static PoiCategoryEditInfo pcedit;
     static int last_deg_format = 0;
     
-    DEBUG("%d, %d", unitx, unity);
+    DEBUG("%d, %d", point->x, point->y);
 
-    unit2latlon(unitx, unity, poi.lat, poi.lon);
+    unit2latlon(point->x, point->y, poi.lat, poi.lon);
 
     
     gint fallback_deg_format = _degformat;
@@ -2169,7 +2169,7 @@ poi_list_manage_checks(GtkWidget *widget, PoiListInfo *pli)
 }
 
 static gboolean
-poi_list_dialog(GtkWidget *parent, gint unitx, gint unity, GList *poi_list)
+poi_list_dialog(GtkWidget *parent, const MapPoint *point, GList *poi_list)
 {
     static PoiListInfo pli = { NULL, NULL };
     static GtkWidget *scroller;
@@ -2314,7 +2314,7 @@ poi_list_dialog(GtkWidget *parent, gint unitx, gint unity, GList *poi_list)
     gtk_list_store_clear(store);
     pli.select_all = FALSE;
 
-    unit2latlon(unitx, unity, src_lat, src_lon);
+    unit2latlon(point->x, point->y, src_lat, src_lon);
 
     for(curr = poi_list; curr; curr = curr->next)
     {
@@ -2358,7 +2358,7 @@ poi_list_dialog(GtkWidget *parent, gint unitx, gint unity, GList *poi_list)
 }
 
 gboolean
-poi_import_dialog(gint unitx, gint unity)
+poi_import_dialog(const MapPoint *point)
 {
     GtkWidget *dialog = NULL;
     gboolean success = FALSE;
@@ -2446,7 +2446,7 @@ poi_import_dialog(gint unitx, gint unity)
                     gtk_widget_hide(cat_dialog);
 
                     /* Create a new dialog with the results. */
-                    poi_list_dialog(dialog, unitx, unity, poi_list);
+                    poi_list_dialog(dialog, point, poi_list);
                     success = TRUE;
                 }
                 break;
@@ -2515,7 +2515,7 @@ origin_type_selected(GtkWidget *toggle, OriginToggleInfo *oti)
 }
 
 gboolean
-poi_download_dialog(gint unitx, gint unity)
+poi_download_dialog(const MapPoint *point)
 {
     static GtkWidget *dialog = NULL;
     static GtkWidget *hbox = NULL;
@@ -2659,14 +2659,14 @@ poi_download_dialog(gint unitx, gint unity)
     hildon_number_editor_set_value(HILDON_NUMBER_EDITOR(num_page), 1);
 
     gtk_entry_set_text(GTK_ENTRY(txt_source_url), _poi_dl_url);
-    if(unity != 0)
+    if (point->y != 0)
     {
         gchar buffer[80];
         gchar strlat[32];
         gchar strlon[32];
         MapGeo lat, lon;
 
-        unit2latlon(unitx, unity, lat, lon);
+        unit2latlon(point->x, point->y, lat, lon);
 
         g_ascii_formatd(strlat, 32, "%.06f", lat);
         g_ascii_formatd(strlon, 32, "%.06f", lon);
@@ -2716,6 +2716,7 @@ poi_download_dialog(gint unitx, gint unity)
         gint size;
         GnomeVFSResult vfs_result;
         GList *poi_list = NULL;
+        MapPoint porig;
 
         source_url = gtk_entry_get_text(GTK_ENTRY(txt_source_url));
         if(!strlen(source_url))
@@ -2733,7 +2734,7 @@ poi_download_dialog(gint unitx, gint unity)
         {
             gchar strlat[32];
             gchar strlon[32];
-            latlon2unit(gps->lat, gps->lon, unitx, unity);
+            porig = gps->unit;
             g_ascii_formatd(strlat, 32, "%.06f", gps->lat);
             g_ascii_formatd(strlon, 32, "%.06f", gps->lon);
             snprintf(origin_buffer, sizeof(origin_buffer),
@@ -2751,8 +2752,7 @@ poi_download_dialog(gint unitx, gint unity)
             /* Use last non-zero route point. */
             for(p = _route.tail; !p->unit.y; p--) { }
 
-            unitx = p->unit.x;
-            unity = p->unit.y;
+            porig = p->unit;
             unit2latlon(p->unit.x, p->unit.y, lat, lon);
             g_ascii_formatd(strlat, 32, "%.06f", lat);
             g_ascii_formatd(strlon, 32, "%.06f", lon);
@@ -2762,7 +2762,6 @@ poi_download_dialog(gint unitx, gint unity)
         }
         else
         {
-            MapPoint porig;
             origin = gtk_entry_get_text(GTK_ENTRY(oti.txt_origin));
             if(*origin)
             {
@@ -2827,7 +2826,7 @@ poi_download_dialog(gint unitx, gint unity)
             if(num_inserts)
             {
                 /* Create a new dialog with the results. */
-                poi_list_dialog(dialog, unitx, unity, poi_list);
+                poi_list_dialog(dialog, &porig, poi_list);
             }
 
             poi_list_free(poi_list);
@@ -2850,7 +2849,7 @@ poi_download_dialog(gint unitx, gint unity)
 }
 
 gboolean
-poi_browse_dialog(gint unitx, gint unity)
+poi_browse_dialog(const MapPoint *point)
 {
     static GtkWidget *dialog = NULL;
     static GtkWidget *table = NULL;
@@ -2973,14 +2972,14 @@ poi_browse_dialog(gint unitx, gint unity)
 
     /* Initialize fields. */
 
-    if(unity != 0)
+    if (point->y != 0)
     {
         gchar buffer[80];
         gchar strlat[32];
         gchar strlon[32];
         MapGeo lat, lon;
 
-        unit2latlon(unitx, unity, lat, lon);
+        unit2latlon(point->x, point->y, lat, lon);
 
         g_ascii_formatd(strlat, 32, "%.06f", lat);
         g_ascii_formatd(strlon, 32, "%.06f", lon);
@@ -3030,12 +3029,13 @@ poi_browse_dialog(gint unitx, gint unity)
         gint cat_id;
         gboolean is_cat = FALSE;
         sqlite3_stmt *stmt;
+        MapPoint porig;
 
         if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(oti.rad_use_gps)))
         {
             gchar strlat[32];
             gchar strlon[32];
-            latlon2unit(gps->lat, gps->lon, unitx, unity);
+            latlon2unit(gps->lat, gps->lon, porig.x, porig.y);
             g_ascii_formatd(strlat, 32, "%.06f", gps->lat);
             g_ascii_formatd(strlon, 32, "%.06f", gps->lon);
             snprintf(buffer, sizeof(buffer), "%s, %s", strlat, strlon);
@@ -3052,8 +3052,7 @@ poi_browse_dialog(gint unitx, gint unity)
             /* Use last non-zero route point. */
             for(p = _route.tail; !p->unit.y; p--) { }
 
-            unitx = p->unit.x;
-            unity = p->unit.y;
+            porig = p->unit;
             unit2latlon(p->unit.x, p->unit.y, lat, lon);
             g_ascii_formatd(strlat, 32, "%.06f", lat);
             g_ascii_formatd(strlon, 32, "%.06f", lon);
@@ -3062,7 +3061,6 @@ poi_browse_dialog(gint unitx, gint unity)
         }
         else
         {
-            MapPoint porig;
             origin = gtk_entry_get_text(GTK_ENTRY(oti.txt_origin));
             porig = locate_address(dialog, origin);
             if(!porig.y)
@@ -3094,7 +3092,7 @@ poi_browse_dialog(gint unitx, gint unity)
         query = g_strdup_printf("%%%s%%",
                 gtk_entry_get_text(GTK_ENTRY(oti.txt_query)));
 
-        unit2latlon(unitx, unity, lat, lon);
+        unit2latlon(porig.x, porig.y, lat, lon);
 
         if(is_cat)
         {
@@ -3139,7 +3137,7 @@ poi_browse_dialog(gint unitx, gint unity)
         if(poi_list)
         {
             /* Create a new dialog with the results. */
-            poi_list_dialog(dialog, unitx, unity, poi_list);
+            poi_list_dialog(dialog, &porig, poi_list);
             poi_list_free(poi_list);
         }
         else

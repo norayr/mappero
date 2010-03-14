@@ -252,10 +252,6 @@ extern GtkWidget *_menu_about_item;
 
 extern gboolean _mouse_is_dragging;
 extern gboolean _mouse_is_down;
-extern gint _cmenu_position_x;
-extern gint _cmenu_position_y;
-extern gint _cmenu_unitx;
-extern gint _cmenu_unity;
 
 /* Menu items for the "Location" context menu. */
 extern GtkWidget *_cmenu_loc_show_latlon_item;

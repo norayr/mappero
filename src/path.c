@@ -1068,13 +1068,12 @@ autoroute_enabled()
 }
 
 WayPoint *
-find_nearest_waypoint(gint unitx, gint unity)
+find_nearest_waypoint(const MapPoint *point)
 {
     MapController *controller = map_controller_get_instance();
     WayPoint *wcurr;
     WayPoint *wnear;
     gint64 nearest_squared;
-    MapPoint pos = { unitx, unity };
     gint radius_unit, zoom;
     DEBUG("");
 
@@ -1084,12 +1083,12 @@ find_nearest_waypoint(gint unitx, gint unity)
     wcurr = wnear = _route.whead;
     if(wcurr && wcurr <= _route.wtail)
     {
-        nearest_squared = DISTANCE_SQUARED(pos, wcurr->point->unit);
+        nearest_squared = DISTANCE_SQUARED(*point, wcurr->point->unit);
 
         wnear = _route.whead;
         while(++wcurr <=  _route.wtail)
         {
-            gint64 test_squared = DISTANCE_SQUARED(pos, wcurr->point->unit);
+            gint64 test_squared = DISTANCE_SQUARED(*point, wcurr->point->unit);
             if(test_squared < nearest_squared)
             {
                 wnear = wcurr;
@@ -1099,8 +1098,8 @@ find_nearest_waypoint(gint unitx, gint unity)
 
         /* Only use the waypoint if it is within a 6*_draw_width square drawn
          * around the position. This is consistent with select_poi(). */
-        if(abs(unitx - wnear->point->unit.x) < radius_unit
-            && abs(unity - wnear->point->unit.y) < radius_unit)
+        if (abs(point->x - wnear->point->unit.x) < radius_unit
+            && abs(point->y - wnear->point->unit.y) < radius_unit)
             return wnear;
     }
 
@@ -1502,7 +1501,7 @@ route_download(gchar *to)
 }
 
 void
-route_add_way_dialog(gint unitx, gint unity)
+route_add_way_dialog(const MapPoint *point)
 {
     MapController *controller = map_controller_get_instance();
     MapGeo lat, lon;
@@ -1515,7 +1514,7 @@ route_add_way_dialog(gint unitx, gint unity)
     static GtkWidget *txt_desc = NULL;
     static int last_deg_format = 0;
     
-    unit2latlon(unitx, unity, lat, lon);
+    unit2latlon(point->x, point->y, lat, lon);
     
     gint fallback_deg_format = _degformat;
     
@@ -1622,8 +1621,7 @@ route_add_way_dialog(gint unitx, gint unity)
         {
             /* There's a description.  Add a waypoint. */
             MACRO_PATH_INCREMENT_TAIL(_route);
-            _route.tail->unit.x = unitx;
-            _route.tail->unit.y = unity;
+            _route.tail->unit = *point;
             _route.tail->time = 0;
             _route.tail->altitude = 0;
 
@@ -1653,8 +1651,7 @@ route_add_way_dialog(gint unitx, gint unity)
                 }
 
                 MACRO_PATH_INCREMENT_TAIL(_route);
-                _route.tail->unit.x = unitx;
-                _route.tail->unit.y = unity;
+                _route.tail->unit = *point;
                 _route.tail->time = 0;
                 _route.tail->altitude = 0;
 
