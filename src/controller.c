@@ -351,7 +351,7 @@ map_controller_set_gps_position(MapController *self, const MapPoint *p)
                 priv->gps_data.lat, priv->gps_data.lon);
 
     /* Move mark to new location. */
-    map_refresh_mark(_center_mode > 0);
+    map_screen_update_mark(priv->screen);
 
     /* TODO: update the GConf keys under /system/nokia/location/lastknown */
 }
