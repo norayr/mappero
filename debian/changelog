@@ -1,3 +1,16 @@
+maemo-mapper (3.0+beta3) unstable; urgency=low
+
+  * Move "Show" and "GPS Details..." to main menu, and remove old "View" and
+    "GPS" menus (all their functionality is already accessible elsewhere).
+  * Fix redraw of GPS mark.
+  * Reittiopas: avoid writing "Unknown" into waypoint descriptions.
+  * Improve automatic map rotation: reduce the number of unnecessary
+    rotations.
+  * Downloading maps by area didn't update the area limits after zooming; now
+    it's fixed.
+
+ -- Alberto Mardegan <mardy@users.sourceforge.net>  Sun, 14 Mar 2010 20:59:39 +0200
+
 maemo-mapper (3.0+beta2) unstable; urgency=low
 
   * Fix calculation of path distances, not to include breaks.
