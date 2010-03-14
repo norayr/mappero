@@ -128,6 +128,9 @@ gboolean map_controller_get_show_velocity(MapController *self);
 void map_controller_set_show_zoom(MapController *self, gboolean show);
 gboolean map_controller_get_show_zoom(MapController *self);
 
+void map_controller_set_show_gps_info(MapController *self, gboolean show);
+gboolean map_controller_get_show_gps_info(MapController *self);
+
 void map_controller_set_center(MapController *self, MapPoint center, gint zoom);
 void map_controller_get_center(MapController *self, MapPoint *center);
 void map_controller_set_rotation(MapController *self, gint angle);

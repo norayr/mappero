@@ -598,6 +598,25 @@ map_controller_get_show_zoom(MapController *self)
 }
 
 void
+map_controller_set_show_gps_info(MapController *self, gboolean show)
+{
+    g_return_if_fail(MAP_IS_CONTROLLER(self));
+
+    if (_gps_info == show) return;
+
+    _gps_info = show;
+    gps_show_info();
+}
+
+gboolean
+map_controller_get_show_gps_info(MapController *self)
+{
+    g_return_val_if_fail(MAP_IS_CONTROLLER(self), FALSE);
+
+    return _gps_info;
+}
+
+void
 map_controller_set_center(MapController *self, MapPoint center, gint zoom)
 {
     MapControllerPrivate *priv;

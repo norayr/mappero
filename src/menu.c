@@ -1670,6 +1670,7 @@ map_menu_show()
 {
     GtkWidget *dialog;
     GtkWidget *zoom, *scale, *compass, *routes, *tracks, *velocity, *poi;
+    GtkWidget *gps_info;
     MapController *controller;
     MapDialog *dlg;
 
@@ -1723,6 +1724,12 @@ map_menu_show()
                                    map_controller_get_show_poi(controller));
     map_dialog_add_widget(dlg, poi);
 
+    gps_info = hildon_check_button_new(HILDON_SIZE_FINGER_HEIGHT);
+    gtk_button_set_label(GTK_BUTTON(gps_info), _("GPS status"));
+    hildon_check_button_set_active(HILDON_CHECK_BUTTON(gps_info),
+        map_controller_get_show_gps_info(controller));
+    map_dialog_add_widget(dlg, gps_info);
+
     gtk_widget_show_all(dialog);
 
     if (gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_ACCEPT)
@@ -1747,6 +1754,9 @@ map_menu_show()
 
         map_controller_set_show_poi(controller,
             hildon_check_button_get_active(HILDON_CHECK_BUTTON(poi)));
+
+        map_controller_set_show_gps_info(controller,
+            hildon_check_button_get_active(HILDON_CHECK_BUTTON(gps_info)));
     }
     gtk_widget_destroy(dialog);
 }
