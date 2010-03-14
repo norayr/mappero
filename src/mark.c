@@ -245,7 +245,10 @@ map_mark_update(MapMark *self)
     cairo_stroke(cr);
 
     /* draw the speed vector */
-    sqrt_speed = VELVEC_SIZE_FACTOR * sqrtf(10 + gps->speed);
+    if (gps->fields & MAP_GPS_SPEED && gps->speed > 0)
+        sqrt_speed = VELVEC_SIZE_FACTOR * sqrtf(10 + gps->speed);
+    else
+        sqrt_speed = 0;
     cairo_move_to(cr, x, y);
     cairo_line_to(cr, x, y - sqrt_speed);
     cairo_set_line_width(cr, _draw_width);
