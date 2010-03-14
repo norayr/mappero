@@ -1620,10 +1620,7 @@ route_add_way_dialog(const MapPoint *point)
         if(*desc)
         {
             /* There's a description.  Add a waypoint. */
-            MACRO_PATH_INCREMENT_TAIL(_route);
-            _route.tail->unit = *point;
-            _route.tail->time = 0;
-            _route.tail->altitude = 0;
+            map_path_append_unit(&_route, point);
 
             MACRO_PATH_INCREMENT_WTAIL(_route);
             _route.wtail->point = _route.tail;
@@ -1650,11 +1647,7 @@ route_add_way_dialog(const MapPoint *point)
                     *_route.tail = _point_null;
                 }
 
-                MACRO_PATH_INCREMENT_TAIL(_route);
-                _route.tail->unit = *point;
-                _route.tail->time = 0;
-                _route.tail->altitude = 0;
-
+                map_path_append_unit(&_route, point);
 
                 gtk_widget_destroy(confirm);
             }
