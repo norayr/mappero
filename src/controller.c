@@ -640,6 +640,13 @@ map_controller_set_rotation(MapController *self, gint angle)
     map_screen_set_rotation(priv->screen, angle);
 }
 
+gint
+map_controller_get_rotation(MapController *self)
+{
+    g_return_val_if_fail(MAP_IS_CONTROLLER(self), 0);
+    return self->priv->rotation_angle;
+}
+
 void
 map_controller_rotate(MapController *self, gint angle)
 {
