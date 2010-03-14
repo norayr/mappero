@@ -117,6 +117,9 @@
 
 #define HOURGLASS_SEPARATION (7)
 
+/* (im)precision of a finger tap, in screen pixels */
+#define TOUCH_RADIUS    25
+
 #define deg2rad(deg) ((deg) * (PI / 180.0))
 #define rad2deg(rad) ((rad) * (180.0 / PI))
 

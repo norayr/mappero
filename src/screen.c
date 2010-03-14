@@ -55,9 +55,6 @@
 /* duration of the rotate animation */
 #define ROTATE_DURATION   500
 
-/* (im)precision of a finger tap, in screen pixels */
-#define TOUCH_RADIUS    25
-
 struct _MapScreenPrivate
 {
     ClutterActor *map;

@@ -1070,11 +1070,16 @@ autoroute_enabled()
 WayPoint *
 find_nearest_waypoint(gint unitx, gint unity)
 {
+    MapController *controller = map_controller_get_instance();
     WayPoint *wcurr;
     WayPoint *wnear;
     gint64 nearest_squared;
     MapPoint pos = { unitx, unity };
+    gint radius_unit, zoom;
     DEBUG("");
+
+    zoom = map_controller_get_zoom(controller);
+    radius_unit = pixel2zunit(TOUCH_RADIUS, zoom);
 
     wcurr = wnear = _route.whead;
     if(wcurr && wcurr <= _route.wtail)
@@ -1094,8 +1099,8 @@ find_nearest_waypoint(gint unitx, gint unity)
 
         /* Only use the waypoint if it is within a 6*_draw_width square drawn
          * around the position. This is consistent with select_poi(). */
-        if(abs(unitx - wnear->point->unit.x) < pixel2unit(3 * _draw_width)
-            && abs(unity - wnear->point->unit.y) < pixel2unit(3 * _draw_width))
+        if(abs(unitx - wnear->point->unit.x) < radius_unit
+            && abs(unity - wnear->point->unit.y) < radius_unit)
             return wnear;
     }
 

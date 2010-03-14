@@ -536,17 +536,21 @@ poi_run_select_dialog(GtkTreeModel *model, PoiInfo *poi)
 gboolean
 select_poi(gint unitx, gint unity, PoiInfo *poi, gboolean quick)
 {
+    MapController *controller = map_controller_get_instance();
     GtkTreeModel *model = NULL;
     gboolean selected;
     gint num_cats;
     MapArea area;
+    gint radius_unit, zoom;
 
     DEBUG("%d, %d", unitx, unity);
 
-    area.x1 = unitx - pixel2unit(3 * _draw_width);
-    area.y1 = unity - pixel2unit(3 * _draw_width);
-    area.y2 = unity + pixel2unit(3 * _draw_width);
-    area.x2 = unitx + pixel2unit(3 * _draw_width);
+    zoom = map_controller_get_zoom(controller);
+    radius_unit = pixel2zunit(TOUCH_RADIUS, zoom);
+    area.x1 = unitx - radius_unit;
+    area.y1 = unity - radius_unit;
+    area.y2 = unity + radius_unit;
+    area.x2 = unitx + radius_unit;
 
     model = poi_get_model_for_area(&area);
     if (!model)
