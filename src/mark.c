@@ -234,6 +234,7 @@ map_mark_update(MapMark *self)
     g_return_if_fail(gps != NULL);
 
     clutter_actor_get_anchor_point(priv->dot, &x, &y);
+    clutter_cairo_texture_clear(CLUTTER_CAIRO_TEXTURE(priv->dot));
     cr = clutter_cairo_texture_create(CLUTTER_CAIRO_TEXTURE(priv->dot));
 
     cairo_new_sub_path(cr);
