@@ -1504,6 +1504,7 @@ route_download(gchar *to)
 void
 route_add_way_dialog(gint unitx, gint unity)
 {
+    MapController *controller = map_controller_get_instance();
     MapGeo lat, lon;
     gchar tmp1[LL_FMT_LEN], tmp2[LL_FMT_LEN], *p_latlon;
     static GtkWidget *dialog = NULL;
@@ -1668,6 +1669,7 @@ route_add_way_dialog(gint unitx, gint unity)
         }
 
         route_find_nearest_point();
+        map_controller_refresh_paths(controller);
         break;
     }
     gtk_widget_hide(dialog);
@@ -1995,5 +1997,30 @@ map_path_get_duration(const Path *path)
     if (!first->time || !last->time) return 0;
 
     return last->time - first->time;
+}
+
+void
+map_path_append_unit(Path *path, const MapPoint *p)
+{
+    MapController *controller = map_controller_get_instance();
+    MapGeo lat, lon;
+
+    MACRO_PATH_INCREMENT_TAIL(*path);
+    path->tail->unit = *p;
+    path->tail->altitude = 0;
+    path->tail->time = 0;
+    path->tail->zoom = SCHAR_MAX;
+
+    unit2latlon(p->x, p->y, lat, lon);
+    if (path->last_lat != 0 || path->last_lon != 0)
+    {
+        path->tail->distance =
+            calculate_distance(path->last_lat, path->last_lon, lat, lon);
+        path->length += path->tail->distance;
+    }
+    path->last_lat = lat;
+    path->last_lon = lon;
+    map_path_optimize(path);
+    map_controller_refresh_paths(controller);
 }
 

@@ -143,13 +143,12 @@ cmenu_distance_to(gint unitx, gint unity)
 static void
 cmenu_add_route(gint unitx, gint unity)
 {
-    MapController *controller = map_controller_get_instance();
+    MapPoint p;
 
-    MACRO_PATH_INCREMENT_TAIL(_route);
-    _route.tail->unit.x = _cmenu_unitx;
-    _route.tail->unit.y = _cmenu_unity;
+    p.x = _cmenu_unitx;
+    p.y = _cmenu_unity;
+    map_path_append_unit(&_route, &p);
     route_find_nearest_point();
-    map_controller_refresh_paths(controller);
 }
 
 static gboolean

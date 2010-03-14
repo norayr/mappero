@@ -62,4 +62,6 @@ typedef enum {
 
 void map_path_merge(Path *src_path, Path *dest_path, MapPathMergePolicy policy);
 
+void map_path_append_unit(Path *path, const MapPoint *p);
+
 #endif /* ifndef MAEMO_MAPPER_PATH_H */
