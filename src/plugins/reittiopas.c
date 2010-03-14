@@ -857,7 +857,7 @@ ro_route_to_path(const RoRoute *route, Path *path)
             /* the first point is always a waypoint */
             MACRO_PATH_INCREMENT_WTAIL(*path);
             path->wtail->point = path->tail;
-            if (line->code)
+            if (line->code[0] != '\0')
             {
                 path->wtail->desc =
                     g_strdup_printf("%s\n%s %.4s", point->name,
