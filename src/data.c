@@ -227,40 +227,6 @@ GtkWidget *_menu_maps_repoman_item = NULL;
 GtkWidget *_menu_maps_tile_sources_item = NULL;
 GtkWidget *_menu_maps_repodown_item = NULL;
 
-/* Menu items for the "View" submenu. */
-GtkWidget *_menu_view_zoom_in_item = NULL;
-GtkWidget *_menu_view_zoom_out_item = NULL;
-
-GtkWidget *_menu_view_rotate_clock_item = NULL;
-GtkWidget *_menu_view_rotate_counter_item = NULL;
-GtkWidget *_menu_view_rotate_reset_item = NULL;
-GtkWidget *_menu_view_rotate_auto_item = NULL;
-
-GtkWidget *_menu_view_pan_up_item = NULL;
-GtkWidget *_menu_view_pan_down_item = NULL;
-GtkWidget *_menu_view_pan_left_item = NULL;
-GtkWidget *_menu_view_pan_right_item = NULL;
-GtkWidget *_menu_view_pan_north_item = NULL;
-GtkWidget *_menu_view_pan_south_item = NULL;
-GtkWidget *_menu_view_pan_west_item = NULL;
-GtkWidget *_menu_view_pan_east_item = NULL;
-
-GtkWidget *_menu_view_fullscreen_item = NULL;
-
-GtkWidget *_menu_view_ac_latlon_item = NULL;
-GtkWidget *_menu_view_ac_lead_item = NULL;
-GtkWidget *_menu_view_ac_none_item = NULL;
-
-GtkWidget *_menu_view_goto_latlon_item = NULL;
-GtkWidget *_menu_view_goto_address_item = NULL;
-GtkWidget *_menu_view_goto_gps_item = NULL;
-GtkWidget *_menu_view_goto_nextway_item = NULL;
-GtkWidget *_menu_view_goto_nearpoi_item = NULL;
-
-/* Menu items for the "GPS" submenu. */
-GtkWidget *_menu_gps_show_info_item = NULL;
-GtkWidget *_menu_gps_details_item = NULL;
-
 /* Menu items for the other menu items. */
 GtkWidget *_menu_settings_item = NULL;
 GtkWidget *_menu_about_item = NULL;

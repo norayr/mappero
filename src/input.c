@@ -216,12 +216,6 @@ window_cb_key_press(GtkWidget* widget, GdkEventKey *event)
             track_clear();
             break;
 
-        case CUSTOM_ACTION_TOGGLE_GPSINFO:
-            gtk_check_menu_item_set_active(
-                    GTK_CHECK_MENU_ITEM(_menu_gps_show_info_item),
-                    !_gps_info);
-            break;
-
         case CUSTOM_ACTION_TOGGLE_SPEEDLIMIT:
             _speed_limit_on ^= 1;
             break;

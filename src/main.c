@@ -299,7 +299,6 @@ maemo_mapper_init(gint argc, gchar **argv)
         = _("Select Next Repository");
     CUSTOM_ACTION_ENUM_TEXT[CUSTOM_ACTION_TRACK_BREAK]=_("Insert Track Break");
     CUSTOM_ACTION_ENUM_TEXT[CUSTOM_ACTION_TRACK_CLEAR] = _("Clear Track");
-    CUSTOM_ACTION_ENUM_TEXT[CUSTOM_ACTION_TOGGLE_GPSINFO]=_("Toggle GPS Info");
     CUSTOM_ACTION_ENUM_TEXT[CUSTOM_ACTION_TOGGLE_SPEEDLIMIT]
         = _("Toggle Speed Limit");
     CUSTOM_ACTION_ENUM_TEXT[CUSTOM_ACTION_TOGGLE_LAYERS] = _("Toggle Layers");

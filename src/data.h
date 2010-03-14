@@ -203,40 +203,6 @@ extern GtkWidget *_menu_maps_repoman_item;
 extern GtkWidget *_menu_maps_tile_sources_item;
 extern GtkWidget *_menu_maps_repodown_item;
 
-/* Menu items for the "View" submenu. */
-extern GtkWidget *_menu_view_zoom_in_item;
-extern GtkWidget *_menu_view_zoom_out_item;
-
-extern GtkWidget *_menu_view_rotate_clock_item;
-extern GtkWidget *_menu_view_rotate_counter_item;
-extern GtkWidget *_menu_view_rotate_reset_item;
-extern GtkWidget *_menu_view_rotate_auto_item;
-
-extern GtkWidget *_menu_view_pan_up_item;
-extern GtkWidget *_menu_view_pan_down_item;
-extern GtkWidget *_menu_view_pan_left_item;
-extern GtkWidget *_menu_view_pan_right_item;
-extern GtkWidget *_menu_view_pan_north_item;
-extern GtkWidget *_menu_view_pan_south_item;
-extern GtkWidget *_menu_view_pan_west_item;
-extern GtkWidget *_menu_view_pan_east_item;
-
-extern GtkWidget *_menu_view_fullscreen_item;
-
-extern GtkWidget *_menu_view_ac_latlon_item;
-extern GtkWidget *_menu_view_ac_lead_item;
-extern GtkWidget *_menu_view_ac_none_item;
-
-extern GtkWidget *_menu_view_goto_latlon_item;
-extern GtkWidget *_menu_view_goto_address_item;
-extern GtkWidget *_menu_view_goto_gps_item;
-extern GtkWidget *_menu_view_goto_nextway_item;
-extern GtkWidget *_menu_view_goto_nearpoi_item;
-
-/* Menu items for the "GPS" submenu. */
-extern GtkWidget *_menu_gps_show_info_item;
-extern GtkWidget *_menu_gps_details_item;
-
 /* Menu items for the other menu items. */
 extern GtkWidget *_menu_settings_item;
 extern GtkWidget *_menu_about_item;

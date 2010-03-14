@@ -44,7 +44,6 @@ void map_render_paths(void);
 
 void update_gcs(void);
 
-void map_pan(gint delta_unitx, gint delta_unity);
 void map_move_mark(void);
 void map_refresh_mark(gboolean force_redraw);
 void map_force_redraw(void);
@@ -53,8 +52,6 @@ void map_force_redraw(void);
 void map_center_unit_full(MapPoint new_center, gint zoom, gint rotate_angle);
 void map_rotate(gint rotate_angle);
 MapPoint map_calc_new_center(gint zoom);
-
-void map_set_zoom(gint new_zoom);
 
 gboolean thread_render_map(MapRenderTask *mrt);
 

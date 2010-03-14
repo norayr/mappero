@@ -804,14 +804,6 @@ map_rotate(gint rotate_angle)
 }
 
 /**
- * Pan the view by the given number of units in the X and Y directions.
- */
-void
-map_pan(gint delta_unitx, gint delta_unity)
-{
-}
-
-/**
  * Initiate a move of the mark from the old location to the current
  * location.  This function queues the draw area of the old mark (to force
  * drawing of the background map), then updates the mark, then queus the
@@ -867,24 +859,6 @@ map_download_refresh_idle(MapTileSpec *tile, GdkPixbuf *pixbuf,
         hildon_banner_set_fraction(HILDON_BANNER(_download_banner),
                 _curr_download / (double)_num_downloads);
     }
-}
-
-/**
- * Set the current zoom level.  If the given zoom level is the same as the
- * current zoom level, or if the new zoom is invalid
- * (not MIN_ZOOM <= new_zoom < MAX_ZOOM), then this method does nothing.
- */
-void
-map_set_zoom(gint new_zoom)
-{
-    MapController *controller;
-
-    /* This if condition also checks for new_zoom >= 0. */
-    if((unsigned)new_zoom > MAX_ZOOM)
-        return;
-
-    controller = map_controller_get_instance();
-    map_controller_set_zoom(controller, new_zoom);
 }
 
 gboolean
