@@ -96,6 +96,31 @@ static void update_satellite_info(LocationGPSDeviceSatellite *satellite,
 }
 
 static void
+rotate_map_heuristics(MapController *controller, LocationGPSDeviceFix *fix)
+{
+    gint angle_diff, angle, angle_err;
+
+    /* don't even consider rotating, if the error is too big */
+    if (!isfinite(fix->epd) || fix->epd > 180) return;
+
+    angle = (gint)fix->track % 360;
+    angle_diff = angle - map_controller_get_rotation(controller);
+    angle_diff = angle_diff % 360;
+    if (angle_diff > 180) angle_diff -= 360;
+    else if (angle_diff <= -180) angle_diff += 360;
+
+    angle_err = fix->epd;
+
+    /* limit the amount of the rotation according to the error, unless the
+     * rotation is really small */
+    if (abs(angle_diff) > 5)
+        angle_diff = angle_diff * (360 - angle_err) / 360;
+
+    if (angle_diff != 0)
+        map_controller_rotate(controller, angle_diff);
+}
+
+static void
 on_gps_changed(LocationGPSDevice *device, MapController *controller)
 {
     MapGpsData *gps = &controller->priv->gps_data;
@@ -116,16 +141,25 @@ on_gps_changed(LocationGPSDevice *device, MapController *controller)
         latlon2unit(gps->lat, gps->lon, gps->unit.x, gps->unit.y);
     }
 
-    if (device->fix->fields & LOCATION_GPS_DEVICE_SPEED_SET) {
-        gps->speed = device->fix->speed;
-        gps->fields |= MAP_GPS_SPEED;
-    }
-
     if (device->fix->fields & LOCATION_GPS_DEVICE_TRACK_SET) {
+        /* if we don't know the direction, we are not interested in the
+         * speed either: that's why the speed is checked inside this block */
+        if (device->fix->fields & LOCATION_GPS_DEVICE_SPEED_SET) {
+            gps->speed = device->fix->speed;
+            gps->fields |= MAP_GPS_SPEED;
+        }
+
         gps->heading = device->fix->track;
         gps->fields |= MAP_GPS_HEADING;
         if (map_controller_get_auto_rotate(controller))
-            map_controller_set_rotation(controller, gps->heading);
+        {
+            /* we can't rely on the informations given by the GPS to rotate the
+             * map: we we are not moving, the GPS still gets fixes in different
+             * positions, and makes up a speed which is not real. So, we
+             * implement some heuristics to determine whether we should rotate
+             * or not */
+            rotate_map_heuristics(controller, device->fix);
+        }
     }
 
     /* fetch timestamp from gps if available, otherwise create one. */
