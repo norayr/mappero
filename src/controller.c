@@ -352,6 +352,7 @@ map_controller_set_gps_position(MapController *self, const MapPoint *p)
 
     /* Move mark to new location. */
     map_screen_update_mark(priv->screen);
+    route_find_nearest_point();
 
     /* TODO: update the GConf keys under /system/nokia/location/lastknown */
 }
