@@ -925,6 +925,9 @@ map_controller_set_repository(MapController *self, Repository *repo)
         curr_type->unit_to_latlon(center.x, center.y, &lat, &lon);
         new_type->latlon_to_unit(lat, lon, &center.x, &center.y);
 
+        curr_type->unit_to_latlon(_pos.unit.x, _pos.unit.y, &lat, &lon);
+        new_type->latlon_to_unit(lat, lon, &_pos.unit.x, &_pos.unit.y);
+
         if ((_show_paths & ROUTES_MASK) && _route.head != _route.tail)
             update_path_coords(curr_repo, repo, &_route);
         if ((_show_paths & TRACKS_MASK) && _track.head != _track.tail)
@@ -933,6 +936,7 @@ map_controller_set_repository(MapController *self, Repository *repo)
 
     priv->repository = repo;
     map_controller_set_center(self, center, priv->zoom);
+    map_screen_update_mark(priv->screen);
 }
 
 GList *
