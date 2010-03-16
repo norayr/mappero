@@ -114,7 +114,11 @@ rotate_map_heuristics(MapController *controller, LocationGPSDeviceFix *fix)
     /* limit the amount of the rotation according to the error, unless the
      * rotation is really small */
     if (abs(angle_diff) > 5)
-        angle_diff = angle_diff * (360 - angle_err) / 360;
+    {
+        DEBUG("limiting rotation: diff = %d, err = %d", angle_diff, angle_err);
+        angle_diff = angle_diff * (180 - angle_err) / 180;
+        DEBUG("After: diff = %d", angle_diff);
+    }
 
     if (angle_diff != 0)
         map_controller_rotate(controller, angle_diff);
