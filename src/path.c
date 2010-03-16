@@ -940,9 +940,6 @@ map_path_track_update(const MapGpsData *gps)
     Point pos = _point_null;
     gboolean must_add = FALSE;
 
-    DEBUG("%d, %d, %d (fix = %d)", (guint)gps->time,
-          gps->unit.x, gps->unit.y, gps->fields & MAP_GPS_LATLON);
-
     if (gps->fields & MAP_GPS_LATLON)
     {
         /* Add the point to the track only if it's not too inaccurate: if the
