@@ -1100,6 +1100,23 @@ map_controller_toggle_layer_visibility(MapController *self, RepositoryLayer *rep
     map_screen_refresh_map(self->priv->screen);
 }
 
+void
+map_controller_set_auto_download(MapController *self,
+                                 gboolean auto_download)
+{
+    g_return_if_fail(MAP_IS_CONTROLLER(self));
+
+    self->priv->auto_download = auto_download;
+    if (auto_download)
+        map_screen_refresh_tiles(self->priv->screen);
+}
+
+gboolean
+map_controller_get_auto_download(MapController *self)
+{
+    g_return_val_if_fail(MAP_IS_CONTROLLER(self), FALSE);
+    return self->priv->auto_download;
+}
 
 /* Obtain device activity state */
 gboolean

@@ -219,13 +219,7 @@ GtkWidget *_menu_poi_browse_item = NULL;
 GtkWidget *_menu_poi_categories_item = NULL;
 
 /* Menu items for the "Maps" submenu. */
-GtkWidget *_menu_maps_submenu = NULL;
 GtkWidget *_menu_layers_submenu = NULL;
-GtkWidget *_menu_maps_mapman_item = NULL;
-GtkWidget *_menu_maps_auto_download_item = NULL;
-GtkWidget *_menu_maps_repoman_item = NULL;
-GtkWidget *_menu_maps_tile_sources_item = NULL;
-GtkWidget *_menu_maps_repodown_item = NULL;
 
 /* Menu items for the other menu items. */
 GtkWidget *_menu_settings_item = NULL;

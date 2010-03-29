@@ -130,7 +130,8 @@ settings_save()
 
     /* Save Auto-Download. */
     gconf_client_set_bool(gconf_client,
-            GCONF_KEY_AUTO_DOWNLOAD, _auto_download, NULL);
+            GCONF_KEY_AUTO_DOWNLOAD,
+            map_controller_get_auto_download(controller), NULL);
 
     /* Save Auto-Download Pre-cache. */
     gconf_client_set_int(gconf_client,
@@ -1419,8 +1420,9 @@ settings_init(GConfClient *gconf_client)
         _gri.file_path = g_strdup("/dev/pgps");
 
     /* Get Auto-Download.  Default is FALSE. */
-    _auto_download = gconf_client_get_bool(gconf_client,
-            GCONF_KEY_AUTO_DOWNLOAD, NULL);
+    map_controller_set_auto_download(controller,
+        gconf_client_get_bool(gconf_client,
+                              GCONF_KEY_AUTO_DOWNLOAD, NULL));
 
     /* Get Auto-Download Pre-cache - Default is 0. */
     _auto_download_precache = gconf_client_get_int(gconf_client,

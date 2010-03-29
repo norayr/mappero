@@ -385,60 +385,6 @@ menu_cb_poi_categories(GtkMenuItem *item)
  ****************************************************************************/
 
 /****************************************************************************
- * BELOW: MAPS MENU *********************************************************
- ****************************************************************************/
-static gboolean
-menu_cb_maps_repoman(GtkMenuItem *item)
-{
-    repository_list_edit_dialog();
-    return TRUE;
-}
-
-
-static gboolean
-menu_cb_maps_tile_sources(GtkMenuItem *item)
-{
-    tile_source_list_edit_dialog();
-    return TRUE;
-}
-
-
-static gboolean
-menu_cb_maps_select(GtkMenuItem *item, gpointer new_repo)
-{
-    if(gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(item)))
-    {
-        map_controller_set_repository(map_controller_get_instance(), new_repo);
-        map_refresh_mark(TRUE);
-    }
-    return TRUE;
-}
-
-static gboolean
-menu_cb_maps_mapman(GtkMenuItem *item)
-{
-    mapman_dialog();
-
-    return TRUE;
-}
-
-static gboolean
-menu_cb_maps_auto_download(GtkMenuItem *item)
-{
-    if((_auto_download = gtk_check_menu_item_get_active(
-            GTK_CHECK_MENU_ITEM(_menu_maps_auto_download_item))))
-    {
-        map_refresh_mark(TRUE);
-    }
-
-    return TRUE;
-}
-
-/****************************************************************************
- * ABOVE: MAPS MENU *********************************************************
- ****************************************************************************/
-
-/****************************************************************************
  * BELOW: LAYERS MENU *******************************************************
  ****************************************************************************/
 
@@ -776,20 +722,6 @@ menu_cb_about(GtkMenuItem *item)
 }
 
 
-
-void
-menu_maps_remove_repos()
-{
-    GList *child;
-
-    /* Delete one menu item for each repo. */
-    while ((child = gtk_container_get_children(GTK_CONTAINER(_menu_maps_submenu))))
-        gtk_widget_destroy(child->data);
-
-    menu_layers_remove_repos ();
-}
-
-
 void
 menu_layers_remove_repos()
 {
@@ -798,51 +730,6 @@ menu_layers_remove_repos()
     /* Delete one menu item for each repo. */
     while ((child = gtk_container_get_children(GTK_CONTAINER(_menu_layers_submenu))))
         gtk_widget_destroy (child->data);
-}
-
-
-void
-menu_maps_add_repos()
-{
-    GList *curr, *repo_list = map_controller_get_repo_list(map_controller_get_instance());
-    GtkWidget *last_repo = NULL;
-    DEBUG("");
-    Repository *cur_repo = map_controller_get_repository(map_controller_get_instance());
-
-    for(curr = g_list_last(repo_list); curr; curr = curr->prev)
-    {
-        Repository *rd = (Repository*)curr->data;
-        GtkWidget *menu_item;
-        if(last_repo)
-            gtk_menu_prepend(_menu_maps_submenu, menu_item
-                    = gtk_radio_menu_item_new_with_label_from_widget(
-                        GTK_RADIO_MENU_ITEM(last_repo), rd->name));
-        else
-        {
-            gtk_menu_prepend(_menu_maps_submenu, menu_item
-                    = gtk_radio_menu_item_new_with_label(NULL, rd->name));
-            last_repo = menu_item;
-        }
-        gtk_check_menu_item_set_active(
-                GTK_CHECK_MENU_ITEM(menu_item), rd == cur_repo);
-        if (rd->menu_item)
-            gtk_widget_destroy(rd->menu_item);
-        rd->menu_item = menu_item;
-    }
-
-    /* Add signals (must be after entire menu is built). */
-    {
-        GList *currmi = gtk_container_get_children(
-                GTK_CONTAINER(_menu_maps_submenu));
-        for(curr = repo_list; curr; curr = curr->next, currmi = currmi->next)
-        {
-            g_signal_connect(G_OBJECT(currmi->data), "activate",
-                             G_CALLBACK(menu_cb_maps_select), curr->data);
-        }
-    }
-
-    gtk_widget_show_all(_menu_maps_submenu);
-    menu_layers_add_repos ();
 }
 
 
@@ -933,21 +820,8 @@ menu_init()
     /* The "Maps" submenu. */
     gtk_menu_append(menu, menu_item
             = gtk_menu_item_new_with_label(_("Maps")));
-    gtk_menu_item_set_submenu(GTK_MENU_ITEM(menu_item),
-            _menu_maps_submenu = gtk_menu_new());
-    gtk_menu_append(_menu_maps_submenu, gtk_separator_menu_item_new());
-    gtk_menu_append(_menu_maps_submenu, _menu_maps_mapman_item
-            = gtk_menu_item_new_with_label(_("Manage Maps...")));
-    gtk_menu_append(_menu_maps_submenu, _menu_maps_auto_download_item
-            = gtk_check_menu_item_new_with_label(_("Auto-Download")));
-    gtk_check_menu_item_set_active(
-            GTK_CHECK_MENU_ITEM(_menu_maps_auto_download_item),_auto_download);
-    gtk_menu_append(_menu_maps_submenu, gtk_separator_menu_item_new());
-    gtk_menu_append(_menu_maps_submenu, _menu_maps_repoman_item
-            = gtk_menu_item_new_with_label(_("Manage Repositories...")));
-    gtk_menu_append(_menu_maps_submenu, _menu_maps_tile_sources_item
-            = gtk_menu_item_new_with_label(_("Manage Tiles/Layers...")));
-    menu_maps_add_repos();
+    g_signal_connect(menu_item, "activate",
+                      G_CALLBACK(map_menu_maps), NULL);
 
     gtk_menu_append(menu, gtk_separator_menu_item_new());
 
@@ -986,16 +860,6 @@ menu_init()
                       G_CALLBACK(menu_cb_poi_browse), NULL);
     g_signal_connect(G_OBJECT(_menu_poi_categories_item), "activate",
                       G_CALLBACK(menu_cb_poi_categories), NULL);
-
-    /* Connect the "Maps" signals. */
-    g_signal_connect(G_OBJECT(_menu_maps_repoman_item), "activate",
-                      G_CALLBACK(menu_cb_maps_repoman), NULL);
-    g_signal_connect(G_OBJECT(_menu_maps_tile_sources_item), "activate",
-                      G_CALLBACK(menu_cb_maps_tile_sources), NULL);
-    g_signal_connect(G_OBJECT(_menu_maps_mapman_item), "activate",
-                      G_CALLBACK(menu_cb_maps_mapman), NULL);
-    g_signal_connect(G_OBJECT(_menu_maps_auto_download_item), "toggled",
-                      G_CALLBACK(menu_cb_maps_auto_download), NULL);
 
     /* Connect the other menu item signals. */
     g_signal_connect(G_OBJECT(_menu_settings_item), "activate",
@@ -1307,6 +1171,99 @@ map_menu_show()
 
         map_controller_set_show_gps_info(controller,
             hildon_check_button_get_active(HILDON_CHECK_BUTTON(gps_info)));
+    }
+    gtk_widget_destroy(dialog);
+}
+
+void
+map_menu_maps()
+{
+    GtkWidget *dialog;
+    GtkWindow *parent;
+    GtkWidget *w_repository, *auto_download;
+    MapController *controller;
+    HildonTouchSelector *selector;
+    GList *list, *repositories;
+    Repository *current;
+    gint i, active, response;
+    enum {
+        MAPS_REPOSITORIES,
+        MAPS_TILES,
+        MAPS_CACHE,
+    };
+
+    controller = map_controller_get_instance();
+    parent = map_controller_get_main_window(controller);
+    dialog = map_dialog_new(_("Maps"), parent, TRUE);
+
+    gtk_dialog_add_button(GTK_DIALOG(dialog),
+                          _("Repositories"), MAPS_REPOSITORIES);
+    gtk_dialog_add_button(GTK_DIALOG(dialog),
+                          _("Tiles"), MAPS_TILES);
+    gtk_dialog_add_button(GTK_DIALOG(dialog),
+                          GTK_STOCK_OK, GTK_RESPONSE_ACCEPT);
+
+    /* Repository picker */
+    selector = HILDON_TOUCH_SELECTOR (hildon_touch_selector_new_text());
+    repositories = map_controller_get_repo_list(controller);
+    current = map_controller_get_repository(controller);
+
+    for (list = repositories, i = 0; list != NULL; list = list->next, i++)
+    {
+        Repository *repository = list->data;
+        hildon_touch_selector_append_text(selector, repository->name);
+        if (repository == current) active = i;
+    }
+
+    w_repository =
+        g_object_new(HILDON_TYPE_PICKER_BUTTON,
+                     "arrangement", HILDON_BUTTON_ARRANGEMENT_HORIZONTAL,
+                     "size", HILDON_SIZE_FINGER_HEIGHT,
+                     "title", _("Map repository"),
+                     "touch-selector", selector,
+                     "xalign", 0.0,
+                     NULL);
+    hildon_picker_button_set_active(HILDON_PICKER_BUTTON(w_repository),
+                                    active);
+    map_dialog_add_widget(MAP_DIALOG(dialog), w_repository);
+
+    /* auto download button */
+    auto_download = hildon_check_button_new(HILDON_SIZE_FINGER_HEIGHT);
+    gtk_button_set_label(GTK_BUTTON(auto_download), _("Auto-Download"));
+    hildon_check_button_set_active(HILDON_CHECK_BUTTON(auto_download),
+        map_controller_get_auto_download(controller));
+    map_dialog_add_widget(MAP_DIALOG(dialog), auto_download);
+
+    /* Manage cache button */
+    map_dialog_create_button(MAP_DIALOG(dialog),
+                             _("Manage Maps..."), MAPS_CACHE);
+
+    gtk_widget_show_all(dialog);
+
+    while ((response = gtk_dialog_run(GTK_DIALOG(dialog))) >= 0)
+    {
+        switch (response) {
+        case MAPS_REPOSITORIES:
+            repository_list_edit_dialog();
+            break;
+        case MAPS_TILES:
+            tile_source_list_edit_dialog();
+            break;
+        case MAPS_CACHE:
+            mapman_dialog();
+            break;
+        }
+    }
+
+    if (response == GTK_RESPONSE_ACCEPT)
+    {
+        active =
+            hildon_picker_button_get_active(HILDON_PICKER_BUTTON(w_repository));
+        map_controller_set_repository(controller,
+                                      g_list_nth_data(repositories, active));
+
+        map_controller_set_auto_download(controller,
+            hildon_check_button_get_active(HILDON_CHECK_BUTTON(auto_download)));
     }
     gtk_widget_destroy(dialog);
 }

@@ -248,7 +248,9 @@ map_tile_load(TileSource *source, gint zoom, gint x, gint y, gboolean *new_tile)
 
     if (zoff != 0)
     {
-        map_tile_download(tile);
+        MapController *controller = map_controller_get_instance();
+        if (map_controller_get_auto_download(controller))
+            map_tile_download(tile);
 
         /* if this is not a new tile, it contains dirty data: clean it */
         if (must_clear)

@@ -831,8 +831,6 @@ select_repository_callback(HildonTouchSelector *selector,
     {
         if (repo_is_active)
             map_refresh_mark(TRUE);
-        /* Refresh repositories menu entries */
-        menu_maps_add_repos();
         /* Refresh repostiory list */
         refresh_repository_list_selector(selector);
     }
@@ -1043,7 +1041,6 @@ repository_list_edit_dialog()
         }
 
         if (update_list) {
-            menu_maps_add_repos();
             refresh_repository_list_selector(repos_selector);
             update_list = FALSE;
         }

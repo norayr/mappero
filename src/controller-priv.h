@@ -44,6 +44,8 @@ struct _MapControllerPrivate
     LocationGPSDevice *gps_device;
     MapGpsData gps_data;
 
+    gboolean auto_download;
+
     guint source_map_center;
     guint is_disposed : 1;
     guint device_active : 1;
