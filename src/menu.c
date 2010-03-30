@@ -792,62 +792,52 @@ void
 menu_init()
 {
     /* Create needed handles. */
-    GtkMenu *menu;
-    GtkWidget *menu_item;
+    HildonAppMenu *menu;
+    GtkWidget *button;
 
     /* Get the menu of our view. */
-    menu = GTK_MENU(gtk_menu_new());
+    menu = HILDON_APP_MENU(hildon_app_menu_new());
 
     /* Create the menu items. */
 
     /* The "POI" submenu. */
-    gtk_menu_append(menu, menu_item
-            = gtk_menu_item_new_with_label(_("POI")));
-    g_signal_connect(menu_item, "activate",
-                      G_CALLBACK(map_menu_poi), NULL);
+    button = gtk_button_new_with_label(_("POI"));
+    hildon_app_menu_append(menu, GTK_BUTTON(button));
+    g_signal_connect(button, "clicked", G_CALLBACK(map_menu_poi), NULL);
 
+    /* TODO
     gtk_menu_append(menu, gtk_separator_menu_item_new());
     _menu_layers_submenu = gtk_menu_new();
+    */
 
     /* The "Maps" submenu. */
-    gtk_menu_append(menu, menu_item
-            = gtk_menu_item_new_with_label(_("Maps")));
-    g_signal_connect(menu_item, "activate",
-                      G_CALLBACK(map_menu_maps), NULL);
-
-    gtk_menu_append(menu, gtk_separator_menu_item_new());
+    button = gtk_button_new_with_label(_("Maps"));
+    hildon_app_menu_append(menu, GTK_BUTTON(button));
+    g_signal_connect(button, "clicked", G_CALLBACK(map_menu_maps), NULL);
 
     /* The "Show" submenu. */
-    gtk_menu_append(menu, menu_item
-            = gtk_menu_item_new_with_label(_("Show")));
-    g_signal_connect(menu_item, "activate",
-                      G_CALLBACK(map_menu_show), NULL);
+    button = gtk_button_new_with_label(_("Show"));
+    hildon_app_menu_append(menu, GTK_BUTTON(button));
+    g_signal_connect(button, "clicked", G_CALLBACK(map_menu_show), NULL);
 
     /* GPS details */
-    gtk_menu_append(menu, menu_item
-        = gtk_menu_item_new_with_label(_("GPS Details...")));
-    g_signal_connect(menu_item, "activate",
-                     G_CALLBACK(menu_cb_gps_details), NULL);
-
-    gtk_menu_append(menu, gtk_separator_menu_item_new());
+    button = gtk_button_new_with_label(_("GPS Details..."));
+    hildon_app_menu_append(menu, GTK_BUTTON(button));
+    g_signal_connect(button, "clicked", G_CALLBACK(menu_cb_gps_details), NULL);
 
     /* The other menu items. */
-    gtk_menu_append(menu, _menu_settings_item
-        = gtk_menu_item_new_with_label(_("Settings...")));
-    gtk_menu_append(menu, gtk_separator_menu_item_new());
-    gtk_menu_append(menu, _menu_about_item
-        = gtk_menu_item_new_with_label(_("About...")));
+    button = gtk_button_new_with_label(_("Settings..."));
+    hildon_app_menu_append(menu, GTK_BUTTON(button));
+    g_signal_connect(button, "clicked", G_CALLBACK(menu_cb_settings), NULL);
+
+    button = gtk_button_new_with_label(_("About..."));
+    hildon_app_menu_append(menu, GTK_BUTTON(button));
+    g_signal_connect(button, "clicked", G_CALLBACK(menu_cb_about), NULL);
 
     /* We need to show menu items. */
     gtk_widget_show_all(GTK_WIDGET(menu));
 
-    hildon_window_set_menu(HILDON_WINDOW(_window), menu);
-
-    /* Connect the other menu item signals. */
-    g_signal_connect(G_OBJECT(_menu_settings_item), "activate",
-                      G_CALLBACK(menu_cb_settings), NULL);
-    g_signal_connect(G_OBJECT(_menu_about_item), "activate",
-                      G_CALLBACK(menu_cb_about), NULL);
+    hildon_window_set_app_menu(HILDON_WINDOW(_window), menu);
 }
 
 void

@@ -214,10 +214,6 @@ gboolean _poi_enabled = FALSE;
 /* Menu items for the "Maps" submenu. */
 GtkWidget *_menu_layers_submenu = NULL;
 
-/* Menu items for the other menu items. */
-GtkWidget *_menu_settings_item = NULL;
-GtkWidget *_menu_about_item = NULL;
-
 /*********************
  * ABOVE: MENU ITEMS *
  *********************/

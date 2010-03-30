@@ -190,10 +190,6 @@ extern gboolean _poi_enabled;
 /* Menu items for the "Maps" submenu. */
 extern GtkWidget *_menu_layers_submenu;
 
-/* Menu items for the other menu items. */
-extern GtkWidget *_menu_settings_item;
-extern GtkWidget *_menu_about_item;
-
 /*********************
  * ABOVE: MENU ITEMS *
  *********************/
