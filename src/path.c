@@ -758,7 +758,6 @@ map_path_route_step(const MapGpsData *gps, gboolean newly_fixed)
     gboolean show_directions = TRUE;
     gint announce_thres_unsquared;
     gboolean refresh_panel = FALSE;
-    gboolean moving = FALSE;
     gboolean approaching_waypoint = FALSE;
     gboolean late = FALSE, out_of_route = FALSE;
 
@@ -887,7 +886,7 @@ map_path_route_step(const MapGpsData *gps, gboolean newly_fixed)
         /* We're too far away now - destroy the banner. */
     }
 
-    UNBLANK_SCREEN(moving, approaching_waypoint);
+    UNBLANK_SCREEN(FALSE, approaching_waypoint);
 
     if (refresh_panel)
     {
@@ -999,6 +998,8 @@ map_path_track_update(const MapGpsData *gps)
             last_track_db_update = gps->time;
         }
     }
+
+    UNBLANK_SCREEN(must_add, FALSE);
 }
 
 void
