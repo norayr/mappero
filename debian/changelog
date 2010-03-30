@@ -1,3 +1,12 @@
+maemo-mapper (3.0+beta4) unstable; urgency=low
+
+  * Fix bug #5408 - Unblank Screen Does Not Work.
+  * Rewrite submenus into dialogs, and use HildonAppMenu.
+  * Change the evaluation of the heading error (furtherly reduce the amount of
+    unnecessary map rotations).
+
+ -- Alberto Mardegan <mardy@users.sourceforge.net>  Tue, 30 Mar 2010 19:21:23 +0300
+
 maemo-mapper (3.0+beta3) unstable; urgency=low
 
   * Move "Show" and "GPS Details..." to main menu, and remove old "View" and
