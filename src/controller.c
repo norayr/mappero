@@ -1104,11 +1104,14 @@ void
 map_controller_set_auto_download(MapController *self,
                                  gboolean auto_download)
 {
-    g_return_if_fail(MAP_IS_CONTROLLER(self));
+    MapControllerPrivate *priv;
 
-    self->priv->auto_download = auto_download;
-    if (auto_download)
-        map_screen_refresh_tiles(self->priv->screen);
+    g_return_if_fail(MAP_IS_CONTROLLER(self));
+    priv = self->priv;
+
+    priv->auto_download = auto_download;
+    if (auto_download && priv->screen)
+        map_screen_refresh_tiles(priv->screen);
 }
 
 gboolean
