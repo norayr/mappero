@@ -33,5 +33,6 @@ void map_menu_go_to(void);
 void map_menu_view(void);
 void map_menu_show(void);
 void map_menu_maps(void);
+void map_menu_poi(void);
 
 #endif /* ifndef MAEMO_MAPPER_MENU_H */

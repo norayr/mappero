@@ -187,13 +187,6 @@ extern gboolean _poi_enabled;
  * BELOW: MENU ITEMS *
  *********************/
 
-/* Menu items for the "POI" submenu. */
-extern GtkWidget *_menu_poi_item;
-extern GtkWidget *_menu_poi_import_item;
-extern GtkWidget *_menu_poi_download_item;
-extern GtkWidget *_menu_poi_browse_item;
-extern GtkWidget *_menu_poi_categories_item;
-
 /* Menu items for the "Maps" submenu. */
 extern GtkWidget *_menu_layers_submenu;
 

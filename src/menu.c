@@ -793,7 +793,6 @@ menu_init()
 {
     /* Create needed handles. */
     GtkMenu *menu;
-    GtkWidget *submenu;
     GtkWidget *menu_item;
 
     /* Get the menu of our view. */
@@ -802,19 +801,12 @@ menu_init()
     /* Create the menu items. */
 
     /* The "POI" submenu. */
-    gtk_menu_append(menu, menu_item = _menu_poi_item
+    gtk_menu_append(menu, menu_item
             = gtk_menu_item_new_with_label(_("POI")));
-    gtk_menu_item_set_submenu(GTK_MENU_ITEM(menu_item),
-            submenu = gtk_menu_new());
-    gtk_menu_append(submenu, _menu_poi_import_item
-            = gtk_menu_item_new_with_label(_("Import...")));
-    gtk_menu_append(submenu, _menu_poi_download_item
-            = gtk_menu_item_new_with_label(_("Download...")));
-    gtk_menu_append(submenu, _menu_poi_browse_item
-            = gtk_menu_item_new_with_label(_("Browse...")));
-    gtk_menu_append(submenu, _menu_poi_categories_item
-            = gtk_menu_item_new_with_label(_("Categories...")));
+    g_signal_connect(menu_item, "activate",
+                      G_CALLBACK(map_menu_poi), NULL);
 
+    gtk_menu_append(menu, gtk_separator_menu_item_new());
     _menu_layers_submenu = gtk_menu_new();
 
     /* The "Maps" submenu. */
@@ -850,16 +842,6 @@ menu_init()
     gtk_widget_show_all(GTK_WIDGET(menu));
 
     hildon_window_set_menu(HILDON_WINDOW(_window), menu);
-
-    /* Connect the "POI" signals. */
-    g_signal_connect(G_OBJECT(_menu_poi_import_item), "activate",
-                      G_CALLBACK(menu_cb_poi_import), NULL);
-    g_signal_connect(G_OBJECT(_menu_poi_download_item), "activate",
-                      G_CALLBACK(menu_cb_poi_download), NULL);
-    g_signal_connect(G_OBJECT(_menu_poi_browse_item), "activate",
-                      G_CALLBACK(menu_cb_poi_browse), NULL);
-    g_signal_connect(G_OBJECT(_menu_poi_categories_item), "activate",
-                      G_CALLBACK(menu_cb_poi_categories), NULL);
 
     /* Connect the other menu item signals. */
     g_signal_connect(G_OBJECT(_menu_settings_item), "activate",
@@ -1266,5 +1248,44 @@ map_menu_maps()
             hildon_check_button_get_active(HILDON_CHECK_BUTTON(auto_download)));
     }
     gtk_widget_destroy(dialog);
+}
+
+void
+map_menu_poi()
+{
+    GtkWidget *dialog;
+    MapController *controller;
+    MapDialog *dlg;
+    gint response;
+    enum {
+        POI_IMPORT,
+        POI_DOWNLOAD,
+        POI_BROWSE,
+        POI_CATEGORIES,
+    };
+
+    controller = map_controller_get_instance();
+    dialog = map_dialog_new(_("POI"),
+                            map_controller_get_main_window(controller),
+                            TRUE);
+    dlg = (MapDialog *)dialog;
+
+    map_dialog_create_button(dlg, _("Import..."), POI_IMPORT);
+    map_dialog_create_button(dlg, _("Download..."), POI_DOWNLOAD);
+    map_dialog_create_button(dlg, _("Browse..."), POI_BROWSE);
+    map_dialog_create_button(dlg, _("Categories..."), POI_CATEGORIES);
+
+    response = gtk_dialog_run(GTK_DIALOG(dialog));
+    gtk_widget_destroy(dialog);
+    switch (response) {
+    case POI_IMPORT:
+        menu_cb_poi_import(NULL); break;
+    case POI_DOWNLOAD:
+        menu_cb_poi_download(NULL); break;
+    case POI_BROWSE:
+        menu_cb_poi_browse(NULL); break;
+    case POI_CATEGORIES:
+        menu_cb_poi_categories(NULL); break;
+    }
 }
 
