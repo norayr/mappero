@@ -347,14 +347,26 @@ map_osm_set_screen_size(MapOsm *self, gint width, gint height)
     MapOsmPrivate *priv;
     ClutterActor *button;
     gint col, i, x, y, dy, dx;
+    gint n_columns, n_buttons_column;
 
     g_return_if_fail(MAP_IS_OSM(self));
     priv = self->priv;
 
     /* lay out the buttons according to the new screen size */
-    dy = height / N_BUTTONS_COLUMN;
+    if (width > height)
+    {
+        n_buttons_column = N_BUTTONS_COLUMN;
+        n_columns = 2;
+    }
+    else
+    {
+        n_buttons_column = N_BUTTONS_COLUMN * 2;
+        n_columns = 1;
+    }
+
+    dy = height / n_buttons_column;
     x = BUTTON_X_OFFSET;
-    for (col = 0; col < 2; col++)
+    for (col = 0; col < n_columns; col++)
     {
         y = dy / 2;
 
@@ -363,7 +375,7 @@ map_osm_set_screen_size(MapOsm *self, gint width, gint height)
             x = width - BUTTON_X_OFFSET;
         }
 
-        for (i = 0; i < N_BUTTONS_COLUMN; i++)
+        for (i = 0; i < n_buttons_column; i++)
         {
             button = priv->btn.v[col * N_BUTTONS_COLUMN + i];
 
