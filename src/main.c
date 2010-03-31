@@ -427,8 +427,6 @@ maemo_mapper_init(gint argc, gchar **argv)
     _window = GTK_WIDGET(hildon_window_new());
     hildon_program_add_window(_program, HILDON_WINDOW(_window));
 
-    gtk_window_set_default_size(GTK_WINDOW(_window), 800, 480);
-
     _controller = g_object_new(MAP_TYPE_CONTROLLER, NULL);
 
     /* Create and add widgets and supporting data. */
