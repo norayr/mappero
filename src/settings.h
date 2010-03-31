@@ -92,5 +92,6 @@ gboolean settings_dialog(void);
 #define GCONF_KEY_ROUTE_DL_RADIUS GCONF_KEY_PREFIX"/route_dl_radius"
 #define GCONF_KEY_POI_DL_URL GCONF_KEY_PREFIX"/poi_dl_url"
 #define GCONF_KEY_DEG_FORMAT GCONF_KEY_PREFIX"/deg_format"
+#define GCONF_KEY_ORIENTATION GCONF_KEY_PREFIX"/orientation"
 
 #endif /* ifndef MAEMO_MAPPER_SETTINGS_H */

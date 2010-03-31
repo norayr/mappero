@@ -30,6 +30,7 @@
 #include "display.h"
 #include "gps.h"
 #include "menu.h"
+#include "orientation.h"
 #include "path.h"
 #include "plugins/google.h"
 #include "plugins/reittiopas.h"
@@ -162,6 +163,8 @@ map_controller_init(MapController *controller)
 
     g_assert(instance == NULL);
     instance = controller;
+
+    priv->orientation = -1;
 
     /* register plugins */
     plugin = g_object_new(MAP_TYPE_GOOGLE, NULL);

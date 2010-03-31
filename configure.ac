@@ -67,7 +67,7 @@ AC_ARG_ENABLE(legacy,
 
 AS_IF([test "x$HAVE_LEGACY" = xyes], 
         [
-                PKG_CHECK_MODULES(OSSO, libosso >= 1 libossohelp)
+                PKG_CHECK_MODULES(OSSO, libosso >= 1 libossohelp mce)
                 PKG_CHECK_MODULES(HILDON, hildon-libs >= 0.9.50 hildon-fm)
                 AC_DEFINE(LEGACY, 1, Build for OS2006/OS2007)
         ],

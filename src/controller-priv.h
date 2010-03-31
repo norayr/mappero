@@ -29,7 +29,9 @@ struct _MapControllerPrivate
     GList *repositories_list;
     GList *tile_sources_list;
     Repository *repository;
+    GtkWindow *window;
     MapScreen *screen;
+    MapOrientation orientation;
     MapPoint center;
     gint rotation_angle;
     gint zoom;

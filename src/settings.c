@@ -372,6 +372,10 @@ settings_save()
     gconf_client_set_int(gconf_client,
             GCONF_KEY_POI_ZOOM, _poi_zoom, NULL);
 
+    /* orientation */
+    gconf_client_set_int(gconf_client, GCONF_KEY_ORIENTATION,
+                         map_controller_get_orientation(controller), NULL);
+
     gconf_client_clear_cache(gconf_client);
     g_object_unref(gconf_client);
     g_free(settings_dir);
@@ -959,11 +963,13 @@ run_announce_dialog(GtkWindow *parent)
 static void
 run_misc_dialog(GtkWindow *parent)
 {
+    MapController *controller = map_controller_get_instance();
     GtkWidget *dialog;
     GtkWidget *pannable;
     HildonTouchSelector *selector;
     GtkWidget *vbox, *hbox;
     GtkWidget *draw_width;
+    GtkWidget *orientation;
     GtkWidget *unblank_option;
     GtkWidget *info_font_size;
     GtkWidget *units;
@@ -1004,6 +1010,24 @@ run_misc_dialog(GtkWindow *parent)
                      "xalign", 0.0,
                      NULL);
     gtk_box_pack_start(GTK_BOX(vbox), draw_width, FALSE, TRUE, 0);
+
+    /* Orientation */
+    selector = HILDON_TOUCH_SELECTOR (hildon_touch_selector_new_text());
+    hildon_touch_selector_append_text(selector, _("Automatic"));
+    hildon_touch_selector_append_text(selector, _("Always landscape"));
+    hildon_touch_selector_append_text(selector, _("Always portrait"));
+    orientation =
+        g_object_new(HILDON_TYPE_PICKER_BUTTON,
+                     "arrangement", HILDON_BUTTON_ARRANGEMENT_HORIZONTAL,
+                     "size", HILDON_SIZE_FINGER_HEIGHT,
+                     "title", _("Orientation"),
+                     "touch-selector", selector,
+                     "xalign", 0.0,
+                     NULL);
+    gtk_box_pack_start(GTK_BOX(vbox), orientation, FALSE, TRUE, 0);
+    hildon_picker_button_set_active
+        (HILDON_PICKER_BUTTON(orientation),
+         map_controller_get_orientation(controller));
 
     /* Unblank Screen */
     selector = HILDON_TOUCH_SELECTOR (hildon_touch_selector_new_text());
@@ -1169,6 +1193,9 @@ run_misc_dialog(GtkWindow *parent)
 
         _info_font_size = hildon_picker_button_get_active
             (HILDON_PICKER_BUTTON(info_font_size));
+
+        map_controller_set_orientation(controller,
+            hildon_picker_button_get_active(HILDON_PICKER_BUTTON(orientation)));
 
         settings_dialog_set_save(parent, TRUE);
     }
@@ -1351,6 +1378,7 @@ settings_init(GConfClient *gconf_client)
     MapController *controller = map_controller_get_instance();
     const MapGpsData *gps = map_controller_get_gps_data(controller);
     gchar *str;
+    MapOrientation orientation;
 
     /* Initialize some constants. */
     CUSTOM_KEY_GCONF[CUSTOM_KEY_UP] = GCONF_KEY_PREFIX"/key_up";
@@ -1851,5 +1879,10 @@ settings_init(GConfClient *gconf_client)
                 _color[i] = COLORABLE_DEFAULT[i];
         }
     }
+
+    /* device orientation */
+    orientation = gconf_client_get_int(gconf_client,
+                                       GCONF_KEY_ORIENTATION, NULL);
+    map_controller_set_orientation(controller, orientation);
 }
 

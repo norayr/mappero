@@ -54,6 +54,7 @@ maemo_mapper_SOURCES = \
 	mark.c \
 	marshal.c \
 	menu.c \
+	orientation.c \
 	osm.c \
 	path.c \
 	plugins/google.c \
