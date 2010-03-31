@@ -36,6 +36,7 @@ struct _MapDialogPrivate
     GtkBox *vbox;
     GtkBox *last_box;
     gboolean single_column;
+    gboolean portrait;
 };
 
 typedef struct {
@@ -107,9 +108,17 @@ map_dialog_init(MapDialog *dialog)
 {
     MapDialogPrivate *priv;
     GtkWidget *pannable, *vbox;
+    GdkScreen *screen;
+    gint w, h;
 
     priv = G_TYPE_INSTANCE_GET_PRIVATE(dialog, MAP_TYPE_DIALOG, MapDialogPrivate);
     dialog->priv = priv;
+
+    /* check screen orientation */
+    screen = gtk_widget_get_screen(GTK_WIDGET(dialog));
+    w = gdk_screen_get_width(screen);
+    h = gdk_screen_get_height(screen);
+    if (h > w) priv->portrait = TRUE;
 
     vbox = gtk_vbox_new(FALSE, 0);
     gtk_widget_show(vbox);
@@ -166,7 +175,7 @@ map_dialog_add_widget(MapDialog *self, GtkWidget *widget)
 
     box = priv->vbox;
 
-    if (priv->single_column)
+    if (priv->single_column || priv->portrait)
     {
         gtk_box_pack_start(box, widget, FALSE, TRUE, 0);
     }
