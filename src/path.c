@@ -264,37 +264,28 @@ map_path_calculate_distances(Path *path)
 static void
 read_path_from_db(Path *path, sqlite3_stmt *select_stmt)
 {
-    MACRO_PATH_INIT(*path);
+    map_path_init(path);
     while(SQLITE_ROW == sqlite3_step(select_stmt))
     {
         const gchar *desc;
         FieldMix mix;
+        Point pt;
 
-        MACRO_PATH_INCREMENT_TAIL(*path);
-        path->tail->unit.x = sqlite3_column_int(select_stmt, 0);
-        path->tail->unit.y = sqlite3_column_int(select_stmt, 1);
-        path->tail->time = sqlite3_column_int(select_stmt, 2);
+        pt.unit.x = sqlite3_column_int(select_stmt, 0);
+        pt.unit.y = sqlite3_column_int(select_stmt, 1);
+        pt.time = sqlite3_column_int(select_stmt, 2);
         mix.field = sqlite3_column_int(select_stmt, 3);
-        path->tail->zoom = mix.s.zoom;
-        path->tail->altitude = mix.s.altitude;
-        path->tail->distance = 0;
+        pt.zoom = mix.s.zoom;
+        pt.altitude = mix.s.altitude;
+        pt.distance = 0;
 
         desc = (const gchar *)sqlite3_column_text(select_stmt, 4);
-        if(desc)
-        {
-            MACRO_PATH_INCREMENT_WTAIL(*path);
-            path->wtail->point = path->tail;
-            path->wtail->desc = g_strdup(desc);
-        }
+        map_path_append_point_with_desc(path, &pt, desc);
     }
     sqlite3_reset(select_stmt);
 
     /* If the last point isn't null, then add another null point. */
-    if(path->tail->unit.y)
-    {
-        MACRO_PATH_INCREMENT_TAIL(*path);
-        *path->tail = _point_null;
-    }
+    map_path_append_null(path);
 
     map_path_optimize(path);
     map_path_calculate_distances(path);
@@ -974,14 +965,13 @@ map_path_track_update(const MapGpsData *gps)
 
     if (must_add)
     {
-        MACRO_PATH_INCREMENT_TAIL(_track);
         if (_track.last_lat != 0 && _track.last_lon != 0 && pos.unit.y != 0)
         {
             pos.distance = calculate_distance(_track.last_lat, _track.last_lon,
                                               gps->lat, gps->lon);
         }
         pos.time = gps->time;
-        *_track.tail = pos;
+        map_path_append_point(&_track, &pos);
         _track.last_lat = gps->lat;
         _track.last_lon = gps->lon;
         _track.length += pos.distance;
@@ -1012,8 +1002,8 @@ track_clear()
 
     if(GTK_RESPONSE_OK == gtk_dialog_run(GTK_DIALOG(confirm))) {
         MapController *controller = map_controller_get_instance();
-        MACRO_PATH_FREE(_track);
-        MACRO_PATH_INIT(_track);
+        map_path_unset(&_track);
+        map_path_init(&_track);
         path_save_track_to_db();
         map_controller_refresh_paths(controller);
     }
@@ -1026,15 +1016,13 @@ track_insert_break(gboolean temporary)
 {
     if(_track.tail->unit.y)
     {
-        MACRO_PATH_INCREMENT_TAIL(_track);
-        *_track.tail = _point_null;
+        map_path_append_null(&_track);
 
         /* To mark a "waypoint" in a track, we'll add a (0, 0) point and then
          * another instance of the most recent track point. */
         if(temporary)
         {
-            MACRO_PATH_INCREMENT_TAIL(_track);
-            *_track.tail = _track.tail[-2];
+            map_path_append_point(&_track, &_track.tail[-1]);
         }
     }
 
@@ -1617,13 +1605,13 @@ route_add_way_dialog(const MapPoint *point)
 
         if(*desc)
         {
+            WayPoint wp;
             /* There's a description.  Add a waypoint. */
             map_path_append_unit(&_route, point);
 
-            MACRO_PATH_INCREMENT_WTAIL(_route);
-            _route.wtail->point = _route.tail;
-            _route.wtail->desc
-                = gtk_text_buffer_get_text(tbuf, &ti1, &ti2, TRUE);
+            wp.point = _route.tail;
+            wp.desc = gtk_text_buffer_get_text(tbuf, &ti1, &ti2, TRUE);
+            map_path_append_waypoint(&_route, &wp);
         }
         else
         {
@@ -1639,11 +1627,7 @@ route_add_way_dialog(const MapPoint *point)
             {
                 /* There's no description.  Add a break by adding a (0, 0)
                  * point (if necessary), and then the ordinary route point. */
-                if(_route.tail->unit.y)
-                {
-                    MACRO_PATH_INCREMENT_TAIL(_route);
-                    *_route.tail = _point_null;
-                }
+                map_path_append_null(&_route);
 
                 map_path_append_unit(&_route, point);
 
@@ -1804,8 +1788,8 @@ path_destroy()
         _path_db = NULL;
     }
 
-    MACRO_PATH_FREE(_track);
-    MACRO_PATH_FREE(_route);
+    map_path_unset(&_track);
+    map_path_unset(&_route);
 }
 
 void
@@ -1885,11 +1869,7 @@ map_path_merge(Path *src_path, Path *dest_path, MapPathMergePolicy policy)
         if (policy == MAP_PATH_MERGE_POLICY_APPEND)
         {
             /* Append to current path. Make sure last path point is zero. */
-            if(dest_path->tail->unit.y != 0)
-            {
-                MACRO_PATH_INCREMENT_TAIL((*dest_path));
-                *dest_path->tail = _point_null;
-            }
+            map_path_append_null(dest_path);
             src = src_path;
             dest = dest_path;
         }
@@ -1949,7 +1929,7 @@ map_path_merge(Path *src_path, Path *dest_path, MapPathMergePolicy policy)
         dest->last_lat = src->last_lat;
         dest->last_lon = src->last_lon;
 
-        /* Kill old route - don't use MACRO_PATH_FREE(), because that
+        /* Kill old route - don't use map_path_unset(), because that
          * would free the string desc's that we just moved to data.route. */
         g_free(src->head);
         g_free(src->whead);
@@ -1958,7 +1938,7 @@ map_path_merge(Path *src_path, Path *dest_path, MapPathMergePolicy policy)
     }
     else
     {
-        MACRO_PATH_FREE((*dest_path));
+        map_path_unset(dest_path);
         /* Overwrite with data.route. */
         (*dest_path) = *src_path;
         path_resize(dest_path,
@@ -1992,12 +1972,13 @@ map_path_append_unit(Path *path, const MapPoint *p)
 {
     MapController *controller = map_controller_get_instance();
     MapGeo lat, lon;
+    Point pt;
 
-    MACRO_PATH_INCREMENT_TAIL(*path);
-    path->tail->unit = *p;
-    path->tail->altitude = 0;
-    path->tail->time = 0;
-    path->tail->zoom = SCHAR_MAX;
+    pt.unit = *p;
+    pt.altitude = 0;
+    pt.time = 0;
+    pt.zoom = SCHAR_MAX;
+    map_path_append_point(path, &pt);
 
     unit2latlon(p->x, p->y, lat, lon);
     if (path->last_lat != 0 || path->last_lon != 0)
@@ -2010,5 +1991,41 @@ map_path_append_unit(Path *path, const MapPoint *p)
     path->last_lon = lon;
     map_path_optimize(path);
     map_controller_refresh_paths(controller);
+}
+
+void
+map_path_append_null(Path *path)
+{
+    if (path->tail->unit.y != 0)
+        map_path_append_point(path, &_point_null);
+}
+
+void
+map_path_init(Path *path)
+{
+    path->head = path->tail = g_new(Point, ARRAY_CHUNK_SIZE);
+    *(path->tail) = _point_null;
+    path->cap = path->head + ARRAY_CHUNK_SIZE;
+    path->whead = g_new(WayPoint, ARRAY_CHUNK_SIZE);
+    path->wtail = path->whead - 1;
+    path->wcap = path->whead + ARRAY_CHUNK_SIZE;
+    path->length = 0;
+    path->last_lat = 0;
+    path->last_lon = 0;
+    path->points_optimized = 0;
+}
+
+void
+map_path_unset(Path *path)
+{
+    if (path->head) {
+        WayPoint *curr;
+        g_free(path->head);
+        path->head = path->tail = path->cap = NULL;
+        for (curr = path->whead - 1; curr++ != path->wtail; )
+            g_free(curr->desc);
+        g_free(path->whead);
+        path->whead = path->wtail = path->wcap = NULL;
+    }
 }
 

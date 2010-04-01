@@ -285,12 +285,11 @@ gpx_path_start_element(PathSaxData *data,
                 }
                 if(has_lat && has_lon)
                 {
-                    MACRO_PATH_INCREMENT_TAIL(data->path);
-                    latlon2unit(lat, lon,
-                            data->path.tail->unit.x,
-                            data->path.tail->unit.y);
-                    data->path.tail->time = 0;
-                    data->path.tail->altitude = 0;
+                    Point pt;
+                    latlon2unit(lat, lon, pt.unit.x, pt.unit.y);
+                    pt.time = 0;
+                    pt.altitude = 0;
+                    map_path_append_point(&data->path, &pt);
                     data->sax_data.state = INSIDE_PATH_POINT;
                 }
                 else
@@ -357,8 +356,7 @@ gpx_path_end_element(PathSaxData *data, const xmlChar *name)
             {
                 if(data->sax_data.at_least_one_trkpt)
                 {
-                    MACRO_PATH_INCREMENT_TAIL(data->path);
-                    *data->path.tail = _point_null;
+                    map_path_append_null(&data->path);
                 }
                 data->sax_data.state = INSIDE_PATH;
             }
@@ -460,10 +458,10 @@ gpx_path_end_element(PathSaxData *data, const xmlChar *name)
                 if(data->path.wtail < data->path.whead
                         || data->path.wtail->point != data->path.tail)
                 {
-                    MACRO_PATH_INCREMENT_WTAIL(data->path);
-                    data->path.wtail->point = data->path.tail;
-                    data->path.wtail->desc
-                        = g_string_free(data->sax_data.chars, FALSE);
+                    WayPoint wp;
+                    wp.point = data->path.tail;
+                    wp.desc = g_string_free(data->sax_data.chars, FALSE);
+                    map_path_append_waypoint(&data->path, &wp);
                 }
                 else
                     g_string_free(data->sax_data.chars, TRUE);
@@ -478,17 +476,18 @@ gpx_path_end_element(PathSaxData *data, const xmlChar *name)
             /* only parse description for routes */
             if(!strcmp((gchar*)name, "desc"))
             {
+                WayPoint wp;
+                wp.point = data->path.tail;
+                wp.desc = g_string_free(data->sax_data.chars, FALSE);
                 /* If we already have a desc (e.g. from cmt), then overwrite */
                 if(data->path.wtail >= data->path.whead
                         && data->path.wtail->point == data->path.tail)
-                    g_free(data->path.wtail->desc);
-                else
                 {
-                    MACRO_PATH_INCREMENT_WTAIL(data->path);
+                    g_free(data->path.wtail->desc);
+                    *data->path.wtail = wp;
                 }
-                data->path.wtail->point = data->path.tail;
-                data->path.wtail->desc
-                    = g_string_free(data->sax_data.chars, FALSE);
+                else
+                    map_path_append_waypoint(&data->path, &wp);
                 data->sax_data.chars = g_string_new("");
                 data->sax_data.state = INSIDE_PATH_POINT;
             }
@@ -511,7 +510,7 @@ gpx_path_parse(Path *to_replace, gchar *buffer, gint size, gint policy_old)
     xmlSAXHandler sax_handler;
     MapPathMergePolicy policy;
 
-    MACRO_PATH_INIT(data.path);
+    map_path_init(&data.path);
     data.sax_data.state = START;
     data.sax_data.chars = g_string_new("");
 

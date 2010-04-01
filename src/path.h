@@ -51,6 +51,41 @@ guint map_path_get_duration(const Path *path);
 void path_init(void);
 void path_destroy(void);
 
+void map_path_init(Path *path);
+void map_path_unset(Path *path);
+
+static inline Point *
+map_path_append_point(Path *path, const Point *p)
+{
+    if (++(path->tail) == path->cap)
+        path_resize(path, path->cap - path->head + ARRAY_CHUNK_SIZE);
+    *path->tail = *p;
+    return path->tail;
+}
+
+static inline WayPoint *
+map_path_append_waypoint(Path *path, const WayPoint *wp)
+{
+    if (++(path->wtail) == path->wcap)
+        path_wresize(path, path->wcap - path->whead + ARRAY_CHUNK_SIZE);
+    *path->wtail = *wp;
+    return path->wtail;
+}
+
+/* Appends a point to @path, and creates a WayPoint if @desc is not %NULL */
+static inline Point *
+map_path_append_point_with_desc(Path *path, const Point *p, const gchar *desc)
+{
+    WayPoint wp;
+
+    wp.point = map_path_append_point(path, p);
+    if (desc) {
+        wp.desc = g_strdup(desc);
+        map_path_append_waypoint(path, &wp);
+    }
+    return wp.point;
+}
+
 void map_path_optimize(Path *path);
 void map_path_calculate_distances(Path *path);
 
@@ -63,5 +98,6 @@ typedef enum {
 void map_path_merge(Path *src_path, Path *dest_path, MapPathMergePolicy policy);
 
 void map_path_append_unit(Path *path, const MapPoint *p);
+void map_path_append_null(Path *path);
 
 #endif /* ifndef MAEMO_MAPPER_PATH_H */

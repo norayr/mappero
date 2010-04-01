@@ -847,39 +847,40 @@ ro_route_to_path(const RoRoute *route, Path *path)
         {
             /* if this point has the same coordinates of the previous one,
              * overwrite the previous: do not increment the path */
+            *path->tail = path_point;
         }
         else
-            MACRO_PATH_INCREMENT_TAIL(*path);
-        *path->tail = path_point;
+            map_path_append_point(path, &path_point);
 
         if (point->name)
         {
+            WayPoint wp;
             /* the first point is always a waypoint */
-            MACRO_PATH_INCREMENT_WTAIL(*path);
-            path->wtail->point = path->tail;
+            wp.point = path->tail;
             if (line->code[0] != '\0')
             {
-                path->wtail->desc =
+                wp.desc =
                     g_strdup_printf("%s\n%s %.4s", point->name,
                                     transport_type(line->transport),
                                     line->code);
             }
             else
-                path->wtail->desc = g_strdup(point->name);
+                wp.desc = g_strdup(point->name);
+            map_path_append_waypoint(path, &wp);
         }
 
         for (i = 1; i < line->points->len; i++)
         {
+            Point pt;
             point = &g_array_index(line->points, RoPoint, i);
 
-            MACRO_PATH_INCREMENT_TAIL(*path);
-            ro_point_to_path_point(point, path->tail);
+            ro_point_to_path_point(point, &pt);
+            map_path_append_point(path, &pt);
         }
     }
 
     /* Add a null point at the end of the route */
-    MACRO_PATH_INCREMENT_TAIL(*path);
-    *path->tail = _point_null;
+    map_path_append_null(path);
 }
 
 static gboolean
@@ -1540,7 +1541,7 @@ calculate_route_with_units(MapRouter *router,
 
         if (id >= 0)
         {
-            MACRO_PATH_INIT(path);
+            map_path_init(&path);
             ro_route_to_path(&routes.routes[id], &path);
             callback(router, &path, NULL, user_data);
         }

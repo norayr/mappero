@@ -178,40 +178,6 @@
     (tile_source_get_primary_type()->unit_to_latlon(unitx, unity, &lat, &lon))
 
 
-#define MACRO_PATH_INIT(path) { \
-    (path).head = (path).tail = g_new(Point, ARRAY_CHUNK_SIZE); \
-    *((path).tail) = _point_null; \
-    (path).cap = (path).head + ARRAY_CHUNK_SIZE; \
-    (path).whead = g_new(WayPoint, ARRAY_CHUNK_SIZE); \
-    (path).wtail = (path).whead - 1; \
-    (path).wcap = (path).whead + ARRAY_CHUNK_SIZE; \
-    (path).length = 0; \
-    (path).last_lat = 0; \
-    (path).last_lon = 0; \
-    (path).points_optimized = 0; \
-}
-
-#define MACRO_PATH_FREE(path) if((path).head) { \
-    WayPoint *curr; \
-    g_free((path).head); \
-    (path).head = (path).tail = (path).cap = NULL; \
-    for(curr = (path).whead - 1; curr++ != (path).wtail; ) \
-        g_free(curr->desc); \
-    g_free((path).whead); \
-    (path).whead = (path).wtail = (path).wcap = NULL; \
-}
-
-#define MACRO_PATH_INCREMENT_TAIL(route) { \
-    if(++(route).tail == (route).cap) \
-        path_resize(&(route), (route).cap - (route).head + ARRAY_CHUNK_SIZE);\
-}
-
-#define MACRO_PATH_INCREMENT_WTAIL(route) { \
-    if(++(route).wtail == (route).wcap) \
-        path_wresize(&(route), \
-                (route).wcap - (route).whead + ARRAY_CHUNK_SIZE); \
-}
-
 #define SQUARE(n) ((n) * (n))
 
 #define DISTANCE_SQUARED(a, b) \

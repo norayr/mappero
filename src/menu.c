@@ -142,8 +142,8 @@ menu_cb_route_clear(GtkMenuItem *item)
     MapController *controller = map_controller_get_instance();
 
     cancel_autoroute();
-    MACRO_PATH_FREE(_route);
-    MACRO_PATH_INIT(_route);
+    map_path_unset(&_route);
+    map_path_init(&_route);
     path_save_route_to_db();
     route_find_nearest_point();
     map_controller_refresh_paths(controller);
@@ -292,10 +292,10 @@ menu_cb_track_insert_mark(GtkMenuItem *item)
 
         if(*desc)
         {
-            MACRO_PATH_INCREMENT_WTAIL(_track);
-            _track.wtail->point = _track.tail;
-            _track.wtail->desc
-                = gtk_text_buffer_get_text(tbuf, &ti1, &ti2, TRUE);
+            WayPoint wp;
+            wp.point = _track.tail;
+            wp.desc = gtk_text_buffer_get_text(tbuf, &ti1, &ti2, TRUE);
+            map_path_append_waypoint(&_track, &wp);
         }
         else
         {

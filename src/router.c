@@ -24,6 +24,7 @@
 #include "router.h"
 
 #include "defines.h"
+#include "path.h"
 
 #include <string.h>
 
@@ -73,7 +74,7 @@ geocode_from_route_cb(MapRouter *router, Path *path, const GError *error,
         if (path->tail > path->head + 1)
             point = path->head[1].unit;
 
-        MACRO_PATH_FREE(*path);
+        map_path_unset(path);
     }
 
     mgd->callback(router, point, error, mgd->user_data);

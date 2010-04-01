@@ -156,7 +156,7 @@ map_yandex_calculate_route(MapRouter *router, const MapRouterQuery *query,
     from = get_address(&query->from, buf_from, sizeof(buf_from));
     to = get_address(&query->to, buf_to, sizeof(buf_to));
 
-    MACRO_PATH_INIT(path);
+    map_path_init(&path);
     route_download_and_setup(&path, YANDEX_ROUTER_URL, from, to, yandex->use_traffic, &error);
     if (!error)
     {
@@ -165,7 +165,7 @@ map_yandex_calculate_route(MapRouter *router, const MapRouterQuery *query,
     else
     {
         callback(router, NULL, error, user_data);
-        MACRO_PATH_FREE(path);
+        map_path_unset(&path);
         g_error_free(error);
     }
 }
