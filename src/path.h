@@ -54,6 +54,11 @@ void path_destroy(void);
 void map_path_init(Path *path);
 void map_path_unset(Path *path);
 
+#define map_path_first(path) ((path)->head)
+#define map_path_next(path, point) ((point) + 1)
+#define map_path_last(path) ((path)->tail)
+#define map_path_len(path) ((path)->tail - (path)->head + 1)
+
 /* must be terminated with map_path_append_point_end() */
 static inline Point *
 map_path_append_point_fast(Path *path, const Point *p)
