@@ -210,11 +210,11 @@ map_path_calculate_distances(Path *path)
     Point *curr;
     gfloat total = 0;
     MapGeo lat, lon, last_lat, last_lon;
-    gboolean has_latlon = FALSE;
+    gboolean has_latlon;
+    gint n_points;
 
-    /* if the path has a length, consider it to already have distances */
-    if (path->length > 0)
-        return;
+    n_points = path->tail - path->head + 1 - path->points_with_distance;
+    if (n_points <= 0) return;
 
 #ifdef ENABLE_DEBUG
     struct timespec ts0, ts1;
@@ -223,7 +223,11 @@ map_path_calculate_distances(Path *path)
     clock_gettime(CLOCK_THREAD_CPUTIME_ID, &ts0);
 #endif
 
-    for (curr = path->head; curr <= path->tail; curr++)
+    last_lat = path->last_lat, last_lon = path->last_lon;
+    has_latlon = (last_lat != 0 && last_lon != 0);
+
+    for (curr = path->head + path->points_with_distance;
+         curr <= path->tail; curr++)
     {
         if (curr->unit.y == 0)
         {
@@ -251,13 +255,14 @@ map_path_calculate_distances(Path *path)
     }
     else
         path->last_lat = path->last_lon = 0;
-    path->length = total;
+    path->length += total;
+    path->points_with_distance += n_points;
 
 #ifdef ENABLE_DEBUG
     clock_gettime(CLOCK_THREAD_CPUTIME_ID, &ts1);
     ms_diff = (ts1.tv_sec - ts0.tv_sec) * 1000 +
         (ts1.tv_nsec - ts0.tv_nsec) / 1000000;
-    DEBUG("%ld ms for %d points", ms_diff, path->tail - path->head);
+    DEBUG("%ld ms for %d points", ms_diff, n_points);
 #endif
 }
 
@@ -287,8 +292,7 @@ read_path_from_db(Path *path, sqlite3_stmt *select_stmt)
     /* If the last point isn't null, then add another null point. */
     map_path_append_null(path);
 
-    map_path_optimize(path);
-    map_path_calculate_distances(path);
+    map_path_append_point_end(path);
 }
 
 /* Returns the new next_update_index. */
@@ -673,7 +677,6 @@ auto_calculate_route_cb(MapRouter *router, Path *path, const GError *error)
         cancel_autoroute();
     else
     {
-        map_path_calculate_distances(path);
         map_path_merge(path, &_route, MAP_PATH_MERGE_POLICY_REPLACE);
         path_save_route_to_db();
 
@@ -971,10 +974,11 @@ map_path_track_update(const MapGpsData *gps)
                                               gps->lat, gps->lon);
         }
         pos.time = gps->time;
-        map_path_append_point(&_track, &pos);
+        map_path_append_point_fast(&_track, &pos);
         _track.last_lat = gps->lat;
         _track.last_lon = gps->lon;
         _track.length += pos.distance;
+        _track.points_with_distance++;
         map_path_optimize(&_track);
     }
 
@@ -1194,7 +1198,6 @@ calculate_route_cb(MapRouter *router, Path *path, const GError *error,
     /* Cancel any autoroute that might be occurring. */
     cancel_autoroute();
 
-    map_path_calculate_distances(path);
     map_path_merge(path, &_route,
                    rdi->replace ? MAP_PATH_MERGE_POLICY_REPLACE :
                    MAP_PATH_MERGE_POLICY_APPEND);
@@ -1855,6 +1858,7 @@ map_path_optimize(Path *path)
 void
 map_path_merge(Path *src_path, Path *dest_path, MapPathMergePolicy policy)
 {
+    map_path_calculate_distances(src_path);
     map_path_optimize(src_path);
 
     DEBUG("src length %.2f, dest %.2f", src_path->length, dest_path->length);
@@ -1882,17 +1886,6 @@ map_path_merge(Path *src_path, Path *dest_path, MapPathMergePolicy policy)
         for(src_first = src->head - 1; src_first++ != src->tail; )
             if(src_first->unit.y)
                 break;
-
-        /* update the distance of the first point */
-        if (dest->last_lat != 0 && dest->last_lon != 0 &&
-            src_first->unit.y != 0)
-        {
-            MapGeo lat, lon;
-            unit2latlon(src_first->unit.x, src_first->unit.y, lat, lon);
-            src_first->distance =
-                calculate_distance(dest->last_lat, dest->last_lon, lat, lon);
-            dest->length += src_first->distance;
-        }
 
         /* Append route points from src to dest. */
         if(src->tail >= src_first)
@@ -1926,6 +1919,7 @@ map_path_merge(Path *src_path, Path *dest_path, MapPathMergePolicy policy)
         dest->length += src->length;
         dest->last_lat = src->last_lat;
         dest->last_lon = src->last_lon;
+        dest->points_with_distance = dest->tail - dest->head + 1;
 
         /* Kill old route - don't use map_path_unset(), because that
          * would free the string desc's that we just moved to data.route. */
@@ -1966,10 +1960,16 @@ map_path_get_duration(const Path *path)
 }
 
 void
+map_path_append_point_end(Path *path)
+{
+    map_path_calculate_distances(path);
+    map_path_optimize(path);
+}
+
+void
 map_path_append_unit(Path *path, const MapPoint *p)
 {
     MapController *controller = map_controller_get_instance();
-    MapGeo lat, lon;
     Point pt;
 
     pt.unit = *p;
@@ -1978,16 +1978,6 @@ map_path_append_unit(Path *path, const MapPoint *p)
     pt.zoom = SCHAR_MAX;
     map_path_append_point(path, &pt);
 
-    unit2latlon(p->x, p->y, lat, lon);
-    if (path->last_lat != 0 || path->last_lon != 0)
-    {
-        path->tail->distance =
-            calculate_distance(path->last_lat, path->last_lon, lat, lon);
-        path->length += path->tail->distance;
-    }
-    path->last_lat = lat;
-    path->last_lon = lon;
-    map_path_optimize(path);
     map_controller_refresh_paths(controller);
 }
 
@@ -2010,6 +2000,7 @@ map_path_init(Path *path)
     path->length = 0;
     path->last_lat = 0;
     path->last_lon = 0;
+    path->points_with_distance = 0;
     path->points_optimized = 0;
 }
 

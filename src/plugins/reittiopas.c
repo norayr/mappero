@@ -850,7 +850,7 @@ ro_route_to_path(const RoRoute *route, Path *path)
             *path->tail = path_point;
         }
         else
-            map_path_append_point(path, &path_point);
+            map_path_append_point_fast(path, &path_point);
 
         if (point->name)
         {
@@ -873,12 +873,13 @@ ro_route_to_path(const RoRoute *route, Path *path)
             point = &g_array_index(line->points, RoPoint, i);
 
             ro_point_to_path_point(point, &pt);
-            map_path_append_point(path, &pt);
+            map_path_append_point_fast(path, &pt);
         }
     }
 
     /* Add a null point at the end of the route */
     map_path_append_null(path);
+    map_path_append_point_end(path);
 }
 
 static gboolean

@@ -325,6 +325,7 @@ struct _Path {
     gfloat length; /* length of the path, in metres */
     gfloat last_lat; /* coordinates of the last point */
     gfloat last_lon;
+    gint points_with_distance; /* number of points with distance computed */
     gint points_optimized;
 };
 

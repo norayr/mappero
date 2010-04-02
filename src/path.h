@@ -54,13 +54,25 @@ void path_destroy(void);
 void map_path_init(Path *path);
 void map_path_unset(Path *path);
 
+/* must be terminated with map_path_append_point_end() */
 static inline Point *
-map_path_append_point(Path *path, const Point *p)
+map_path_append_point_fast(Path *path, const Point *p)
 {
     if (++(path->tail) == path->cap)
         path_resize(path, path->cap - path->head + ARRAY_CHUNK_SIZE);
     *path->tail = *p;
     return path->tail;
+}
+
+void map_path_append_point_end(Path *path);
+
+static inline Point *
+map_path_append_point(Path *path, const Point *p)
+{
+    Point *p_in_path;
+    p_in_path = map_path_append_point_fast(path, p);
+    map_path_append_point_end(path);
+    return p_in_path;
 }
 
 static inline WayPoint *
@@ -78,7 +90,7 @@ static inline Point *
 map_path_append_point_with_desc(Path *path, const Point *p, const gchar *desc)
 {
     Point *p_in_path;
-    p_in_path = map_path_append_point(path, p);
+    p_in_path = map_path_append_point_fast(path, p);
     if (desc)
         map_path_make_waypoint(path, path->tail, g_strdup(desc));
     return p_in_path;
