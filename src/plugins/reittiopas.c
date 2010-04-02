@@ -854,19 +854,17 @@ ro_route_to_path(const RoRoute *route, Path *path)
 
         if (point->name)
         {
-            WayPoint wp;
+            gchar *desc;
             /* the first point is always a waypoint */
-            wp.point = path->tail;
             if (line->code[0] != '\0')
             {
-                wp.desc =
-                    g_strdup_printf("%s\n%s %.4s", point->name,
-                                    transport_type(line->transport),
-                                    line->code);
+                desc = g_strdup_printf("%s\n%s %.4s", point->name,
+                                       transport_type(line->transport),
+                                       line->code);
             }
             else
-                wp.desc = g_strdup(point->name);
-            map_path_append_waypoint(path, &wp);
+                desc = g_strdup(point->name);
+            map_path_make_waypoint(path, path->tail, desc);
         }
 
         for (i = 1; i < line->points->len; i++)

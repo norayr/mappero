@@ -458,10 +458,8 @@ gpx_path_end_element(PathSaxData *data, const xmlChar *name)
                 if(data->path.wtail < data->path.whead
                         || data->path.wtail->point != data->path.tail)
                 {
-                    WayPoint wp;
-                    wp.point = data->path.tail;
-                    wp.desc = g_string_free(data->sax_data.chars, FALSE);
-                    map_path_append_waypoint(&data->path, &wp);
+                    map_path_make_waypoint(&data->path, data->path.tail,
+                        g_string_free(data->sax_data.chars, FALSE));
                 }
                 else
                     g_string_free(data->sax_data.chars, TRUE);
@@ -487,7 +485,7 @@ gpx_path_end_element(PathSaxData *data, const xmlChar *name)
                     *data->path.wtail = wp;
                 }
                 else
-                    map_path_append_waypoint(&data->path, &wp);
+                    map_path_make_waypoint(&data->path, wp.point, wp.desc);
                 data->sax_data.chars = g_string_new("");
                 data->sax_data.state = INSIDE_PATH_POINT;
             }

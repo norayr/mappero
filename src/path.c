@@ -1605,13 +1605,11 @@ route_add_way_dialog(const MapPoint *point)
 
         if(*desc)
         {
-            WayPoint wp;
             /* There's a description.  Add a waypoint. */
             map_path_append_unit(&_route, point);
 
-            wp.point = _route.tail;
-            wp.desc = gtk_text_buffer_get_text(tbuf, &ti1, &ti2, TRUE);
-            map_path_append_waypoint(&_route, &wp);
+            map_path_make_waypoint(&_route, _route.tail,
+                gtk_text_buffer_get_text(tbuf, &ti1, &ti2, TRUE));
         }
         else
         {

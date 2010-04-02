@@ -64,11 +64,12 @@ map_path_append_point(Path *path, const Point *p)
 }
 
 static inline WayPoint *
-map_path_append_waypoint(Path *path, const WayPoint *wp)
+map_path_make_waypoint(Path *path, const Point *p, gchar *desc)
 {
     if (++(path->wtail) == path->wcap)
         path_wresize(path, path->wcap - path->whead + ARRAY_CHUNK_SIZE);
-    *path->wtail = *wp;
+    path->wtail->point = (Point *)p;
+    path->wtail->desc = desc;
     return path->wtail;
 }
 
@@ -76,14 +77,11 @@ map_path_append_waypoint(Path *path, const WayPoint *wp)
 static inline Point *
 map_path_append_point_with_desc(Path *path, const Point *p, const gchar *desc)
 {
-    WayPoint wp;
-
-    wp.point = map_path_append_point(path, p);
-    if (desc) {
-        wp.desc = g_strdup(desc);
-        map_path_append_waypoint(path, &wp);
-    }
-    return wp.point;
+    Point *p_in_path;
+    p_in_path = map_path_append_point(path, p);
+    if (desc)
+        map_path_make_waypoint(path, path->tail, g_strdup(desc));
+    return p_in_path;
 }
 
 void map_path_optimize(Path *path);

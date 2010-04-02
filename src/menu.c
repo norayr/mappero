@@ -292,10 +292,8 @@ menu_cb_track_insert_mark(GtkMenuItem *item)
 
         if(*desc)
         {
-            WayPoint wp;
-            wp.point = _track.tail;
-            wp.desc = gtk_text_buffer_get_text(tbuf, &ti1, &ti2, TRUE);
-            map_path_append_waypoint(&_track, &wp);
+            map_path_make_waypoint(&_track, _track.tail,
+                gtk_text_buffer_get_text(tbuf, &ti1, &ti2, TRUE));
         }
         else
         {
