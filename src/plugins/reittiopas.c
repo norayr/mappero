@@ -878,7 +878,7 @@ ro_route_to_path(const RoRoute *route, Path *path)
     }
 
     /* Add a null point at the end of the route */
-    map_path_append_null(path);
+    map_path_append_break(path);
     map_path_append_point_end(path);
 }
 

@@ -356,7 +356,7 @@ gpx_path_end_element(PathSaxData *data, const xmlChar *name)
             {
                 if(data->sax_data.at_least_one_trkpt)
                 {
-                    map_path_append_null(&data->path);
+                    map_path_append_break(&data->path);
                 }
                 data->sax_data.state = INSIDE_PATH;
             }

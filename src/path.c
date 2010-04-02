@@ -289,8 +289,7 @@ read_path_from_db(Path *path, sqlite3_stmt *select_stmt)
     }
     sqlite3_reset(select_stmt);
 
-    /* If the last point isn't null, then add another null point. */
-    map_path_append_null(path);
+    map_path_append_break(path);
 
     map_path_append_point_end(path);
 }
@@ -1020,7 +1019,7 @@ track_insert_break(gboolean temporary)
 {
     if(_track.tail->unit.y)
     {
-        map_path_append_null(&_track);
+        map_path_append_break(&_track);
 
         /* To mark a "waypoint" in a track, we'll add a (0, 0) point and then
          * another instance of the most recent track point. */
@@ -1628,7 +1627,7 @@ route_add_way_dialog(const MapPoint *point)
             {
                 /* There's no description.  Add a break by adding a (0, 0)
                  * point (if necessary), and then the ordinary route point. */
-                map_path_append_null(&_route);
+                map_path_append_break(&_route);
 
                 map_path_append_unit(&_route, point);
 
@@ -1871,7 +1870,7 @@ map_path_merge(Path *src_path, Path *dest_path, MapPathMergePolicy policy)
         if (policy == MAP_PATH_MERGE_POLICY_APPEND)
         {
             /* Append to current path. Make sure last path point is zero. */
-            map_path_append_null(dest_path);
+            map_path_append_break(dest_path);
             src = src_path;
             dest = dest_path;
         }
@@ -1982,7 +1981,7 @@ map_path_append_unit(Path *path, const MapPoint *p)
 }
 
 void
-map_path_append_null(Path *path)
+map_path_append_break(Path *path)
 {
     if (path->tail->unit.y != 0)
         map_path_append_point(path, &_point_null);
