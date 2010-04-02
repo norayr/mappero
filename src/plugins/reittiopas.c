@@ -825,6 +825,7 @@ ro_point_to_path_point(const RoPoint *point, Point *p)
 static void
 ro_route_to_path(const RoRoute *route, Path *path)
 {
+    Point *last = NULL;
     GList *list;
 
     for (list = route->lines; list != NULL; list = list->next)
@@ -841,16 +842,16 @@ ro_route_to_path(const RoRoute *route, Path *path)
 
         memset(&path_point, 0, sizeof(path_point));
         ro_point_to_path_point(point, &path_point);
-        if (path->head != path->tail &&
-            path->tail->unit.x == path_point.unit.x &&
-            path->tail->unit.y == path_point.unit.y)
+        if (last != NULL &&
+            last->unit.x == path_point.unit.x &&
+            last->unit.y == path_point.unit.y)
         {
             /* if this point has the same coordinates of the previous one,
              * overwrite the previous: do not increment the path */
-            *path->tail = path_point;
+            *last = path_point;
         }
         else
-            map_path_append_point_fast(path, &path_point);
+            last = map_path_append_point_fast(path, &path_point);
 
         if (point->name)
         {
@@ -864,7 +865,7 @@ ro_route_to_path(const RoRoute *route, Path *path)
             }
             else
                 desc = g_strdup(point->name);
-            map_path_make_waypoint(path, path->tail, desc);
+            map_path_make_waypoint(path, last, desc);
         }
 
         for (i = 1; i < line->points->len; i++)
@@ -873,7 +874,7 @@ ro_route_to_path(const RoRoute *route, Path *path)
             point = &g_array_index(line->points, RoPoint, i);
 
             ro_point_to_path_point(point, &pt);
-            map_path_append_point_fast(path, &pt);
+            last = map_path_append_point_fast(path, &pt);
         }
     }
 

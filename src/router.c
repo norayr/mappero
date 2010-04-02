@@ -71,8 +71,8 @@ geocode_from_route_cb(MapRouter *router, Path *path, const GError *error,
 
     if (!error)
     {
-        if (path->tail > path->head + 1)
-            point = path->head[1].unit;
+        if (map_path_len(path) > 0)
+            point = map_path_first(path)->unit;
 
         map_path_unset(path);
     }

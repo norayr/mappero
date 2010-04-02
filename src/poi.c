@@ -55,6 +55,7 @@
 #include "display.h"
 #include "gpx.h"
 #include "main.h"
+#include "path.h"
 #include "poi.h"
 #include "screen.h"
 #include "util.h"
@@ -2676,7 +2677,7 @@ poi_download_dialog(const MapPoint *point)
                 GTK_TOGGLE_BUTTON(oti.rad_use_text), TRUE);
     }
     /* Else use "End of Route" by default if they have a route. */
-    else if(_route.head != _route.tail)
+    else if(map_path_len(&_route) > 0)
     {
         /* There is no route, so make it the default. */
         gtk_widget_set_sensitive(oti.rad_use_route, TRUE);
@@ -2748,8 +2749,8 @@ poi_download_dialog(const MapPoint *point)
             Point *p;
             MapGeo lat, lon;
 
-            /* Use last non-zero route point. */
-            for(p = _route.tail; !p->unit.y; p--) { }
+            /* Use last route point. */
+            p = map_path_last(&_route);
 
             porig = p->unit;
             unit2latlon(p->unit.x, p->unit.y, lat, lon);
@@ -2989,7 +2990,7 @@ poi_browse_dialog(const MapPoint *point)
                 GTK_TOGGLE_BUTTON(oti.rad_use_text), TRUE);
     }
     /* Else use "End of Route" by default if they have a route. */
-    else if(_route.head != _route.tail)
+    else if (map_path_len(&_route))
     {
         /* There is no route, so make it the default. */
         gtk_widget_set_sensitive(oti.rad_use_route, TRUE);
@@ -3048,8 +3049,8 @@ poi_browse_dialog(const MapPoint *point)
             Point *p;
             MapGeo lat, lon;
 
-            /* Use last non-zero route point. */
-            for(p = _route.tail; !p->unit.y; p--) { }
+            /* Use last route point. */
+            p = map_path_last(&_route);
 
             porig = p->unit;
             unit2latlon(p->unit.x, p->unit.y, lat, lon);

@@ -316,12 +316,13 @@ struct _WayPoint {
 /** A Path is a set of PathPoints and WayPoints. */
 typedef struct _Path Path;
 struct _Path {
-    Point *head; /* points to first element in array; NULL if empty. */
-    Point *tail; /* points to last element in array. */
-    Point *cap; /* points after last slot in array. */
+    Point *_head; /* points to first element in array; NULL if empty. */
+    Point *_tail; /* points to last element in array. */
+    Point *_cap; /* points after last slot in array. */
     WayPoint *whead; /* points to first element in array; NULL if empty. */
     WayPoint *wtail; /* points to last element in array. */
     WayPoint *wcap; /* points after last slot in array. */
+    GList *_lines; /* MapLine elements */
     gfloat length; /* length of the path, in metres */
     gfloat last_lat; /* coordinates of the last point */
     gfloat last_lon;

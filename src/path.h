@@ -21,6 +21,11 @@
 #ifndef MAEMO_MAPPER_PATH_H
 #define MAEMO_MAPPER_PATH_H
 
+typedef struct {
+    const Path *path;
+    GList *line;
+} MapLineIter;
+
 void path_resize(Path *path, gint size);
 void path_wresize(Path *path, gint wsize);
 
@@ -54,19 +59,29 @@ void path_destroy(void);
 void map_path_init(Path *path);
 void map_path_unset(Path *path);
 
-#define map_path_first(path) ((path)->head)
+#define map_path_first(path) ((path)->_head)
 #define map_path_next(path, point) ((point) + 1)
-#define map_path_last(path) ((path)->tail)
-#define map_path_len(path) ((path)->tail - (path)->head + 1)
+#define map_path_prev(path, point) ((point) - 1)
+#define map_path_end(path) ((path)->_tail)
+#define map_path_last(path) ((path)->_tail - 1)
+#define map_path_len(path) ((path)->_tail - (path)->_head)
+
+void map_path_line_iter_first(const Path *path, MapLineIter *iter);
+void map_path_line_iter_last(const Path *path, MapLineIter *iter);
+void map_path_line_iter_from_point(const Path *path, const Point *point,
+                                   MapLineIter *iter);
+gboolean map_path_line_iter_next(MapLineIter *iter);
+Point *map_path_line_first(const MapLineIter *iter);
+gint map_path_line_len(const MapLineIter *iter);
 
 /* must be terminated with map_path_append_point_end() */
 static inline Point *
 map_path_append_point_fast(Path *path, const Point *p)
 {
-    if (++(path->tail) == path->cap)
-        path_resize(path, path->cap - path->head + ARRAY_CHUNK_SIZE);
-    *path->tail = *p;
-    return path->tail;
+    if (path->_tail == path->_cap)
+        path_resize(path, path->_cap - path->_head + ARRAY_CHUNK_SIZE);
+    *path->_tail = *p;
+    return ++path->_tail;
 }
 
 void map_path_append_point_end(Path *path);
@@ -97,7 +112,7 @@ map_path_append_point_with_desc(Path *path, const Point *p, const gchar *desc)
     Point *p_in_path;
     p_in_path = map_path_append_point_fast(path, p);
     if (desc)
-        map_path_make_waypoint(path, path->tail, g_strdup(desc));
+        map_path_make_waypoint(path, path->_tail, g_strdup(desc));
     return p_in_path;
 }
 
@@ -111,8 +126,10 @@ typedef enum {
 } MapPathMergePolicy;
 
 void map_path_merge(Path *src_path, Path *dest_path, MapPathMergePolicy policy);
+void map_path_remove_range(Path *path, Point *start, Point *end);
 
-void map_path_append_unit(Path *path, const MapPoint *p);
-void map_path_append_break(Path *path);
+Point *map_path_append_unit(Path *path, const MapPoint *p);
+gboolean map_path_append_break(Path *path);
+gboolean map_path_end_is_break(const Path *path);
 
 #endif /* ifndef MAEMO_MAPPER_PATH_H */

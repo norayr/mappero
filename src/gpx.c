@@ -72,6 +72,8 @@ typedef struct _PathSaxData PathSaxData;
 struct _PathSaxData {
     SaxData sax_data;
     Path path;
+    Point pt;
+    gchar *desc;
 };
 
 typedef struct _PoiSaxData PoiSaxData;
@@ -285,11 +287,9 @@ gpx_path_start_element(PathSaxData *data,
                 }
                 if(has_lat && has_lon)
                 {
-                    Point pt;
-                    latlon2unit(lat, lon, pt.unit.x, pt.unit.y);
-                    pt.time = 0;
-                    pt.altitude = 0;
-                    map_path_append_point_fast(&data->path, &pt);
+                    latlon2unit(lat, lon, data->pt.unit.x, data->pt.unit.y);
+                    data->pt.time = 0;
+                    data->pt.altitude = 0;
                     data->sax_data.state = INSIDE_PATH_POINT;
                 }
                 else
@@ -366,6 +366,13 @@ gpx_path_end_element(PathSaxData *data, const xmlChar *name)
         case INSIDE_PATH_POINT:
             if(!strcmp((gchar*)name, "trkpt"))
             {
+                Point *p;
+                p = map_path_append_point_fast(&data->path, &data->pt);
+                if (data->desc)
+                {
+                    map_path_make_waypoint(&data->path, p, data->desc);
+                    data->desc = NULL;
+                }
                 data->sax_data.state = INSIDE_PATH_SEGMENT;
                 data->sax_data.at_least_one_trkpt = TRUE;
             }
@@ -376,10 +383,10 @@ gpx_path_end_element(PathSaxData *data, const xmlChar *name)
             if(!strcmp((gchar*)name, "ele"))
             {
                 gchar *error_check;
-                data->path.tail->altitude
+                data->pt.altitude
                     = g_ascii_strtod(data->sax_data.chars->str, &error_check);
                 if(error_check == data->sax_data.chars->str)
-                    data->path.tail->altitude = 0;
+                    data->pt.altitude = 0;
                 data->sax_data.state = INSIDE_PATH_POINT;
                 g_string_free(data->sax_data.chars, TRUE);
                 data->sax_data.chars = g_string_new("");
@@ -406,7 +413,7 @@ gpx_path_end_element(PathSaxData *data, const xmlChar *name)
                     gchar *error_check;
 
                     /* First, set time in "local" time zone. */
-                    data->path.tail->time = (mktime(&time));
+                    data->pt.time = (mktime(&time));
 
                     /* Now, skip inconsequential characters */
                     while(*ptr && *ptr != 'Z' && *ptr != '-' && *ptr != '+')
@@ -419,7 +426,7 @@ gpx_path_end_element(PathSaxData *data, const xmlChar *name)
                         if(*ptr == 'Z')
                             /* Zulu (UTC) time. Undo the local time zone's
                              * offset. */
-                            data->path.tail->time += time.tm_gmtoff;
+                            data->pt.time += time.tm_gmtoff;
                         else
                         {
                             /* Not Zulu (UTC). Must parse hours and minutes. */
@@ -433,7 +440,7 @@ gpx_path_end_element(PathSaxData *data, const xmlChar *name)
                                 if(error_check != (ptr + 1))
                                 {
                                     /* Parse of minutes worked. Calculate. */
-                                    data->path.tail->time
+                                    data->pt.time
                                         += (time.tm_gmtoff
                                                 - (offhours * 60 * 60
                                                     + offmins * 60));
@@ -455,12 +462,8 @@ gpx_path_end_element(PathSaxData *data, const xmlChar *name)
             /* only parse description for routes */
             if(!strcmp((gchar*)name, "cmt"))
             {
-                if(data->path.wtail < data->path.whead
-                        || data->path.wtail->point != data->path.tail)
-                {
-                    map_path_make_waypoint(&data->path, data->path.tail,
-                        g_string_free(data->sax_data.chars, FALSE));
-                }
+                if (data->desc == NULL)
+                    data->desc = g_string_free(data->sax_data.chars, FALSE);
                 else
                     g_string_free(data->sax_data.chars, TRUE);
 
@@ -474,18 +477,9 @@ gpx_path_end_element(PathSaxData *data, const xmlChar *name)
             /* only parse description for routes */
             if(!strcmp((gchar*)name, "desc"))
             {
-                WayPoint wp;
-                wp.point = data->path.tail;
-                wp.desc = g_string_free(data->sax_data.chars, FALSE);
                 /* If we already have a desc (e.g. from cmt), then overwrite */
-                if(data->path.wtail >= data->path.whead
-                        && data->path.wtail->point == data->path.tail)
-                {
-                    g_free(data->path.wtail->desc);
-                    *data->path.wtail = wp;
-                }
-                else
-                    map_path_make_waypoint(&data->path, wp.point, wp.desc);
+                g_free(data->desc);
+                data->desc = g_string_free(data->sax_data.chars, FALSE);
                 data->sax_data.chars = g_string_new("");
                 data->sax_data.state = INSIDE_PATH_POINT;
             }
@@ -509,6 +503,7 @@ gpx_path_parse(Path *to_replace, gchar *buffer, gint size, gint policy_old)
     MapPathMergePolicy policy;
 
     map_path_init(&data.path);
+    data.desc = NULL;
     data.sax_data.state = START;
     data.sax_data.chars = g_string_new("");
 
@@ -554,40 +549,27 @@ gpx_path_write(Path *path, GnomeVFSHandle *handle)
 {
     Point *curr = NULL;
     WayPoint *wcurr = NULL;
-    gboolean trkseg_break = FALSE;
-
-    /* Find first non-zero point. */
-    for(curr = path->head - 1, wcurr = path->whead; curr++ != path->tail; )
-    {
-        if(curr->unit.y)
-            break;
-        else if(wcurr <= path->wtail && curr == wcurr->point)
-            wcurr++;
-    }
+    MapLineIter line;
 
     /* Write the header. */
     gpx_write_string(handle,
             "<?xml version=\"1.0\"?>\n"
             "<gpx version=\"1.0\" creator=\"maemo-mapper\" "
             "xmlns=\"http://www.topografix.com/GPX/1/0\">\n"
-            "  <trk>\n"
-            "    <trkseg>\n");
+            "  <trk>\n");
 
-    /* Curr points to first non-zero point. */
-    for(curr--; curr++ != path->tail; )
+    map_path_line_iter_first(path, &line);
+    do
     {
-        MapGeo lat, lon;
-        if(curr->unit.y)
+        Point *start, *end;
+        gpx_write_string(handle, "    <trkseg>\n");
+        start = map_path_line_first(&line);
+        end = start + map_path_line_len(&line);
+        for (curr = start; curr < end; curr++)
         {
+            MapGeo lat, lon;
             gchar buffer[80];
             gboolean first_sub = TRUE;
-            if(trkseg_break)
-            {
-                /* First trkpt of the segment - write trkseg header. */
-                gpx_write_string(handle, "    </trkseg>\n"
-                             "    <trkseg>\n");
-                trkseg_break = FALSE;
-            }
             unit2latlon(curr->unit.x, curr->unit.y, lat, lon);
             gpx_write_string(handle, "      <trkpt lat=\"");
             g_ascii_formatd(buffer, sizeof(buffer), "%.06f", lat);
@@ -649,13 +631,13 @@ gpx_path_write(Path *path, GnomeVFSHandle *handle)
                 gpx_write_string(handle, "      </trkpt>\n");
             }
         }
-        else
-            trkseg_break = TRUE;
+
+        gpx_write_string(handle, "    </trkseg>\n");
     }
+    while (map_path_line_iter_next(&line));
 
     /* Write the footer. */
     gpx_write_string(handle,
-            "    </trkseg>\n"
             "  </trk>\n"
             "</gpx>\n");
 

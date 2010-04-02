@@ -334,27 +334,25 @@ cmenu_way_delete(WayPoint *way)
     if(GTK_RESPONSE_OK == gtk_dialog_run(GTK_DIALOG(confirm)))
     {
         MapController *controller = map_controller_get_instance();
-        Point *pdel_min, *pdel_max, *pdel_start, *pdel_end;
+        Point *pdel_start, *pdel_end;
+        MapLineIter line;
         gint num_del;
 
-        /* Delete surrounding route data, too. */
-        if(way == _route.whead)
-            pdel_min = _route.head;
-        else
-            pdel_min = way[-1].point;
+        /* Delete surrounding route data, too (from pdel_start inclusive till
+         * pdel_end exclusive). */
 
-        if(way == _route.wtail)
-            pdel_max = _route.tail;
-        else
-            pdel_max = way[1].point;
+        /* Don't delete beyond line boundaries */
+        map_path_line_iter_from_point(&_route, way->point, &line);
+        pdel_start = map_path_line_first(&line);
+        pdel_end = pdel_start + map_path_line_len(&line);
 
-        /* Find largest continuous segment around the waypoint, EXCLUDING
-         * pdel_min and pdel_max. */
-        for(pdel_start = way->point - 1; pdel_start->unit.y
-            && pdel_start > pdel_min; pdel_start--) { }
-        for(pdel_end = way->point + 1; pdel_end->unit.y
-            && pdel_end < pdel_max; pdel_end++) { }
+        if (way > _route.whead && way[-1].point + 1 > pdel_start)
+            pdel_start = way[-1].point + 1;
 
+        if(way < _route.wtail && way[1].point < pdel_end)
+            pdel_end = way[1].point;
+
+#if 0
         /* If pdel_end is set to _route.tail, and if _route.tail is a
          * non-zero point, then delete _route.tail. */
         if(pdel_end == _route.tail && pdel_end->unit.y)
@@ -369,6 +367,9 @@ cmenu_way_delete(WayPoint *way)
         memmove(pdel_start + 1, pdel_end,
                 (_route.tail - pdel_end + 1) * sizeof(Point));
         _route.tail -= num_del;
+#endif
+        map_path_remove_range(&_route, pdel_start, pdel_end);
+        num_del = pdel_end - pdel_start;
 
         /* Remove waypoint and move/adjust subsequent waypoints. */
         g_free(way->desc);

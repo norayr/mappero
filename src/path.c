@@ -64,6 +64,15 @@
  * order to be registered in the track (in metres) */
 #define MIN_TRACK_DISTANCE 10
 
+typedef struct {
+    gint idx_start;
+} MapLine;
+
+/* since the MapLine fits in a pointer, we directly store it in the GList
+ * data field */
+#define MAP_LINE(list)  ((MapLine *)(&(list->data)))
+#define MAP_LINE_NEW(index) GINT_TO_POINTER(index)
+
 typedef union {
     gint field;
     struct {
@@ -175,19 +184,19 @@ get_routers(MapController *controller)
 void
 path_resize(Path *path, gint size)
 {
-    if(path->head + size != path->cap)
+    if(path->_head + size != path->_cap)
     {
-        Point *old_head = path->head;
+        Point *old_head = path->_head;
         WayPoint *curr;
-        path->head = g_renew(Point, old_head, size);
-        path->cap = path->head + size;
-        if(path->head != old_head)
+        path->_head = g_renew(Point, old_head, size);
+        path->_cap = path->_head + size;
+        if(path->_head != old_head)
         {
-            path->tail = path->head + (path->tail - old_head);
+            path->_tail = path->_head + (path->_tail - old_head);
 
             /* Adjust all of the waypoints. */
             for(curr = path->whead - 1; curr++ != path->wtail; )
-                curr->point = path->head + (curr->point - old_head);
+                curr->point = path->_head + (curr->point - old_head);
         }
     }
 }
@@ -207,13 +216,13 @@ path_wresize(Path *path, gint wsize)
 void
 map_path_calculate_distances(Path *path)
 {
-    Point *curr;
+    Point *curr, *first;
     gfloat total = 0;
     MapGeo lat, lon, last_lat, last_lon;
-    gboolean has_latlon;
+    MapLineIter line;
     gint n_points;
 
-    n_points = path->tail - path->head + 1 - path->points_with_distance;
+    n_points = map_path_len(path) - path->points_with_distance;
     if (n_points <= 0) return;
 
 #ifdef ENABLE_DEBUG
@@ -223,38 +232,45 @@ map_path_calculate_distances(Path *path)
     clock_gettime(CLOCK_THREAD_CPUTIME_ID, &ts0);
 #endif
 
-    last_lat = path->last_lat, last_lon = path->last_lon;
-    has_latlon = (last_lat != 0 && last_lon != 0);
-
-    for (curr = path->head + path->points_with_distance;
-         curr <= path->tail; curr++)
+    first = map_path_first(path) + path->points_with_distance;
+    map_path_line_iter_from_point(path, first, &line);
+    do
     {
-        if (curr->unit.y == 0)
+        Point *start, *end;
+        start = map_path_line_first(&line);
+        end = start + map_path_line_len(&line);
+        if (start < first)
         {
-            has_latlon = FALSE;
-            continue;
+            /* we are in the middle of a line with already some distances
+             * computed */
+            start = first;
+            last_lat = path->last_lat, last_lon = path->last_lon;
+        }
+        else if (start < end)
+        {
+            /* the first point of the line is treated specially */
+            start->distance = 0;
+            unit2latlon(start->unit.x, start->unit.y, last_lat, last_lon);
+            start++;
+        }
+        else /* this line is empty */
+        {
+            last_lat = last_lon = 0;
         }
 
-        unit2latlon(curr->unit.x, curr->unit.y, lat, lon);
-        if (has_latlon)
+        for (curr = start; curr < end; curr++)
         {
+            unit2latlon(curr->unit.x, curr->unit.y, lat, lon);
             curr->distance = calculate_distance(last_lat, last_lon, lat, lon);
             total += curr->distance;
+            last_lat = lat;
+            last_lon = lon;
         }
-        else
-            curr->distance = 0;
-        last_lat = lat;
-        last_lon = lon;
-        has_latlon = TRUE;
     }
+    while (map_path_line_iter_next(&line));
 
-    if (has_latlon)
-    {
-        path->last_lat = last_lat;
-        path->last_lon = last_lon;
-    }
-    else
-        path->last_lat = path->last_lon = 0;
+    path->last_lat = last_lat;
+    path->last_lon = last_lon;
     path->length += total;
     path->points_with_distance += n_points;
 
@@ -285,13 +301,45 @@ read_path_from_db(Path *path, sqlite3_stmt *select_stmt)
         pt.distance = 0;
 
         desc = (const gchar *)sqlite3_column_text(select_stmt, 4);
-        map_path_append_point_with_desc(path, &pt, desc);
+        if (pt.unit.y != 0)
+            map_path_append_point_with_desc(path, &pt, desc);
+        else
+            map_path_append_break(path);
     }
     sqlite3_reset(select_stmt);
 
     map_path_append_break(path);
 
     map_path_append_point_end(path);
+}
+
+static gboolean
+write_point_to_db(const Point *p, sqlite3_stmt *insert_path_stmt)
+{
+    FieldMix mix;
+    gboolean success = TRUE;
+
+    mix.field = 0;
+    mix.s.altitude = p->altitude;
+    mix.s.zoom = p->zoom;
+
+    /* Insert the path point. */
+    if (SQLITE_OK != sqlite3_bind_int(insert_path_stmt, 1, p->unit.x)
+        || SQLITE_OK != sqlite3_bind_int(insert_path_stmt, 2, p->unit.y)
+        || SQLITE_OK != sqlite3_bind_int(insert_path_stmt, 3, p->time)
+        || SQLITE_OK != sqlite3_bind_int(insert_path_stmt, 4, mix.field)
+        || SQLITE_DONE != sqlite3_step(insert_path_stmt))
+    {
+        gchar buffer[BUFFER_SIZE];
+        snprintf(buffer, sizeof(buffer), "%s\n%s",
+                _("Failed to write to path database. "
+                    "Tracks and routes may not be saved."),
+                sqlite3_errmsg(_path_db));
+        popup_error(_window, buffer);
+        success = FALSE;
+    }
+    sqlite3_reset(insert_path_stmt);
+    return success;
 }
 
 /* Returns the new next_update_index. */
@@ -303,10 +351,11 @@ write_path_to_db(Path *path,
         sqlite3_stmt *insert_way_stmt,
         gint index_last_saved)
 {
-    Point *curr;
+    Point *curr, *first;
     WayPoint *wcurr;
-    gint num;
+    gint saved = 0;
     gboolean success = TRUE;
+    MapLineIter line;
     DEBUG("%d", index_last_saved);
 
     /* Start transaction. */
@@ -331,62 +380,55 @@ write_path_to_db(Path *path,
         sqlite3_reset(delete_path_stmt);
     }
 
-    for(num = index_last_saved, curr = path->head + num, wcurr = path->whead;
-            success && ++curr <= path->tail; ++num)
+    first = map_path_first(path) + index_last_saved;
+    wcurr = path->whead;
+    map_path_line_iter_from_point(path, first, &line);
+    do
     {
-        FieldMix mix;
-
-        /* If this is the last point, and it is null, don't write it. */
-        if(curr == path->tail && !curr->unit.y)
-            break;
-
-        mix.field = 0;
-        mix.s.altitude = curr->altitude;
-        mix.s.zoom = curr->zoom;
-
-        /* Insert the path point. */
-        if(SQLITE_OK != sqlite3_bind_int(insert_path_stmt, 1, curr->unit.x)
-        || SQLITE_OK != sqlite3_bind_int(insert_path_stmt, 2, curr->unit.y)
-        || SQLITE_OK != sqlite3_bind_int(insert_path_stmt, 3, curr->time)
-        || SQLITE_OK != sqlite3_bind_int(insert_path_stmt, 4, mix.field)
-        || SQLITE_DONE != sqlite3_step(insert_path_stmt))
+        Point *start, *end;
+        start = map_path_line_first(&line);
+        end = start + map_path_line_len(&line);
+        if (start >= first)
         {
-            gchar buffer[BUFFER_SIZE];
-            snprintf(buffer, sizeof(buffer), "%s\n%s",
-                    _("Failed to write to path database. "
-                        "Tracks and routes may not be saved."),
-                    sqlite3_errmsg(_path_db));
-            popup_error(_window, buffer);
-            success = FALSE;
+            /* new line: write a break point */
+            success = write_point_to_db(&_point_null, insert_path_stmt);
         }
-        sqlite3_reset(insert_path_stmt);
 
-        /* Now, check if curr is a waypoint. */
-        if(success && wcurr <= path->wtail && wcurr->point == curr)
+        for (curr = start; success && curr < end; curr++)
         {
-            gint num = sqlite3_last_insert_rowid(_path_db);
-            if(SQLITE_OK != sqlite3_bind_int(insert_way_stmt, 1, num)
-            || SQLITE_OK != sqlite3_bind_text(insert_way_stmt, 2, wcurr->desc,
-                -1, SQLITE_STATIC)
-            || SQLITE_DONE != sqlite3_step(insert_way_stmt))
+            success = write_point_to_db(curr, insert_path_stmt);
+
+            /* Now, check if curr is a waypoint. */
+            if(success && wcurr <= path->wtail && wcurr->point == curr)
             {
-                gchar buffer[BUFFER_SIZE];
-                snprintf(buffer, sizeof(buffer), "%s\n%s",
-                        _("Failed to write to path database. "
-                            "Tracks and routes may not be saved."),
-                        sqlite3_errmsg(_path_db));
-                popup_error(_window, buffer);
-                success = FALSE;
+                gint num = sqlite3_last_insert_rowid(_path_db);
+                if(SQLITE_OK != sqlite3_bind_int(insert_way_stmt, 1, num)
+                || SQLITE_OK != sqlite3_bind_text(insert_way_stmt, 2, wcurr->desc,
+                    -1, SQLITE_STATIC)
+                || SQLITE_DONE != sqlite3_step(insert_way_stmt))
+                {
+                    gchar buffer[BUFFER_SIZE];
+                    snprintf(buffer, sizeof(buffer), "%s\n%s",
+                            _("Failed to write to path database. "
+                                "Tracks and routes may not be saved."),
+                            sqlite3_errmsg(_path_db));
+                    popup_error(_window, buffer);
+                    success = FALSE;
+                }
+                sqlite3_reset(insert_way_stmt);
+                wcurr++;
             }
-            sqlite3_reset(insert_way_stmt);
-            wcurr++;
+
+            if (success) saved++;
         }
     }
+    while (map_path_line_iter_next(&line));
+
     if(success)
     {
         sqlite3_step(_path_stmt_trans_commit);
         sqlite3_reset(_path_stmt_trans_commit);
-        return num;
+        return index_last_saved + saved;
     }
     else
     {
@@ -462,19 +504,16 @@ route_update_nears(gboolean quick)
     /* Now, search _route for a closer point.  If quick is TRUE, then we'll
      * only search forward, only as long as we keep finding closer points.
      */
-    for(curr = _near_point; curr++ != _route.tail; )
+    for (curr = _near_point; curr < map_path_end(&_route); curr++)
     {
-        if(curr->unit.y)
+        gint64 dist_squared = DISTANCE_SQUARED(_pos.unit, curr->unit);
+        if(dist_squared <= near_dist_squared)
         {
-            gint64 dist_squared = DISTANCE_SQUARED(_pos.unit, curr->unit);
-            if(dist_squared <= near_dist_squared)
-            {
-                near = curr;
-                near_dist_squared = dist_squared;
-            }
-            else if(quick)
-                break;
+            near = curr;
+            near_dist_squared = dist_squared;
         }
+        else if(quick)
+            break;
     }
 
     /* Update _near_point. */
@@ -532,19 +571,8 @@ route_update_nears(gboolean quick)
             {
                 _next_way = wnext;
                 _next_wpt = wnext->point;
-                if(_next_wpt == _route.tail)
+                if(_next_wpt >= map_path_last(&_route))
                     _next_wpt = NULL;
-                else
-                {
-                    while(!(++_next_wpt)->unit.y)
-                    {
-                        if(_next_wpt == _route.tail)
-                        {
-                            _next_wpt = NULL;
-                            break;
-                        }
-                    }
-                }
                 ret = TRUE;
             }
             _next_way_dist_squared =
@@ -567,10 +595,8 @@ route_update_nears(gboolean quick)
 void
 route_find_nearest_point()
 {
-    /* Initialize _near_point to first non-zero point. */
-    _near_point = _route.head;
-    while(!_near_point->unit.y && _near_point != _route.tail)
-        _near_point++;
+    /* Initialize _near_point to first point. */
+    _near_point = map_path_first(&_route);
 
     /* Initialize _next_way. */
     if(_route.wtail < _route.whead)
@@ -755,7 +781,7 @@ map_path_route_step(const MapGpsData *gps, gboolean newly_fixed)
     gboolean late = FALSE, out_of_route = FALSE;
 
     /* if we don't have a route to follow, nothing to do */
-    if (_route.head == _route.tail) return;
+    if (map_path_len(&_route) == 0) return;
 
     /* Update the nearest-waypoint data. */
     if (newly_fixed)
@@ -782,9 +808,9 @@ map_path_route_step(const MapGpsData *gps, gboolean newly_fixed)
             gint max_distance;
 
             /* Try previous point first. */
-            if(_near_point != _route.head && _near_point[-1].unit.y)
+            if(_near_point != map_path_first(&_route) && _near_point[-1].unit.y)
                 n1 = &_near_point[-1].unit;
-            if(_near_point != _route.tail && _near_point[1].unit.y)
+            if(_near_point != map_path_last(&_route) && _near_point[1].unit.y)
                 n2 = &_near_point[1].unit;
 
             /* Check if our distance from the route is large. */
@@ -895,18 +921,26 @@ static gboolean
 point_is_significant(const MapGpsData *gps, const Path *path)
 {
     gint xdiff, ydiff, min_distance_units;
+    MapLineIter line;
+    Point *prev;
 
-    /* check if the track is empty or was in a break */
-    if (!path->tail->unit.y)
+    /* check if the track is empty */
+    if (map_path_len(path) == 0)
+        return TRUE;
+
+    /* check if the track was in a break */
+    map_path_line_iter_last(path, &line);
+    if (map_path_line_len(&line) == 0)
         return TRUE;
 
     /* check how much time has passed since last update */
-    if (gps->time - path->tail->time > 60)
+    prev = map_path_last(path);
+    if (gps->time - prev->time > 60)
         return TRUE;
 
     /* Have we moved enough? */
-    xdiff = abs(gps->unit.x - path->tail->unit.x);
-    ydiff = abs(gps->unit.y - path->tail->unit.y);
+    xdiff = abs(gps->unit.x - prev->unit.x);
+    ydiff = abs(gps->unit.y - prev->unit.y);
 
     /* check if the distances are obviously big enough */
     if (xdiff >= METRES_TO_UNITS(300) ||
@@ -950,42 +984,34 @@ map_path_track_update(const MapGpsData *gps)
             /* Draw the line immediately */
             map_screen_track_append(screen, &pos);
             map_screen_refresh_panel(screen);
+
+            if (_track.last_lat != 0 && _track.last_lon != 0)
+            {
+                pos.distance =
+                    calculate_distance(_track.last_lat, _track.last_lon,
+                                       gps->lat, gps->lon);
+            }
+            pos.time = gps->time;
+            map_path_append_point_fast(&_track, &pos);
+            _track.last_lat = gps->lat;
+            _track.last_lon = gps->lon;
+            _track.length += pos.distance;
+            _track.points_with_distance++;
+            map_path_optimize(&_track);
         }
     }
     else
     {
-        /* insert a break, if there isn't one already */
-        if (_track.head != _track.tail && _track.tail->unit.y != 0)
-        {
-            must_add = TRUE;
-            /* reset last latitude and longitude, because we don't want to
-             * calculate distances between breaks */
-            _track.last_lat = 0;
-            _track.last_lon = 0;
-        }
-    }
-
-    if (must_add)
-    {
-        if (_track.last_lat != 0 && _track.last_lon != 0 && pos.unit.y != 0)
-        {
-            pos.distance = calculate_distance(_track.last_lat, _track.last_lon,
-                                              gps->lat, gps->lon);
-        }
-        pos.time = gps->time;
-        map_path_append_point_fast(&_track, &pos);
-        _track.last_lat = gps->lat;
-        _track.last_lon = gps->lon;
-        _track.length += pos.distance;
-        _track.points_with_distance++;
-        map_path_optimize(&_track);
+        /* insert a break */
+        if (map_path_len(&_track) > 0)
+            must_add = map_path_append_break(&_track);
     }
 
     /* Maybe update the track database. */
     {
         static time_t last_track_db_update = 0;
         if (!gps->time || (gps->time - last_track_db_update > 60
-                && _track.tail - _track.head + 1 > _track_index_last_saved))
+                           && map_path_len(&_track) > _track_index_last_saved))
         {
             path_update_track_in_db();
             last_track_db_update = gps->time;
@@ -1017,16 +1043,14 @@ track_clear()
 void
 track_insert_break(gboolean temporary)
 {
-    if(_track.tail->unit.y)
-    {
-        map_path_append_break(&_track);
+    if (!map_path_append_break(&_track))
+        return;
 
-        /* To mark a "waypoint" in a track, we'll add a (0, 0) point and then
-         * another instance of the most recent track point. */
-        if(temporary)
-        {
-            map_path_append_point(&_track, &_track.tail[-1]);
-        }
+    /* To mark a "waypoint" in a track, we'll add a break point and then
+     * another instance of the most recent track point. */
+    if (temporary)
+    {
+        map_path_append_point(&_track, map_path_last(&_track));
     }
 
     /* Update the track database. */
@@ -1276,10 +1300,7 @@ on_dialog_response(GtkWidget *dialog, gint response, RouteDownloadInfo *rdi)
     }
     else if (rdi->origin_row_active == rdi->origin_row_route)
     {
-        Point *p;
-
-        /* Use last non-zero route point. */
-        for(p = _route.tail; !p->unit.y; p--) { }
+        Point *p = map_path_last(&_route);
 
         rq.from.point = p->unit;
     }
@@ -1398,7 +1419,7 @@ route_download(gchar *to)
     rdi->origin_row_gps = row++;
     hildon_touch_selector_append_text(origin_selector, _("Use GPS Location"));
     /* Use "End of Route" by default if they have a route. */
-    if(_route.head != _route.tail)
+    if (map_path_len(&_route) > 0)
     {
         hildon_touch_selector_append_text(origin_selector, _("Use End of Route"));
         rdi->origin_row_route = row++;
@@ -1608,9 +1629,9 @@ route_add_way_dialog(const MapPoint *point)
         if(*desc)
         {
             /* There's a description.  Add a waypoint. */
-            map_path_append_unit(&_route, point);
+            Point *p_in_path = map_path_append_unit(&_route, point);
 
-            map_path_make_waypoint(&_route, _route.tail,
+            map_path_make_waypoint(&_route, p_in_path,
                 gtk_text_buffer_get_text(tbuf, &ti1, &ti2, TRUE));
         }
         else
@@ -1760,7 +1781,7 @@ path_init()
         {   
             read_path_from_db(&_route, _route_stmt_select);
             read_path_from_db(&_track, _track_stmt_select);
-            _track_index_last_saved = _track.tail - _track.head - 1;
+            _track_index_last_saved = map_path_len(&_track);
             if (_track_index_last_saved < 0) _track_index_last_saved = 0;
         }
         g_free(path_db_file);
@@ -1777,8 +1798,7 @@ void
 path_destroy()
 {
     /* Save paths. */
-    if(_track.tail->unit.y)
-        track_insert_break(FALSE);
+    map_path_append_break(&_track);
     path_update_track_in_db();
     path_save_route_to_db();
 
@@ -1801,23 +1821,21 @@ map_path_optimize(Path *path)
     /* for every point, set the zoom level at which the point must be rendered
      */
 
-    if (path->points_optimized == 0 && path->head != path->tail)
+    if (map_path_len(path) == 0) return;
+
+    curr = map_path_first(path) + path->points_optimized;
+    if (path->points_optimized == 0)
     {
-        path->head->zoom = SCHAR_MAX;
+        curr->zoom = SCHAR_MAX;
         path->points_optimized = 1;
+        curr++;
     }
 
-    for (curr = path->head + path->points_optimized;
-         curr <= path->tail; curr++)
+    for (; curr < map_path_end(path); curr++)
     {
         gint dx, dy, dmax, zoom;
 
         prev = curr - 1;
-        if (curr->unit.y == 0 || prev->unit.y == 0)
-        {
-            curr->zoom = MAX_ZOOM;
-            continue;
-        }
 
         dx = curr->unit.x - prev->unit.x;
         dy = curr->unit.y - prev->unit.y;
@@ -1851,7 +1869,7 @@ map_path_optimize(Path *path)
         curr->zoom = zoom;
     }
 
-    path->points_optimized = path->tail - path->head;
+    path->points_optimized = map_path_len(path);
 }
 
 void
@@ -1861,11 +1879,23 @@ map_path_merge(Path *src_path, Path *dest_path, MapPathMergePolicy policy)
     map_path_optimize(src_path);
 
     DEBUG("src length %.2f, dest %.2f", src_path->length, dest_path->length);
+
+    if (map_path_len(src_path) == 0)
+    {
+        if (policy == MAP_PATH_MERGE_POLICY_REPLACE)
+            map_path_unset(dest_path);
+        return;
+    }
+
     if (policy != MAP_PATH_MERGE_POLICY_REPLACE
-        && dest_path->head != dest_path->tail)
+        && map_path_len(dest_path) > 0)
     {
         Point *src_first;
         Path *src, *dest;
+        gint num_dest_points;
+        gint num_src_points;
+        WayPoint *curr;
+        GList *list;
 
         if (policy == MAP_PATH_MERGE_POLICY_APPEND)
         {
@@ -1881,48 +1911,49 @@ map_path_merge(Path *src_path, Path *dest_path, MapPathMergePolicy policy)
             dest = src_path;
         }
 
-        /* Find src_first non-zero point. */
-        for(src_first = src->head - 1; src_first++ != src->tail; )
-            if(src_first->unit.y)
-                break;
+        src_first = map_path_first(src);
 
         /* Append route points from src to dest. */
-        if(src->tail >= src_first)
-        {
-            WayPoint *curr;
-            gint num_dest_points = dest->tail - dest->head + 1;
-            gint num_src_points = src->tail - src_first + 1;
+        num_dest_points = map_path_len(dest);
+        num_src_points = map_path_len(src);
 
-            /* Adjust dest->tail to be able to fit src route data
-             * plus room for more route data. */
-            path_resize(dest,
+        /* Adjust dest->tail to be able to fit src route data
+         * plus room for more route data. */
+        path_resize(dest,
                     num_dest_points + num_src_points + ARRAY_CHUNK_SIZE);
 
-            memcpy(dest->tail + 1, src_first,
-                    num_src_points * sizeof(Point));
+        memcpy(map_path_end(dest), src_first,
+               num_src_points * sizeof(Point));
 
-            dest->tail += num_src_points;
+        dest->_tail += num_src_points;
 
-            /* Append waypoints from src to dest->. */
-            path_wresize(dest, (dest->wtail - dest->whead)
-                    + (src->wtail - src->whead) + 2 + ARRAY_CHUNK_SIZE);
-            for(curr = src->whead - 1; curr++ != src->wtail; )
-            {
-                (++(dest->wtail))->point = dest->head + num_dest_points
-                    + (curr->point - src_first);
-                dest->wtail->desc = curr->desc;
-            }
-
+        /* Append waypoints from src to dest->. */
+        path_wresize(dest, (dest->wtail - dest->whead)
+                     + (src->wtail - src->whead) + 2 + ARRAY_CHUNK_SIZE);
+        for(curr = src->whead - 1; curr++ != src->wtail; )
+        {
+            (++(dest->wtail))->point =
+                map_path_first(dest) + num_dest_points
+                + (curr->point - src_first);
+            dest->wtail->desc = curr->desc;
         }
+
+        /* Adjust the indexes of the lines and concatenate the lists */
+        for (list = src->_lines; list != NULL; list = list->next)
+        {
+            MapLine *line = MAP_LINE(list);
+            line->idx_start += num_dest_points;
+        }
+        dest->_lines = g_list_concat(dest->_lines, src->_lines);
 
         dest->length += src->length;
         dest->last_lat = src->last_lat;
         dest->last_lon = src->last_lon;
-        dest->points_with_distance = dest->tail - dest->head + 1;
+        dest->points_with_distance = map_path_len(dest);
 
         /* Kill old route - don't use map_path_unset(), because that
          * would free the string desc's that we just moved to data.route. */
-        g_free(src->head);
+        g_free(src->_head);
         g_free(src->whead);
         if (policy == MAP_PATH_MERGE_POLICY_PREPEND)
             (*dest_path) = *dest;
@@ -1932,30 +1963,36 @@ map_path_merge(Path *src_path, Path *dest_path, MapPathMergePolicy policy)
         map_path_unset(dest_path);
         /* Overwrite with data.route. */
         (*dest_path) = *src_path;
-        path_resize(dest_path,
-                dest_path->tail - dest_path->head + 1 + ARRAY_CHUNK_SIZE);
-        path_wresize(dest_path,
-                dest_path->wtail - dest_path->whead + 1 + ARRAY_CHUNK_SIZE);
+        path_resize(dest_path, map_path_len(dest_path) + ARRAY_CHUNK_SIZE);
+        path_wresize(dest_path, map_path_len(dest_path) + ARRAY_CHUNK_SIZE);
     }
     DEBUG("total length: %.2f", dest_path->length);
+}
+
+void
+map_path_remove_range(Path *path, Point *start, Point *end)
+{
+    g_warning("%s not implemented", G_STRFUNC);
 }
 
 guint
 map_path_get_duration(const Path *path)
 {
-    const Point *first, *last;
-    gint max_search;
+    MapLineIter line;
+    guint duration = 0;
 
-    max_search = MIN(path->tail - path->head, 5);
+    map_path_line_iter_first(path, &line);
+    do
+    {
+        Point *first, *last;
+        first = map_path_line_first(&line);
+        last = first + map_path_line_len(&line) - 1;
+        if (last > first && first->time != 0 && last->time != 0)
+            duration += last->time - first->time;
+    }
+    while (map_path_line_iter_next(&line));
 
-    for (first = path->head; first < path->head + max_search; first++)
-        if (first->time != 0) break;
-    for (last = path->tail; last > path->tail - max_search; last--)
-        if (last->time != 0) break;
-
-    if (!first->time || !last->time) return 0;
-
-    return last->time - first->time;
+    return duration;
 }
 
 void
@@ -1965,34 +2002,77 @@ map_path_append_point_end(Path *path)
     map_path_optimize(path);
 }
 
-void
+Point *
 map_path_append_unit(Path *path, const MapPoint *p)
 {
     MapController *controller = map_controller_get_instance();
-    Point pt;
+    Point pt, *p_in_path;
 
     pt.unit = *p;
     pt.altitude = 0;
     pt.time = 0;
     pt.zoom = SCHAR_MAX;
-    map_path_append_point(path, &pt);
+    p_in_path = map_path_append_point(path, &pt);
 
     map_controller_refresh_paths(controller);
+    return p_in_path;
 }
 
-void
+/**
+ * map_path_append_break:
+ * @path: the #Path.
+ *
+ * Breaks the line. Returns %FALSE if the line was already broken.
+ */
+gboolean
 map_path_append_break(Path *path)
 {
-    if (path->tail->unit.y != 0)
-        map_path_append_point(path, &_point_null);
+    GList *list;
+    MapLine *line;
+    gint path_len;
+
+    path_len = map_path_len(path);
+    if (G_UNLIKELY(path_len == 0)) return FALSE;
+
+    list = g_list_last(path->_lines);
+    g_assert(list != NULL);
+
+    line = MAP_LINE(list);
+    if (line->idx_start == path_len) return FALSE;
+
+    path->_lines = g_list_append(path->_lines, MAP_LINE_NEW(path_len));
+    path->last_lon = path->last_lat = 0;
+    return TRUE;
+}
+
+/**
+ * map_path_end_is_break:
+ * @path: the #Path.
+ *
+ * Returns %TRUE if the path ends with a break point.
+ */
+gboolean
+map_path_end_is_break(const Path *path)
+{
+    GList *list;
+    MapLine *line;
+    gint path_len;
+
+    path_len = map_path_len(path);
+    if (path_len == 0) return TRUE;
+
+    list = g_list_last(path->_lines);
+    g_assert(list != NULL);
+
+    line = MAP_LINE(list);
+    return line->idx_start == path_len;
 }
 
 void
 map_path_init(Path *path)
 {
-    path->head = path->tail = g_new(Point, ARRAY_CHUNK_SIZE);
-    *(path->tail) = _point_null;
-    path->cap = path->head + ARRAY_CHUNK_SIZE;
+    path->_head = path->_tail = g_new(Point, ARRAY_CHUNK_SIZE);
+    path->_cap = path->_head + ARRAY_CHUNK_SIZE;
     path->whead = g_new(WayPoint, ARRAY_CHUNK_SIZE);
     path->wtail = path->whead - 1;
     path->wcap = path->whead + ARRAY_CHUNK_SIZE;
@@ -2001,19 +2081,82 @@ map_path_init(Path *path)
     path->last_lon = 0;
     path->points_with_distance = 0;
     path->points_optimized = 0;
+    path->_lines = g_list_prepend(NULL, MAP_LINE_NEW(0));
 }
 
 void
 map_path_unset(Path *path)
 {
-    if (path->head) {
+    if (path->_head) {
         WayPoint *curr;
-        g_free(path->head);
-        path->head = path->tail = path->cap = NULL;
+        g_free(path->_head);
+        path->_head = path->_tail = path->_cap = NULL;
         for (curr = path->whead - 1; curr++ != path->wtail; )
             g_free(curr->desc);
         g_free(path->whead);
         path->whead = path->wtail = path->wcap = NULL;
+        g_list_free(path->_lines);
+        path->_lines = NULL;
     }
+}
+
+void
+map_path_line_iter_first(const Path *path, MapLineIter *iter)
+{
+    iter->path = path;
+    iter->line = path->_lines;
+    g_assert(iter->line != NULL);
+}
+
+void
+map_path_line_iter_last(const Path *path, MapLineIter *iter)
+{
+    iter->path = path;
+    iter->line = g_list_last(path->_lines);
+    g_assert(iter->line != NULL);
+}
+
+void
+map_path_line_iter_from_point(const Path *path, const Point *point,
+                              MapLineIter *iter)
+{
+    MapLineIter line;
+
+    g_assert(point >= path->_head);
+    g_assert(point <= path->_tail);
+
+    map_path_line_iter_first(path, &line);
+    *iter = line;
+    while (map_path_line_iter_next(&line) &&
+           point >= map_path_line_first(&line))
+        *iter = line;
+}
+
+gboolean
+map_path_line_iter_next(MapLineIter *iter)
+{
+    g_assert(iter->path != NULL);
+    iter->line = g_list_next(iter->line);
+    return iter->line != NULL;
+}
+
+Point *
+map_path_line_first(const MapLineIter *iter)
+{
+    return map_path_first(iter->path) + MAP_LINE(iter->line)->idx_start;
+}
+
+gint
+map_path_line_len(const MapLineIter *iter)
+{
+    gint start, end;
+
+    start = MAP_LINE(iter->line)->idx_start;
+    if (iter->line->next)
+        end = MAP_LINE(iter->line->next)->idx_start;
+    else
+        end = map_path_len(iter->path);
+    g_assert(start <= end);
+    return end - start;
 }
 

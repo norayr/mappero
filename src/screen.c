@@ -448,10 +448,10 @@ static void
 draw_path(MapScreen *screen, cairo_t *cr, Path *path, Colorable base)
 {
     MapScreenPrivate *priv = screen->priv;
+    MapLineIter line;
     Point *curr;
     WayPoint *wcurr;
     gint x = 0, y = 0;
-    gboolean segment_open = FALSE;
 #ifdef ENABLE_DEBUG
     gint segment_count = 0;
     gint waypoint_count = 0;
@@ -462,38 +462,44 @@ draw_path(MapScreen *screen, cairo_t *cr, Path *path, Colorable base)
     set_source_color(cr, &_color[base]);
     cairo_set_line_width(cr, _draw_width);
     cairo_set_line_join(cr, CAIRO_LINE_JOIN_BEVEL);
-    for (curr = path->head; curr <= path->tail; curr++)
+    map_path_line_iter_first(path, &line);
+    do
     {
+        Point *start, *end;
+        gint len;
 
-        if (curr->zoom <= priv->zoom) continue;
+        start = map_path_line_first(&line);
+        len = map_path_line_len(&line);
+        end = start + len;
 
-        if (G_UNLIKELY(curr->unit.y == 0))
+        if (len > 0)
         {
-            if (segment_open)
-            {
-                /* use x and y from the previous iteration */
-                cairo_stroke(cr);
-                draw_break(cr, &_color[base + 2], x, y);
-                segment_open = FALSE;
-            }
+            point_to_pixels(priv, start->unit, &x, &y);
+            draw_break(cr, &_color[base + 2], x, y);
+            cairo_move_to(cr, x, y);
         }
-        else
+
+        for (curr = start + 1; curr < end - 1; curr++)
         {
+            if (curr->zoom <= priv->zoom) continue;
 #ifdef ENABLE_DEBUG
             segment_count++;
 #endif
             point_to_pixels(priv, curr->unit, &x, &y);
-            if (G_UNLIKELY(!segment_open))
-            {
-                draw_break(cr, &_color[base + 2], x, y);
-                cairo_move_to(cr, x, y);
-                segment_open = TRUE;
-            }
-            else
-                cairo_line_to(cr, x, y);
+            cairo_line_to(cr, x, y);
         }
+
+        /* the last segment must always be drawn */
+        if (len > 1)
+        {
+            point_to_pixels(priv, curr->unit, &x, &y);
+            cairo_line_to(cr, x, y);
+        }
+
+        cairo_stroke(cr);
+        draw_break(cr, &_color[base + 2], x, y);
     }
-    cairo_stroke(cr);
+    while (map_path_line_iter_next(&line));
 
     for (wcurr = path->whead; wcurr <= path->wtail; wcurr++)
     {
@@ -515,7 +521,7 @@ draw_path(MapScreen *screen, cairo_t *cr, Path *path, Colorable base)
 static void
 draw_paths(MapScreen *screen, cairo_t *cr)
 {
-    if ((_show_paths & ROUTES_MASK) && _route.head != _route.tail)
+    if ((_show_paths & ROUTES_MASK) && map_path_len(&_route) > 0)
     {
         WayPoint *next_way;
 
@@ -825,7 +831,7 @@ panel_create_layouts(MapPanelData *pd, PangoContext *context)
     if (!font)
         font = pango_font_description_from_string("Sans 14");
 
-    if (_track.head != _track.tail)
+    if (map_path_len(&_track))
     {
         gchar *text, buffer[32];
         guint duration;
@@ -854,7 +860,7 @@ panel_create_layouts(MapPanelData *pd, PangoContext *context)
         has_data = TRUE;
     }
 
-    if (_route.head != _route.tail)
+    if (map_path_len(&_route) > 0)
     {
         gchar *text, buffer[32];
         gfloat distance = 0.0;
@@ -868,13 +874,12 @@ panel_create_layouts(MapPanelData *pd, PangoContext *context)
                                (PANEL_WIDTH - pd->icon_width) * PANGO_SCALE);
         pango_layout_set_font_description(layout, font);
 
-        /* Find last non-zero point. */
-        for(p = _route.tail; p->unit.y == 0; p--);
+        /* Find last point. */
+        p = map_path_last(&_track);
         route_calc_distance_to(p, &distance);
         n += distance_to_string(buffer + n, sizeof(buffer) - n, _route.length);
 
-        time = _route.tail->time;
-        if (time == 0) time = _route.tail[-1].time;
+        time = p->time;
         if (time != 0)
             n += time_to_string(buffer + n, sizeof(buffer) - n, " %H:%M", time);
 
@@ -1632,9 +1637,10 @@ map_screen_track_append(MapScreen *self, const Point *p)
     set_source_color(cr, &_color[COLORABLE_TRACK]);
     cairo_set_line_width(cr, _draw_width);
     cairo_set_line_join(cr, CAIRO_LINE_JOIN_BEVEL);
-    if (_track.tail->unit.y)
+    if (!map_path_end_is_break(&_track))
     {
-        point_to_pixels(priv, _track.tail->unit, &x, &y);
+        Point *last = map_path_last(&_track);
+        point_to_pixels(priv, last->unit, &x, &y);
         cairo_move_to(cr, x, y);
         point_to_pixels(priv, p->unit, &x, &y);
         cairo_line_to(cr, x, y);

@@ -62,6 +62,7 @@
 #include "main.h"
 #include "maps.h"
 #include "menu.h"
+#include "path.h"
 #include "repository.h"
 #include "screen.h"
 #include "settings.h"
@@ -832,20 +833,19 @@ mapman_by_route(MapmanInfo *mapman_info, MapUpdateType update_type,
         {
             prev_tilex = 0;
             prev_tiley = 0;
-            for(curr = _route.head - 1; curr++ != _route.tail; )
+            for (curr = map_path_first(&_route);
+                 curr < map_path_end(&_route);
+                 curr = map_path_next(&_route, curr))
             {
-                if(curr->unit.y)
+                gint tilex = unit2ztile(curr->unit.x, z);
+                gint tiley = unit2ztile(curr->unit.y, z);
+                if(tilex != prev_tilex || tiley != prev_tiley)
                 {
-                    gint tilex = unit2ztile(curr->unit.x, z);
-                    gint tiley = unit2ztile(curr->unit.y, z);
-                    if(tilex != prev_tilex || tiley != prev_tiley)
-                    {
-                        if(prev_tiley)
-                            num_maps += (abs((gint)tilex - prev_tilex) + 1)
-                                * (abs((gint)tiley - prev_tiley) + 1) - 1;
-                        prev_tilex = tilex;
-                        prev_tiley = tiley;
-                    }
+                    if(prev_tiley)
+                        num_maps += (abs((gint)tilex - prev_tilex) + 1)
+                            * (abs((gint)tiley - prev_tiley) + 1) - 1;
+                    prev_tilex = tilex;
+                    prev_tiley = tiley;
                 }
             }
         }
@@ -882,52 +882,51 @@ mapman_by_route(MapmanInfo *mapman_info, MapUpdateType update_type,
         {
             prev_tilex = 0;
             prev_tiley = 0;
-            for(curr = _route.head - 1; curr++ != _route.tail; )
+            for (curr = map_path_first(&_route);
+                 curr < map_path_end(&_route);
+                 curr = map_path_next(&_route, curr))
             {
-                if(curr->unit.y)
+                gint tilex = unit2ztile(curr->unit.x, z);
+                gint tiley = unit2ztile(curr->unit.y, z);
+                if(tilex != prev_tilex || tiley != prev_tiley)
                 {
-                    gint tilex = unit2ztile(curr->unit.x, z);
-                    gint tiley = unit2ztile(curr->unit.y, z);
-                    if(tilex != prev_tilex || tiley != prev_tiley)
+                    gint minx, miny, maxx, maxy, x, y;
+                    if(prev_tiley != 0)
                     {
-                        gint minx, miny, maxx, maxy, x, y;
-                        if(prev_tiley != 0)
+                        minx = MIN(tilex, prev_tilex) - radius;
+                        miny = MIN(tiley, prev_tiley) - radius;
+                        maxx = MAX(tilex, prev_tilex) + radius;
+                        maxy = MAX(tiley, prev_tiley) + radius;
+                    }
+                    else
+                    {
+                        minx = tilex - radius;
+                        miny = tiley - radius;
+                        maxx = tilex + radius;
+                        maxy = tiley + radius;
+                    }
+                    for(x = minx; x <= maxx; x++)
+                    {
+                        for(y = miny; y <= maxy; y++)
                         {
-                            minx = MIN(tilex, prev_tilex) - radius;
-                            miny = MIN(tiley, prev_tiley) - radius;
-                            maxx = MAX(tilex, prev_tilex) + radius;
-                            maxy = MAX(tiley, prev_tiley) + radius;
-                        }
-                        else
-                        {
-                            minx = tilex - radius;
-                            miny = tiley - radius;
-                            maxx = tilex + radius;
-                            maxy = tiley + radius;
-                        }
-                        for(x = minx; x <= maxx; x++)
-                        {
-                            for(y = miny; y <= maxy; y++)
+                            /* Make sure this tile is even possible. */
+                            if((unsigned)tilex
+                                    < unit2ztile(WORLD_SIZE_UNITS, z)
+                              && (unsigned)tiley
+                                    < unit2ztile(WORLD_SIZE_UNITS, z))
                             {
-                                /* Make sure this tile is even possible. */
-                                if((unsigned)tilex
-                                        < unit2ztile(WORLD_SIZE_UNITS, z)
-                                  && (unsigned)tiley
-                                        < unit2ztile(WORLD_SIZE_UNITS, z))
-                                {
-                                    mapdb_initiate_update(rd->primary, z, x, y,
-                                        update_type, download_batch_id,
-                                        (abs(tilex - unit2tile(
-                                                 _next_center.x))
-                                         + abs(tiley - unit2tile(
-                                                 _next_center.y))),
-                                        NULL);
-                                }
+                                mapdb_initiate_update(rd->primary, z, x, y,
+                                    update_type, download_batch_id,
+                                    (abs(tilex - unit2tile(
+                                             _next_center.x))
+                                     + abs(tiley - unit2tile(
+                                             _next_center.y))),
+                                    NULL);
                             }
                         }
-                        prev_tilex = tilex;
-                        prev_tiley = tiley;
                     }
+                    prev_tilex = tilex;
+                    prev_tiley = tiley;
                 }
             }
         }
@@ -1329,7 +1328,7 @@ mapman_dialog()
      * output (and parsed) as locale-dependent. */
 
     gtk_widget_set_sensitive(mapman_info.rad_by_route,
-            _route.head != _route.tail);
+                             map_path_len(&_route) > 0);
 
     
     gchar buffer1[15];

@@ -883,15 +883,17 @@ map_controller_get_repository(MapController *self)
 static void
 update_path_coords(Repository *from, Repository *to, Path *path)
 {
-    Point *curr = path->head;
+    Point *curr;
     MapGeo lat, lon;
 
-    while (curr != path->tail) {
-        if (curr->unit.x || curr->unit.y) {
-            from->primary->type->unit_to_latlon(curr->unit.x, curr->unit.y, &lat, &lon);
-            to->primary->type->latlon_to_unit(lat, lon, &curr->unit.x, &curr->unit.y);
-        }
-        curr++;
+    for (curr = map_path_first(path);
+         curr < map_path_end(path);
+         curr = map_path_next(path, curr))
+    {
+        from->primary->type->unit_to_latlon(curr->unit.x, curr->unit.y,
+                                            &lat, &lon);
+        to->primary->type->latlon_to_unit(lat, lon,
+                                          &curr->unit.x, &curr->unit.y);
     }
 }
 
@@ -924,9 +926,9 @@ map_controller_set_repository(MapController *self, Repository *repo)
         curr_type->unit_to_latlon(_pos.unit.x, _pos.unit.y, &lat, &lon);
         new_type->latlon_to_unit(lat, lon, &_pos.unit.x, &_pos.unit.y);
 
-        if ((_show_paths & ROUTES_MASK) && _route.head != _route.tail)
+        if ((_show_paths & ROUTES_MASK) && map_path_len(&_route) > 0)
             update_path_coords(curr_repo, repo, &_route);
-        if ((_show_paths & TRACKS_MASK) && _track.head != _track.tail)
+        if ((_show_paths & TRACKS_MASK) && map_path_len(&_track) > 0)
             update_path_coords(curr_repo, repo, &_track);
     }
 
