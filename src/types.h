@@ -296,6 +296,19 @@ typedef struct {
     gchar *address;
 } MapLocation;
 
+/* Navigation directions */
+typedef enum {
+    MAP_DIRECTION_UNKNOWN = 0,
+    MAP_DIRECTION_CS, /* continue straight */
+    MAP_DIRECTION_TR, /* turn right */
+    MAP_DIRECTION_TL,
+    MAP_DIRECTION_STR, /* slight turn right */
+    MAP_DIRECTION_STL,
+    MAP_DIRECTION_EX1, /* first exit */
+    MAP_DIRECTION_EX2,
+    MAP_DIRECTION_EX3,
+} MapDirection;
+
 /* definition of a track/route point */
 typedef struct _Point Point;
 struct _Point {
@@ -310,6 +323,7 @@ struct _Point {
 typedef struct _WayPoint WayPoint;
 struct _WayPoint {
     Point *point;
+    MapDirection dir;
     gchar *desc;
 };
 

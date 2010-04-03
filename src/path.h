@@ -96,14 +96,19 @@ map_path_append_point(Path *path, const Point *p)
 }
 
 static inline WayPoint *
-map_path_make_waypoint(Path *path, const Point *p, gchar *desc)
+map_path_make_waypoint_full(Path *path, const Point *p, MapDirection dir,
+                            gchar *desc)
 {
     if (++(path->wtail) == path->wcap)
         path_wresize(path, path->wcap - path->whead + ARRAY_CHUNK_SIZE);
     path->wtail->point = (Point *)p;
+    path->wtail->dir = dir;
     path->wtail->desc = desc;
     return path->wtail;
 }
+
+#define map_path_make_waypoint(path, p, desc) \
+    map_path_make_waypoint_full(path, p, MAP_DIRECTION_UNKNOWN, desc)
 
 /* Appends a point to @path, and creates a WayPoint if @desc is not %NULL */
 static inline Point *
