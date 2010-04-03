@@ -863,7 +863,6 @@ panel_create_layouts(MapPanelData *pd, PangoContext *context)
     if (map_path_len(&_route) > 0)
     {
         gchar *text, buffer[32];
-        gfloat distance = 0.0;
         time_t time;
         gint n = 0;
         Point *p;
@@ -876,7 +875,6 @@ panel_create_layouts(MapPanelData *pd, PangoContext *context)
 
         /* Find last point. */
         p = map_path_last(&_track);
-        route_calc_distance_to(p, &distance);
         n += distance_to_string(buffer + n, sizeof(buffer) - n, _route.length);
 
         time = p->time;
