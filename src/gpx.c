@@ -34,6 +34,7 @@
 #include "defines.h"
 
 #include "gpx.h"
+#include "navigation.h"
 #include "path.h"
 #include "util.h"
 
@@ -226,8 +227,6 @@ static void
 gpx_path_start_element(PathSaxData *data,
         const xmlChar *name, const xmlChar **attrs)
 {
-    DEBUG("%s", name);
-
     switch(data->sax_data.state)
     {
         case ERROR:
@@ -331,8 +330,6 @@ gpx_path_start_element(PathSaxData *data,
 static void
 gpx_path_end_element(PathSaxData *data, const xmlChar *name)
 {
-    DEBUG("%s", name);
-
     switch(data->sax_data.state)
     {
         case ERROR:
@@ -372,6 +369,8 @@ gpx_path_end_element(PathSaxData *data, const xmlChar *name)
                 p = map_path_append_point_fast(&data->path, &data->pt);
                 if (data->desc)
                 {
+                    if (data->dir == MAP_DIRECTION_UNKNOWN)
+                        data->dir = map_navigation_infer_direction(data->desc);
                     map_path_make_waypoint_full(&data->path, p,
                                                 data->dir, data->desc);
                     data->desc = NULL;

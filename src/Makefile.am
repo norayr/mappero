@@ -54,6 +54,7 @@ maemo_mapper_SOURCES = \
 	mark.c \
 	marshal.c \
 	menu.c \
+	navigation.c \
 	orientation.c \
 	osm.c \
 	path.c \
