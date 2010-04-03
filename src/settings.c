@@ -1379,6 +1379,7 @@ settings_init(GConfClient *gconf_client)
     const MapGpsData *gps = map_controller_get_gps_data(controller);
     gchar *str;
     MapOrientation orientation;
+    gboolean auto_download;
 
     /* Initialize some constants. */
     CUSTOM_KEY_GCONF[CUSTOM_KEY_UP] = GCONF_KEY_PREFIX"/key_up";
@@ -1447,10 +1448,16 @@ settings_init(GConfClient *gconf_client)
     if(!_gri.file_path)
         _gri.file_path = g_strdup("/dev/pgps");
 
-    /* Get Auto-Download.  Default is FALSE. */
-    map_controller_set_auto_download(controller,
-        gconf_client_get_bool(gconf_client,
-                              GCONF_KEY_AUTO_DOWNLOAD, NULL));
+    /* Get Auto-Download.  Default is TRUE. */
+    value = gconf_client_get(gconf_client, GCONF_KEY_AUTO_DOWNLOAD, NULL);
+    if (value)
+    {
+        auto_download = gconf_value_get_bool(value);
+        gconf_value_free(value);
+    }
+    else
+        auto_download = TRUE;
+    map_controller_set_auto_download(controller, auto_download);
 
     /* Get Auto-Download Pre-cache - Default is 0. */
     _auto_download_precache = gconf_client_get_int(gconf_client,
