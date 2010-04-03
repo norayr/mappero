@@ -109,7 +109,6 @@ extern gint _view_halfheight_pixels;
 /** The current track and route. */
 extern Path _track;
 extern Path _route;
-extern gint _track_index_last_saved;
 
 /** THE GdkGC OBJECTS USED FOR DRAWING. */
 extern GdkGC *_gc[COLORABLE_ENUM_COUNT];

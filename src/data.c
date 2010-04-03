@@ -127,7 +127,6 @@ gint _view_halfheight_pixels = 0;
 /** The current track and route. */
 Path _track;
 Path _route;
-gint _track_index_last_saved = 0;
 
 /** THE GdkGC OBJECTS USED FOR DRAWING. */
 GdkGC *_gc[COLORABLE_ENUM_COUNT];
