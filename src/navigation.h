@@ -25,4 +25,6 @@
 
 MapDirection map_navigation_infer_direction(const gchar *text);
 
+void map_navigation_announce_voice(WayPoint *wp);
+
 #endif /* MAP_NAVIGATION_H */

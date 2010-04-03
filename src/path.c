@@ -39,7 +39,6 @@
 #include <hildon/hildon-banner.h>
 #include <hildon/hildon-pannable-area.h>
 #include <hildon/hildon-picker-button.h>
-#include <hildon/hildon-sound.h>
 
 #include "types.h"
 #include "data.h"
@@ -50,6 +49,7 @@
 #include "error.h"
 #include "gpx.h"
 #include "main.h"
+#include "navigation.h"
 #include "path.h"
 #include "poi.h"
 #include "router.h"
@@ -144,8 +144,6 @@ static sqlite3_stmt *_route_stmt_insert_way = NULL;
 static sqlite3_stmt *_path_stmt_trans_begin = NULL;
 static sqlite3_stmt *_path_stmt_trans_commit = NULL;
 static sqlite3_stmt *_path_stmt_trans_rollback = NULL;
-
-static gchar *_last_spoken_phrase;
 
 static MapRouter *
 get_selected_router(RouteDownloadInfo *rdi)
@@ -874,28 +872,9 @@ map_path_route_step(const MapGpsData *gps, gboolean newly_fixed)
             if(!_initial_distance_waypoint)
             {
                 /* First time we're close enough to this waypoint. */
-                if(_enable_voice
-                        /* And that we haven't already announced it. */
-                        && strcmp(_next_way->desc, _last_spoken_phrase))
-                {
-                    g_free(_last_spoken_phrase);
-                    _last_spoken_phrase = g_strdup(_next_way->desc);
-                    if(!fork())
-                    {
-                        /* We are the fork child.  Synthesize the voice. */
-                        hildon_play_system_sound(
-                            "/usr/share/sounds/ui-information_note.wav");
-                        sleep(1);
-                        DEBUG("%s %s", _voice_synth_path, _last_spoken_phrase);
-                        execl(_voice_synth_path, basename(_voice_synth_path),
-                                "-t", _last_spoken_phrase, (char *)NULL);
-                        /* No good?  Try to launch it with /bin/sh */
-                        execl("/bin/sh", "sh", _voice_synth_path,
-                                "-t", _last_spoken_phrase, (char *)NULL);
-                        /* Still no good? Oh well... */
-                        exit(0);
-                    }
-                }
+                if(_enable_voice)
+                    map_navigation_announce_voice(_next_way);
+
                 _initial_distance_from_waypoint
                     = sqrtf(_next_way_dist_squared);
                 _initial_distance_waypoint = _next_way;
@@ -1793,8 +1772,6 @@ path_init()
     }
 
     g_free(settings_dir);
-
-    _last_spoken_phrase = g_strdup("");
 
     map_controller_refresh_paths(controller);
 }

@@ -20,11 +20,15 @@
 #ifdef HAVE_CONFIG_H
 #    include "config.h"
 #endif
+#define _GNU_SOURCE
 #include "navigation.h"
 
+#include "data.h"
 #include "debug.h"
 #include "path.h"
 
+#include <hildon/hildon-sound.h>
+#include <stdlib.h>
 #include <string.h>
 
 /**
@@ -90,5 +94,33 @@ map_navigation_infer_direction(const gchar *text)
         }
     }
     return dir;
+}
+
+void
+map_navigation_announce_voice(WayPoint *wp)
+{
+    static gchar *_last_spoken_phrase = NULL;
+
+    /* And that we haven't already announced it. */
+    if (strcmp(wp->desc, _last_spoken_phrase))
+    {
+        g_free(_last_spoken_phrase);
+        _last_spoken_phrase = g_strdup(wp->desc);
+        if(!fork())
+        {
+            /* We are the fork child.  Synthesize the voice. */
+            hildon_play_system_sound(
+                "/usr/share/sounds/ui-information_note.wav");
+            sleep(1);
+            DEBUG("%s %s", _voice_synth_path, _last_spoken_phrase);
+            execl(_voice_synth_path, basename(_voice_synth_path),
+                  "-t", _last_spoken_phrase, (char *)NULL);
+            /* No good?  Try to launch it with /bin/sh */
+            execl("/bin/sh", "sh", _voice_synth_path,
+                  "-t", _last_spoken_phrase, (char *)NULL);
+            /* Still no good? Oh well... */
+            exit(0);
+        }
+    }
 }
 
