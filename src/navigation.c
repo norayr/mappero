@@ -27,9 +27,26 @@
 #include "debug.h"
 #include "path.h"
 
+#include <canberra.h>
 #include <hildon/hildon-sound.h>
 #include <stdlib.h>
 #include <string.h>
+
+#define SOUND_DIR "/usr/share/sounds/mapper/"
+
+/* these need to be aligned with the MapDirection enum values */
+static const gchar *dir_names[] = {
+    "unknown",
+    "straight",
+    "turn-right",
+    "turn-left",
+    "slight-right",
+    "slight-left",
+    "first-exit",
+    "second-exit",
+    "third-exit",
+    NULL,
+};
 
 /**
  * map_navigation_infer_direction:
@@ -96,6 +113,114 @@ map_navigation_infer_direction(const gchar *text)
     return dir;
 }
 
+static ca_context *
+map_ca_context_get (void)
+{
+    static GStaticPrivate context_private = G_STATIC_PRIVATE_INIT;
+    ca_context *c = NULL;
+    const gchar *name = NULL;
+    gint ret;
+
+    if ((c = g_static_private_get(&context_private)))
+        return c;
+
+    if ((ret = ca_context_create(&c)) != CA_SUCCESS) {
+        g_warning("ca_context_create: %s\n", ca_strerror(ret));
+        return NULL;
+    }
+    if ((ret = ca_context_open(c)) != CA_SUCCESS) {
+        g_warning("ca_context_open: %s\n", ca_strerror(ret));
+        ca_context_destroy(c);
+        return NULL;
+    }
+
+    if ((name = g_get_application_name()))
+        ca_context_change_props(c, CA_PROP_APPLICATION_NAME, name, NULL);
+
+    g_static_private_set(&context_private, c, (GDestroyNotify) ca_context_destroy);
+
+    return c;
+}
+
+static void
+play_sound(const gchar *sample)
+{
+    ca_context *ca_con = NULL;
+    ca_proplist *pl = NULL;
+
+    ca_con = map_ca_context_get ();
+
+    ca_proplist_create(&pl);
+    ca_proplist_sets(pl, CA_PROP_MEDIA_FILENAME, sample);
+    ca_proplist_sets(pl, CA_PROP_MEDIA_ROLE, "x-maemo");
+
+    ca_context_play_full(ca_con, 0, pl, NULL, NULL);
+
+    ca_proplist_destroy(pl);
+}
+
+static gboolean
+play_sound_idle(gpointer userdata)
+{
+    gchar *sample = userdata;
+
+    play_sound(sample);
+    g_free(sample);
+    return FALSE;
+}
+
+static void
+alert_played(ca_context *c, uint32_t id, int error_code, void *userdata)
+{
+    DEBUG("alert played");
+    g_idle_add(play_sound_idle, userdata);
+}
+
+static void
+play_sound_with_alert(const gchar *sample)
+{
+    ca_context *ca_con = NULL;
+    ca_proplist *pl = NULL;
+
+    ca_con = map_ca_context_get ();
+
+    ca_proplist_create(&pl);
+    /* first, play the alert sound */
+    ca_proplist_sets(pl, CA_PROP_MEDIA_FILENAME,
+                     "/usr/share/sounds/ui-information_note.wav");
+    ca_proplist_sets(pl, CA_PROP_MEDIA_ROLE, "x-maemo");
+
+    DEBUG("playing alert");
+    ca_context_play_full(ca_con, 0, pl, alert_played, g_strdup(sample));
+
+    ca_proplist_destroy(pl);
+}
+
+static void
+play_direction(MapDirection dir)
+{
+    const gchar *direction_name, *lang;
+    gchar path[256] = "";
+    gint i;
+
+    if (dir < 0 || dir >= MAP_DIRECTION_LAST) return;
+
+    direction_name = dir_names[dir];
+    if (!direction_name) return;
+
+    lang = g_getenv("LC_MESSAGES");
+    if (!lang) lang = "";
+
+    i = g_snprintf(path, sizeof(path), SOUND_DIR "%s/", lang);
+    if (!g_file_test(path, G_FILE_TEST_IS_DIR))
+        i = g_snprintf(path, sizeof(path), SOUND_DIR);
+
+    g_snprintf(path + i, sizeof(path) - i, "%s.wav", direction_name);
+
+    DEBUG("Playing %s", path);
+    play_sound_with_alert(path);
+}
+
 void
 map_navigation_announce_voice(WayPoint *wp)
 {
@@ -112,6 +237,7 @@ map_navigation_announce_voice(WayPoint *wp)
     last_wp = wp;
     last_wp_time = now;
 
+#ifdef USE_SYNTH
     if (!fork())
     {
         /* We are the fork child.  Synthesize the voice. */
@@ -127,5 +253,8 @@ map_navigation_announce_voice(WayPoint *wp)
         /* Still no good? Oh well... */
         exit(0);
     }
+#else
+    play_direction(wp->dir);
+#endif
 }
 

@@ -73,7 +73,7 @@ AS_IF([test "x$HAVE_LEGACY" = xyes],
         ],
         [
                 PKG_CHECK_MODULES(OSSO, libosso >= 1)
-                PKG_CHECK_MODULES(HILDON, hildon-1 hildon-fm-2)
+                PKG_CHECK_MODULES(HILDON, hildon-1 hildon-fm-2 libcanberra)
                 PKG_CHECK_MODULES(LOCATION, liblocation)
         ])
 

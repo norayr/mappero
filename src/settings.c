@@ -1527,6 +1527,7 @@ settings_init(GConfClient *gconf_client)
     else
         _enable_voice = TRUE;
 
+#if 0
     if(_enable_voice)
     {
         /* Make sure we actually have voice capabilities. */
@@ -1536,6 +1537,7 @@ settings_init(GConfClient *gconf_client)
                     GNOME_VFS_FILE_INFO_GET_ACCESS_RIGHTS))
             && (file_info.permissions & GNOME_VFS_PERM_ACCESS_EXECUTABLE));
     }
+#endif
 
     /* Get Fullscreen flag. Default is FALSE. */
     _fullscreen = gconf_client_get_bool(gconf_client,

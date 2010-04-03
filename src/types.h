@@ -307,6 +307,7 @@ typedef enum {
     MAP_DIRECTION_EX1, /* first exit */
     MAP_DIRECTION_EX2,
     MAP_DIRECTION_EX3,
+    MAP_DIRECTION_LAST,
 } MapDirection;
 
 /* definition of a track/route point */
