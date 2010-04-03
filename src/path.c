@@ -457,7 +457,7 @@ path_save_track_to_db()
 {
     if(_path_db)
     {
-        write_path_to_db(&_track,
+        _track_index_last_saved = write_path_to_db(&_track,
                           _track_stmt_delete_path,
                           _track_stmt_delete_way,
                           _track_stmt_insert_path,
@@ -1782,7 +1782,7 @@ path_init()
             read_path_from_db(&_route, _route_stmt_select);
             read_path_from_db(&_track, _track_stmt_select);
             _track_index_last_saved = map_path_len(&_track);
-            if (_track_index_last_saved < 0) _track_index_last_saved = 0;
+            g_assert(_track_index_last_saved >= 0);
         }
         g_free(path_db_file);
     }
