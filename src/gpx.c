@@ -73,6 +73,7 @@ struct _PathSaxData {
     SaxData sax_data;
     Path path;
     Point pt;
+    MapDirection dir;
     gchar *desc;
 };
 
@@ -294,6 +295,7 @@ gpx_path_start_element(PathSaxData *data,
                 }
                 else
                     data->sax_data.state = ERROR;
+                data->dir = MAP_DIRECTION_UNKNOWN;
             }
             else
             {
@@ -370,7 +372,8 @@ gpx_path_end_element(PathSaxData *data, const xmlChar *name)
                 p = map_path_append_point_fast(&data->path, &data->pt);
                 if (data->desc)
                 {
-                    map_path_make_waypoint(&data->path, p, data->desc);
+                    map_path_make_waypoint_full(&data->path, p,
+                                                data->dir, data->desc);
                     data->desc = NULL;
                 }
                 data->sax_data.state = INSIDE_PATH_SEGMENT;
