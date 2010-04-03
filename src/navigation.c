@@ -99,28 +99,33 @@ map_navigation_infer_direction(const gchar *text)
 void
 map_navigation_announce_voice(WayPoint *wp)
 {
-    static gchar *_last_spoken_phrase = NULL;
+    static WayPoint *last_wp = NULL;
+    static struct timespec last_wp_time;
+    struct timespec now;
 
-    /* And that we haven't already announced it. */
-    if (strcmp(wp->desc, _last_spoken_phrase))
+    /* check if this is the same waypoint we announced last; if so, re-announce
+     * it only after a certain time has passed */
+    clock_gettime(CLOCK_MONOTONIC, &now);
+    if (wp == last_wp && now.tv_sec - last_wp_time.tv_sec < 30)
+        return;
+
+    last_wp = wp;
+    last_wp_time = now;
+
+    if (!fork())
     {
-        g_free(_last_spoken_phrase);
-        _last_spoken_phrase = g_strdup(wp->desc);
-        if(!fork())
-        {
-            /* We are the fork child.  Synthesize the voice. */
-            hildon_play_system_sound(
-                "/usr/share/sounds/ui-information_note.wav");
-            sleep(1);
-            DEBUG("%s %s", _voice_synth_path, _last_spoken_phrase);
-            execl(_voice_synth_path, basename(_voice_synth_path),
-                  "-t", _last_spoken_phrase, (char *)NULL);
-            /* No good?  Try to launch it with /bin/sh */
-            execl("/bin/sh", "sh", _voice_synth_path,
-                  "-t", _last_spoken_phrase, (char *)NULL);
-            /* Still no good? Oh well... */
-            exit(0);
-        }
+        /* We are the fork child.  Synthesize the voice. */
+        hildon_play_system_sound(
+            "/usr/share/sounds/ui-information_note.wav");
+        sleep(1);
+        DEBUG("%s %s", _voice_synth_path, wp->desc);
+        execl(_voice_synth_path, basename(_voice_synth_path),
+              "-t", wp->desc, (char *)NULL);
+        /* No good?  Try to launch it with /bin/sh */
+        execl("/bin/sh", "sh", _voice_synth_path,
+              "-t", wp->desc, (char *)NULL);
+        /* Still no good? Oh well... */
+        exit(0);
     }
 }
 
