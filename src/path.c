@@ -458,7 +458,16 @@ map_path_update_near_info(const Path *path, const MapPoint *p,
     gint64 dist_squared_near = -1, dist_squared_after_near;
     gboolean changed = FALSE;
 
-    g_assert(map_path_len(path) > 0);
+    if (map_path_len(path) == 0)
+    {
+        if (ni->p_near != 0 || ni->wp_next != 0)
+        {
+            ni->p_near = ni->wp_next = 0;
+            ni->dist_squared_near = ni->dist_squared_after_near = -1;
+            changed = TRUE;
+        }
+        return changed;
+    }
 
     p_near = map_path_find_closest(path, p, ni->p_near, local);
     near = map_path_first(path) + p_near;
