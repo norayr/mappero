@@ -222,9 +222,9 @@ play_direction(MapDirection dir)
 }
 
 void
-map_navigation_announce_voice(WayPoint *wp)
+map_navigation_announce_voice(const WayPoint *wp)
 {
-    static WayPoint *last_wp = NULL;
+    static const WayPoint *last_wp = NULL;
     static struct timespec last_wp_time;
     struct timespec now;
 
