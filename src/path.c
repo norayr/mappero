@@ -112,21 +112,20 @@ typedef struct {
     MapLocation dest;
 } AutoRouteDownloadData;
 
+typedef struct {
+    gint p_near; /* index of the closest point */
+    gint wp_next; /* index of the next waypoint */
+    /* internal: */
+    gint64 dist_squared_near; /* "distance" to p_near */
+    gint64 dist_squared_after_near; /* "distance" to the one after p_near */
+} MapRouteNearInfo;
+
 static AutoRouteDownloadData _autoroute_data;
 
-/* _near_point is the route point to which we are closest. */
-static Point *_near_point = NULL;
-
-/* _next_way is what we currently interpret to be the next waypoint. */
-static WayPoint *_next_way;
-static gint64 _next_way_dist_squared = INT64_MAX;
-
-/* _next_wpt is the route point immediately following _next_way. */
-static Point *_next_wpt = NULL;
-static gint64 _next_wpt_dist_squared = INT64_MAX;
+static MapRouteNearInfo _near_info;
 
 static gfloat _initial_distance_from_waypoint = -1.f;
-static WayPoint *_initial_distance_waypoint = NULL;
+static const WayPoint *_initial_distance_waypoint = NULL;
 
 static gint _track_index_first_unsaved = 0;
 
@@ -484,6 +483,160 @@ path_update_track_in_db()
 }
 
 /**
+ * map_path_find_closest:
+ * @path: a #Path.
+ * @p: the reference #MapPoint.
+ * @start: the index of starting #Point in @path.
+ * @local: whether the search should be local only.
+ *
+ * Starting from @start, scans @path and returns the point which is closest to
+ * @p. If @local is %TRUE, the search stops as soon as the distance is
+ * increasing.
+ *
+ * Returns: the index of the closest #Point.
+ */
+static gint
+map_path_find_closest(const Path *path, const MapPoint *p, gint start,
+                      gboolean local)
+{
+    Point *curr, *near;
+    gint64 near_dist_squared;
+
+    if (start >= map_path_len(path)) return 0;
+
+    /* First, set near_dist_squared with the new distance from
+     * _near_point. */
+    near = map_path_first(path) + start;
+    near_dist_squared = DISTANCE_SQUARED(*p, near->unit);
+
+    /* Now, search _route for a closer point.  If quick is TRUE, then we'll
+     * only search forward, only as long as we keep finding closer points.
+     */
+    for (curr = near; curr < map_path_end(path); curr++)
+    {
+        gint64 dist_squared = DISTANCE_SQUARED(*p, curr->unit);
+        if (dist_squared <= near_dist_squared)
+        {
+            near = curr;
+            near_dist_squared = dist_squared;
+        }
+        else if (local)
+            break;
+    }
+
+    return near - map_path_first(path);
+}
+
+static inline void
+compute_distances_to_near_and_following(const Path *path,
+                                        const MapPoint *p, const Point *near,
+                                        gint64 *dist_squared_near,
+                                        gint64 *dist_squared_after_near)
+{
+    *dist_squared_near = DISTANCE_SQUARED(*p, near->unit);
+    if (near < map_path_end(path))
+    {
+        const Point *after_near = near + 1;
+        *dist_squared_after_near = DISTANCE_SQUARED(*p, after_near->unit);
+    }
+    else
+        *dist_squared_after_near = -1;
+}
+
+/**
+ * map_path_update_near_info:
+ * @path: a #Path.
+ * @p: the reference #MapPoint.
+ * @ni: a #MapRouteNearInfo used as both input and output.
+ * @local: whether the search should be local.
+ *
+ * Updates the near points information: finds the point in @path closest to @p,
+ * and the next waypoint. If @local is %TRUE, only a local search is performed
+ * (this should be set when the information in @ni was correct).
+ *
+ * Returns: %TRUE if the @ni has changed.
+ */
+static gboolean
+map_path_update_near_info(const Path *path, const MapPoint *p,
+                          MapRouteNearInfo *ni, gboolean local)
+{
+    WayPoint *wcurr, *wnext;
+    Point *near;
+    gint p_near, wp_next;
+    gint64 dist_squared_near = -1, dist_squared_after_near;
+    gboolean changed = FALSE;
+
+    g_assert(map_path_len(path) > 0);
+
+    p_near = map_path_find_closest(path, p, ni->p_near, local);
+    near = map_path_first(path) + p_near;
+
+    if (p_near != ni->p_near)
+    {
+        ni->p_near = p_near;
+        changed = TRUE;
+
+        /* Determine the "next waypoint" */
+        for (wcurr = path->whead + ni->wp_next;
+             wcurr <= path->wtail && wcurr->point < near;
+             wcurr++);
+
+        wnext = wcurr;
+    }
+    else
+    {
+        DEBUG("same near point");
+        /* Even if the closest point has not changed, the next waypoint can
+         * still change, if we detect that we have got past the current next
+         * waypoint.
+         * To detect this situation, we check if since the last iteration (that
+         * is, from the data in MapRouteNearInfo) the distance from the next
+         * waypoint has been increasing while the distance to the point after
+         * it has been decreasing.
+         */
+        wnext = path->whead + ni->wp_next;
+        if (wnext <= path->wtail && wnext->point == near)
+        {
+            compute_distances_to_near_and_following(path, p, near,
+                                                    &dist_squared_near,
+                                                    &dist_squared_after_near);
+            DEBUG("Dn = %lld (old = %lld), Dn+1 = %lld (old = %lld)",
+                  dist_squared_near, ni->dist_squared_near,
+                  dist_squared_after_near, ni->dist_squared_after_near);
+
+            if (dist_squared_near > ni->dist_squared_near &&
+                dist_squared_after_near < ni->dist_squared_after_near)
+                wnext++;
+            else
+            {
+                ni->dist_squared_near = dist_squared_near;
+                ni->dist_squared_after_near = dist_squared_after_near;
+            }
+        }
+        else
+            DEBUG("end of route or next wp != near point");
+    }
+
+    wp_next = wnext - path->whead;
+    if (wp_next != ni->wp_next)
+    {
+        ni->wp_next = wp_next;
+        changed = TRUE;
+
+        /* calculate the distances to the closest point and the point after it
+         */
+        if (dist_squared_near == -1)
+            compute_distances_to_near_and_following(path, p, near,
+                                                    &dist_squared_near,
+                                                    &dist_squared_after_near);
+        ni->dist_squared_near = dist_squared_near;
+        ni->dist_squared_after_near = dist_squared_after_near;
+    }
+
+    return changed;
+}
+
+/**
  * Updates _near_point, _next_way, and _next_wpt.  If quick is FALSE (as
  * it is when this function is called from route_find_nearest_point), then
  * the entire list (starting from _near_point) is searched.  Otherwise, we
@@ -493,102 +646,19 @@ static gboolean
 route_update_nears(gboolean quick)
 {
     MapController *controller = map_controller_get_instance();
-    gboolean ret = FALSE;
-    Point *curr, *near;
-    WayPoint *wcurr, *wnext;
-    gint64 near_dist_squared;
+    const MapGpsData *gps;
+    gboolean changed;
     DEBUG("%d", quick);
 
-    /* First, set near_dist_squared with the new distance from
-     * _near_point. */
-    near = _near_point;
-    near_dist_squared = DISTANCE_SQUARED(_pos.unit, near->unit);
+    gps = map_controller_get_gps_data(controller);
+    changed =
+        map_path_update_near_info(&_route, &gps->unit, &_near_info, quick);
 
-    /* Now, search _route for a closer point.  If quick is TRUE, then we'll
-     * only search forward, only as long as we keep finding closer points.
-     */
-    for (curr = _near_point; curr < map_path_end(&_route); curr++)
-    {
-        gint64 dist_squared = DISTANCE_SQUARED(_pos.unit, curr->unit);
-        if(dist_squared <= near_dist_squared)
-        {
-            near = curr;
-            near_dist_squared = dist_squared;
-        }
-        else if(quick)
-            break;
-    }
+    if (changed)
+        map_controller_set_next_waypoint(controller,
+                                         _route.whead + _near_info.wp_next);
 
-    /* Update _near_point. */
-    _near_point = near;
-
-    /* If we have waypoints (_next_way != NULL), then determine the "next
-     * waypoint", which is defined as the waypoint after the nearest point,
-     * UNLESS we've passed that waypoint, in which case the waypoint after
-     * that waypoint becomes the "next" waypoint. */
-    if(_next_way)
-    {
-        for(wnext = wcurr = _next_way; wcurr < _route.wtail; wcurr++)
-        {
-            if(wcurr->point < near
-            /* Okay, this else if expression warrants explanation.  If the
-             * nearest track point happens to be a waypoint, then we want to
-             * check if we have "passed" that waypoint.  To check this, we
-             * test the distance from _pos to the waypoint and from _pos to
-             * _next_wpt, and if the former is increasing and the latter is
-             * decreasing, then we have passed the waypoint, and thus we
-             * should skip it.  Note that if there is no _next_wpt, then
-             * there is no next waypoint, so we do not skip it in that case. */
-                || (wcurr->point == near && quick
-                    && (_next_wpt
-                     && (DISTANCE_SQUARED(_pos.unit, near->unit) >
-                                                     _next_way_dist_squared &&
-                         DISTANCE_SQUARED(_pos.unit, _next_wpt->unit)
-                                                   < _next_wpt_dist_squared))))
-            {
-                wnext = wcurr + 1;
-            }
-            else
-                break;
-        }
-
-        if(wnext == _route.wtail && (wnext->point < near
-                || (wnext->point == near && quick
-                    && (_next_wpt
-                     && (DISTANCE_SQUARED(_pos.unit, near->unit) >
-                                                     _next_way_dist_squared &&
-                         DISTANCE_SQUARED(_pos.unit, _next_wpt->unit)
-                                                 < _next_wpt_dist_squared)))))
-        {
-            _next_way = NULL;
-            _next_wpt = NULL;
-            _next_way_dist_squared = INT64_MAX;
-            _next_wpt_dist_squared = INT64_MAX;
-            ret = TRUE;
-        }
-        /* Only update _next_way (and consequently _next_wpt) if _next_way is
-         * different, and record that fact for return. */
-        else
-        {
-            if(!quick || _next_way != wnext)
-            {
-                _next_way = wnext;
-                _next_wpt = wnext->point;
-                if(_next_wpt >= map_path_last(&_route))
-                    _next_wpt = NULL;
-                ret = TRUE;
-            }
-            _next_way_dist_squared =
-                DISTANCE_SQUARED(_pos.unit, wnext->point->unit);
-            if(_next_wpt)
-                _next_wpt_dist_squared =
-                    DISTANCE_SQUARED(_pos.unit, _next_wpt->unit);
-        }
-    }
-
-    map_controller_set_next_waypoint(controller, _next_way);
-
-    return ret;
+    return changed;
 }
 
 /**
@@ -598,20 +668,7 @@ route_update_nears(gboolean quick)
 void
 route_find_nearest_point()
 {
-    /* Initialize _near_point to first point. */
-    _near_point = map_path_first(&_route);
-
-    /* Initialize _next_way. */
-    if(_route.wtail < _route.whead)
-        _next_way = NULL;
-    else
-        /* We have at least one waypoint. */
-        _next_way = _route.whead;
-    _next_way_dist_squared = INT64_MAX;
-
-    /* Initialize _next_wpt. */
-    _next_wpt = NULL;
-    _next_wpt_dist_squared = INT64_MAX;
+    memset(&_near_info, 0, sizeof(_near_info));
 
     route_update_nears(FALSE);
 }
@@ -624,12 +681,19 @@ route_find_nearest_point()
 gboolean
 route_calc_distance_to(const Point *point, gfloat *distance)
 {
-    MapGeo lat1, lon1, lat2, lon2;
+    MapController *controller = map_controller_get_instance();
+    MapGeo lat2, lon2;
+    Point *near_point;
+    const MapGpsData *gps;
     gfloat sum = 0.0;
 
     /* If point is NULL, use the next waypoint. */
-    if(point == NULL && _next_way)
-        point = _next_way->point;
+    if (point == NULL)
+    {
+        const WayPoint *next = map_controller_get_next_waypoint(controller);
+        if (next)
+            point = next->point;
+    }
 
     /* If point is still NULL, return an error. */
     if(point == NULL)
@@ -637,28 +701,29 @@ route_calc_distance_to(const Point *point, gfloat *distance)
         return FALSE;
     }
 
-    unit2latlon(_pos.unit.x, _pos.unit.y, lat1, lon1);
-    if(point > _near_point)
+    near_point = map_path_first(&_route) + _near_info.p_near;
+    if (point > near_point)
     {
         Point *curr;
-        /* Skip _near_point in case we have already passed it. */
-        for(curr = _near_point + 1; curr <= point; ++curr)
+        /* Skip near_point in case we have already passed it. */
+        for (curr = near_point + 1; curr <= point; ++curr)
         {
             sum += curr->distance;
         }
     }
-    else if(point < _near_point)
+    else if (point < near_point)
     {
         Point *curr;
-        for (curr = _near_point; curr > point; --curr)
+        for (curr = near_point; curr > point; --curr)
         {
             sum += curr->distance;
         }
     }
 
-    /* sum the distance to _near_point */
-    unit2latlon(_near_point->unit.x, _near_point->unit.y, lat2, lon2);
-    sum += calculate_distance(lat1, lon1, lat2, lon2);
+    /* sum the distance to near_point */
+    gps = map_controller_get_gps_data(controller);
+    unit2latlon(near_point->unit.x, near_point->unit.y, lat2, lon2);
+    sum += calculate_distance(gps->lat, gps->lon, lat2, lon2);
 
     *distance = sum;
     return TRUE;
@@ -782,6 +847,9 @@ map_path_route_step(const MapGpsData *gps, gboolean newly_fixed)
     gboolean refresh_panel = FALSE;
     gboolean approaching_waypoint = FALSE;
     gboolean late = FALSE, out_of_route = FALSE;
+    gfloat distance = 0;
+    const WayPoint *next_way;
+    Point *near_point;
 
     /* if we don't have a route to follow, nothing to do */
     if (map_path_len(&_route) == 0) return;
@@ -792,11 +860,20 @@ map_path_route_step(const MapGpsData *gps, gboolean newly_fixed)
     else
         route_update_nears(TRUE);
 
+    next_way = map_controller_get_next_waypoint(controller);
+    /* TODO: since this distance is also shown in the info panel, avoid
+     * recomputing it */
+    distance = route_calc_distance_to(next_way->point, &distance);
+
+    /* TODO: this variable is not computed correctly */
     announce_thres_unsquared = (20+gps->speed) * _announce_notice_ratio*32;
 
+    if (_near_info.p_near < map_path_len(&_route))
+        near_point = map_path_first(&_route) + _near_info.p_near;
+
     /* Check if we are late, with a tolerance of 3 minutes */
-    if (_near_point && _near_point->time != 0 && gps->time != 0 &&
-        gps->time > _near_point->time + 60 * 3)
+    if (near_point && near_point->time != 0 && gps->time != 0 &&
+        gps->time > near_point->time + 60 * 3)
         late = TRUE;
     DEBUG("Late: %d", late);
 
@@ -805,21 +882,21 @@ map_path_route_step(const MapGpsData *gps, gboolean newly_fixed)
         /* TODO: do this check only if we have actually moved */
 
         /* Calculate distance to route. (point to line) */
-        if (_near_point)
+        if (near_point)
         {
             const MapPoint *n1 = NULL, *n2 = NULL;
             gint max_distance;
 
             /* Try previous point first. */
-            if(_near_point != map_path_first(&_route) && _near_point[-1].unit.y)
-                n1 = &_near_point[-1].unit;
-            if(_near_point != map_path_last(&_route) && _near_point[1].unit.y)
-                n2 = &_near_point[1].unit;
+            if (near_point != map_path_first(&_route) && near_point[-1].unit.y)
+                n1 = &near_point[-1].unit;
+            if (near_point != map_path_last(&_route) && near_point[1].unit.y)
+                n2 = &near_point[1].unit;
 
             /* Check if our distance from the route is large. */
             max_distance = METRES_TO_UNITS(100 + gps->hdop);
             out_of_route =
-                !point_near_segments(&gps->unit, &_near_point->unit, n1, n2,
+                !point_near_segments(&gps->unit, &near_point->unit, n1, n2,
                                      max_distance);
             DEBUG("out_of_route: %d (max distance = %d)",
                   out_of_route, max_distance);
@@ -848,8 +925,8 @@ map_path_route_step(const MapGpsData *gps, gboolean newly_fixed)
     }
 
     if (_initial_distance_waypoint
-        && (_next_way != _initial_distance_waypoint
-            || _next_way_dist_squared > SQUARE(announce_thres_unsquared)))
+        && (next_way != _initial_distance_waypoint
+            || distance > announce_thres_unsquared))
     {
         /* We've moved on to the next waypoint, or we're really far from
          * the current waypoint. */
@@ -864,8 +941,8 @@ map_path_route_step(const MapGpsData *gps, gboolean newly_fixed)
 
     /* Check if we should announce upcoming waypoints. */
     if(_enable_announce
-            && (_initial_distance_waypoint || _next_way_dist_squared
-                < SQUARE(announce_thres_unsquared)))
+            && (_initial_distance_waypoint ||
+                distance < announce_thres_unsquared))
     {
         if(show_directions)
         {
@@ -873,18 +950,16 @@ map_path_route_step(const MapGpsData *gps, gboolean newly_fixed)
             {
                 /* First time we're close enough to this waypoint. */
                 if(_enable_voice)
-                    map_navigation_announce_voice(_next_way);
+                    map_navigation_announce_voice(next_way);
 
-                _initial_distance_from_waypoint
-                    = sqrtf(_next_way_dist_squared);
-                _initial_distance_waypoint = _next_way;
-                MACRO_BANNER_SHOW_INFO(_window, _next_way->desc);
+                _initial_distance_from_waypoint = distance;
+                _initial_distance_waypoint = next_way;
+                MACRO_BANNER_SHOW_INFO(_window, next_way->desc);
             }
         }
         approaching_waypoint = TRUE;
     }
-    else if(_next_way_dist_squared > 2 * (_initial_distance_from_waypoint
-                                        * _initial_distance_from_waypoint))
+    else if (distance > _initial_distance_from_waypoint * 1.5)
     {
         /* We're too far away now - destroy the banner. */
     }
@@ -1654,10 +1729,12 @@ route_add_way_dialog(const MapPoint *point)
     _degformat = last_deg_format;
 }
 
+/* TODO: remove this function */
 WayPoint*
 path_get_next_way()
 {
-    return _next_way;
+    MapController *controller = map_controller_get_instance();
+    return (WayPoint *)map_controller_get_next_waypoint(controller);
 }
 
 void
