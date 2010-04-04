@@ -1404,6 +1404,7 @@ settings_init(GConfClient *gconf_client)
     COLORABLE_GCONF[COLORABLE_ROUTE_WAY] = GCONF_KEY_PREFIX"/color_route_way";
     COLORABLE_GCONF[COLORABLE_ROUTE_BREAK]
         = GCONF_KEY_PREFIX"/color_route_break";
+    COLORABLE_GCONF[COLORABLE_ROUTE_NEXT] = GCONF_KEY_PREFIX"/color_route_next";
     COLORABLE_GCONF[COLORABLE_POI] = GCONF_KEY_PREFIX"/color_poi";
     
     if(!gconf_client)

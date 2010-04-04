@@ -534,7 +534,7 @@ draw_paths(MapScreen *screen, cairo_t *cr)
         {
             gint x1, y1;
             point_to_pixels(screen->priv, next_way->point->unit, &x1, &y1);
-            draw_break(cr, &_color[COLORABLE_ROUTE_BREAK], x1, y1);
+            draw_break(cr, &_color[COLORABLE_ROUTE_NEXT], x1, y1);
         }
     }
 
@@ -1037,7 +1037,7 @@ panel_redraw_real(MapScreen *self)
         x = panel_x;
         y += pd.wp_gap;
 
-        draw_break(cr, &_color[COLORABLE_ROUTE],
+        draw_break(cr, &_color[COLORABLE_ROUTE_NEXT],
                    x + _draw_width * 3 / 2, y + _draw_width * 3 / 2);
         x += pd.icon_width;
 
