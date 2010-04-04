@@ -52,6 +52,7 @@
 #include "display.h"
 #include "gps.h"
 #include "path.h"
+#include "route.h"
 #include "util.h"
 
 #include "controller-priv.h"

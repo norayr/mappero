@@ -407,7 +407,6 @@ maemo_mapper_init(gint argc, gchar **argv)
 
     /* Set up track array (must be done before config). */
     memset(&_track, 0, sizeof(_track));
-    memset(&_route, 0, sizeof(_route));
     /* initialisation of paths is done in path_init() */
 
     _mapdb_mutex = g_mutex_new();
@@ -505,43 +504,6 @@ maemo_mapper_init(gint argc, gchar **argv)
     display_init();
     dbus_ifc_init();
     
-    /* If present, attempt to load the file specified on the command line. */
-    if(argc > 1)
-    {
-        GnomeVFSResult vfs_result;
-        gint size;
-        gchar *buffer;
-        gchar *file_uri;
-
-        /* Get the selected filename. */
-        file_uri = gnome_vfs_make_uri_from_shell_arg(argv[1]);
-
-        if(GNOME_VFS_OK != (vfs_result = gnome_vfs_read_entire_file(
-                        file_uri, &size, &buffer)))
-        {
-            gchar buffer[BUFFER_SIZE];
-            snprintf(buffer, sizeof(buffer),
-                    "%s:\n%s", _("Failed to open file for reading"),
-                    gnome_vfs_result_to_string(vfs_result));
-            popup_error(_window, buffer);
-        }
-        else
-        {
-            if(gpx_path_parse(&_route, buffer, size, 0))
-            {
-                path_save_route_to_db();
-                MACRO_BANNER_SHOW_INFO(_window, _("Route Opened"));
-            }
-            else
-                popup_error(_window, _("Error parsing GPX file."));
-            g_free(buffer);
-        }
-        g_free(file_uri);
-    }
-
-    /* If we have a route, calculate the next point. */
-    route_find_nearest_point();
-
 #ifdef CONIC
     _conic_conn = con_ic_connection_new();
     g_object_set(_conic_conn, "automatic-connection-events", TRUE, NULL);

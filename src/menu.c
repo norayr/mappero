@@ -55,6 +55,7 @@
 #include "path.h"
 #include "poi.h"
 #include "repository.h"
+#include "route.h"
 #include "tile_source.h"
 #include "screen.h"
 #include "settings.h"
@@ -78,7 +79,7 @@ menu_cb_route_open(GtkMenuItem *item)
                 &_route_dir_uri, NULL, GTK_FILE_CHOOSER_ACTION_OPEN))
     {
         /* If auto is enabled, append the route, otherwise replace it. */
-        if(gpx_path_parse(&_route, buffer, size,
+        if(gpx_path_parse(map_route_get_path(), buffer, size,
                           autoroute_enabled() ? 0 : 1))
         {
             MapController *controller = map_controller_get_instance();
@@ -116,7 +117,7 @@ menu_cb_route_save(GtkMenuItem *item)
     if(display_open_file(GTK_WINDOW(_window), NULL, &handle, NULL,
                 &_route_dir_uri, NULL, GTK_FILE_CHOOSER_ACTION_SAVE))
     {
-        if(gpx_path_write(&_route, handle))
+        if(gpx_path_write(map_route_get_path(), handle))
         {
             MACRO_BANNER_SHOW_INFO(_window, _("Route Saved"));
         }
@@ -139,15 +140,7 @@ menu_cb_route_reset(GtkMenuItem *item)
 static gboolean
 menu_cb_route_clear(GtkMenuItem *item)
 {
-    MapController *controller = map_controller_get_instance();
-
-    cancel_autoroute();
-    map_path_unset(&_route);
-    map_path_init(&_route);
-    path_save_route_to_db();
-    route_find_nearest_point();
-    map_controller_refresh_paths(controller);
-
+    map_route_clear();
     return TRUE;
 }
 

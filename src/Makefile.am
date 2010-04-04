@@ -62,6 +62,7 @@ maemo_mapper_SOURCES = \
 	plugins/reittiopas.c \
 	plugins/yandex.c \
 	poi.c \
+	route.c \
 	router.c \
 	settings.c \
 	screen.c \

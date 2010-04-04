@@ -29,32 +29,17 @@ typedef struct {
 void path_resize(Path *path, gint size);
 void path_wresize(Path *path, gint wsize);
 
-void path_save_route_to_db(void);
-
-void route_find_nearest_point(void);
-gboolean route_calc_distance_to(const Point *point, gfloat *distance);
-gboolean route_show_distance_to(Point *point);
-
 void map_path_track_update(const MapGpsData *gps);
 void track_clear(void);
 void track_insert_break(gboolean temporary);
-
-void map_path_route_step(const MapGpsData *gps, gboolean newly_fixed);
-void path_reset_route(void);
-
-void cancel_autoroute(void);
-gboolean autoroute_enabled(void);
-
-WayPoint * find_nearest_waypoint(const MapPoint *p);
-
-gboolean route_download(gchar *to);
-void route_add_way_dialog(const MapPoint *p);
 
 WayPoint* path_get_next_way(void);
 guint map_path_get_duration(const Path *path);
 
 void path_init(void);
 void path_destroy(void);
+
+void map_path_save_route(Path *path);
 
 void map_path_init(Path *path);
 void map_path_unset(Path *path);
@@ -136,5 +121,16 @@ void map_path_remove_range(Path *path, Point *start, Point *end);
 Point *map_path_append_unit(Path *path, const MapPoint *p);
 gboolean map_path_append_break(Path *path);
 gboolean map_path_end_is_break(const Path *path);
+
+typedef struct {
+    gint p_near; /* index of the closest point */
+    gint wp_next; /* index of the next waypoint */
+    /* internal: */
+    gint64 dist_squared_near; /* "distance" to p_near */
+    gint64 dist_squared_after_near; /* "distance" to the one after p_near */
+} MapRouteNearInfo;
+
+gboolean map_path_update_near_info(const Path *path, const MapPoint *p,
+                                   MapRouteNearInfo *ni, gboolean local);
 
 #endif /* ifndef MAEMO_MAPPER_PATH_H */

@@ -64,6 +64,7 @@
 #include "menu.h"
 #include "path.h"
 #include "repository.h"
+#include "route.h"
 #include "screen.h"
 #include "settings.h"
 #include "tile_source.h"
@@ -821,6 +822,7 @@ mapman_by_route(MapmanInfo *mapman_info, MapUpdateType update_type,
     Point *curr;
     gchar buffer[80];
     Repository* rd = map_controller_get_repository(map_controller_get_instance());
+    Path *route = map_route_get_path();
     gint radius = hildon_number_editor_get_value(
             HILDON_NUMBER_EDITOR(mapman_info->num_route_radius));
     DEBUG("");
@@ -833,9 +835,9 @@ mapman_by_route(MapmanInfo *mapman_info, MapUpdateType update_type,
         {
             prev_tilex = 0;
             prev_tiley = 0;
-            for (curr = map_path_first(&_route);
-                 curr < map_path_end(&_route);
-                 curr = map_path_next(&_route, curr))
+            for (curr = map_path_first(route);
+                 curr < map_path_end(route);
+                 curr = map_path_next(route, curr))
             {
                 gint tilex = unit2ztile(curr->unit.x, z);
                 gint tiley = unit2ztile(curr->unit.y, z);
@@ -882,9 +884,9 @@ mapman_by_route(MapmanInfo *mapman_info, MapUpdateType update_type,
         {
             prev_tilex = 0;
             prev_tiley = 0;
-            for (curr = map_path_first(&_route);
-                 curr < map_path_end(&_route);
-                 curr = map_path_next(&_route, curr))
+            for (curr = map_path_first(route);
+                 curr < map_path_end(route);
+                 curr = map_path_next(route, curr))
             {
                 gint tilex = unit2ztile(curr->unit.x, z);
                 gint tiley = unit2ztile(curr->unit.y, z);
@@ -1328,7 +1330,7 @@ mapman_dialog()
      * output (and parsed) as locale-dependent. */
 
     gtk_widget_set_sensitive(mapman_info.rad_by_route,
-                             map_path_len(&_route) > 0);
+                             map_path_len(map_route_get_path()) > 0);
 
     
     gchar buffer1[15];

@@ -36,6 +36,7 @@
 #include "plugins/reittiopas.h"
 #include "plugins/yandex.h"
 #include "repository.h"
+#include "route.h"
 #include "screen.h"
 #include "settings.h"
 #include "tile.h"
@@ -919,6 +920,7 @@ map_controller_set_repository(MapController *self, Repository *repo)
        recalculate map center, current track and route (if needed) */
     if (curr_repo && curr_type->latlon_to_unit != new_type->latlon_to_unit) {
         MapGeo lat, lon;
+        Path *route = map_route_get_path();
 
         curr_type->unit_to_latlon(center.x, center.y, &lat, &lon);
         new_type->latlon_to_unit(lat, lon, &center.x, &center.y);
@@ -926,8 +928,8 @@ map_controller_set_repository(MapController *self, Repository *repo)
         curr_type->unit_to_latlon(_pos.unit.x, _pos.unit.y, &lat, &lon);
         new_type->latlon_to_unit(lat, lon, &_pos.unit.x, &_pos.unit.y);
 
-        if ((_show_paths & ROUTES_MASK) && map_path_len(&_route) > 0)
-            update_path_coords(curr_repo, repo, &_route);
+        if ((_show_paths & ROUTES_MASK) && map_path_len(route) > 0)
+            update_path_coords(curr_repo, repo, route);
         if ((_show_paths & TRACKS_MASK) && map_path_len(&_track) > 0)
             update_path_coords(curr_repo, repo, &_track);
     }

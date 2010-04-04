@@ -33,6 +33,7 @@
 #include "osm.h"
 #include "path.h"
 #include "poi.h"
+#include "route.h"
 #include "tile.h"
 #include "util.h"
 
@@ -521,11 +522,11 @@ draw_path(MapScreen *screen, cairo_t *cr, Path *path, Colorable base)
 static void
 draw_paths(MapScreen *screen, cairo_t *cr)
 {
-    if ((_show_paths & ROUTES_MASK) && map_path_len(&_route) > 0)
+    if ((_show_paths & ROUTES_MASK) && map_path_len(map_route_get_path()) > 0)
     {
         WayPoint *next_way;
 
-        draw_path(screen, cr, &_route, COLORABLE_ROUTE);
+        draw_path(screen, cr, map_route_get_path(), COLORABLE_ROUTE);
         next_way = path_get_next_way();
 
         /* Now, draw the next waypoint on top of all other waypoints. */
@@ -860,9 +861,10 @@ panel_create_layouts(MapPanelData *pd, PangoContext *context)
         has_data = TRUE;
     }
 
-    if (map_path_len(&_route) > 0)
+    if (map_path_len(map_route_get_path()) > 0)
     {
         gchar *text, buffer[32];
+        Path *route = map_route_get_path();
         time_t time;
         gint n = 0;
         Point *p;
@@ -874,8 +876,8 @@ panel_create_layouts(MapPanelData *pd, PangoContext *context)
         pango_layout_set_font_description(layout, font);
 
         /* Find last point. */
-        p = map_path_last(&_route);
-        n += distance_to_string(buffer + n, sizeof(buffer) - n, _route.length);
+        p = map_path_last(route);
+        n += distance_to_string(buffer + n, sizeof(buffer) - n, route->length);
 
         time = p->time;
         if (time != 0)

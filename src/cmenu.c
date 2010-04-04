@@ -51,6 +51,7 @@
 #include "menu.h"
 #include "path.h"
 #include "poi.h"
+#include "route.h"
 #include "util.h"
 
 static MapPoint _cmenu_unit;
@@ -145,7 +146,7 @@ cmenu_distance_to(const MapPoint *p)
 static void
 cmenu_add_route(const MapPoint *p)
 {
-    map_path_append_unit(&_route, p);
+    map_path_append_unit(map_route_get_path(), p);
     route_find_nearest_point();
 }
 
@@ -336,20 +337,21 @@ cmenu_way_delete(WayPoint *way)
         MapController *controller = map_controller_get_instance();
         Point *pdel_start, *pdel_end;
         MapLineIter line;
+        Path *route = map_route_get_path();
         gint num_del;
 
         /* Delete surrounding route data, too (from pdel_start inclusive till
          * pdel_end exclusive). */
 
         /* Don't delete beyond line boundaries */
-        map_path_line_iter_from_point(&_route, way->point, &line);
+        map_path_line_iter_from_point(route, way->point, &line);
         pdel_start = map_path_line_first(&line);
         pdel_end = pdel_start + map_path_line_len(&line);
 
-        if (way > _route.whead && way[-1].point + 1 > pdel_start)
+        if (way > route->whead && way[-1].point + 1 > pdel_start)
             pdel_start = way[-1].point + 1;
 
-        if(way < _route.wtail && way[1].point < pdel_end)
+        if(way < route->wtail && way[1].point < pdel_end)
             pdel_end = way[1].point;
 
 #if 0
@@ -368,17 +370,17 @@ cmenu_way_delete(WayPoint *way)
                 (_route.tail - pdel_end + 1) * sizeof(Point));
         _route.tail -= num_del;
 #endif
-        map_path_remove_range(&_route, pdel_start, pdel_end);
+        map_path_remove_range(route, pdel_start, pdel_end);
         num_del = pdel_end - pdel_start;
 
         /* Remove waypoint and move/adjust subsequent waypoints. */
         g_free(way->desc);
-        while(way++ != _route.wtail)
+        while(way++ != route->wtail)
         {
             way[-1] = *way;
             way[-1].point -= num_del;
         }
-        _route.wtail--;
+        route->wtail--;
 
         route_find_nearest_point();
         map_controller_refresh_paths(controller);
