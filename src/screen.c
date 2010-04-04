@@ -527,7 +527,7 @@ draw_paths(MapScreen *screen, cairo_t *cr)
         WayPoint *next_way;
 
         draw_path(screen, cr, map_route_get_path(), COLORABLE_ROUTE);
-        next_way = path_get_next_way();
+        next_way = map_route_get_next_waypoint();
 
         /* Now, draw the next waypoint on top of all other waypoints. */
         if (next_way)
@@ -822,7 +822,6 @@ create_mark(MapScreen *screen)
 static gboolean
 panel_create_layouts(MapPanelData *pd, PangoContext *context)
 {
-    MapController *controller = map_controller_get_instance();
     PangoLayout *layout;
     static PangoFontDescription *font = NULL;
     const WayPoint *waypoint;

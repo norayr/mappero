@@ -1099,13 +1099,6 @@ route_add_way_dialog(const MapPoint *point)
     _degformat = last_deg_format;
 }
 
-/* TODO: remove this function */
-WayPoint*
-path_get_next_way()
-{
-    return map_route_get_next_waypoint();
-}
-
 WayPoint *
 map_route_get_next_waypoint()
 {

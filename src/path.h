@@ -33,7 +33,6 @@ void map_path_track_update(const MapGpsData *gps);
 void track_clear(void);
 void track_insert_break(gboolean temporary);
 
-WayPoint* path_get_next_way(void);
 guint map_path_get_duration(const Path *path);
 
 void path_init(void);

@@ -620,7 +620,7 @@ menu_cb_view_goto_nextway(GtkMenuItem *item)
     WayPoint *next_way;
     MapController *controller = map_controller_get_instance();
 
-    next_way = path_get_next_way();
+    next_way = map_route_get_next_waypoint();
 
     if(next_way && next_way->point->unit.y)
     {
