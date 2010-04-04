@@ -34,6 +34,9 @@ extern MapRoute *_p_route;
 void map_route_clear(void);
 void map_route_destroy(void);
 
+#define map_route_exists() \
+    (map_path_len(map_route_get_path()) > 0)
+
 void map_route_path_changed(void);
 
 /* TODO: rename and review these functions */

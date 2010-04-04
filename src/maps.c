@@ -1329,8 +1329,7 @@ mapman_dialog()
     /* Initialize fields.  Do no use g_ascii_formatd; these strings will be
      * output (and parsed) as locale-dependent. */
 
-    gtk_widget_set_sensitive(mapman_info.rad_by_route,
-                             map_path_len(map_route_get_path()) > 0);
+    gtk_widget_set_sensitive(mapman_info.rad_by_route, map_route_exists());
 
     
     gchar buffer1[15];

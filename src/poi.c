@@ -2678,7 +2678,7 @@ poi_download_dialog(const MapPoint *point)
                 GTK_TOGGLE_BUTTON(oti.rad_use_text), TRUE);
     }
     /* Else use "End of Route" by default if they have a route. */
-    else if(map_path_len(map_route_get_path()) > 0)
+    else if(map_route_exists())
     {
         /* There is no route, so make it the default. */
         gtk_widget_set_sensitive(oti.rad_use_route, TRUE);
@@ -2991,7 +2991,7 @@ poi_browse_dialog(const MapPoint *point)
                 GTK_TOGGLE_BUTTON(oti.rad_use_text), TRUE);
     }
     /* Else use "End of Route" by default if they have a route. */
-    else if (map_path_len(map_route_get_path()))
+    else if (map_route_exists())
     {
         /* There is no route, so make it the default. */
         gtk_widget_set_sensitive(oti.rad_use_route, TRUE);

@@ -522,7 +522,7 @@ draw_path(MapScreen *screen, cairo_t *cr, Path *path, Colorable base)
 static void
 draw_paths(MapScreen *screen, cairo_t *cr)
 {
-    if ((_show_paths & ROUTES_MASK) && map_path_len(map_route_get_path()) > 0)
+    if ((_show_paths & ROUTES_MASK) && map_route_exists())
     {
         WayPoint *next_way;
 
@@ -861,7 +861,7 @@ panel_create_layouts(MapPanelData *pd, PangoContext *context)
         has_data = TRUE;
     }
 
-    if (map_path_len(map_route_get_path()) > 0)
+    if (map_route_exists())
     {
         gchar *text, buffer[32];
         Path *route = map_route_get_path();
