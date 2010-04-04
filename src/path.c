@@ -71,8 +71,6 @@ typedef union {
     } s;
 } FieldMix;
 
-static gint _track_index_first_unsaved = 0;
-
 static sqlite3 *_path_db = NULL;
 static sqlite3_stmt *_track_stmt_select = NULL;
 static sqlite3_stmt *_track_stmt_delete_path = NULL;
@@ -218,6 +216,8 @@ read_path_from_db(Path *path, sqlite3_stmt *select_stmt)
     map_path_append_break(path);
 
     map_path_append_point_end(path);
+
+    path->first_unsaved = map_path_len(path);
 }
 
 static gboolean
@@ -255,21 +255,20 @@ write_path_to_db(Path *path,
         sqlite3_stmt *delete_path_stmt,
         sqlite3_stmt *delete_way_stmt,
         sqlite3_stmt *insert_path_stmt,
-        sqlite3_stmt *insert_way_stmt,
-        gint index_first_unsaved)
+        sqlite3_stmt *insert_way_stmt)
 {
     Point *curr, *first;
     WayPoint *wcurr;
     gint saved = 0;
     gboolean success = TRUE;
     MapLineIter line;
-    DEBUG("%d", index_first_unsaved);
+    DEBUG("%d", path->first_unsaved);
 
     /* Start transaction. */
     sqlite3_step(_path_stmt_trans_begin);
     sqlite3_reset(_path_stmt_trans_begin);
 
-    if(index_first_unsaved == 0)
+    if (path->first_unsaved == 0)
     {
         /* Replace the whole thing, so delete the table first. */
         if(SQLITE_DONE != sqlite3_step(delete_way_stmt)
@@ -287,7 +286,7 @@ write_path_to_db(Path *path,
         sqlite3_reset(delete_path_stmt);
     }
 
-    first = map_path_first(path) + index_first_unsaved;
+    first = map_path_first(path) + path->first_unsaved;
     wcurr = path->whead;
     map_path_line_iter_from_point(path, first, &line);
     do
@@ -337,14 +336,15 @@ write_path_to_db(Path *path,
     {
         sqlite3_step(_path_stmt_trans_commit);
         sqlite3_reset(_path_stmt_trans_commit);
-        g_assert(index_first_unsaved + saved <= map_path_len(path));
-        return index_first_unsaved + saved;
+        path->first_unsaved += saved;
+        g_assert(path->first_unsaved <= map_path_len(path));
+        return saved;
     }
     else
     {
         sqlite3_step(_path_stmt_trans_rollback);
         sqlite3_reset(_path_stmt_trans_rollback);
-        return index_first_unsaved;
+        return 0;
     }
 }
 
@@ -357,8 +357,7 @@ map_path_save_route(Path *path)
                           _route_stmt_delete_path,
                           _route_stmt_delete_way,
                           _route_stmt_insert_path,
-                          _route_stmt_insert_way,
-                          0);
+                          _route_stmt_insert_way);
     }
 }
 
@@ -367,26 +366,11 @@ path_save_track_to_db()
 {
     if(_path_db)
     {
-        _track_index_first_unsaved = write_path_to_db(&_track,
+        write_path_to_db(&_track,
                           _track_stmt_delete_path,
                           _track_stmt_delete_way,
                           _track_stmt_insert_path,
-                          _track_stmt_insert_way,
-                          0);
-    }
-}
-
-static void
-path_update_track_in_db()
-{
-    if(_path_db)
-    {
-        _track_index_first_unsaved = write_path_to_db(&_track,
-                          _track_stmt_delete_path,
-                          _track_stmt_delete_way,
-                          _track_stmt_insert_path,
-                          _track_stmt_insert_way,
-                          _track_index_first_unsaved);
+                          _track_stmt_insert_way);
     }
 }
 
@@ -641,9 +625,9 @@ map_path_track_update(const MapGpsData *gps)
     {
         static time_t last_track_db_update = 0;
         if (!gps->time || (gps->time - last_track_db_update > 60
-                           && map_path_len(&_track) > _track_index_first_unsaved))
+                           && map_path_len(&_track) > _track.first_unsaved))
         {
-            path_update_track_in_db();
+            path_save_track_to_db();
             last_track_db_update = gps->time;
         }
     }
@@ -684,7 +668,7 @@ track_insert_break(gboolean temporary)
     }
 
     /* Update the track database. */
-    path_update_track_in_db();
+    path_save_track_to_db();
 }
 
 void
@@ -793,8 +777,6 @@ path_init()
             read_path_from_db(map_route_get_path(), _route_stmt_select);
             map_route_path_changed();
             read_path_from_db(&_track, _track_stmt_select);
-            _track_index_first_unsaved = map_path_len(&_track);
-            g_assert(_track_index_first_unsaved >= 0);
         }
         g_free(path_db_file);
     }
@@ -809,7 +791,7 @@ path_destroy()
 {
     /* Save paths. */
     map_path_append_break(&_track);
-    path_update_track_in_db();
+    path_save_track_to_db();
     path_save_route_to_db();
 
     if(_path_db)
@@ -1092,6 +1074,7 @@ map_path_init(Path *path)
     path->points_with_distance = 0;
     path->points_optimized = 0;
     path->_lines = g_list_prepend(NULL, MAP_LINE_NEW(0));
+    path->first_unsaved = 0;
 }
 
 void

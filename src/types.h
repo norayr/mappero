@@ -343,6 +343,7 @@ struct _Path {
     gfloat last_lon;
     gint points_with_distance; /* number of points with distance computed */
     gint points_optimized;
+    gint first_unsaved;
 };
 
 /** Data to describe a POI. */
