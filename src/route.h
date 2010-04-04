@@ -39,6 +39,8 @@ void map_route_destroy(void);
 
 void map_route_path_changed(void);
 
+WayPoint *map_route_get_next_waypoint();
+
 /* TODO: rename and review these functions */
 void path_save_route_to_db(void);
 void route_find_nearest_point(void);

@@ -40,8 +40,6 @@ struct _MapControllerPrivate
 
     MapRouter *default_router;
 
-    const WayPoint *next_waypoint;
-
     LocationGPSDControl *gpsd_control;
     LocationGPSDevice *gps_device;
     MapGpsData gps_data;

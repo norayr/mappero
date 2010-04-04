@@ -166,6 +166,7 @@ route_update_nears(gboolean quick)
 {
     MapController *controller = map_controller_get_instance();
     const MapGpsData *gps;
+    MapScreen *screen;
     gboolean changed;
     DEBUG("%d", quick);
 
@@ -173,9 +174,8 @@ route_update_nears(gboolean quick)
     changed =
         map_path_update_near_info(&_route.path, &gps->unit, &_near_info, quick);
 
-    if (changed)
-        map_controller_set_next_waypoint(controller,
-                                         _route.path.whead + _near_info.wp_next);
+    screen = map_controller_get_screen(controller);
+    map_screen_refresh_panel(screen);
 
     return changed;
 }
@@ -209,7 +209,7 @@ route_calc_distance_to(const Point *point, gfloat *distance)
     /* If point is NULL, use the next waypoint. */
     if (point == NULL)
     {
-        const WayPoint *next = map_controller_get_next_waypoint(controller);
+        const WayPoint *next = map_route_get_next_waypoint();
         if (next)
             point = next->point;
     }
@@ -360,10 +360,8 @@ point_near_segments(const MapPoint *p, const MapPoint *p0, const MapPoint *p1,
 void
 map_path_route_step(const MapGpsData *gps, gboolean newly_fixed)
 {
-    MapController *controller = map_controller_get_instance();
     gboolean show_directions = TRUE;
     gint announce_thres_unsquared;
-    gboolean refresh_panel = FALSE;
     gboolean approaching_waypoint = FALSE;
     gboolean late = FALSE, out_of_route = FALSE;
     gfloat distance = 0;
@@ -379,7 +377,7 @@ map_path_route_step(const MapGpsData *gps, gboolean newly_fixed)
     else
         route_update_nears(TRUE);
 
-    next_way = map_controller_get_next_waypoint(controller);
+    next_way = map_route_get_next_waypoint();
     /* TODO: since this distance is also shown in the info panel, avoid
      * recomputing it */
     distance = route_calc_distance_to(next_way->point, &distance);
@@ -486,12 +484,6 @@ map_path_route_step(const MapGpsData *gps, gboolean newly_fixed)
     }
 
     UNBLANK_SCREEN(FALSE, approaching_waypoint);
-
-    if (refresh_panel)
-    {
-        MapScreen *screen = map_controller_get_screen(controller);
-        map_screen_refresh_panel(screen);
-    }
 }
 
 /**
@@ -1111,7 +1103,14 @@ route_add_way_dialog(const MapPoint *point)
 WayPoint*
 path_get_next_way()
 {
-    MapController *controller = map_controller_get_instance();
-    return (WayPoint *)map_controller_get_next_waypoint(controller);
+    return map_route_get_next_waypoint();
+}
+
+WayPoint *
+map_route_get_next_waypoint()
+{
+    WayPoint *wp;
+    wp = _route.path.whead + _near_info.wp_next;
+    return (wp <= _route.path.wtail) ? wp : NULL;
 }
 

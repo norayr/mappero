@@ -741,28 +741,6 @@ map_controller_calc_best_center(MapController *self, MapPoint *new_center)
 }
 
 void
-map_controller_set_next_waypoint(MapController *self, const WayPoint *next)
-{
-    MapControllerPrivate *priv;
-
-    g_return_if_fail(MAP_IS_CONTROLLER(self));
-    priv = self->priv;
-
-    if (next != priv->next_waypoint)
-    {
-        priv->next_waypoint = next;
-        map_screen_refresh_panel(priv->screen);
-    }
-}
-
-const WayPoint *
-map_controller_get_next_waypoint(MapController *self)
-{
-    g_return_val_if_fail(MAP_IS_CONTROLLER(self), NULL);
-    return self->priv->next_waypoint;
-}
-
-void
 map_controller_refresh_paths(MapController *self)
 {
     g_return_if_fail(MAP_IS_CONTROLLER(self));

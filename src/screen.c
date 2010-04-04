@@ -893,7 +893,7 @@ panel_create_layouts(MapPanelData *pd, PangoContext *context)
         has_data = TRUE;
     }
 
-    waypoint = map_controller_get_next_waypoint(controller);
+    waypoint = map_route_get_next_waypoint();
     if (waypoint)
     {
         gchar *text, buffer[32];
