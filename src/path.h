@@ -65,7 +65,7 @@ map_path_append_point_fast(Path *path, const Point *p)
     if (path->_tail == path->_cap)
         path_resize(path, path->_cap - path->_head + ARRAY_CHUNK_SIZE);
     *path->_tail = *p;
-    return ++path->_tail;
+    return path->_tail++;
 }
 
 void map_path_append_point_end(Path *path);
@@ -101,7 +101,7 @@ map_path_append_point_with_desc(Path *path, const Point *p, const gchar *desc)
     Point *p_in_path;
     p_in_path = map_path_append_point_fast(path, p);
     if (desc)
-        map_path_make_waypoint(path, path->_tail, g_strdup(desc));
+        map_path_make_waypoint(path, p_in_path, g_strdup(desc));
     return p_in_path;
 }
 
