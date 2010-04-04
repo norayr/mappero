@@ -74,6 +74,7 @@ load_settings(MapGpsData *gps, GConfClient *gconf_client)
 
     /* Get last saved longitude.  Default is 0. */
     gps->lon = gconf_client_get_float(gconf_client, GCONF_KEY_LAST_LON, NULL);
+    latlon2unit(gps->lat, gps->lon, gps->unit.x, gps->unit.y);
 
     gps->speed = gconf_client_get_float(gconf_client,
                                         GCONF_KEY_LAST_SPEED, NULL);
