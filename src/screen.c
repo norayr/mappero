@@ -874,7 +874,7 @@ panel_create_layouts(MapPanelData *pd, PangoContext *context)
         pango_layout_set_font_description(layout, font);
 
         /* Find last point. */
-        p = map_path_last(&_track);
+        p = map_path_last(&_route);
         n += distance_to_string(buffer + n, sizeof(buffer) - n, _route.length);
 
         time = p->time;
