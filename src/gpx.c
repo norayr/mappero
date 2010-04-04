@@ -561,6 +561,7 @@ gpx_path_write(Path *path, GnomeVFSHandle *handle)
             "  <trk>\n");
 
     map_path_line_iter_first(path, &line);
+    wcurr = path->whead;
     do
     {
         Point *start, *end;
@@ -612,7 +613,7 @@ gpx_path_write(Path *path, GnomeVFSHandle *handle)
                 gpx_write_string(handle, "</time>\n");
             }
 
-            if(wcurr && curr == wcurr->point)
+            if (wcurr <= path->wtail && curr == wcurr->point)
             {
                 if(first_sub)
                 {
