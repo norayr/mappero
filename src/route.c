@@ -390,12 +390,6 @@ map_path_route_step(const MapGpsData *gps, gboolean newly_fixed)
     else
         route_update_nears(TRUE);
 
-    next_way = map_route_get_next_waypoint();
-    distance = map_route_get_distance_to_next_waypoint();
-
-    /* TODO: this variable is not computed correctly */
-    announce_thres_unsquared = (20+gps->speed) * _announce_notice_ratio*32;
-
     if (_near_info.p_near < map_path_len(&_route.path))
         near_point = map_path_first(&_route.path) + _near_info.p_near;
 
@@ -449,6 +443,17 @@ map_path_route_step(const MapGpsData *gps, gboolean newly_fixed)
             path_reset_route();
         }
     }
+
+    next_way = map_route_get_next_waypoint();
+    distance = map_route_get_distance_to_next_waypoint();
+
+    /* this variable is measured in kilometres: */
+    announce_thres_unsquared = 0.01 /* 10 metres */
+        * _announce_notice_ratio /* this settings varies between 1 and 20 */
+        /* if the speed (which is stored in km/h) is high, let's give two
+         * seconds more: */
+        + (gps->fields & MAP_GPS_SPEED && gps->speed > 20) ?
+        gps->speed * (2 / 3600.0) : 0;
 
     approaching_waypoint =
         distance <= announce_thres_unsquared && !out_of_route;
