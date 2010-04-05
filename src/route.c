@@ -449,11 +449,12 @@ map_path_route_step(const MapGpsData *gps, gboolean newly_fixed)
 
     /* this variable is measured in kilometres: */
     announce_distance = 0.01 /* 10 metres */
-        * _announce_notice_ratio /* this settings varies between 1 and 20 */
-        /* if the speed (which is stored in km/h) is high, let's give two
-         * seconds more: */
-        + (gps->fields & MAP_GPS_SPEED && gps->speed > 20) ?
-        gps->speed * (2 / 3600.0) : 0;
+        * _announce_notice_ratio; /* this settings varies between 1 and 20 */
+
+    /* if the speed (which is stored in km/h) is high, let's give two
+     * seconds more: */
+    if (gps->fields & MAP_GPS_SPEED && gps->speed > 20)
+        announce_distance += gps->speed * (2 / 3600.0);
 
     approaching_waypoint =
         distance <= announce_distance && !out_of_route;
