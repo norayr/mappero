@@ -184,6 +184,10 @@ route_update_nears(gboolean quick)
 
     screen = map_controller_get_screen(controller);
     map_screen_refresh_panel(screen);
+    /* TODO: refresh paths only if the waypoint has changed, not the near point
+     */
+    if (changed)
+        map_controller_refresh_paths(controller);
 
     return changed;
 }
