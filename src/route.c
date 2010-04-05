@@ -379,7 +379,7 @@ map_path_route_step(const MapGpsData *gps, gboolean newly_fixed)
     gboolean late = FALSE, out_of_route = FALSE;
     gfloat distance = 0;
     const WayPoint *next_way;
-    Point *near_point;
+    Point *near_point = NULL;
 
     /* if we don't have a route to follow, nothing to do */
     if (map_path_len(&_route.path) == 0) return;
