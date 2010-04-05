@@ -884,7 +884,10 @@ map_path_merge(Path *src_path, Path *dest_path, MapPathMergePolicy policy)
     if (map_path_len(src_path) == 0)
     {
         if (policy == MAP_PATH_MERGE_POLICY_REPLACE)
+        {
             map_path_unset(dest_path);
+            map_path_init(dest_path);
+        }
         return;
     }
 
@@ -900,8 +903,7 @@ map_path_merge(Path *src_path, Path *dest_path, MapPathMergePolicy policy)
 
         if (policy == MAP_PATH_MERGE_POLICY_APPEND)
         {
-            /* Append to current path. Make sure last path point is zero. */
-            map_path_append_break(dest_path);
+            /* Append to current path. */
             src = src_path;
             dest = dest_path;
         }
@@ -940,6 +942,10 @@ map_path_merge(Path *src_path, Path *dest_path, MapPathMergePolicy policy)
         }
 
         /* Adjust the indexes of the lines and concatenate the lists */
+        /* First, remove the first line of the path, because it will be the
+         * same as the last line of the destination path (if it was set,
+         * otherwise the merge will unify the segments) */
+        src->_lines = g_list_delete_link(src->_lines, src->_lines);
         for (list = src->_lines; list != NULL; list = list->next)
         {
             MapLine *line = MAP_LINE(list);
