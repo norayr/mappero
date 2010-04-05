@@ -344,12 +344,19 @@ map_controller_set_gps_position(MapController *self, const MapPoint *p)
     priv = self->priv;
 
     _pos.unit = *p;
+
+    memset(&priv->gps_data, 0, sizeof(MapGpsData));
+    priv->gps_data.fields = MAP_GPS_LATLON;
+    priv->gps_data.unit = *p;
     unit2latlon(_pos.unit.x, _pos.unit.y,
                 priv->gps_data.lat, priv->gps_data.lon);
+    priv->gps_data.time = time(0);
 
     /* Move mark to new location. */
     map_screen_update_mark(priv->screen);
-    route_find_nearest_point();
+
+    /* simulate a real move (especially useful for debugging navigation!) */
+    map_path_route_step(&priv->gps_data, FALSE);
 
     /* TODO: update the GConf keys under /system/nokia/location/lastknown */
 }
