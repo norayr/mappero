@@ -374,7 +374,7 @@ point_near_segments(const MapPoint *p, const MapPoint *p0, const MapPoint *p1,
 void
 map_path_route_step(const MapGpsData *gps, gboolean newly_fixed)
 {
-    gfloat announce_thres_unsquared;
+    gfloat announce_distance;
     gboolean approaching_waypoint = FALSE;
     gboolean late = FALSE, out_of_route = FALSE;
     gfloat distance = 0;
@@ -448,7 +448,7 @@ map_path_route_step(const MapGpsData *gps, gboolean newly_fixed)
     distance = map_route_get_distance_to_next_waypoint();
 
     /* this variable is measured in kilometres: */
-    announce_thres_unsquared = 0.01 /* 10 metres */
+    announce_distance = 0.01 /* 10 metres */
         * _announce_notice_ratio /* this settings varies between 1 and 20 */
         /* if the speed (which is stored in km/h) is high, let's give two
          * seconds more: */
@@ -456,7 +456,7 @@ map_path_route_step(const MapGpsData *gps, gboolean newly_fixed)
         gps->speed * (2 / 3600.0) : 0;
 
     approaching_waypoint =
-        distance <= announce_thres_unsquared && !out_of_route;
+        distance <= announce_distance && !out_of_route;
 
     map_navigation_set_alert(approaching_waypoint, next_way, distance);
 
