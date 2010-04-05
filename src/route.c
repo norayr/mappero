@@ -46,6 +46,7 @@
 struct _MapRoute {
     Path path;
     gfloat distance_to_near;
+    gfloat distance_to_next_waypoint;
 };
 
 MapRoute _route;
@@ -113,6 +114,7 @@ map_route_path_changed()
 {
     route_find_nearest_point();
     _route.distance_to_near = -1;
+    _route.distance_to_next_waypoint = -1;
 }
 
 static MapRouter *
@@ -178,6 +180,7 @@ route_update_nears(gboolean quick)
 
     /* The cached distance to the closest point is no longer valid */
     _route.distance_to_near = -1;
+    _route.distance_to_next_waypoint = -1;
 
     screen = map_controller_get_screen(controller);
     map_screen_refresh_panel(screen);
@@ -388,9 +391,7 @@ map_path_route_step(const MapGpsData *gps, gboolean newly_fixed)
         route_update_nears(TRUE);
 
     next_way = map_route_get_next_waypoint();
-    /* TODO: since this distance is also shown in the info panel, avoid
-     * recomputing it */
-    distance = route_calc_distance_to(next_way->point, &distance);
+    distance = map_route_get_distance_to_next_waypoint();
 
     /* TODO: this variable is not computed correctly */
     announce_thres_unsquared = (20+gps->speed) * _announce_notice_ratio*32;
@@ -1115,5 +1116,13 @@ map_route_get_next_waypoint()
     WayPoint *wp;
     wp = _route.path.whead + _near_info.wp_next;
     return (wp <= _route.path.wtail) ? wp : NULL;
+}
+
+gfloat
+map_route_get_distance_to_next_waypoint()
+{
+    if (_route.distance_to_next_waypoint < 0)
+        route_calc_distance_to(NULL, &_route.distance_to_next_waypoint);
+    return _route.distance_to_next_waypoint;
 }
 

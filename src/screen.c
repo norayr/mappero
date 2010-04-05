@@ -896,7 +896,7 @@ panel_create_layouts(MapPanelData *pd, PangoContext *context)
     if (waypoint)
     {
         gchar *text, buffer[32];
-        gfloat distance = 0.0;
+        gfloat distance;
         gint n = 0;
 
         if (has_data) pd->wp_gap = PANEL_BORDER;
@@ -908,7 +908,7 @@ panel_create_layouts(MapPanelData *pd, PangoContext *context)
         if (waypoint->point->time != 0)
             n += time_to_string(buffer + n, sizeof(buffer) - n, "%H:%M ",
                                 waypoint->point->time);
-        route_calc_distance_to(waypoint->point, &distance);
+        distance = map_route_get_distance_to_next_waypoint();
         distance_to_string(buffer + n, sizeof(buffer) - n, distance);
         text = g_strdup_printf("<b>%s</b>\n%s", buffer,
                                waypoint->desc ? waypoint->desc : "");
