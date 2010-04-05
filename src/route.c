@@ -45,6 +45,7 @@
 
 struct _MapRoute {
     Path path;
+    gfloat distance_to_near;
 };
 
 MapRoute _route;
@@ -111,6 +112,7 @@ void
 map_route_path_changed()
 {
     route_find_nearest_point();
+    _route.distance_to_near = -1;
 }
 
 static MapRouter *
@@ -173,6 +175,9 @@ route_update_nears(gboolean quick)
     gps = map_controller_get_gps_data(controller);
     changed =
         map_path_update_near_info(&_route.path, &gps->unit, &_near_info, quick);
+
+    /* The cached distance to the closest point is no longer valid */
+    _route.distance_to_near = -1;
 
     screen = map_controller_get_screen(controller);
     map_screen_refresh_panel(screen);
@@ -240,9 +245,14 @@ route_calc_distance_to(const Point *point, gfloat *distance)
     }
 
     /* sum the distance to near_point */
-    gps = map_controller_get_gps_data(controller);
-    unit2latlon(near_point->unit.x, near_point->unit.y, lat2, lon2);
-    sum += calculate_distance(gps->lat, gps->lon, lat2, lon2);
+    if (_route.distance_to_near < 0)
+    {
+        gps = map_controller_get_gps_data(controller);
+        unit2latlon(near_point->unit.x, near_point->unit.y, lat2, lon2);
+        _route.distance_to_near =
+            calculate_distance(gps->lat, gps->lon, lat2, lon2);
+    }
+    sum += _route.distance_to_near;
 
     *distance = sum;
     return TRUE;
