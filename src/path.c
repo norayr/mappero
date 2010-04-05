@@ -404,7 +404,7 @@ map_path_find_closest(const Path *path, const MapPoint *p, gint start,
     /* Now, search _route for a closer point.  If quick is TRUE, then we'll
      * only search forward, only as long as we keep finding closer points.
      */
-    for (curr = near; curr < map_path_end(path); curr++)
+    for (curr = near + 1; curr < map_path_end(path); curr++)
     {
         gint64 dist_squared = DISTANCE_SQUARED(*p, curr->unit);
         if (dist_squared <= near_dist_squared)
