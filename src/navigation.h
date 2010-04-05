@@ -27,4 +27,7 @@ MapDirection map_navigation_infer_direction(const gchar *text);
 
 void map_navigation_announce_voice(const WayPoint *wp);
 
+void map_navigation_set_alert(gboolean active, const WayPoint *wp,
+                              gfloat distance);
+
 #endif /* MAP_NAVIGATION_H */

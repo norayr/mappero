@@ -28,6 +28,7 @@
 #include "path.h"
 
 #include <canberra.h>
+#include <hildon/hildon-banner.h>
 #include <hildon/hildon-sound.h>
 #include <stdlib.h>
 #include <string.h>
@@ -47,6 +48,9 @@ static const gchar *dir_names[] = {
     "third-exit",
     NULL,
 };
+
+static gfloat _initial_distance_from_waypoint = -1.f;
+static const WayPoint *_initial_distance_waypoint = NULL;
 
 /**
  * map_navigation_infer_direction:
@@ -256,5 +260,58 @@ map_navigation_announce_voice(const WayPoint *wp)
 #else
     play_direction(wp->dir);
 #endif
+}
+
+/**
+ * map_navigation_set_alert:
+ * @active: whether the alert is active.
+ * @wp: the next waypoint.
+ * @distance: the distance to the next waypoint;
+ *
+ * If called with @alert set to %TRUE, this causes the emission/update of
+ * visual (and optionally audio) information about the approaching waypoint.
+ * If @alert is %FALSE, such notifications are dismissed.
+ */
+void
+map_navigation_set_alert(gboolean active, const WayPoint *wp, gfloat distance)
+{
+    gboolean remove_alert = FALSE;
+
+    /* TODO: replace banners with clutter actors */
+
+    if (wp != _initial_distance_waypoint)
+        remove_alert = TRUE;
+
+    if (!active)
+    {
+        /* do not dismiss the alert immediately: if we are still close to the
+         * waypoint, keep the banner alive */
+        if (wp != _initial_distance_waypoint ||
+            distance >= _initial_distance_from_waypoint * 1.5)
+            remove_alert = TRUE;
+    }
+
+    if (remove_alert)
+    {
+        /* We've moved on to the next waypoint, or we're really far from
+         * the current waypoint. */
+        _initial_distance_from_waypoint = -1.f;
+        _initial_distance_waypoint = NULL;
+    }
+
+    /* Check if we should announce upcoming waypoints. */
+    if (active && _enable_announce)
+    {
+        if (!_initial_distance_waypoint)
+        {
+            /* First time we're close enough to this waypoint. */
+            if(_enable_voice)
+                map_navigation_announce_voice(wp);
+
+            _initial_distance_from_waypoint = distance;
+            _initial_distance_waypoint = wp;
+            MACRO_BANNER_SHOW_INFO(_window, wp->desc);
+        }
+    }
 }
 

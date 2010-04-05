@@ -87,9 +87,6 @@ static AutoRouteDownloadData _autoroute_data;
 
 static MapRouteNearInfo _near_info;
 
-static gfloat _initial_distance_from_waypoint = -1.f;
-static const WayPoint *_initial_distance_waypoint = NULL;
-
 void
 map_route_clear()
 {
@@ -377,8 +374,7 @@ point_near_segments(const MapPoint *p, const MapPoint *p0, const MapPoint *p1,
 void
 map_path_route_step(const MapGpsData *gps, gboolean newly_fixed)
 {
-    gboolean show_directions = TRUE;
-    gint announce_thres_unsquared;
+    gfloat announce_thres_unsquared;
     gboolean approaching_waypoint = FALSE;
     gboolean late = FALSE, out_of_route = FALSE;
     gfloat distance = 0;
@@ -440,15 +436,11 @@ map_path_route_step(const MapGpsData *gps, gboolean newly_fixed)
     /* check if we need to recalculate the route */
     if (late || out_of_route)
     {
-        /* Prevent announcments from occurring. */
-        announce_thres_unsquared = INT_MAX;
-
         if(_autoroute_data.enabled && !_autoroute_data.in_progress)
         {
             MACRO_BANNER_SHOW_INFO(_window,
                                    _("Recalculating directions..."));
             _autoroute_data.in_progress = TRUE;
-            show_directions = FALSE;
             g_idle_add((GSourceFunc)auto_route_dl_idle, NULL);
         }
         else
@@ -458,45 +450,10 @@ map_path_route_step(const MapGpsData *gps, gboolean newly_fixed)
         }
     }
 
-    if (_initial_distance_waypoint
-        && (next_way != _initial_distance_waypoint
-            || distance > announce_thres_unsquared))
-    {
-        /* We've moved on to the next waypoint, or we're really far from
-         * the current waypoint. */
-        if(_waypoint_banner)
-        {
-            gtk_widget_destroy(_waypoint_banner);
-            _waypoint_banner = NULL;
-        }
-        _initial_distance_from_waypoint = -1.f;
-        _initial_distance_waypoint = NULL;
-    }
+    approaching_waypoint =
+        distance <= announce_thres_unsquared && !out_of_route;
 
-    /* Check if we should announce upcoming waypoints. */
-    if(_enable_announce
-            && (_initial_distance_waypoint ||
-                distance < announce_thres_unsquared))
-    {
-        if(show_directions)
-        {
-            if(!_initial_distance_waypoint)
-            {
-                /* First time we're close enough to this waypoint. */
-                if(_enable_voice)
-                    map_navigation_announce_voice(next_way);
-
-                _initial_distance_from_waypoint = distance;
-                _initial_distance_waypoint = next_way;
-                MACRO_BANNER_SHOW_INFO(_window, next_way->desc);
-            }
-        }
-        approaching_waypoint = TRUE;
-    }
-    else if (distance > _initial_distance_from_waypoint * 1.5)
-    {
-        /* We're too far away now - destroy the banner. */
-    }
+    map_navigation_set_alert(approaching_waypoint, next_way, distance);
 
     UNBLANK_SCREEN(FALSE, approaching_waypoint);
 }
