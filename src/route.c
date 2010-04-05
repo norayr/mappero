@@ -456,8 +456,12 @@ map_path_route_step(const MapGpsData *gps, gboolean newly_fixed)
     if (gps->fields & MAP_GPS_SPEED && gps->speed > 20)
         announce_distance += gps->speed * (2 / 3600.0);
 
-    approaching_waypoint =
-        distance <= announce_distance && !out_of_route;
+    /* next_way will be NULL if we passed the last waypoint */
+    if (next_way)
+        approaching_waypoint =
+            distance <= announce_distance && !out_of_route;
+    else
+        approaching_waypoint = FALSE;
 
     map_navigation_set_alert(approaching_waypoint, next_way, distance);
 
