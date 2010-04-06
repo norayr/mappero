@@ -454,8 +454,9 @@ map_path_update_near_info(const Path *path, const MapPoint *p,
 {
     WayPoint *wcurr, *wnext;
     Point *near;
-    gint p_near, wp_next;
+    gint p_near;
     gint64 dist_squared_near = -1, dist_squared_after_near;
+    gboolean p_near_is_set = FALSE;
     gboolean changed = FALSE;
 
     if (map_path_len(path) == 0)
@@ -469,7 +470,52 @@ map_path_update_near_info(const Path *path, const MapPoint *p,
         return changed;
     }
 
-    p_near = map_path_find_closest(path, p, ni->p_near, local);
+    if (ni->p_near >= map_path_len(path))
+        return FALSE;
+
+    /* If we are doing a local search, try to follow the path without skipping
+     * points: */
+    if (local)
+    {
+        near = map_path_first(path) + ni->p_near;
+        compute_distances_to_near_and_following(path, p, near,
+                                                &dist_squared_near,
+                                                &dist_squared_after_near);
+        if (ni->dist_squared_near > 0)
+        {
+            /* if we are still approaching the near point, don't change it */
+            if (dist_squared_near <= ni->dist_squared_near)
+            {
+                p_near = ni->p_near;
+                p_near_is_set = TRUE;
+            }
+            else /* we are getting farther from the near point */
+            {
+                /* see if we are approaching the next one */
+                if (ni->p_near + 1 < map_path_len(path) &&
+                    dist_squared_after_near <= ni->dist_squared_after_near)
+                {
+                    p_near = ni->p_near + 1;
+                    dist_squared_near = dist_squared_after_near;
+                    dist_squared_after_near = -1;
+                    p_near_is_set = TRUE;
+                }
+            }
+        }
+
+        /* update the internal data */
+        ni->dist_squared_near = dist_squared_near;
+        ni->dist_squared_after_near = dist_squared_after_near;
+    }
+    else
+    {
+        ni->dist_squared_near = -1;
+        ni->dist_squared_after_near = -1;
+    }
+
+    if (!p_near_is_set)
+        p_near = map_path_find_closest(path, p, ni->p_near, local);
+
     near = map_path_first(path) + p_near;
 
     if (p_near != ni->p_near)
@@ -483,55 +529,7 @@ map_path_update_near_info(const Path *path, const MapPoint *p,
              wcurr++);
 
         wnext = wcurr;
-    }
-    else
-    {
-        DEBUG("same near point");
-        /* Even if the closest point has not changed, the next waypoint can
-         * still change, if we detect that we have got past the current next
-         * waypoint.
-         * To detect this situation, we check if since the last iteration (that
-         * is, from the data in MapRouteNearInfo) the distance from the next
-         * waypoint has been increasing while the distance to the point after
-         * it has been decreasing.
-         */
-        wnext = path->whead + ni->wp_next;
-        if (wnext <= path->wtail && wnext->point == near)
-        {
-            compute_distances_to_near_and_following(path, p, near,
-                                                    &dist_squared_near,
-                                                    &dist_squared_after_near);
-            DEBUG("Dn = %lld (old = %lld), Dn+1 = %lld (old = %lld)",
-                  dist_squared_near, ni->dist_squared_near,
-                  dist_squared_after_near, ni->dist_squared_after_near);
-
-            if (dist_squared_near > ni->dist_squared_near &&
-                dist_squared_after_near < ni->dist_squared_after_near)
-                wnext++;
-            else
-            {
-                ni->dist_squared_near = dist_squared_near;
-                ni->dist_squared_after_near = dist_squared_after_near;
-            }
-        }
-        else
-            DEBUG("end of route or next wp != near point");
-    }
-
-    wp_next = wnext - path->whead;
-    if (wp_next != ni->wp_next)
-    {
-        ni->wp_next = wp_next;
-        changed = TRUE;
-
-        /* calculate the distances to the closest point and the point after it
-         */
-        if (dist_squared_near == -1)
-            compute_distances_to_near_and_following(path, p, near,
-                                                    &dist_squared_near,
-                                                    &dist_squared_after_near);
-        ni->dist_squared_near = dist_squared_near;
-        ni->dist_squared_after_near = dist_squared_after_near;
+        ni->wp_next = wnext - path->whead;
     }
 
     return changed;

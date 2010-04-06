@@ -45,7 +45,6 @@
 
 struct _MapRoute {
     Path path;
-    gfloat distance_to_near;
     gfloat distance_to_next_waypoint;
 };
 
@@ -110,7 +109,6 @@ void
 map_route_path_changed()
 {
     route_find_nearest_point();
-    _route.distance_to_near = -1;
     _route.distance_to_next_waypoint = -1;
 }
 
@@ -175,8 +173,7 @@ route_update_nears(gboolean quick)
     changed =
         map_path_update_near_info(&_route.path, &gps->unit, &_near_info, quick);
 
-    /* The cached distance to the closest point is no longer valid */
-    _route.distance_to_near = -1;
+    /* The cached distance to the next waypoint is no longer valid */
     _route.distance_to_next_waypoint = -1;
 
     screen = map_controller_get_screen(controller);
@@ -233,7 +230,9 @@ route_calc_distance_to(const Point *point, gfloat *distance)
     if (point > near_point)
     {
         Point *curr;
-        /* Skip near_point in case we have already passed it. */
+
+        /* we skip near_point here, because near_point->distance is the
+         * distance to the previous point and we don't care about that. */
         for (curr = near_point + 1; curr <= point; ++curr)
         {
             sum += curr->distance;
@@ -242,6 +241,8 @@ route_calc_distance_to(const Point *point, gfloat *distance)
     else if (point < near_point)
     {
         Point *curr;
+        /* Going backwards, the near point is the one before the next */
+        near_point--;
         for (curr = near_point; curr > point; --curr)
         {
             sum += curr->distance;
@@ -249,14 +250,9 @@ route_calc_distance_to(const Point *point, gfloat *distance)
     }
 
     /* sum the distance to near_point */
-    if (_route.distance_to_near < 0)
-    {
-        gps = map_controller_get_gps_data(controller);
-        unit2latlon(near_point->unit.x, near_point->unit.y, lat2, lon2);
-        _route.distance_to_near =
-            calculate_distance(gps->lat, gps->lon, lat2, lon2);
-    }
-    sum += _route.distance_to_near;
+    gps = map_controller_get_gps_data(controller);
+    unit2latlon(near_point->unit.x, near_point->unit.y, lat2, lon2);
+    sum += calculate_distance(gps->lat, gps->lon, lat2, lon2);
 
     *distance = sum;
     return TRUE;
