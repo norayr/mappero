@@ -32,6 +32,7 @@
 #include <string.h>
 #include <math.h>
 #include <dbus/dbus-glib.h>
+#include <gst/gst.h>
 #include <locale.h>
 
 #include <gconf/gconf-client.h>
@@ -578,6 +579,7 @@ main(gint argc, gchar *argv[])
 
     map_set_fast_mode(TRUE);
     gtk_clutter_init(&argc, &argv);
+    gst_init(&argc, &argv);
 
     /* Init gconf. */
     g_type_init();

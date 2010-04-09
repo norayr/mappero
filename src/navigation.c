@@ -28,12 +28,13 @@
 #include "path.h"
 
 #include <canberra.h>
+#include <gst/gst.h>
 #include <hildon/hildon-banner.h>
 #include <hildon/hildon-sound.h>
 #include <stdlib.h>
 #include <string.h>
 
-#define SOUND_DIR "/usr/share/sounds/mapper/"
+#define SOUND_DIR "file:///usr/share/sounds/mapper/"
 
 /* these need to be aligned with the MapDirection enum values */
 static const gchar *dir_names[] = {
@@ -51,6 +52,7 @@ static const gchar *dir_names[] = {
 
 static gfloat _initial_distance_from_waypoint = -1.f;
 static const WayPoint *_initial_distance_waypoint = NULL;
+static GstElement *_pipeline = NULL;
 
 /**
  * map_navigation_infer_direction:
@@ -149,18 +151,17 @@ map_ca_context_get (void)
 static void
 play_sound(const gchar *sample)
 {
-    ca_context *ca_con = NULL;
-    ca_proplist *pl = NULL;
+    if (!_pipeline)
+    {
+        _pipeline = gst_element_factory_make("playbin2", "player");
+    }
+    else
+    {
+        gst_element_set_state(_pipeline, GST_STATE_NULL);
+    }
+    g_object_set(G_OBJECT(_pipeline), "uri", sample, NULL);
 
-    ca_con = map_ca_context_get ();
-
-    ca_proplist_create(&pl);
-    ca_proplist_sets(pl, CA_PROP_MEDIA_FILENAME, sample);
-    ca_proplist_sets(pl, CA_PROP_MEDIA_ROLE, "x-maemo");
-
-    ca_context_play_full(ca_con, 0, pl, NULL, NULL);
-
-    ca_proplist_destroy(pl);
+    gst_element_set_state(_pipeline, GST_STATE_PLAYING);
 }
 
 static gboolean
@@ -219,7 +220,7 @@ play_direction(MapDirection dir)
     if (!g_file_test(path, G_FILE_TEST_IS_DIR))
         i = g_snprintf(path, sizeof(path), SOUND_DIR);
 
-    g_snprintf(path + i, sizeof(path) - i, "%s.wav", direction_name);
+    g_snprintf(path + i, sizeof(path) - i, "%s.spx", direction_name);
 
     DEBUG("Playing %s", path);
     play_sound_with_alert(path);

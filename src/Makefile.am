@@ -25,6 +25,7 @@ maemo_mapper_CFLAGS = \
 	$(HILDON_CFLAGS) \
 	$(GNOME_VFS_CFLAGS) \
 	$(GCONF_CFLAGS) \
+	$(GSTREAMER_CFLAGS) \
 	$(LIBXML2_CFLAGS) \
 	$(SQLITE_CFLAGS) \
 	$(CONIC_CFLAGS) \
@@ -33,7 +34,19 @@ maemo_mapper_CFLAGS = \
 	$(CAIRO_CFLAGS) \
 	-std=c99 -Wall -Wno-switch
 
-maemo_mapper_LDADD = $(GTK_LIBS) $(OSSO_LIBS) $(HILDON_LIBS) $(GNOME_VFS_LIBS) $(GCONF_LIBS) $(LIBXML2_LIBS) $(SQLITE_LIBS) $(CONIC_LIBS) $(LOCATION_LIBS) $(CLUTTER_LIBS) $(CAIRO_LIBS)
+maemo_mapper_LDADD = \
+	$(GTK_LIBS) \
+	$(OSSO_LIBS) \
+	$(HILDON_LIBS) \
+	$(GNOME_VFS_LIBS) \
+	$(GCONF_LIBS) \
+	$(GSTREAMER_LIBS) \
+	$(LIBXML2_LIBS) \
+	$(SQLITE_LIBS) \
+	$(CONIC_LIBS) \
+	$(LOCATION_LIBS) \
+	$(CLUTTER_LIBS) \
+	$(CAIRO_LIBS)
 
 maemo_mapper_SOURCES = \
 	cmenu.c \

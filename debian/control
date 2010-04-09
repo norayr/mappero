@@ -2,7 +2,26 @@ Source: maemo-mapper
 Section: user/navigation
 Priority: optional
 Maintainer: Alberto Mardegan <mardy@users.sourceforge.net>
-Build-Depends: debhelper (>= 4.0.0), intltool, libhildon1-dev, libhildonfm2-dev, libgtk2.0-dev, libosso-gnomevfs2-dev, libglib2.0-dev, libdbus-glib-1-dev, libosso-dev, libsqlite3-dev, libconic0-dev, libgdbm-dev, liblocation-dev, osso-af-settings, libclutter-1.0-dev, libclutter-gtk-0.10-dev, libcairo2-dev, mce-dev, libcanberra-dev
+Build-Depends: debhelper (>= 4.0.0),
+ intltool,
+ libcairo2-dev,
+ libcanberra-dev,
+ libclutter-1.0-dev,
+ libclutter-gtk-0.10-dev,
+ libconic0-dev,
+ libdbus-glib-1-dev,
+ libgdbm-dev,
+ libglib2.0-dev,
+ libgtk2.0-dev,
+ libgstreamer0.10-dev,
+ libhildon1-dev,
+ libhildonfm2-dev,
+ liblocation-dev,
+ libosso-dev,
+ libosso-gnomevfs2-dev,
+ libsqlite3-dev,
+ mce-dev,
+ osso-af-settings
 Standards-Version: 3.6.0
 
 Package: maemo-mapper
