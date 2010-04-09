@@ -79,9 +79,9 @@ map_navigation_infer_direction(const gchar *text)
         else
             dir = MAP_DIRECTION_TR;
     }
-    else if (strncmp(text, "Slight ", 6) == 0)
+    else if (strncmp(text, "Slight ", 7) == 0)
     {
-        text += 6;
+        text += 7;
         if (strncmp(text, "left", 4) == 0)
             dir = MAP_DIRECTION_STL;
         else
