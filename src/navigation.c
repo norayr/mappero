@@ -104,9 +104,9 @@ map_navigation_infer_direction(const gchar *text)
         if (ptr != NULL)
         {
             ptr += strlen(ordinals[i]);
-            if (strncmp(text, "exit", 4) == 0)
+            if (strncmp(ptr, "exit", 4) == 0)
                 dir = MAP_DIRECTION_EX1 + i;
-            else if (strncmp(text, "left", 4) == 0)
+            else if (strncmp(ptr, "left", 4) == 0)
                 dir = MAP_DIRECTION_TL;
             else
                 dir = MAP_DIRECTION_TR;
