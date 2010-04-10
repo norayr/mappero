@@ -79,6 +79,7 @@ maemo_mapper_SOURCES = \
 	router.c \
 	settings.c \
 	screen.c \
+	sign.c \
 	tile.c \
 	util.c \
 	repository.c \
