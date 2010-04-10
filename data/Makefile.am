@@ -39,6 +39,15 @@ icon_scalable_DATA = icons/scalable/maemo-mapper.png icons/scalable/maemo-mapper
 	icons/scalable/maemo-mapper-go-to.png \
 	icons/scalable/maemo-mapper-gps-enable.png \
 	icons/scalable/maemo-mapper-gps-disable.png \
+	icons/scalable/maemo-mapper-nav-first-exit.png \
+	icons/scalable/maemo-mapper-nav-second-exit.png \
+	icons/scalable/maemo-mapper-nav-slight-left.png \
+	icons/scalable/maemo-mapper-nav-slight-right.png \
+	icons/scalable/maemo-mapper-nav-straight.png \
+	icons/scalable/maemo-mapper-nav-third-exit.png \
+	icons/scalable/maemo-mapper-nav-turn-left.png \
+	icons/scalable/maemo-mapper-nav-turn-right.png \
+	icons/scalable/maemo-mapper-nav-unknown.png \
 	icons/scalable/maemo-mapper-path.png \
 	icons/scalable/maemo-mapper-route.png \
 	icons/scalable/maemo-mapper-settings.png \
