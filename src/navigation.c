@@ -316,6 +316,11 @@ map_navigation_set_alert(gboolean active, const WayPoint *wp, gfloat distance)
             _initial_distance_waypoint = wp;
             map_screen_show_sign(screen, wp->dir, wp->desc, distance);
         }
+        else
+        {
+            /* same waypoint: update the distance */
+            map_screen_update_sign(screen, distance);
+        }
     }
 }
 

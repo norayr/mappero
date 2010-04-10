@@ -92,6 +92,7 @@ void map_screen_toggle_layers_visibility (MapScreen *self);
 
 void map_screen_show_sign(MapScreen *self, MapDirection dir, const gchar *text,
                           gfloat distance);
+void map_screen_update_sign(MapScreen *self, gfloat distance);
 void map_screen_hide_sign(MapScreen *self);
 
 G_END_DECLS

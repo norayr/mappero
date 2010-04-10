@@ -1779,6 +1779,15 @@ map_screen_show_sign(MapScreen *self, MapDirection dir, const gchar *text,
 }
 
 void
+map_screen_update_sign(MapScreen *self, gfloat distance)
+{
+    g_return_if_fail(MAP_IS_SCREEN(self));
+
+    if (self->priv->sign)
+        map_sign_set_distance(MAP_SIGN(self->priv->sign), distance);
+}
+
+void
 map_screen_hide_sign(MapScreen *self)
 {
     g_return_if_fail(MAP_IS_SCREEN(self));
