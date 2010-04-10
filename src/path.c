@@ -798,6 +798,11 @@ path_init()
                     sqlite3_errmsg(_path_db));
             sqlite3_close(_path_db);
             _path_db = NULL;
+
+            map_path_init(&_track);
+            map_path_init(map_route_get_path());
+            map_route_path_changed();
+
             popup_error(_window, buffer);
         }
         else
