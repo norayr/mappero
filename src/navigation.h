@@ -30,4 +30,6 @@ void map_navigation_announce_voice(const WayPoint *wp);
 void map_navigation_set_alert(gboolean active, const WayPoint *wp,
                               gfloat distance);
 
+const gchar *map_direction_get_name(MapDirection dir);
+
 #endif /* MAP_NAVIGATION_H */

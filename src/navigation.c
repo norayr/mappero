@@ -316,3 +316,11 @@ map_navigation_set_alert(gboolean active, const WayPoint *wp, gfloat distance)
     }
 }
 
+const gchar *
+map_direction_get_name(MapDirection dir)
+{
+    if (dir < 0 || dir >= MAP_DIRECTION_LAST) return NULL;
+
+    return dir_names[dir];
+}
+
