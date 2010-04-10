@@ -222,6 +222,10 @@ maemo_mapper_init(gint argc, gchar **argv)
     UNITS_ENUM_TEXT[UNITS_MI] = _("mi.");
     UNITS_ENUM_TEXT[UNITS_NM] = _("n.m.");
 
+    UNITS_SMALL_TEXT[UNITS_KM] = _("m");
+    UNITS_SMALL_TEXT[UNITS_MI] = _("y.");
+    UNITS_SMALL_TEXT[UNITS_NM] = _("n.m.");
+
     UNBLANK_ENUM_TEXT[UNBLANK_WITH_GPS] = _("When Receiving Any GPS Data");
     UNBLANK_ENUM_TEXT[UNBLANK_WHEN_MOVING] = _("When Moving");
     UNBLANK_ENUM_TEXT[UNBLANK_FULLSCREEN] = _("When Moving (Full Screen Only)");

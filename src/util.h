@@ -61,6 +61,8 @@ size_t time_to_string(gchar *string, size_t size, const gchar *format,
                       time_t time);
 size_t duration_to_string(gchar *string, size_t size, guint duration);
 size_t distance_to_string(gchar *string, size_t size, gfloat distance);
+void map_util_format_distance(gfloat *distance, const gchar **unit,
+                              gint *decimals);
 
 void map_set_fast_mode(gboolean fast);
 

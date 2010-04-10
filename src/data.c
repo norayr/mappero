@@ -34,13 +34,22 @@
 
 /* Constants regarding enums and defaults. */
 gchar *UNITS_ENUM_TEXT[UNITS_ENUM_COUNT];
+gchar *UNITS_SMALL_TEXT[UNITS_ENUM_COUNT];
 
 /* UNITS_CONVERT, when multiplied, converts from kilometers. */
-gdouble UNITS_CONVERT[] =
+gfloat UNITS_CONVERT[] =
 {
     1.0,		/* to kilometers */
     0.621371192,	/* to miles */
     0.539956803,	/* to nautical miles */
+};
+/* UNITS_SMALL_CONVERT, when multiplied, converts from the chosen unit to its
+ * smaller unit used for close distances */
+gfloat UNITS_SMALL_CONVERT[] =
+{
+    1000.0,             /* to metres */
+    1760.0,             /* to yards */
+    1.0,                /* unused */
 };
 
 gchar *UNBLANK_ENUM_TEXT[UNBLANK_ENUM_COUNT];

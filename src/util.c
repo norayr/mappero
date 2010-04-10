@@ -1040,8 +1040,28 @@ duration_to_string(gchar *string, size_t size, guint duration)
 size_t
 distance_to_string(gchar *string, size_t size, gfloat distance)
 {
-    return snprintf(string, size, "%.1f %s",
-                    distance * UNITS_CONVERT[_units], UNITS_ENUM_TEXT[_units]);
+    const gchar *unit;
+    gint decimals;
+
+    map_util_format_distance(&distance, &unit, &decimals);
+    return snprintf(string, size, "%.*f %s", decimals, distance, unit);
+}
+
+void
+map_util_format_distance(gfloat *distance, const gchar **unit, gint *decimals)
+{
+    *distance *= UNITS_CONVERT[_units];
+    if (*distance >= 1)
+    {
+        *unit = UNITS_ENUM_TEXT[_units];
+        *decimals = 1;
+    }
+    else
+    {
+        *distance *= UNITS_SMALL_CONVERT[_units];
+        *unit = UNITS_SMALL_TEXT[_units];
+        *decimals = 0;
+    }
 }
 
 void
