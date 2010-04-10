@@ -96,12 +96,13 @@ map_path_make_waypoint_full(Path *path, const Point *p, MapDirection dir,
 
 /* Appends a point to @path, and creates a WayPoint if @desc is not %NULL */
 static inline Point *
-map_path_append_point_with_desc(Path *path, const Point *p, const gchar *desc)
+map_path_append_point_with_desc(Path *path, const Point *p, const gchar *desc,
+                                MapDirection dir)
 {
     Point *p_in_path;
     p_in_path = map_path_append_point_fast(path, p);
     if (desc)
-        map_path_make_waypoint(path, p_in_path, g_strdup(desc));
+        map_path_make_waypoint_full(path, p_in_path, dir, g_strdup(desc));
     return p_in_path;
 }
 

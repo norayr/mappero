@@ -194,6 +194,7 @@ read_path_from_db(Path *path, sqlite3_stmt *select_stmt)
     while(SQLITE_ROW == sqlite3_step(select_stmt))
     {
         const gchar *desc;
+        MapDirection dir;
         FieldMix mix;
         Point pt;
 
@@ -206,8 +207,9 @@ read_path_from_db(Path *path, sqlite3_stmt *select_stmt)
         pt.distance = 0;
 
         desc = (const gchar *)sqlite3_column_text(select_stmt, 4);
+        dir = sqlite3_column_int(select_stmt, 5);
         if (pt.unit.y != 0)
-            map_path_append_point_with_desc(path, &pt, desc);
+            map_path_append_point_with_desc(path, &pt, desc, dir);
         else
             map_path_append_break(path);
     }
@@ -313,6 +315,7 @@ write_path_to_db(Path *path,
                 if(SQLITE_OK != sqlite3_bind_int(insert_way_stmt, 1, num)
                 || SQLITE_OK != sqlite3_bind_text(insert_way_stmt, 2, wcurr->desc,
                     -1, SQLITE_STATIC)
+                || SQLITE_OK != sqlite3_bind_int(insert_way_stmt, 3, wcurr->dir)
                 || SQLITE_DONE != sqlite3_step(insert_way_stmt))
                 {
                     gchar buffer[BUFFER_SIZE];
@@ -678,11 +681,31 @@ track_insert_break(gboolean temporary)
     path_save_track_to_db();
 }
 
+static gboolean
+update_db_to_v1(sqlite3 *db)
+{
+    gint ret;
+
+    DEBUG("called");
+    ret = sqlite3_exec(db,
+                       "ALTER TABLE route_way ADD COLUMN direction INTEGER "
+                       "DEFAULT 0"
+                       ";"
+                       "ALTER TABLE track_way ADD COLUMN direction INTEGER "
+                       "DEFAULT 0"
+                       ";"
+                       "PRAGMA user_version = 1",
+                       NULL, NULL, NULL);
+    DEBUG("last error: %s", sqlite3_errmsg(db));
+    return ret == SQLITE_OK;
+}
+
 static sqlite3 *
 open_db(const gchar *filename)
 {
     sqlite3 *db;
     gboolean exists;
+    gint ret;
 
     if (!filename) return NULL;
 
@@ -693,6 +716,8 @@ open_db(const gchar *filename)
     if (!exists)
     {
         sqlite3_exec(db,
+                     "PRAGMA user_version = 1"
+                     ";"
                      "CREATE TABLE route_path ("
                      "num INTEGER PRIMARY KEY, "
                      "unitx INTEGER, "
@@ -702,6 +727,7 @@ open_db(const gchar *filename)
                      ";"
                      "CREATE TABLE route_way ("
                      "route_point PRIMARY KEY, "
+                     "direction INTEGER DEFAULT 0, "
                      "description TEXT)"
                      ";"
                      "CREATE TABLE track_path ("
@@ -713,8 +739,28 @@ open_db(const gchar *filename)
                      ";"
                      "CREATE TABLE track_way ("
                      "track_point PRIMARY KEY, "
+                     "direction INTEGER DEFAULT 0, "
                      "description TEXT)",
                      NULL, NULL, NULL);
+    }
+    else
+    {
+        sqlite3_stmt *stmt;
+        gint version;
+
+        ret = sqlite3_prepare(db, "PRAGMA user_version", -1, &stmt, NULL);
+        if (G_UNLIKELY(ret != SQLITE_OK)) return NULL;
+
+        ret = sqlite3_step(stmt);
+        if (G_UNLIKELY(ret != SQLITE_ROW)) return NULL;
+
+        version = sqlite3_column_int(stmt, 0);
+        sqlite3_finalize(stmt);
+
+        if (G_UNLIKELY(version < 1))
+        {
+            if (!update_db_to_v1(db)) return NULL;
+        }
     }
 
     return db;
@@ -743,13 +789,15 @@ path_init()
         if (!_path_db
             /* Create prepared statements - failure here is bad! */
             || SQLITE_OK != sqlite3_prepare(_path_db,
-                    "select unitx, unity, time, altitude, description "
+                    "select unitx, unity, time, altitude, description, "
+                    "direction "
                     "from route_path left join route_way on "
                     "route_path.num = route_way.route_point "
                     "order by route_path.num",
                     -1, &_route_stmt_select, NULL)
             || SQLITE_OK != sqlite3_prepare(_path_db,
-                    "select unitx, unity, time, altitude, description "
+                    "select unitx, unity, time, altitude, description, "
+                    "direction "
                     "from track_path left join track_way on "
                     "track_path.num = track_way.track_point "
                     "order by track_path.num",
@@ -766,8 +814,9 @@ path_init()
                     "values (NULL, ?, ?, ?, ?)",
                     -1, &_route_stmt_insert_path, NULL)
             || SQLITE_OK != sqlite3_prepare(_path_db,
-                    "insert into route_way (route_point, description) "
-                    "values (?, ?)",
+                    "insert into route_way "
+                    "(route_point, description, direction) "
+                    "values (?, ?, ?)",
                     -1, &_route_stmt_insert_way, NULL)
             || SQLITE_OK != sqlite3_prepare(_path_db,
                     "delete from track_path",
@@ -781,8 +830,9 @@ path_init()
                     "values (NULL, ?, ?, ?, ?)",
                     -1, &_track_stmt_insert_path, NULL)
             || SQLITE_OK != sqlite3_prepare(_path_db,
-                    "insert into track_way (track_point, description) "
-                    "values (?, ?)",
+                    "insert into track_way "
+                    "(track_point, description, direction) "
+                    "values (?, ?, ?)",
                     -1, &_track_stmt_insert_way, NULL)
             || SQLITE_OK != sqlite3_prepare(_path_db, "begin transaction",
                     -1, &_path_stmt_trans_begin, NULL)
