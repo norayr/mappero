@@ -693,27 +693,27 @@ open_db(const gchar *filename)
     if (!exists)
     {
         sqlite3_exec(db,
-                     "create table route_path ("
-                     "num integer primary key, "
-                     "unitx integer, "
-                     "unity integer, "
-                     "time integer, "
-                     "altitude integer)"
+                     "CREATE TABLE route_path ("
+                     "num INTEGER PRIMARY KEY, "
+                     "unitx INTEGER, "
+                     "unity INTEGER, "
+                     "time INTEGER, "
+                     "altitude INTEGER)"
                      ";"
-                     "create table route_way ("
-                     "route_point primary key, "
-                     "description text)"
+                     "CREATE TABLE route_way ("
+                     "route_point PRIMARY KEY, "
+                     "description TEXT)"
                      ";"
-                     "create table track_path ("
-                     "num integer primary key, "
-                     "unitx integer, "
-                     "unity integer, "
-                     "time integer, "
-                     "altitude integer)"
+                     "CREATE TABLE track_path ("
+                     "num INTEGER PRIMARY KEY, "
+                     "unitx INTEGER, "
+                     "unity INTEGER, "
+                     "time INTEGER, "
+                     "altitude INTEGER)"
                      ";"
-                     "create table track_way ("
-                     "track_point primary key, "
-                     "description text)",
+                     "CREATE TABLE track_way ("
+                     "track_point PRIMARY KEY, "
+                     "description TEXT)",
                      NULL, NULL, NULL);
     }
 
