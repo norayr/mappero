@@ -34,6 +34,7 @@
 #include "path.h"
 #include "poi.h"
 #include "route.h"
+#include "sign.h"
 #include "tile.h"
 #include "util.h"
 
@@ -83,6 +84,9 @@ struct _MapScreenPrivate
 
     /* layer for drawing over the map (used for paths) */
     ClutterActor *overlay;
+
+    /* Sign for navigation directions */
+    ClutterActor *sign;
 
     /* center of the draw layer, in pixels */
     gint overlay_center_px; /* Y is the same */
@@ -1745,3 +1749,41 @@ map_screen_toggle_layers_visibility(MapScreen *self)
     else
         clutter_actor_show(self->priv->layers_group);
 }
+
+void
+map_screen_show_sign(MapScreen *self, MapDirection dir, const gchar *text,
+                     gfloat distance)
+{
+    MapScreenPrivate *priv;
+
+    g_return_if_fail(MAP_IS_SCREEN(self));
+    priv = self->priv;
+
+    if (!priv->sign)
+    {
+        ClutterActor *stage;
+        PangoContext *context;
+
+        stage = gtk_clutter_embed_get_stage(GTK_CLUTTER_EMBED(self));
+        context = gtk_widget_get_pango_context(GTK_WIDGET(self));
+
+        priv->sign = g_object_new(MAP_TYPE_SIGN, NULL);
+        map_sign_set_pango_context(MAP_SIGN(priv->sign), context);
+        clutter_container_add_actor(CLUTTER_CONTAINER(stage), priv->sign);
+        /* move it below the OSM */
+        clutter_actor_lower(priv->sign, priv->osm);
+    }
+
+    map_sign_set_info(MAP_SIGN(priv->sign), dir, text, distance);
+    clutter_actor_show(priv->sign);
+}
+
+void
+map_screen_hide_sign(MapScreen *self)
+{
+    g_return_if_fail(MAP_IS_SCREEN(self));
+
+    if (self->priv->sign)
+        clutter_actor_hide(self->priv->sign);
+}
+
