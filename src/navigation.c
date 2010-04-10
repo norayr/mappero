@@ -276,6 +276,8 @@ map_navigation_announce_voice(const WayPoint *wp)
 void
 map_navigation_set_alert(gboolean active, const WayPoint *wp, gfloat distance)
 {
+    MapController *controller = map_controller_get_instance();
+    MapScreen *screen = map_controller_get_screen(controller);
     gboolean remove_alert = FALSE;
 
     /* TODO: replace banners with clutter actors */
@@ -298,6 +300,7 @@ map_navigation_set_alert(gboolean active, const WayPoint *wp, gfloat distance)
          * the current waypoint. */
         _initial_distance_from_waypoint = -1.f;
         _initial_distance_waypoint = NULL;
+        map_screen_hide_sign(screen);
     }
 
     /* Check if we should announce upcoming waypoints. */
@@ -311,7 +314,7 @@ map_navigation_set_alert(gboolean active, const WayPoint *wp, gfloat distance)
 
             _initial_distance_from_waypoint = distance;
             _initial_distance_waypoint = wp;
-            MACRO_BANNER_SHOW_INFO(_window, wp->desc);
+            map_screen_show_sign(screen, wp->dir, wp->desc, distance);
         }
     }
 }
