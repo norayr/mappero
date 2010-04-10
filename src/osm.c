@@ -208,13 +208,11 @@ map_osm_constructed(GObject *object)
     ClutterContainer *container = CLUTTER_CONTAINER(object);
     MapController *controller;
     ClutterActor *button;
-    GtkSettings *settings;
     GtkIconTheme *icon_theme;
     gint i;
 
     controller = map_controller_get_instance();
 
-    settings = gtk_settings_get_default();
     icon_theme = gtk_icon_theme_get_default();
 
     /* add the buttons to the OSM */
