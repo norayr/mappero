@@ -678,6 +678,48 @@ track_insert_break(gboolean temporary)
     path_save_track_to_db();
 }
 
+static sqlite3 *
+open_db(const gchar *filename)
+{
+    sqlite3 *db;
+    gboolean exists;
+
+    if (!filename) return NULL;
+
+    exists = g_file_test(filename, G_FILE_TEST_EXISTS);
+    if (SQLITE_OK != sqlite3_open(filename, &db))
+        return NULL;
+
+    if (!exists)
+    {
+        sqlite3_exec(db,
+                     "create table route_path ("
+                     "num integer primary key, "
+                     "unitx integer, "
+                     "unity integer, "
+                     "time integer, "
+                     "altitude integer)"
+                     ";"
+                     "create table route_way ("
+                     "route_point primary key, "
+                     "description text)"
+                     ";"
+                     "create table track_path ("
+                     "num integer primary key, "
+                     "unitx integer, "
+                     "unity integer, "
+                     "time integer, "
+                     "altitude integer)"
+                     ";"
+                     "create table track_way ("
+                     "track_point primary key, "
+                     "description text)",
+                     NULL, NULL, NULL);
+    }
+
+    return db;
+}
+
 void
 path_init()
 {
@@ -695,31 +737,10 @@ path_init()
         path_db_file = gnome_vfs_uri_make_full_from_relative(
                 settings_dir, CONFIG_PATH_DB_FILE);
 
-        if(!path_db_file || SQLITE_OK != sqlite3_open(path_db_file, &_path_db)
-        /* Open worked. Now create tables, failing if they already exist. */
-        || (sqlite3_exec(_path_db,
-                    "create table route_path ("
-                    "num integer primary key, "
-                    "unitx integer, "
-                    "unity integer, "
-                    "time integer, "
-                    "altitude integer)"
-                    ";"
-                    "create table route_way ("
-                    "route_point primary key, "
-                    "description text)"
-                    ";"
-                    "create table track_path ("
-                    "num integer primary key, "
-                    "unitx integer, "
-                    "unity integer, "
-                    "time integer, "
-                    "altitude integer)"
-                    ";"
-                    "create table track_way ("
-                    "track_point primary key, "
-                    "description text)",
-                    NULL, NULL, NULL), FALSE) /* !! Comma operator !! */
+        _path_db = open_db(path_db_file);
+        g_free(path_db_file);
+
+        if (!_path_db
             /* Create prepared statements - failure here is bad! */
             || SQLITE_OK != sqlite3_prepare(_path_db,
                     "select unitx, unity, time, altitude, description "
@@ -785,7 +806,6 @@ path_init()
             map_route_path_changed();
             read_path_from_db(&_track, _track_stmt_select);
         }
-        g_free(path_db_file);
     }
 
     g_free(settings_dir);
