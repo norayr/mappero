@@ -67,4 +67,4 @@ icon_aprs_DATA = icons/aprs/allicons.png icons/aprs/allicon2.png
 EXTRA_DIST = $(serviceentry_DATA) $(desktopentry_DATA) $(icon_26x26_DATA) $(icon_40x40_DATA) $(icon_scalable_DATA) $(icon_aprs_DATA) \
 	$(icon_svg)
 
-SUBDIRS = help
+SUBDIRS = help sounds

@@ -193,6 +193,7 @@ AC_OUTPUT(
           src/Makefile \
           data/Makefile \
           data/help/Makefile \
+          data/sounds/Makefile \
           po/Makefile.in \
           po/Makefile
 )
