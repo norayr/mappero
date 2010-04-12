@@ -81,35 +81,55 @@ reset_tile_sources_countdown()
     }
 }
 
-
 static gboolean
-expired_tiles_housekeeper(gpointer data)
+repository_tile_sources_expired(Repository *repository)
 {
-    GList *ts_list = map_controller_get_tile_sources_list(map_controller_get_instance());
-    MapController *controller = map_controller_get_instance();
     TileSource *ts;
     gboolean expired = FALSE;
+    gint i;
 
-    /* If device is inactive, do not download tiles and stop tileout routine */
-    if (!map_controller_get_device_active(controller))
-        return FALSE;
-
-    /* Iterate over all tile sources and if they have refresh turned on, decrement coundown */
-    while (ts_list) {
-        ts = (TileSource*)ts_list->data;
-        if (ts->refresh) {
-            ts->countdown--;
-            if (ts->countdown < 0)
-                expired = TRUE;
-        }
-        ts_list = ts_list->next;
+    /* decrement the refresh counter for the primary tile source */
+    ts = repository->primary;
+    if (ts && ts->refresh)
+    {
+        ts->countdown--;
+        if (ts->countdown < 0)
+            expired = TRUE;
     }
 
-    if (expired) {
+    if (repository->layers)
+    {
+        /* Iterate over the active tile sources and if they have refresh turned
+         * on, decrement coundown */
+        for (i = 0; i < repository->layers->len; i++) {
+            ts = g_ptr_array_index(repository->layers, i);
+            if (ts->refresh) {
+                ts->countdown--;
+                if (ts->countdown < 0)
+                    expired = TRUE;
+            }
+        }
+    }
+    return expired;
+}
+
+static gboolean
+expired_tiles_housekeeper(MapController *self)
+{
+    MapControllerPrivate *priv = self->priv;
+
+    /* If device is inactive, do not download tiles and stop tileout routine */
+    if (!map_controller_get_device_active(self))
+        return FALSE;
+
+    if (G_UNLIKELY(!priv->repository))
+        return FALSE;
+
+    if (repository_tile_sources_expired(priv->repository)) {
         refresh_expired_tiles();
         reset_tile_sources_countdown();
     }
-    return map_controller_get_device_active(controller);
+    return TRUE;
 }
 
 
@@ -1130,9 +1150,9 @@ map_controller_set_device_active(MapController *self, gboolean active)
      * here, but in timeout routine well return FALSE, which will disable it. */
     if (active) {
         /* Run routine explicitly, to force tiles to refresh immediately */
-        expired_tiles_housekeeper(NULL);
+        expired_tiles_housekeeper(self);
         /* create periodical timer which wipes expired tiles from cache */
-        g_timeout_add_seconds(60, expired_tiles_housekeeper, NULL);
+        g_timeout_add_seconds(60, (GSourceFunc)expired_tiles_housekeeper, self);
     }
 }
 
