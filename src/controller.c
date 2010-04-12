@@ -1143,16 +1143,24 @@ map_controller_get_device_active(MapController *self)
 void
 map_controller_set_device_active(MapController *self, gboolean active)
 {
+    MapControllerPrivate *priv;
+
     g_return_if_fail(MAP_IS_CONTROLLER(self));
-    self->priv->device_active = active;
+    priv = self->priv;
+
+    priv->device_active = active;
 
     /* If new device state is active, we recharge timer. If device becomes inactive, we do nothing
      * here, but in timeout routine well return FALSE, which will disable it. */
     if (active) {
-        /* Run routine explicitly, to force tiles to refresh immediately */
-        expired_tiles_housekeeper(self);
-        /* create periodical timer which wipes expired tiles from cache */
-        g_timeout_add_seconds(60, (GSourceFunc)expired_tiles_housekeeper, self);
+        if (repository_tile_sources_can_expire(priv->repository))
+        {
+            /* Run routine explicitly, to force tiles to refresh immediately */
+            expired_tiles_housekeeper(self);
+            /* create periodical timer which wipes expired tiles from cache */
+            g_timeout_add_seconds(60, (GSourceFunc)expired_tiles_housekeeper,
+                                  self);
+        }
     }
 }
 

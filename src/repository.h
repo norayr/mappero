@@ -27,6 +27,8 @@ GList* repository_xml_to_list(const gchar *data);
 
 Repository* repository_create_default_lists(GList **tile_sources,
                                             GList **repositories);
+gboolean repository_tile_sources_can_expire(Repository *repository);
+
 void repository_free(Repository *repo);
 void repository_list_edit_dialog();
 
