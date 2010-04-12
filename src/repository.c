@@ -1074,3 +1074,35 @@ repository_tile_sources_can_expire(Repository *repository)
     return FALSE;
 }
 
+gboolean
+repository_tile_sources_expired(Repository *repository)
+{
+    TileSource *ts;
+    gboolean expired = FALSE;
+    gint i;
+
+    /* decrement the refresh counter for the primary tile source */
+    ts = repository->primary;
+    if (ts && ts->refresh)
+    {
+        ts->countdown--;
+        if (ts->countdown < 0)
+            expired = TRUE;
+    }
+
+    if (repository->layers)
+    {
+        /* Iterate over the active tile sources and if they have refresh turned
+         * on, decrement coundown */
+        for (i = 0; i < repository->layers->len; i++) {
+            ts = g_ptr_array_index(repository->layers, i);
+            if (ts->refresh) {
+                ts->countdown--;
+                if (ts->countdown < 0)
+                    expired = TRUE;
+            }
+        }
+    }
+    return expired;
+}
+
