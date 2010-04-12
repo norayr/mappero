@@ -68,9 +68,9 @@ activate_gps(MapController *self)
 
 
 static void
-reset_tile_sources_countdown()
+reset_tile_sources_countdown(MapController *self)
 {
-    GList *ts_list = map_controller_get_tile_sources_list(map_controller_get_instance());
+    GList *ts_list = self->priv->tile_sources_list;
     TileSource *ts;
 
     while (ts_list) {
@@ -127,7 +127,7 @@ expired_tiles_housekeeper(MapController *self)
 
     if (repository_tile_sources_expired(priv->repository)) {
         refresh_expired_tiles();
-        reset_tile_sources_countdown();
+        reset_tile_sources_countdown(self);
     }
     return TRUE;
 }
@@ -838,7 +838,7 @@ map_controller_load_repositories(MapController *self, GConfClient *gconf_client)
             priv->repository = priv->repositories_list->data;
     }
 
-    reset_tile_sources_countdown();
+    reset_tile_sources_countdown(self);
 }
 
 /*
