@@ -43,6 +43,8 @@ struct _MapControllerPrivate
     LocationGPSDControl *gpsd_control;
     LocationGPSDevice *gps_device;
     gint gps_effective_interval;
+    gint gps_normal_interval; /* interval used when power save is not active */
+    gboolean gps_power_save;
     MapGpsData gps_data;
 
     gboolean auto_download;

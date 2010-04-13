@@ -1234,6 +1234,8 @@ map_controller_display_status_changed(MapController *self, const gchar *status)
                                   self);
         }
     }
+
+    map_controller_gps_display_changed(self, display_on);
 }
 
 gboolean

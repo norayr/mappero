@@ -344,7 +344,7 @@ map_controller_gps_dispose(MapController *self)
     }
 }
 
-void
+static void
 map_controller_gps_set_effective_interval(MapController *self, gint interval)
 {
     MapControllerPrivate *priv = self->priv;
@@ -373,5 +373,54 @@ map_controller_gps_set_effective_interval(MapController *self, gint interval)
         priv->gpsd_control = control;
     }
     priv->gps_effective_interval = interval;
+}
+
+void
+map_controller_gps_display_changed(MapController *self, gboolean active)
+{
+    MapControllerPrivate *priv;
+    gint interval;
+
+    g_return_if_fail(MAP_IS_CONTROLLER(self));
+    priv = self->priv;
+
+    if (!priv->gps_power_save) return;
+
+    if (active)
+        interval = priv->gps_normal_interval;
+    else
+        interval = MAX(priv->gps_normal_interval, 10);
+
+    map_controller_gps_set_effective_interval(self, interval);
+}
+
+void
+map_controller_gps_set_interval(MapController *self, gint interval)
+{
+    MapControllerPrivate *priv;
+
+    g_return_if_fail(MAP_IS_CONTROLLER(self));
+    priv = self->priv;
+
+    if (interval == priv->gps_normal_interval) return;
+    priv->gps_normal_interval = interval;
+
+    if (priv->gps_power_save && !map_controller_is_display_on(self))
+        interval = MAX(interval, 10);
+
+    map_controller_gps_set_effective_interval(self, interval);
+}
+
+/**
+ * map_controller_gps_set_power_save:
+ * @power_save: whether to activate GPS power saving mode.
+ *
+ * GPS power saving mode sets the GPS polling interval at no less than 10
+ * seconds when the device is inactive.
+ */
+void
+map_controller_gps_set_power_save(MapController *self, gboolean power_save)
+{
+    self->priv->gps_power_save = power_save;
 }
 

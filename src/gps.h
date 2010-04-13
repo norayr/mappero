@@ -26,8 +26,9 @@ void set_conn_state(ConnState new_conn_state);
 void map_controller_gps_connect(MapController *self);
 void map_controller_gps_disconnect(MapController *self);
 
-void map_controller_gps_set_effective_interval(MapController *self,
-                                               gint interval);
+void map_controller_gps_set_interval(MapController *self, gint interval);
+void map_controller_gps_set_power_save(MapController *self, gint interval);
+void map_controller_gps_display_changed(MapController *self, gboolean active);
 
 void map_controller_gps_init(MapController *self, GConfClient *gconf_client);
 void map_controller_gps_dispose(MapController *self);
