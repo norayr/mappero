@@ -290,13 +290,23 @@ map_controller_gps_disconnect(MapController *self)
 void
 map_controller_gps_connect(MapController *self)
 {
+    MapControllerPrivate *priv = self->priv;
+    LocationGPSDControlInterval ci;
+
     DEBUG("%d", _gps_state);
 
     if(_enable_gps && _gps_state == RCVR_OFF)
     {
         set_conn_state(RCVR_DOWN);
 
-	location_gpsd_control_start(self->priv->gpsd_control);
+        ci = priv->gps_effective_interval > 0 ?
+            priv->gps_effective_interval * LOCATION_INTERVAL_1S :
+            LOCATION_INTERVAL_DEFAULT;
+
+        g_object_set(priv->gpsd_control,
+                     "preferred-interval", ci,
+                     NULL);
+	location_gpsd_control_start(priv->gpsd_control);
     }
 }
 
@@ -332,5 +342,36 @@ map_controller_gps_dispose(MapController *self)
         g_object_unref(priv->gpsd_control);
         priv->gpsd_control = NULL;
     }
+}
+
+void
+map_controller_gps_set_effective_interval(MapController *self, gint interval)
+{
+    MapControllerPrivate *priv = self->priv;
+    LocationGPSDControl *control;
+    LocationGPSDControlInterval ci;
+
+    if (interval == priv->gps_effective_interval) return;
+
+    if (_enable_gps && priv->gpsd_control != NULL)
+    {
+        ci = interval > 0 ?
+            interval * LOCATION_INTERVAL_1S :
+            LOCATION_INTERVAL_DEFAULT;
+
+        /* we cannot update the interval on the fly, we need to start and stop
+         * the GPSD control */
+        control = location_gpsd_control_get_default();
+        g_object_set(control,
+                     "preferred-interval", ci,
+                     NULL);
+        location_gpsd_control_start(control);
+
+        location_gpsd_control_stop(priv->gpsd_control);
+        g_object_unref(priv->gpsd_control);
+
+        priv->gpsd_control = control;
+    }
+    priv->gps_effective_interval = interval;
 }
 

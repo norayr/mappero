@@ -42,6 +42,7 @@ struct _MapControllerPrivate
 
     LocationGPSDControl *gpsd_control;
     LocationGPSDevice *gps_device;
+    gint gps_effective_interval;
     MapGpsData gps_data;
 
     gboolean auto_download;
