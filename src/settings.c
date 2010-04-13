@@ -961,6 +961,70 @@ run_announce_dialog(GtkWindow *parent)
 }
 
 static void
+run_gps_dialog(GtkWindow *parent)
+{
+    MapController *controller = map_controller_get_instance();
+    GtkWidget *dialog;
+    GtkWidget *w_power_save;
+    HildonTouchSelector *selector;
+    GtkWidget *w_interval;
+    static const gint intervals[] = { 1, 2, 5, 10, 20, 30, 60, 120, 0 };
+    gint i, selected, interval;
+
+    dialog = map_dialog_new(_("GPS"), parent, TRUE);
+    gtk_dialog_add_button(GTK_DIALOG(dialog),
+                          GTK_STOCK_OK, GTK_RESPONSE_ACCEPT);
+
+    /* Polling interval */
+    interval = map_controller_gps_get_interval(controller);
+    selected = 0;
+    selector = HILDON_TOUCH_SELECTOR (hildon_touch_selector_new_text());
+    hildon_touch_selector_append_text(selector, _("1 second"));
+    for (i = 1; intervals[i] != 0; i++)
+    {
+        gchar buffer[64];
+        snprintf(buffer, sizeof(buffer), _("%d seconds"), intervals[i]);
+        hildon_touch_selector_append_text(selector, buffer);
+        if (interval >= intervals[i])
+            selected = i;
+    }
+    w_interval =
+        g_object_new(HILDON_TYPE_PICKER_BUTTON,
+                     "arrangement", HILDON_BUTTON_ARRANGEMENT_HORIZONTAL,
+                     "size", HILDON_SIZE_FINGER_HEIGHT,
+                     "title", _("GPS polling interval"),
+                     "touch-selector", selector,
+                     "xalign", 0.0,
+                     NULL);
+    hildon_picker_button_set_active(HILDON_PICKER_BUTTON(w_interval),
+                                    selected);
+    map_dialog_add_widget(MAP_DIALOG(dialog), w_interval);
+
+    /* GPS power saving */
+    w_power_save = hildon_check_button_new(HILDON_SIZE_FINGER_HEIGHT);
+    gtk_button_set_label(GTK_BUTTON(w_power_save),
+                         _("Reduce GPS usage on screen off"));
+    hildon_check_button_set_active(HILDON_CHECK_BUTTON(w_power_save),
+        map_controller_gps_get_power_save(controller));
+    map_dialog_add_widget(MAP_DIALOG(dialog), w_power_save);
+
+    gtk_widget_show_all(dialog);
+    if (gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_ACCEPT)
+    {
+        selected =
+            hildon_picker_button_get_active(HILDON_PICKER_BUTTON(w_interval));
+        map_controller_gps_set_interval(controller, intervals[selected]);
+
+        map_controller_gps_set_power_save(controller,
+            hildon_check_button_get_active(HILDON_CHECK_BUTTON(w_power_save)));
+
+        settings_dialog_set_save(parent, TRUE);
+    }
+
+    gtk_widget_destroy(dialog);
+}
+
+static void
 run_misc_dialog(GtkWindow *parent)
 {
     MapController *controller = map_controller_get_instance();
@@ -1304,6 +1368,7 @@ gboolean settings_dialog()
     enum {
         SETTINGS_AUTO_CENTER,
         SETTINGS_ANNOUNCE,
+        SETTINGS_GPS,
         SETTINGS_MISC,
         SETTINGS_POI,
         SETTINGS_KEYS,
@@ -1320,6 +1385,7 @@ gboolean settings_dialog()
         /* Auto-Center page. */
         map_dialog_create_button(dlg, _("Auto-Center"), SETTINGS_AUTO_CENTER);
         map_dialog_create_button(dlg, _("Announce"), SETTINGS_ANNOUNCE);
+        map_dialog_create_button(dlg, _("GPS"), SETTINGS_GPS);
         map_dialog_create_button(dlg, _("Misc."), SETTINGS_MISC);
         map_dialog_create_button(dlg, _("POI"), SETTINGS_POI);
         map_dialog_create_button(dlg, _("Hardware Keys..."), SETTINGS_KEYS);
@@ -1339,6 +1405,8 @@ gboolean settings_dialog()
                 run_auto_center_dialog(parent); break;
             case SETTINGS_ANNOUNCE:
                 run_announce_dialog(parent); break;
+            case SETTINGS_GPS:
+                run_gps_dialog(parent); break;
             case SETTINGS_MISC:
                 run_misc_dialog(parent); break;
             case SETTINGS_POI:

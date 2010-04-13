@@ -411,6 +411,13 @@ map_controller_gps_set_interval(MapController *self, gint interval)
     map_controller_gps_set_effective_interval(self, interval);
 }
 
+gint
+map_controller_gps_get_interval(MapController *self)
+{
+    g_return_val_if_fail(MAP_IS_CONTROLLER(self), 0);
+    return self->priv->gps_normal_interval;
+}
+
 /**
  * map_controller_gps_set_power_save:
  * @power_save: whether to activate GPS power saving mode.
@@ -422,5 +429,12 @@ void
 map_controller_gps_set_power_save(MapController *self, gboolean power_save)
 {
     self->priv->gps_power_save = power_save;
+}
+
+gboolean
+map_controller_gps_get_power_save(MapController *self)
+{
+    g_return_val_if_fail(MAP_IS_CONTROLLER(self), FALSE);
+    return self->priv->gps_power_save;
 }
 
