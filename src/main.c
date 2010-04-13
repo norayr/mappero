@@ -89,6 +89,17 @@ static GMutex *_conic_connection_mutex = NULL;
 static GCond *_conic_connection_cond = NULL;
 #endif
 
+/**
+ * maemo_mapper_init_late:
+ *
+ * Put inside this function all initializations that can be delayed a bit
+ */
+static gboolean
+maemo_mapper_init_late(gpointer unused)
+{
+    return FALSE;
+}
+
 #ifdef CONIC
 static void
 conic_conn_event(ConIcConnection *connection, ConIcConnectionEvent *event)
@@ -670,6 +681,8 @@ main(gint argc, gchar *argv[])
         return 0;
     }
 #endif
+
+    g_idle_add_full(G_PRIORITY_LOW, maemo_mapper_init_late, NULL, NULL);
 
     maemo_mapper_init(argc, argv);
 
