@@ -75,6 +75,8 @@
 #include "util.h"
 
 #include <clutter-gtk/clutter-gtk.h>
+#include <mce/dbus-names.h>
+#include <mce/mode-names.h>
 
 
 static void osso_cb_hw_state(osso_hw_state_t *state, gpointer data);
@@ -89,6 +91,60 @@ static GMutex *_conic_connection_mutex = NULL;
 static GCond *_conic_connection_cond = NULL;
 #endif
 
+static DBusHandlerResult
+dbus_handle_mce_message(DBusConnection *conn, DBusMessage *msg, gpointer data)
+{
+    MapController *controller = MAP_CONTROLLER(data);
+    DBusMessageIter iter;
+    const gchar *display_status = NULL;
+
+    if (dbus_message_is_signal(msg, MCE_SIGNAL_IF, MCE_DISPLAY_SIG)) {
+        if (dbus_message_iter_init(msg, &iter)) {
+            dbus_message_iter_get_basic(&iter, &display_status);
+            map_controller_display_status_changed(controller, display_status);
+        }
+    }
+    return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+}
+
+static void
+mce_init()
+{
+    MapController *controller = map_controller_get_instance();
+    DBusError error;
+    char *display_status;
+    DBusConnection *conn;
+    DBusMessage *message, *reply;
+
+    g_return_if_fail(_osso != NULL);
+
+    /* Get the system DBus connection */
+    conn = osso_get_sys_dbus_connection(_osso);
+
+#define MCE_MATCH_DISPLAY "type='signal',interface='" MCE_SIGNAL_IF "',member='" MCE_DISPLAY_SIG "'"
+    /* Add the callback, which should be called, once the device is rotated */
+    dbus_bus_add_match(conn, MCE_MATCH_DISPLAY, NULL);
+    dbus_connection_add_filter(conn, dbus_handle_mce_message, controller, NULL);
+
+    /* Get the current display state */
+    message = dbus_message_new_method_call(MCE_SERVICE,
+                                           MCE_REQUEST_PATH,
+                                           MCE_REQUEST_IF,
+                                           MCE_DISPLAY_STATUS_GET);
+
+    dbus_error_init(&error);
+    reply = dbus_connection_send_with_reply_and_block(conn, message,
+                                                      -1, &error);
+    dbus_message_unref(message);
+
+    if (dbus_message_get_args(reply, NULL,
+                              DBUS_TYPE_STRING, &display_status,
+                              DBUS_TYPE_INVALID)) {
+        map_controller_display_status_changed(controller, display_status);
+    }
+    dbus_message_unref(reply);
+}
+
 /**
  * maemo_mapper_init_late:
  *
@@ -97,6 +153,8 @@ static GCond *_conic_connection_cond = NULL;
 static gboolean
 maemo_mapper_init_late(gpointer unused)
 {
+    mce_init();
+
     return FALSE;
 }
 

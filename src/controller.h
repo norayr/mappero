@@ -153,6 +153,9 @@ void map_controller_save_repositories(MapController *self, GConfClient *gconf_cl
 /* Device activity state */
 gboolean map_controller_get_device_active(MapController *self);
 void map_controller_set_device_active(MapController *self, gboolean active);
+void map_controller_display_status_changed(MapController *self,
+                                           const gchar *status);
+gboolean map_controller_is_display_on(MapController *self);
 
 /* Plugins */
 void map_controller_register_plugin(MapController *self, GObject *plugin);

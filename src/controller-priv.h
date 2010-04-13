@@ -46,6 +46,7 @@ struct _MapControllerPrivate
     MapGpsData gps_data;
 
     gboolean auto_download;
+    gboolean display_on;
 
     guint source_map_center;
     guint is_disposed : 1;
