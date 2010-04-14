@@ -24,10 +24,18 @@
 
 #include <glib.h>
 
+#ifdef ENABLE_DEBUG
+
 #define DEBUG(format, ...) G_STMT_START {                   \
     if (_map_debug_get_level() > 0)                         \
         g_debug("%s: " format, G_STRFUNC, ##__VA_ARGS__);   \
 } G_STMT_END
+
+#else /* !ENABLE_DEBUG */
+
+#define DEBUG(format, ...)
+
+#endif
 
 G_BEGIN_DECLS
 
