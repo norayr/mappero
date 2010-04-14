@@ -76,7 +76,10 @@ typedef enum
 
     /** The connection with the receiver is up and a GPS fix IS available.
      * No gtk_banner is visible. */
-    RCVR_FIXED
+    RCVR_FIXED,
+
+    /* The GPS is switching to a different polling interval */
+    RCVR_RESTART,
 } ConnState;
 
 /** Possible center modes.  The "WAS" modes imply no current center mode;

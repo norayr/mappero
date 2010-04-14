@@ -137,6 +137,13 @@ on_gps_changed(LocationGPSDevice *device, MapController *controller)
     if (!_enable_gps)
         return;
 
+    if (G_UNLIKELY(_gps_state == RCVR_RESTART))
+    {
+        if (device->status == LOCATION_GPS_DEVICE_STATUS_NO_FIX)
+            return;
+        set_conn_state(RCVR_FIXED);
+    }
+
     gps->fields = 0;
 
     if (device->fix->fields & LOCATION_GPS_DEVICE_LATLONG_SET) {
@@ -361,6 +368,10 @@ map_controller_gps_set_effective_interval(MapController *self, gint interval)
 
         /* we cannot update the interval on the fly, we need to start and stop
          * the GPSD control */
+        /* We don't want this to cause a break in the track. This can only be
+         * done with a hack: we mark the GPS to be in RCVR_RESTART state, and
+         * we'll ignore all events until the device is connected again */
+        set_conn_state(RCVR_RESTART);
         control = location_gpsd_control_get_default();
         g_object_set(control,
                      "preferred-interval", ci,
