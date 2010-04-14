@@ -90,39 +90,6 @@ settings_save()
         return;
     }
 
-    /* Save GPS Receiver Type. */
-    gconf_client_set_string(gconf_client,
-            GCONF_KEY_GPS_RCVR_TYPE,
-            GPS_RCVR_ENUM_TEXT[_gri.type], NULL);
-
-    /* Save Bluetooth Receiver MAC. */
-    if(_gri.bt_mac)
-        gconf_client_set_string(gconf_client,
-                GCONF_KEY_GPS_BT_MAC, _gri.bt_mac, NULL);
-    else
-        gconf_client_unset(gconf_client,
-                GCONF_KEY_GPS_BT_MAC, NULL);
-
-    /* Save GPSD Host. */
-    if(_gri.gpsd_host)
-        gconf_client_set_string(gconf_client,
-                GCONF_KEY_GPS_GPSD_HOST, _gri.gpsd_host, NULL);
-    else
-        gconf_client_unset(gconf_client,
-                GCONF_KEY_GPS_GPSD_HOST, NULL);
-
-    /* Save GPSD Port. */
-    gconf_client_set_int(gconf_client,
-            GCONF_KEY_GPS_GPSD_PORT, _gri.gpsd_port, NULL);
-
-    /* Save File Path. */
-    if(_gri.file_path)
-        gconf_client_set_string(gconf_client,
-                GCONF_KEY_GPS_FILE_PATH, _gri.file_path, NULL);
-    else
-        gconf_client_unset(gconf_client,
-                GCONF_KEY_GPS_FILE_PATH, NULL);
-
     /* GPS polling interval */
     gconf_client_set_int(gconf_client, GCONF_KEY_GPS_INTERVAL,
                          map_controller_gps_get_interval(controller), NULL);
@@ -1353,42 +1320,6 @@ settings_init(GConfClient *gconf_client)
         popup_error(_window, _("Failed to initialize GConf.  Quitting."));
         exit(1);
     }
-
-    /* Get GPS Receiver Type.  Default is Bluetooth Receiver. */
-    {
-        gchar *gri_type_str = gconf_client_get_string(gconf_client,
-                GCONF_KEY_GPS_RCVR_TYPE, NULL);
-        gint i = 0;
-        if(gri_type_str)
-        {
-            for(i = GPS_RCVR_ENUM_COUNT - 1; i > 0; i--)
-                if(!strcmp(gri_type_str, GPS_RCVR_ENUM_TEXT[i]))
-                    break;
-            g_free(gri_type_str);
-        }
-        _gri.type = i;
-    }
-
-    /* Get Bluetooth Receiver MAC.  Default is NULL. */
-    _gri.bt_mac = gconf_client_get_string(
-            gconf_client, GCONF_KEY_GPS_BT_MAC, NULL);
-
-    /* Get GPSD Host.  Default is localhost. */
-    _gri.gpsd_host = gconf_client_get_string(
-            gconf_client, GCONF_KEY_GPS_GPSD_HOST, NULL);
-    if(!_gri.gpsd_host)
-        _gri.gpsd_host = g_strdup("127.0.0.1");
-
-    /* Get GPSD Port.  Default is GPSD_PORT_DEFAULT (2947). */
-    if(!(_gri.gpsd_port = gconf_client_get_int(
-            gconf_client, GCONF_KEY_GPS_GPSD_PORT, NULL)))
-        _gri.gpsd_port = GPSD_PORT_DEFAULT;
-
-    /* Get File Path.  Default is /dev/pgps. */
-    _gri.file_path = gconf_client_get_string(
-            gconf_client, GCONF_KEY_GPS_FILE_PATH, NULL);
-    if(!_gri.file_path)
-        _gri.file_path = g_strdup("/dev/pgps");
 
     /* Get GPS polling interval */
     value = gconf_client_get(gconf_client, GCONF_KEY_GPS_INTERVAL, NULL);

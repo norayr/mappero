@@ -71,7 +71,6 @@ GdkColor COLORABLE_DEFAULT[COLORABLE_ENUM_COUNT] =
 };
 CoordFormatSetup DEG_FORMAT_ENUM_TEXT[DEG_FORMAT_ENUM_COUNT];
 gchar *SPEED_LOCATION_ENUM_TEXT[SPEED_LOCATION_ENUM_COUNT];
-gchar *GPS_RCVR_ENUM_TEXT[GPS_RCVR_ENUM_COUNT];
 
 /** The main GtkContainer of the application. */
 GtkWidget *_window = NULL;
@@ -161,7 +160,6 @@ GThreadPool *_mrt_thread_pool = NULL;
 gboolean _refresh_map_after_download = FALSE;
 
 /** CONFIGURATION INFORMATION. */
-GpsRcvrInfo _gri = { 0, 0, 0, 0, 0 };
 ConnState _gps_state;
 gchar *_route_dir_uri = NULL;
 gchar *_track_file_uri = NULL;

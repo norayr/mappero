@@ -44,7 +44,6 @@ extern gchar *COLORABLE_GCONF[COLORABLE_ENUM_COUNT];
 extern GdkColor COLORABLE_DEFAULT[COLORABLE_ENUM_COUNT];
 extern CoordFormatSetup DEG_FORMAT_ENUM_TEXT[DEG_FORMAT_ENUM_COUNT];
 extern gchar *SPEED_LOCATION_ENUM_TEXT[SPEED_LOCATION_ENUM_COUNT];
-extern gchar *GPS_RCVR_ENUM_TEXT[GPS_RCVR_ENUM_COUNT];
 
 /** The main GtkContainer of the application. */
 extern GtkWidget *_window;
@@ -130,7 +129,6 @@ extern GThreadPool *_mrt_thread_pool;
 extern gboolean _refresh_map_after_download;
 
 /** CONFIGURATION INFORMATION. */
-extern GpsRcvrInfo _gri;
 extern ConnState _gps_state;
 extern gchar *_route_dir_uri;
 extern gchar *_track_file_uri;

@@ -406,10 +406,6 @@ maemo_mapper_init(gint argc, gchar **argv)
     SPEED_LOCATION_ENUM_TEXT[SPEED_LOCATION_BOTTOM_RIGHT] = _("Bottom-Right");
     SPEED_LOCATION_ENUM_TEXT[SPEED_LOCATION_BOTTOM_LEFT] = _("Bottom-Left");
 
-    GPS_RCVR_ENUM_TEXT[GPS_RCVR_BT] = _("Bluetooth");
-    GPS_RCVR_ENUM_TEXT[GPS_RCVR_GPSD] = _("GPSD");
-    GPS_RCVR_ENUM_TEXT[GPS_RCVR_FILE] = _("File");
-
     /* Set up track array (must be done before config). */
     memset(&_track, 0, sizeof(_track));
     /* initialisation of paths is done in path_init() */

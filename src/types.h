@@ -225,14 +225,6 @@ typedef enum
     MAP_UPDATE_ENUM_COUNT
 } MapUpdateType;
 
-typedef enum
-{
-    GPS_RCVR_BT,
-    GPS_RCVR_GPSD,
-    GPS_RCVR_FILE,
-    GPS_RCVR_ENUM_COUNT
-} GpsRcvrType;
-
 #ifdef USE_DOUBLES_FOR_LATLON
 typedef gdouble MapGeo;
 #else
@@ -443,16 +435,6 @@ struct _ThreadLatch
     gint num_done;
     GMutex *mutex;
     GCond *cond;
-};
-
-/** Data to describe the GPS connection. */
-typedef struct _GpsRcvrInfo GpsRcvrInfo;
-struct _GpsRcvrInfo {
-    GpsRcvrType type;
-    gchar *bt_mac;
-    gchar *file_path;
-    gchar *gpsd_host;
-    gint gpsd_port;
 };
 
 typedef struct _BrowseInfo BrowseInfo;
