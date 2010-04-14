@@ -23,6 +23,7 @@
 #define MAP_DEBUG_H
 
 #include <glib.h>
+#include <time.h>
 
 #ifdef ENABLE_DEBUG
 
@@ -31,9 +32,29 @@
         g_debug("%s: " format, G_STRFUNC, ##__VA_ARGS__);   \
 } G_STMT_END
 
+/* Macros for profiling */
+#define TIME_START() \
+    struct timespec tm0, tm1; \
+    struct timespec tt0, tt1; \
+    long ms_mdiff; \
+    long ms_tdiff; \
+    clock_gettime(CLOCK_MONOTONIC, &tm0); \
+    clock_gettime(CLOCK_THREAD_CPUTIME_ID, &tt0)
+
+#define TIME_STOP() \
+    clock_gettime(CLOCK_MONOTONIC, &tm1); \
+    clock_gettime(CLOCK_THREAD_CPUTIME_ID, &tt1); \
+    ms_mdiff = (tm1.tv_sec - tm0.tv_sec) * 1000 + \
+               (tm1.tv_nsec - tm0.tv_nsec) / 1000000; \
+    ms_tdiff = (tt1.tv_sec - tt0.tv_sec) * 1000 + \
+               (tt1.tv_nsec - tt0.tv_nsec) / 1000000; \
+    DEBUG("%s, total %ld ms, thread %ld ms", G_STRLOC, ms_mdiff, ms_tdiff)
+
 #else /* !ENABLE_DEBUG */
 
 #define DEBUG(format, ...)
+#define TIME_START()
+#define TIME_STOP()
 
 #endif
 
