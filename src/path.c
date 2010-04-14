@@ -597,8 +597,6 @@ map_path_track_update(const MapGpsData *gps)
          * a configuration option). */
         if (gps->hdop < MAX_UNCERTAINTY && point_is_significant(gps, &_track))
         {
-            MapScreen *screen = map_controller_get_screen(controller);
-
             must_add = TRUE;
 
             pos.unit = gps->unit;
@@ -606,8 +604,13 @@ map_path_track_update(const MapGpsData *gps)
                 pos.altitude = gps->altitude;
 
             /* Draw the line immediately */
-            map_screen_track_append(screen, &pos);
-            map_screen_refresh_panel(screen);
+            if (map_controller_is_display_on(controller))
+            {
+                MapScreen *screen = map_controller_get_screen(controller);
+
+                map_screen_track_append(screen, &pos);
+                map_screen_refresh_panel(screen);
+            }
 
             if (_track.last_lat != 0 && _track.last_lon != 0)
             {

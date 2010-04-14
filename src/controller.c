@@ -158,6 +158,8 @@ map_controller_init(MapController *controller)
     instance = controller;
 
     priv->orientation = -1;
+    /* until we know the display state, assume it's on */
+    priv->display_on = TRUE;
 
     gconf_client_preload(gconf_client, GCONF_KEY_PREFIX,
                          GCONF_CLIENT_PRELOAD_RECURSIVE, NULL);
@@ -630,9 +632,12 @@ map_controller_set_center(MapController *self, MapPoint center, gint zoom)
         priv->zoom = zoom;
     priv->center = center;
 
-    if (priv->source_map_center == 0)
-        priv->source_map_center =
-            g_idle_add((GSourceFunc)set_center_real, self);
+    if (priv->display_on)
+    {
+        if (priv->source_map_center == 0)
+            priv->source_map_center =
+                g_idle_add((GSourceFunc)set_center_real, self);
+    }
 }
 
 void
@@ -657,7 +662,8 @@ map_controller_set_rotation(MapController *self, gint angle)
 
     angle = angle % 360;
     priv->rotation_angle = angle;
-    map_screen_set_rotation(priv->screen, angle);
+    if (priv->display_on)
+        map_screen_set_rotation(priv->screen, angle);
 }
 
 gint
@@ -748,8 +754,11 @@ map_controller_refresh_paths(MapController *self)
 {
     g_return_if_fail(MAP_IS_CONTROLLER(self));
 
-    map_screen_redraw_overlays(self->priv->screen);
-    map_screen_refresh_panel(self->priv->screen);
+    if (self->priv->display_on)
+    {
+        map_screen_redraw_overlays(self->priv->screen);
+        map_screen_refresh_panel(self->priv->screen);
+    }
 }
 
 /*
@@ -765,8 +774,11 @@ map_controller_update_gps(MapController *self)
 
     g_return_if_fail(MAP_IS_CONTROLLER(self));
     priv = self->priv;
-    map_screen_update_mark(priv->screen);
-    map_screen_set_best_center(priv->screen);
+    if (priv->display_on)
+    {
+        map_screen_update_mark(priv->screen);
+        map_screen_set_best_center(priv->screen);
+    }
 }
 
 /*
@@ -1219,20 +1231,24 @@ map_controller_save_routers_options(MapController *self, GConfClient *gconf_clie
 void
 map_controller_display_status_changed(MapController *self, const gchar *status)
 {
+    MapControllerPrivate *priv;
     gboolean display_on;
 
     g_return_if_fail(MAP_IS_CONTROLLER(self));
+    priv = self->priv;
 
     display_on = (g_strcmp0(status, "off") != 0);
     DEBUG("Display is %s", display_on ? "on" : "off");
 
-    self->priv->display_on = display_on;
+    if (priv->display_on == display_on) return;
+
+    priv->display_on = display_on;
 
     /* If new device state is active, we recharge timer. If device becomes
      * inactive, we do nothing here, but in timeout routine we'll return FALSE,
      * which will disable it. */
     if (display_on) {
-        if (repository_tile_sources_can_expire(self->priv->repository))
+        if (repository_tile_sources_can_expire(priv->repository))
         {
             /* Run routine explicitly, to force tiles to refresh immediately */
             expired_tiles_housekeeper(self);
@@ -1240,6 +1256,12 @@ map_controller_display_status_changed(MapController *self, const gchar *status)
             g_timeout_add_seconds(60, (GSourceFunc)expired_tiles_housekeeper,
                                   self);
         }
+
+        /* refresh the screen */
+        set_center_real(self);
+        map_screen_set_rotation(priv->screen, priv->rotation_angle);
+        map_screen_update_mark(priv->screen);
+        map_screen_refresh_panel(priv->screen);
     }
 
     map_controller_gps_display_changed(self, display_on);
