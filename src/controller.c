@@ -159,6 +159,9 @@ map_controller_init(MapController *controller)
 
     priv->orientation = -1;
 
+    gconf_client_preload(gconf_client, GCONF_KEY_PREFIX,
+                         GCONF_CLIENT_PRELOAD_RECURSIVE, NULL);
+
     /* register plugins */
     plugin = g_object_new(MAP_TYPE_GOOGLE, NULL);
     map_controller_register_plugin(controller, plugin);
