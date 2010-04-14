@@ -33,6 +33,8 @@ gboolean settings_dialog(void);
 #define GCONF_KEY_GPS_GPSD_HOST GCONF_KEY_PREFIX"/gps_gpsd_host"
 #define GCONF_KEY_GPS_GPSD_PORT GCONF_KEY_PREFIX"/gps_gpsd_port"
 #define GCONF_KEY_GPS_FILE_PATH GCONF_KEY_PREFIX"/gps_file_path"
+#define GCONF_KEY_GPS_INTERVAL GCONF_KEY_PREFIX"/gps_interval"
+#define GCONF_KEY_GPS_POWER_SAVE GCONF_KEY_PREFIX"/gps_power_save"
 #define GCONF_KEY_AUTO_DOWNLOAD GCONF_KEY_PREFIX"/auto_download"
 #define GCONF_KEY_AUTO_DOWNLOAD_PRECACHE \
                                       GCONF_KEY_PREFIX"/auto_download_precache"

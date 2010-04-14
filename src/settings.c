@@ -128,6 +128,14 @@ settings_save()
         gconf_client_unset(gconf_client,
                 GCONF_KEY_GPS_FILE_PATH, NULL);
 
+    /* GPS polling interval */
+    gconf_client_set_int(gconf_client, GCONF_KEY_GPS_INTERVAL,
+                         map_controller_gps_get_interval(controller), NULL);
+
+    /* GPS power save */
+    gconf_client_set_bool(gconf_client, GCONF_KEY_GPS_POWER_SAVE,
+                          map_controller_gps_get_power_save(controller), NULL);
+
     /* Save Auto-Download. */
     gconf_client_set_bool(gconf_client,
             GCONF_KEY_AUTO_DOWNLOAD,
@@ -1448,6 +1456,8 @@ settings_init(GConfClient *gconf_client)
     gchar *str;
     MapOrientation orientation;
     gboolean auto_download;
+    gboolean gps_power_save;
+    gint gps_interval;
 
     /* Initialize some constants. */
     CUSTOM_KEY_GCONF[CUSTOM_KEY_UP] = GCONF_KEY_PREFIX"/key_up";
@@ -1516,6 +1526,28 @@ settings_init(GConfClient *gconf_client)
             gconf_client, GCONF_KEY_GPS_FILE_PATH, NULL);
     if(!_gri.file_path)
         _gri.file_path = g_strdup("/dev/pgps");
+
+    /* Get GPS polling interval */
+    value = gconf_client_get(gconf_client, GCONF_KEY_GPS_INTERVAL, NULL);
+    if (value)
+    {
+        gps_interval = gconf_value_get_int(value);
+        gconf_value_free(value);
+    }
+    else
+        gps_interval = 1;
+    map_controller_gps_set_interval(controller, gps_interval);
+
+    /* Get GPS power save */
+    value = gconf_client_get(gconf_client, GCONF_KEY_GPS_POWER_SAVE, NULL);
+    if (value)
+    {
+        gps_power_save = gconf_value_get_bool(value);
+        gconf_value_free(value);
+    }
+    else
+        gps_power_save = TRUE;
+    map_controller_gps_set_power_save(controller, gps_power_save);
 
     /* Get Auto-Download.  Default is TRUE. */
     value = gconf_client_get(gconf_client, GCONF_KEY_AUTO_DOWNLOAD, NULL);
