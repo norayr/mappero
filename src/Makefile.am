@@ -61,7 +61,6 @@ maemo_mapper_SOURCES = \
 	gpsbt.c \
 	gpx.c \
 	he-about-dialog.c \
-	input.c \
 	main.c \
 	maps.c \
 	mark.c \

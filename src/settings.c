@@ -58,11 +58,6 @@
 #include "settings.h"
 #include "util.h"
 
-typedef struct _KeysDialogInfo KeysDialogInfo;
-struct _KeysDialogInfo {
-    GtkWidget *cmb[CUSTOM_KEY_ENUM_COUNT];
-};
-
 typedef struct _ColorsDialogInfo ColorsDialogInfo;
 struct _ColorsDialogInfo {
     GtkWidget *col[COLORABLE_ENUM_COUNT];
@@ -184,15 +179,6 @@ settings_save()
     /* Save Units. */
     gconf_client_set_string(gconf_client,
             GCONF_KEY_UNITS, UNITS_ENUM_TEXT[_units], NULL);
-
-    /* Save Custom Key Actions. */
-    {
-        gint i;
-        for(i = 0; i < CUSTOM_KEY_ENUM_COUNT; i++)
-            gconf_client_set_string(gconf_client,
-                    CUSTOM_KEY_GCONF[i],
-                    CUSTOM_ACTION_ENUM_TEXT[_action[i]], NULL);
-    }
 
     /* Save Deg Format. */
     gconf_client_set_string(gconf_client,
@@ -412,116 +398,6 @@ settings_dialog_browse_forfile(GtkWidget *button)
     }
 
     gtk_widget_destroy(dialog);
-
-    return TRUE;
-}
-
-static gboolean
-settings_dialog_hardkeys_reset(GtkWidget *widget, KeysDialogInfo *cdi)
-{
-    GtkWidget *confirm;
-
-    confirm = hildon_note_new_confirmation(GTK_WINDOW(_window),
-            _("Reset all hardware keys to their original defaults?"));
-
-    if(GTK_RESPONSE_OK == gtk_dialog_run(GTK_DIALOG(confirm)))
-    {
-        gint i;
-        for(i = 0; i < CUSTOM_KEY_ENUM_COUNT; i++)
-            gtk_combo_box_set_active(GTK_COMBO_BOX(cdi->cmb[i]),
-                    CUSTOM_KEY_DEFAULT[i]);
-    }
-    gtk_widget_destroy(confirm);
-
-    return TRUE;
-}
-
-static gboolean
-settings_dialog_hardkeys(GtkWindow *parent)
-{
-    gint i;
-    static GtkWidget *dialog = NULL;
-    static GtkWidget *table = NULL;
-    static GtkWidget *label = NULL;
-    static KeysDialogInfo bdi;
-    static GtkWidget *btn_defaults = NULL;
-
-    if(dialog == NULL)
-    {
-        dialog = gtk_dialog_new_with_buttons(_("Hardware Keys"),
-                parent, GTK_DIALOG_MODAL,
-                GTK_STOCK_OK, GTK_RESPONSE_ACCEPT,
-                NULL);
-
-        gtk_container_add(GTK_CONTAINER(GTK_DIALOG(dialog)->action_area),
-                btn_defaults = gtk_button_new_with_label(_("Reset...")));
-        g_signal_connect(G_OBJECT(btn_defaults), "clicked",
-                          G_CALLBACK(settings_dialog_hardkeys_reset), &bdi);
-
-        gtk_dialog_add_button(GTK_DIALOG(dialog),
-                GTK_STOCK_CANCEL, GTK_RESPONSE_REJECT);
-
-        gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox),
-                table = gtk_table_new(2, 9, FALSE), TRUE, TRUE, 0);
-        for(i = 0; i < CUSTOM_KEY_ENUM_COUNT; i++)
-        {
-            gint j;
-            gtk_table_attach(GTK_TABLE(table),
-                    label = gtk_label_new(""),
-                    0, 1, i, i + 1, GTK_FILL, 0, 2, 1);
-            gtk_misc_set_alignment(GTK_MISC(label), 1.f, 0.5f);
-            gtk_label_set_markup(GTK_LABEL(label), CUSTOM_KEY_ICON[i]);
-            gtk_table_attach(GTK_TABLE(table),
-                    bdi.cmb[i] = gtk_combo_box_new_text(),
-                    1, 2, i, i + 1, GTK_FILL, 0, 2, 1);
-            for(j = 0; j < CUSTOM_ACTION_ENUM_COUNT; j++)
-                gtk_combo_box_append_text(GTK_COMBO_BOX(bdi.cmb[i]),
-                        CUSTOM_ACTION_ENUM_TEXT[j]);
-        }
-    }
-
-    /* Initialize contents of the combo boxes. */
-    for(i = 0; i < CUSTOM_KEY_ENUM_COUNT; i++)
-        gtk_combo_box_set_active(GTK_COMBO_BOX(bdi.cmb[i]), _action[i]);
-
-    gtk_widget_show_all(dialog);
-
-OUTER_WHILE:
-    while(GTK_RESPONSE_ACCEPT == gtk_dialog_run(GTK_DIALOG(dialog)))
-    {
-        /* Check for duplicates. */
-        for(i = 0; i < CUSTOM_KEY_ENUM_COUNT; i++)
-        {
-            gint j;
-            for(j = i + 1; j < CUSTOM_KEY_ENUM_COUNT; j++)
-            {
-                if(gtk_combo_box_get_active(GTK_COMBO_BOX(bdi.cmb[i]))
-                        == gtk_combo_box_get_active(GTK_COMBO_BOX(bdi.cmb[j])))
-                {
-                    GtkWidget *confirm;
-                    gchar *buffer = g_strdup_printf("%s:\n    %s\n%s",
-                        _("The following action is mapped to multiple keys"),
-                        CUSTOM_ACTION_ENUM_TEXT[gtk_combo_box_get_active(
-                            GTK_COMBO_BOX(bdi.cmb[i]))],
-                        _("Continue?"));
-                    confirm = hildon_note_new_confirmation(GTK_WINDOW(_window),
-                            buffer);
-
-                    if(GTK_RESPONSE_OK != gtk_dialog_run(GTK_DIALOG(confirm)))
-                    {
-                        gtk_widget_destroy(confirm);
-                        goto OUTER_WHILE;
-                    }
-                    gtk_widget_destroy(confirm);
-                }
-            }
-        }
-        for(i = 0; i < CUSTOM_KEY_ENUM_COUNT; i++)
-            _action[i] = gtk_combo_box_get_active(GTK_COMBO_BOX(bdi.cmb[i]));
-        break;
-    }
-
-    gtk_widget_hide(dialog);
 
     return TRUE;
 }
@@ -1396,7 +1272,6 @@ gboolean settings_dialog()
         map_dialog_create_button(dlg, _("GPS"), SETTINGS_GPS);
         map_dialog_create_button(dlg, _("Misc."), SETTINGS_MISC);
         map_dialog_create_button(dlg, _("POI"), SETTINGS_POI);
-        map_dialog_create_button(dlg, _("Hardware Keys..."), SETTINGS_KEYS);
         map_dialog_create_button(dlg, _("Colors..."), SETTINGS_COLORS);
     }
 
@@ -1419,8 +1294,6 @@ gboolean settings_dialog()
                 run_misc_dialog(parent); break;
             case SETTINGS_POI:
                 run_poi_dialog(parent); break;
-            case SETTINGS_KEYS:
-                settings_dialog_hardkeys(parent); break;
             case SETTINGS_COLORS:
                 settings_dialog_colors(parent); break;
             default:
@@ -1460,16 +1333,6 @@ settings_init(GConfClient *gconf_client)
     gint gps_interval;
 
     /* Initialize some constants. */
-    CUSTOM_KEY_GCONF[CUSTOM_KEY_UP] = GCONF_KEY_PREFIX"/key_up";
-    CUSTOM_KEY_GCONF[CUSTOM_KEY_DOWN] = GCONF_KEY_PREFIX"/key_down";
-    CUSTOM_KEY_GCONF[CUSTOM_KEY_LEFT] = GCONF_KEY_PREFIX"/key_left";
-    CUSTOM_KEY_GCONF[CUSTOM_KEY_RIGHT] = GCONF_KEY_PREFIX"/key_right";
-    CUSTOM_KEY_GCONF[CUSTOM_KEY_SELECT] = GCONF_KEY_PREFIX"/key_select";
-    CUSTOM_KEY_GCONF[CUSTOM_KEY_INCREASE] = GCONF_KEY_PREFIX"/key_increase";
-    CUSTOM_KEY_GCONF[CUSTOM_KEY_DECREASE] = GCONF_KEY_PREFIX"/key_decrease";
-    CUSTOM_KEY_GCONF[CUSTOM_KEY_FULLSCREEN]= GCONF_KEY_PREFIX"/key_fullscreen";
-    CUSTOM_KEY_GCONF[CUSTOM_KEY_ESC] = GCONF_KEY_PREFIX"/key_esc";
-
     COLORABLE_GCONF[COLORABLE_MARK] = GCONF_KEY_PREFIX"/color_mark";
     COLORABLE_GCONF[COLORABLE_MARK_VELOCITY]
         = GCONF_KEY_PREFIX"/color_mark_velocity";
@@ -1654,22 +1517,6 @@ settings_init(GConfClient *gconf_client)
                 if(!strcmp(units_str, UNITS_ENUM_TEXT[i]))
                     break;
         _units = i;
-    }
-
-    /* Get Custom Key Actions. */
-    {
-        gint i;
-        for(i = 0; i < CUSTOM_KEY_ENUM_COUNT; i++)
-        {
-            gint j = CUSTOM_KEY_DEFAULT[i];
-            gchar *str = gconf_client_get_string(gconf_client,
-                    CUSTOM_KEY_GCONF[i], NULL);
-            if(str)
-                for(j = CUSTOM_ACTION_ENUM_COUNT - 1; j > 0; j--)
-                    if(!strcmp(str, CUSTOM_ACTION_ENUM_TEXT[j]))
-                        break;
-            _action[i] = j;
-        }
     }
 
     /* Get Deg format.  Default is DDPDDDDD. */

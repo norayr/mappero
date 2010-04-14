@@ -54,10 +54,6 @@ gfloat UNITS_SMALL_CONVERT[] =
 
 gchar *UNBLANK_ENUM_TEXT[UNBLANK_ENUM_COUNT];
 gchar *INFO_FONT_ENUM_TEXT[INFO_FONT_ENUM_COUNT];
-gchar *CUSTOM_ACTION_ENUM_TEXT[CUSTOM_ACTION_ENUM_COUNT];
-gchar *CUSTOM_KEY_GCONF[CUSTOM_KEY_ENUM_COUNT];
-gchar *CUSTOM_KEY_ICON[CUSTOM_KEY_ENUM_COUNT];
-CustomAction CUSTOM_KEY_DEFAULT[CUSTOM_KEY_ENUM_COUNT];
 gchar *COLORABLE_GCONF[COLORABLE_ENUM_COUNT];
 GdkColor COLORABLE_DEFAULT[COLORABLE_ENUM_COUNT] =
 {
@@ -198,7 +194,6 @@ gboolean _enable_voice = TRUE;
 GSList *_loc_list;
 GtkListStore *_loc_model;
 UnitType _units = UNITS_KM;
-CustomAction _action[CUSTOM_KEY_ENUM_COUNT];
 gint _degformat = DDPDDDDD;
 gboolean _speed_limit_on = FALSE;
 gint _speed_limit = 100;
