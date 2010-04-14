@@ -172,7 +172,7 @@ gchar *_track_file_uri = NULL;
 CenterMode _center_mode = CENTER_LEAD;
 gboolean _center_rotate = TRUE;
 gboolean _fullscreen = FALSE;
-gboolean _enable_gps = TRUE;
+gboolean _enable_gps = FALSE;
 gboolean _enable_tracking = TRUE;
 gboolean _gps_info = FALSE;
 
