@@ -19,6 +19,7 @@
  * You should have received a copy of the GNU General Public License
  * along with Maemo Mapper.  If not, see <http://www.gnu.org/licenses/>.
  */
+#define _GNU_SOURCE
 #ifdef HAVE_CONFIG_H
 #   include "config.h"
 #endif
@@ -147,6 +148,8 @@ map_controller_init(MapController *controller)
     GConfClient *gconf_client = gconf_client_get_default();
     GObject *plugin;
 
+    TIME_START();
+
     priv = G_TYPE_INSTANCE_GET_PRIVATE(controller, MAP_TYPE_CONTROLLER,
                                        MapControllerPrivate);
     controller->priv = priv;
@@ -194,6 +197,7 @@ map_controller_init(MapController *controller)
 
     gconf_client_clear_cache(gconf_client);
     g_object_unref(gconf_client);
+    TIME_STOP();
 }
 
 static void
