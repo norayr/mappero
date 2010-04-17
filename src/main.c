@@ -153,6 +153,7 @@ static gboolean
 maemo_mapper_init_late(gpointer unused)
 {
     mce_init();
+    path_init_late();
 
     return FALSE;
 }

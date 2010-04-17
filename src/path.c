@@ -770,7 +770,7 @@ open_db(const gchar *filename)
 }
 
 void
-path_init()
+path_init_late()
 {
     MapController *controller = map_controller_get_instance();
     gchar *settings_dir;
@@ -852,10 +852,6 @@ path_init()
             sqlite3_close(_path_db);
             _path_db = NULL;
 
-            map_path_init(&_track);
-            map_path_init(map_route_get_path());
-            map_route_path_changed();
-
             popup_error(_window, buffer);
         }
         else
@@ -869,6 +865,14 @@ path_init()
     g_free(settings_dir);
 
     map_controller_refresh_paths(controller);
+}
+
+void
+path_init()
+{
+    map_path_init(&_track);
+    map_path_init(map_route_get_path());
+    map_route_path_changed();
 }
 
 void

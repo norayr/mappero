@@ -36,6 +36,7 @@ void track_insert_break(gboolean temporary);
 guint map_path_get_duration(const Path *path);
 
 void path_init(void);
+void path_init_late(void);
 void path_destroy(void);
 
 void map_path_save_route(Path *path);
