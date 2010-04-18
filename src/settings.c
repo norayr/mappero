@@ -1339,7 +1339,7 @@ settings_init(GConfClient *gconf_client)
         gconf_value_free(value);
     }
     else
-        gps_power_save = TRUE;
+        gps_power_save = FALSE;
     map_controller_gps_set_power_save(controller, gps_power_save);
 
     /* Get Auto-Download.  Default is TRUE. */
