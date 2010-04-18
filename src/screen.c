@@ -1315,13 +1315,14 @@ map_screen_class_init(MapScreenClass * klass)
 static void
 map_screen_set_center_real(MapScreen *screen, gint x, gint y, gint zoom)
 {
+    MapController *controller = map_controller_get_instance();
+    Repository *repository;
     MapScreenPrivate *priv;
     GtkAllocation *allocation;
     gint halflength_units;
     gint start_tilex, start_tiley, stop_tilex, stop_tiley;
     MapArea area;
     gint px, py;
-    gint cache_amount;
     gint new_zoom;
 
     priv = screen->priv;
@@ -1339,9 +1340,6 @@ map_screen_set_center_real(MapScreen *screen, gint x, gint y, gint zoom)
     py = unit2zpixel(y, new_zoom);
     clutter_actor_set_anchor_point(priv->map, px, py);
 
-    /* Calculate cache amount */
-    cache_amount = _auto_download_precache;
-
     halflength_units =
         pixel2zunit(MAX(allocation->width, allocation->height) / 2,
                     new_zoom);
@@ -1351,19 +1349,21 @@ map_screen_set_center_real(MapScreen *screen, gint x, gint y, gint zoom)
     area.x2 = x + halflength_units + TILE_SIZE_PIXELS - 1;
     area.y2 = y + halflength_units + TILE_SIZE_PIXELS - 1;
 
+    repository = map_controller_get_repository(controller);
+
     start_tilex = unit2ztile(area.x1, new_zoom);
-    start_tilex = MAX(start_tilex - cache_amount, 0);
+    start_tilex = MAX(start_tilex, 0);
     start_tiley = unit2ztile(area.y1, new_zoom);
-    start_tiley = MAX(start_tiley - cache_amount, 0);
+    start_tiley = MAX(start_tiley, 0);
     stop_tilex = unit2ztile(area.x2, new_zoom);
-    stop_tilex = MIN(stop_tilex + cache_amount,
+    stop_tilex = MIN(stop_tilex,
                      unit2ztile(WORLD_SIZE_UNITS, new_zoom));
     stop_tiley = unit2ztile(area.y2, new_zoom);
-    stop_tiley = MIN(stop_tiley + cache_amount,
+    stop_tiley = MIN(stop_tiley,
                      unit2ztile(WORLD_SIZE_UNITS, new_zoom));
 
     /* create the tiles */
-    load_tiles_into_map(screen, map_controller_get_repository (map_controller_get_instance ()), new_zoom,
+    load_tiles_into_map(screen, repository, new_zoom,
                         start_tilex, start_tiley, stop_tilex, stop_tiley);
 
     /* if the zoom changed, update scale, mark and zoom box */
