@@ -1065,10 +1065,9 @@ run_misc_dialog(GtkWindow *parent)
         (HILDON_PICKER_BUTTON(units), _units);
     hildon_picker_button_set_active
         (HILDON_PICKER_BUTTON(degformat), _degformat);
-    if (_auto_download_precache < 1) _auto_download_precache = 2;
     hildon_picker_button_set_active
         (HILDON_PICKER_BUTTON(auto_download_precache),
-         _auto_download_precache - 1);
+         _auto_download_precache);
     hildon_picker_button_set_active
         (HILDON_PICKER_BUTTON(speed_limit),
          _speed_limit_on ? (_speed_limit / 5) : 0);
@@ -1084,7 +1083,7 @@ run_misc_dialog(GtkWindow *parent)
     if (gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_ACCEPT)
     {
         _auto_download_precache = hildon_picker_button_get_active
-            (HILDON_PICKER_BUTTON(auto_download_precache)) + 1;
+            (HILDON_PICKER_BUTTON(auto_download_precache));
 
         _draw_width = hildon_picker_button_get_active
             (HILDON_PICKER_BUTTON(draw_width));
