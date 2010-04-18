@@ -198,7 +198,6 @@ gint _map_offset_devy;
 
 gint _map_rotate_angle = 0;
 
-GtkWidget *_gps_widget = NULL;
 GtkWidget *_text_lat = NULL;
 GtkWidget *_text_lon = NULL;
 GtkWidget *_text_speed = NULL;

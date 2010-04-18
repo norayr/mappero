@@ -155,6 +155,8 @@ maemo_mapper_init_late(gpointer unused)
     mce_init();
     path_init_late();
 
+    gps_show_info(); /* hides info, if necessary. */
+
     return FALSE;
 }
 
@@ -284,7 +286,7 @@ maemo_mapper_destroy()
 static void
 maemo_mapper_init(gint argc, gchar **argv)
 {
-    GtkWidget *hbox, *label, *vbox;
+    GtkWidget *hbox;
 
     /* Set enum-based constants. */
     UNITS_ENUM_TEXT[UNITS_KM] = _("km");
@@ -339,57 +341,10 @@ maemo_mapper_init(gint argc, gchar **argv)
     hbox = gtk_hbox_new(FALSE, 0);
     gtk_container_add(GTK_CONTAINER(_window), hbox);
 
-    _gps_widget = gtk_frame_new("GPS Info");
-    gtk_container_add(GTK_CONTAINER(_gps_widget),
-            vbox = gtk_vbox_new(FALSE, 0));
-    gtk_widget_set_size_request(GTK_WIDGET(_gps_widget), 180, 0);
-    gtk_box_pack_start(GTK_BOX(hbox), _gps_widget, FALSE, TRUE, 0);
-
-    label = gtk_label_new(" ");
-    gtk_widget_set_size_request(GTK_WIDGET(label), -1, 10);
-    gtk_box_pack_start(GTK_BOX(vbox), label, FALSE, TRUE, 0);
-
-    _text_lat = gtk_label_new(" --- ");
-    gtk_widget_set_size_request(GTK_WIDGET(_text_lat), -1, 30);
-    gtk_box_pack_start(GTK_BOX(vbox), _text_lat, FALSE, TRUE, 0);
-
-    _text_lon = gtk_label_new(" --- ");
-    gtk_widget_set_size_request(GTK_WIDGET(_text_lon), -1, 30);
-    gtk_box_pack_start(GTK_BOX(vbox), _text_lon, FALSE, TRUE, 0);
-
-    _text_speed = gtk_label_new(" --- ");
-    gtk_widget_set_size_request(GTK_WIDGET(_text_speed), -1, 30);
-    gtk_box_pack_start(GTK_BOX(vbox), _text_speed, FALSE, TRUE, 0);
-
-    _text_alt = gtk_label_new(" --- ");
-    gtk_widget_set_size_request(GTK_WIDGET(_text_alt), -1, 30);
-    gtk_box_pack_start(GTK_BOX(vbox), _text_alt, FALSE, TRUE, 0);
-
-    label = gtk_label_new(" ");
-    gtk_widget_set_size_request(GTK_WIDGET(label), -1, 10);
-    gtk_box_pack_start(GTK_BOX(vbox), label, FALSE, TRUE, 0);
-
-    _sat_panel = gtk_drawing_area_new ();
-    gtk_widget_set_size_request (_sat_panel, -1, 100);
-    gtk_box_pack_start(GTK_BOX(vbox), _sat_panel, TRUE, TRUE, 0);
-
-    label = gtk_label_new(" ");
-    gtk_widget_set_size_request(GTK_WIDGET(label), -1, 10);
-    gtk_box_pack_start(GTK_BOX(vbox), label, FALSE, TRUE, 0);
-
-    _text_time = gtk_label_new("--:--:--");
-    gtk_widget_set_size_request(GTK_WIDGET(_text_time), -1, 30);
-    gtk_box_pack_start(GTK_BOX(vbox), _text_time, FALSE, TRUE, 0);
-
-    _heading_panel = gtk_drawing_area_new ();
-    gtk_widget_set_size_request (_heading_panel, -1, 100);
-    gtk_box_pack_start(GTK_BOX(vbox), _heading_panel, TRUE, TRUE, 0);
-
     _w_map = (GtkWidget *)map_controller_get_screen(_controller);
     gtk_box_pack_start(GTK_BOX(hbox), _w_map, TRUE, TRUE, 0);
 
     gtk_widget_show_all(hbox);
-    gps_show_info(); /* hides info, if necessary. */
 
     _mut_exists_table = g_hash_table_new(
             mut_exists_hashfunc, mut_exists_equalfunc);

@@ -65,7 +65,6 @@ extern gint _map_offset_devy;
 
 extern gint _map_rotate_angle;
 
-extern GtkWidget *_gps_widget;
 extern GtkWidget *_text_lat;
 extern GtkWidget *_text_lon;
 extern GtkWidget *_text_speed;

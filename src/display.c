@@ -42,6 +42,7 @@
 
 #include "types.h"
 #include "data.h"
+#include "debug.h"
 #include "defines.h"
 
 #include "dbus-ifc.h"
@@ -53,6 +54,8 @@
 #include "util.h"
 
 #define VELVEC_SIZE_FACTOR (4)
+
+static GtkWidget *_gps_widget = NULL;
 
 static GtkWidget *_sat_details_panel = NULL;
 static GtkWidget *_sdi_lat = NULL;
@@ -87,6 +90,9 @@ GdkGC *_sat_info_gc2 = NULL;
 PangoLayout *_sat_info_layout = NULL;
 PangoLayout *_sat_details_layout = NULL;
 PangoLayout *_sat_details_expose_layout = NULL;
+
+gboolean heading_panel_expose(GtkWidget *widget, GdkEventExpose *event);
+gboolean sat_panel_expose(GtkWidget *widget, GdkEventExpose *event);
 
 gboolean
 gps_display_details(void)
@@ -236,6 +242,8 @@ gps_display_data(void)
     const MapGpsData *gps = map_controller_get_gps_data(controller);
     gchar *buffer, litbuf[LL_FMT_LEN], buffer2[LL_FMT_LEN];
 
+    if (_gps_widget == NULL) return;
+
     if(gps->fix < 2)
     {
         /* no fix no fun */
@@ -310,12 +318,74 @@ gps_display_data(void)
     return;
 }
 
+static void
+gps_widget_create()
+{
+    GtkWidget *hbox, *label, *vbox;
+
+    hbox = gtk_bin_get_child(GTK_BIN(_window));
+
+    _gps_widget = gtk_frame_new("GPS Info");
+    gtk_container_add(GTK_CONTAINER(_gps_widget),
+            vbox = gtk_vbox_new(FALSE, 0));
+    gtk_widget_set_size_request(GTK_WIDGET(_gps_widget), 180, 0);
+    gtk_box_pack_start(GTK_BOX(hbox), _gps_widget, FALSE, TRUE, 0);
+
+    label = gtk_label_new(" ");
+    gtk_widget_set_size_request(GTK_WIDGET(label), -1, 10);
+    gtk_box_pack_start(GTK_BOX(vbox), label, FALSE, TRUE, 0);
+
+    _text_lat = gtk_label_new(" --- ");
+    gtk_widget_set_size_request(GTK_WIDGET(_text_lat), -1, 30);
+    gtk_box_pack_start(GTK_BOX(vbox), _text_lat, FALSE, TRUE, 0);
+
+    _text_lon = gtk_label_new(" --- ");
+    gtk_widget_set_size_request(GTK_WIDGET(_text_lon), -1, 30);
+    gtk_box_pack_start(GTK_BOX(vbox), _text_lon, FALSE, TRUE, 0);
+
+    _text_speed = gtk_label_new(" --- ");
+    gtk_widget_set_size_request(GTK_WIDGET(_text_speed), -1, 30);
+    gtk_box_pack_start(GTK_BOX(vbox), _text_speed, FALSE, TRUE, 0);
+
+    _text_alt = gtk_label_new(" --- ");
+    gtk_widget_set_size_request(GTK_WIDGET(_text_alt), -1, 30);
+    gtk_box_pack_start(GTK_BOX(vbox), _text_alt, FALSE, TRUE, 0);
+
+    label = gtk_label_new(" ");
+    gtk_widget_set_size_request(GTK_WIDGET(label), -1, 10);
+    gtk_box_pack_start(GTK_BOX(vbox), label, FALSE, TRUE, 0);
+
+    _sat_panel = gtk_drawing_area_new ();
+    gtk_widget_set_size_request (_sat_panel, -1, 100);
+    gtk_box_pack_start(GTK_BOX(vbox), _sat_panel, TRUE, TRUE, 0);
+    g_signal_connect(_sat_panel, "expose_event",
+                     G_CALLBACK(sat_panel_expose), NULL);
+
+    label = gtk_label_new(" ");
+    gtk_widget_set_size_request(GTK_WIDGET(label), -1, 10);
+    gtk_box_pack_start(GTK_BOX(vbox), label, FALSE, TRUE, 0);
+
+    _text_time = gtk_label_new("--:--:--");
+    gtk_widget_set_size_request(GTK_WIDGET(_text_time), -1, 30);
+    gtk_box_pack_start(GTK_BOX(vbox), _text_time, FALSE, TRUE, 0);
+
+    _heading_panel = gtk_drawing_area_new ();
+    gtk_widget_set_size_request (_heading_panel, -1, 100);
+    gtk_box_pack_start(GTK_BOX(vbox), _heading_panel, TRUE, TRUE, 0);
+    g_signal_connect(_heading_panel, "expose_event",
+                     G_CALLBACK(heading_panel_expose), NULL);
+}
+
 void
 gps_show_info(void)
 {
     if(_gps_info && _enable_gps)
+    {
+        if (_gps_widget == NULL)
+            gps_widget_create();
         gtk_widget_show_all(GTK_WIDGET(_gps_widget));
-    else
+    }
+    else if (_gps_widget)
         gtk_widget_hide(GTK_WIDGET(_gps_widget));
 }
 
@@ -1391,9 +1461,4 @@ display_init()
                 = gdk_pixbuf_get_height(_redraw_wait_icon);
         }
     }
-
-    g_signal_connect(G_OBJECT(_sat_panel), "expose_event",
-            G_CALLBACK(sat_panel_expose), NULL);
-    g_signal_connect(G_OBJECT(_heading_panel), "expose_event",
-            G_CALLBACK(heading_panel_expose), NULL);
 }
