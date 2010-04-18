@@ -56,4 +56,8 @@ typedef void (*MapUpdateCb)(MapTileSpec *tile,
 void map_download_tile(MapTileSpec *tile, gint priority,
                        MapUpdateCb callback, gpointer user_data);
 
+void map_download_precache(TileSource *tile_source, MapPoint center, gint zoom,
+                           gint cache_amount,
+                           gint screen_width, gint screen_height);
+
 #endif /* ifndef MAEMO_MAPPER_MAPS_H */

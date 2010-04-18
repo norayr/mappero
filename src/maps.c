@@ -1443,3 +1443,64 @@ void maps_toggle_visible_layers ()
 {
     map_screen_toggle_layers_visibility(map_controller_get_screen(map_controller_get_instance()));
 }
+
+void
+map_download_tile_rect(TileSource *tile_source, gint zoom,
+                       gint tx1, gint ty1, gint tx2, gint ty2)
+{
+    gint tx_center, ty_center;
+    gint priority;
+    MapTileSpec tile;
+
+    g_return_if_fail(tile_source != NULL);
+
+    memset(&tile, 0, sizeof(tile));
+
+    tx_center = (tx2 - tx1) / 2;
+    ty_center = (ty2 - ty1) / 2;
+
+    tile.source = tile_source;
+    tile.zoom = zoom;
+    for (tile.tilex = tx1; tile.tilex <= tx2; tile.tilex++)
+        for (tile.tiley = ty1; tile.tiley <= ty2; tile.tiley++)
+            if (!mapdb_exists(tile.source, zoom, tile.tilex, tile.tiley))
+            {
+                priority =
+                    abs(tile.tilex - tx_center) +
+                    abs(tile.tiley - ty_center);
+                map_download_tile(&tile, priority, NULL, NULL);
+            }
+}
+
+void
+map_download_precache(TileSource *tile_source, MapPoint center, gint zoom,
+                      gint cache_amount, gint screen_width, gint screen_height)
+{
+    gint last_world_tile, halflength_units;
+    gint tx1, ty1, tx2, ty2;
+    MapArea area;
+
+    g_return_if_fail(tile_source != NULL);
+
+    last_world_tile = unit2ztile(WORLD_SIZE_UNITS, zoom);
+    halflength_units =
+        pixel2zunit(MAX(screen_width, screen_height) / 2, zoom);
+
+    area.x1 = center.x - halflength_units;
+    area.y1 = center.y - halflength_units;
+    area.x2 = center.x + halflength_units + TILE_SIZE_PIXELS - 1;
+    area.y2 = center.y + halflength_units + TILE_SIZE_PIXELS - 1;
+
+    tx1 = unit2ztile(area.x1, zoom);
+    ty1 = unit2ztile(area.y1, zoom);
+    tx2 = unit2ztile(area.x2, zoom);
+    ty2 = unit2ztile(area.y2, zoom);
+
+    tx1 = MAX(tx1 - cache_amount, 0);
+    ty1 = MAX(ty1 - cache_amount, 0);
+    tx2 = MIN(tx2 + cache_amount, last_world_tile);
+    ty2 = MIN(ty2 + cache_amount, last_world_tile);
+
+    map_download_tile_rect(tile_source, zoom, tx1, ty1, tx2, ty2);
+}
+
