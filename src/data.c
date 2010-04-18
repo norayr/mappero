@@ -69,7 +69,113 @@ GdkColor COLORABLE_DEFAULT[COLORABLE_ENUM_COUNT] =
     {0, 0xd000, 0xd000, 0x0000}, /* COLORABLE_ROUTE_NEXT */
     {0, 0xa000, 0x0000, 0xa000}, /* COLORABLE_POI */
 };
-CoordFormatSetup DEG_FORMAT_ENUM_TEXT[DEG_FORMAT_ENUM_COUNT];
+const CoordFormatSetup DEG_FORMAT_ENUM_TEXT[DEG_FORMAT_ENUM_COUNT] = {
+    [DDPDDDDD] = {
+        .name = "-dd.ddddd°",
+        .short_field_1 = "Lat",
+        .long_field_1 = "Latitude",
+        .short_field_2 = "Lon",
+        .long_field_2 = "Longitude",
+        .field_2_in_use = TRUE,
+    },
+    [DD_MMPMMM] = {
+        .name = "-dd°mm.mmm'",
+        .short_field_1 = "Lat",
+        .long_field_1 = "Latitude",
+        .short_field_2 = "Lon",
+        .long_field_2 = "Longitude",
+        .field_2_in_use = TRUE,
+    },
+    [DD_MM_SSPS] = {
+        .name = "-dd°mm'ss.s\"",
+        .short_field_1 = "Lat",
+        .long_field_1 = "Latitude",
+        .short_field_2 = "Lon",
+        .long_field_2 = "Longitude",
+        .field_2_in_use = TRUE,
+    },
+    [DDPDDDDD_NSEW] = {
+        .name = "dd.ddddd° S",
+        .short_field_1 = "Lat",
+        .long_field_1 = "Latitude",
+        .short_field_2 = "Lon",
+        .long_field_2 = "Longitude",
+        .field_2_in_use = TRUE,
+    },
+    [DD_MMPMMM_NSEW] = {
+        .name = "dd°mm.mmm' S",
+        .short_field_1 = "Lat",
+        .long_field_1 = "Latitude",
+        .short_field_2 = "Lon",
+        .long_field_2 = "Longitude",
+        .field_2_in_use = TRUE,
+    },
+    [DD_MM_SSPS_NSEW] = {
+        .name = "dd°mm'ss.s\" S",
+        .short_field_1 = "Lat",
+        .long_field_1 = "Latitude",
+        .short_field_2 = "Lon",
+        .long_field_2 = "Longitude",
+        .field_2_in_use = TRUE,
+    },
+    [NSEW_DDPDDDDD] = {
+        .name = "S dd.ddddd°",
+        .short_field_1 = "Lat",
+        .long_field_1 = "Latitude",
+        .short_field_2 = "Lon",
+        .long_field_2 = "Longitude",
+        .field_2_in_use = TRUE,
+    },
+    [NSEW_DD_MMPMMM] = {
+        .name = "S dd° mm.mmm'",
+        .short_field_1 = "Lat",
+        .long_field_1 = "Latitude",
+        .short_field_2 = "Lon",
+        .long_field_2 = "Longitude",
+        .field_2_in_use = TRUE,
+    },
+    [NSEW_DD_MM_SSPS] = {
+        .name = "S dd° mm' ss.s\"",
+        .short_field_1 = "Lat",
+        .long_field_1 = "Latitude",
+        .short_field_2 = "Lon",
+        .long_field_2 = "Longitude",
+        .field_2_in_use = TRUE,
+    },
+    // Used by Radio Amateurs
+    [IARU_LOC] = {
+        .name = "IARU Locator",
+        .short_field_1 = "Locator",
+        .long_field_1 = "Locator",
+        .short_field_2 = "",
+        .long_field_2 = "",
+        .field_2_in_use = FALSE,
+    },
+    [UK_OSGB] = {
+        .name = "OSGB X,Y Grid",
+        .short_field_1 = "X",
+        .long_field_1 = "OS X",
+        .short_field_2 = "Y",
+        .long_field_2 = "OS Y",
+        .field_2_in_use = TRUE,
+    },
+    [UK_NGR] = {
+        .name = "OSGB Landranger Grid (8)",
+        .short_field_1 = "GR",
+        .long_field_1 = "OS Grid",
+        .short_field_2 = "",
+        .long_field_2 = "",
+        .field_2_in_use = FALSE,
+    },
+    [UK_NGR6] = {
+        .name = "OSGB Landranger Grid (6)",
+        .short_field_1 = "GR",
+        .long_field_1 = "OS Grid",
+        .short_field_2 = "",
+        .long_field_2 = "",
+        .field_2_in_use = FALSE,
+    },
+};
 gchar *SPEED_LOCATION_ENUM_TEXT[SPEED_LOCATION_ENUM_COUNT];
 
 /** The main GtkContainer of the application. */
