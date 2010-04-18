@@ -51,6 +51,8 @@ struct _MapControllerPrivate
     gboolean display_on;
 
     guint source_map_center;
+    guint source_download_precache;
+
     guint is_disposed : 1;
     guint device_active : 1;
 };

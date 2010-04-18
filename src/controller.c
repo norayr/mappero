@@ -60,6 +60,39 @@ G_DEFINE_TYPE(MapController, map_controller, G_TYPE_OBJECT);
 static MapController *instance = NULL;
 
 static gboolean
+download_precache_real(MapController *self)
+{
+    MapControllerPrivate *priv = self->priv;
+    GtkAllocation *allocation;
+
+    if (G_UNLIKELY(!priv->repository)) return FALSE;
+
+    allocation = &(GTK_WIDGET(priv->screen)->allocation);
+
+    map_download_precache(priv->repository->primary, priv->center, priv->zoom,
+                          _auto_download_precache,
+                          allocation->width, allocation->height);
+
+    priv->source_download_precache = 0;
+    return FALSE;
+}
+
+static void
+map_controller_download_precache(MapController *self)
+{
+    MapControllerPrivate *priv = self->priv;
+
+    if (!map_controller_get_auto_download(self) ||
+        _auto_download_precache == 0)
+        return;
+
+    if (priv->source_download_precache == 0)
+        priv->source_download_precache =
+            g_idle_add_full(G_PRIORITY_LOW,
+                            (GSourceFunc)download_precache_real, self, NULL);
+}
+
+static gboolean
 activate_gps(MapController *self)
 {
     /* Connect to receiver. */
@@ -130,6 +163,12 @@ map_controller_dispose(GObject *object)
     {
         g_source_remove(priv->source_map_center);
         priv->source_map_center = 0;
+    }
+
+    if (priv->source_download_precache != 0)
+    {
+        g_source_remove(priv->source_download_precache);
+        priv->source_download_precache = 0;
     }
 
     while (priv->plugins)
@@ -631,6 +670,8 @@ map_controller_set_center_no_act(MapController *self, MapPoint center,
     if (zoom >= 0)
         priv->zoom = zoom;
     priv->center = center;
+
+    map_controller_download_precache(self);
 }
 
 void
