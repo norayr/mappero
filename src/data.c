@@ -250,8 +250,6 @@ GtkWidget *_download_banner = NULL;
 
 /** DOWNLOAD PROGRESS. */
 gboolean _conic_is_connected = FALSE;
-GMutex *_mapdb_mutex = NULL;
-GMutex *_mouse_mutex = NULL;
 volatile gint _num_downloads = 0;
 gint _curr_download = 0;
 GHashTable *_mut_exists_table = NULL;
@@ -325,47 +323,4 @@ GtkWidget *_menu_layers_submenu = NULL;
 /*********************
  * ABOVE: MENU ITEMS *
  *********************/
-
-
-/*****************************
- * BELOW: CONTEXT MENU ITEMS *
- *****************************/
-
-gboolean _mouse_is_dragging = FALSE;
-gboolean _mouse_is_down = FALSE;
-
-/* Menu items for the "Location" context menu. */
-GtkWidget *_cmenu_loc_show_latlon_item = NULL;
-GtkWidget *_cmenu_loc_route_to_item = NULL;
-GtkWidget *_cmenu_loc_distance_to_item = NULL;
-GtkWidget *_cmenu_loc_download_poi_item = NULL;
-GtkWidget *_cmenu_loc_browse_poi_item = NULL;
-GtkWidget *_cmenu_loc_add_route_item = NULL;
-GtkWidget *_cmenu_loc_add_way_item = NULL;
-GtkWidget *_cmenu_loc_add_poi_item = NULL;
-GtkWidget *_cmenu_loc_set_gps_item = NULL;
-
-/* Menu items for the "Waypoint" context menu. */
-GtkWidget *_cmenu_way_show_latlon_item = NULL;
-GtkWidget *_cmenu_way_show_desc_item = NULL;
-GtkWidget *_cmenu_way_clip_latlon_item = NULL;
-GtkWidget *_cmenu_way_clip_desc_item = NULL;
-GtkWidget *_cmenu_way_route_to_item = NULL;
-GtkWidget *_cmenu_way_distance_to_item = NULL;
-GtkWidget *_cmenu_way_delete_item = NULL;
-GtkWidget *_cmenu_way_add_poi_item = NULL;
-GtkWidget *_cmenu_way_goto_nextway_item = NULL;
-
-/* Menu items for the "POI" context menu. */
-GtkWidget *_cmenu_poi_submenu = NULL;
-GtkWidget *_cmenu_poi_edit_poi_item = NULL;
-GtkWidget *_cmenu_poi_route_to_item = NULL;
-GtkWidget *_cmenu_poi_distance_to_item = NULL;
-GtkWidget *_cmenu_poi_add_route_item = NULL;
-GtkWidget *_cmenu_poi_add_way_item = NULL;
-GtkWidget *_cmenu_poi_goto_nearpoi_item = NULL;
-
-/*****************************
- * ABOVE: CONTEXT MENU ITEMS *
- *****************************/
 

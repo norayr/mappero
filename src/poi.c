@@ -330,12 +330,6 @@ poi_db_connect()
     }
 
     _poi_enabled = _poi_db != NULL;
-
-    gtk_widget_set_sensitive(_cmenu_loc_add_poi_item, _poi_enabled);
-    gtk_widget_set_sensitive(_cmenu_loc_download_poi_item, _poi_enabled);
-    gtk_widget_set_sensitive(_cmenu_loc_browse_poi_item, _poi_enabled);
-    gtk_widget_set_sensitive(_cmenu_way_add_poi_item, _poi_enabled);
-    gtk_widget_set_sensitive(_cmenu_poi_submenu, _poi_enabled);
 }
 
 gboolean

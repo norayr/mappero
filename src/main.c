@@ -318,9 +318,7 @@ maemo_mapper_init(gint argc, gchar **argv)
     memset(&_track, 0, sizeof(_track));
     /* initialisation of paths is done in path_init() */
 
-    _mapdb_mutex = g_mutex_new();
     _mut_priority_mutex = g_mutex_new();
-    _mouse_mutex = g_mutex_new();
 
 #ifdef CONIC
     _conic_connection_mutex = g_mutex_new();
@@ -406,7 +404,6 @@ maemo_mapper_init(gint argc, gchar **argv)
 
     gtk_widget_show(_window);
     menu_init();
-    cmenu_init();
     path_init();
     poi_db_connect();
     display_init();

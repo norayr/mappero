@@ -117,8 +117,6 @@ extern GtkWidget *_download_banner;
 
 /** DOWNLOAD PROGRESS. */
 extern gboolean _conic_is_connected;
-extern GMutex *_mapdb_mutex;
-extern GMutex *_mouse_mutex;
 extern volatile gint _num_downloads;
 extern gint _curr_download;
 extern GHashTable *_mut_exists_table;
@@ -186,49 +184,6 @@ extern GtkWidget *_menu_layers_submenu;
 /*********************
  * ABOVE: MENU ITEMS *
  *********************/
-
-
-/*****************************
- * BELOW: CONTEXT MENU ITEMS *
- *****************************/
-
-extern gboolean _mouse_is_dragging;
-extern gboolean _mouse_is_down;
-
-/* Menu items for the "Location" context menu. */
-extern GtkWidget *_cmenu_loc_show_latlon_item;
-extern GtkWidget *_cmenu_loc_route_to_item;
-extern GtkWidget *_cmenu_loc_distance_to_item;
-extern GtkWidget *_cmenu_loc_download_poi_item;
-extern GtkWidget *_cmenu_loc_browse_poi_item;
-extern GtkWidget *_cmenu_loc_add_route_item;
-extern GtkWidget *_cmenu_loc_add_way_item;
-extern GtkWidget *_cmenu_loc_add_poi_item;
-extern GtkWidget *_cmenu_loc_set_gps_item;
-
-/* Menu items for the "Waypoint" context menu. */
-extern GtkWidget *_cmenu_way_show_latlon_item;
-extern GtkWidget *_cmenu_way_show_desc_item;
-extern GtkWidget *_cmenu_way_clip_latlon_item;
-extern GtkWidget *_cmenu_way_clip_desc_item;
-extern GtkWidget *_cmenu_way_route_to_item;
-extern GtkWidget *_cmenu_way_distance_to_item;
-extern GtkWidget *_cmenu_way_delete_item;
-extern GtkWidget *_cmenu_way_add_poi_item;
-extern GtkWidget *_cmenu_way_goto_nextway_item;
-
-/* Menu items for the "POI" context menu. */
-extern GtkWidget *_cmenu_poi_submenu;
-extern GtkWidget *_cmenu_poi_edit_poi_item;
-extern GtkWidget *_cmenu_poi_route_to_item;
-extern GtkWidget *_cmenu_poi_distance_to_item;
-extern GtkWidget *_cmenu_poi_add_route_item;
-extern GtkWidget *_cmenu_poi_add_way_item;
-extern GtkWidget *_cmenu_poi_goto_nearpoi_item;
-
-/*****************************
- * ABOVE: CONTEXT MENU ITEMS *
- *****************************/
 
 #endif /* ifndef MAEMO_MAPPER_DATA_H */
 

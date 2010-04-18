@@ -66,7 +66,6 @@ dbus_ifc_set_view_position_idle(SetViewPositionArgs *args)
     DEBUG("%f, %f, %d, %f", args->new_lat, args->new_lon,
           args->new_zoom, args->new_viewing_angle);
 
-    if(!_mouse_is_down)
     {
         MapController *controller = map_controller_get_instance();
         map_controller_disable_auto_center(controller);
