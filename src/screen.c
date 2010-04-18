@@ -111,6 +111,11 @@ struct _MapScreenPrivate
     ClutterTimeline *zoom_tl;
     gint num_zoom_tl_completed;
 
+    /* Ths flag sould be set while the user is panning the map or anyway when
+     * we don't want the map view to be altered (moved or rotated) */
+    gboolean grabbed;
+    guint source_release_grab;
+
     guint zoom_direction_out : 1;
 
     /* Set this flag to TRUE when there is an action ongoing which requires
@@ -152,11 +157,48 @@ G_DEFINE_TYPE(MapScreen, map_screen, GTK_CLUTTER_TYPE_EMBED);
 
 #define MAP_SCREEN_PRIV(screen) (MAP_SCREEN(screen)->priv)
 
+static void map_screen_set_center_real(MapScreen *screen,
+                                       gint x, gint y, gint zoom);
+
+static gboolean
+release_grab_real(MapScreen *self)
+{
+    MapController *controller = map_controller_get_instance();
+    MapPoint p;
+    gint angle;
+
+    self->priv->grabbed = FALSE;
+    self->priv->source_release_grab = 0;
+
+    if (map_controller_get_center_mode(controller) != CENTER_MANUAL &&
+        map_controller_get_gps_enabled(controller))
+    {
+        map_controller_get_center(controller, &p);
+        angle = map_controller_get_rotation(controller);
+        map_screen_set_center_real(self, p.x, p.y, -1);
+        map_screen_set_rotation(self, angle);
+    }
+
+    return FALSE;
+}
+
+static void
+release_grab(MapScreen *self)
+{
+    MapScreenPrivate *priv = self->priv;
+
+    if (priv->source_release_grab)
+        g_source_remove(priv->source_release_grab);
+
+    priv->source_release_grab =
+        g_timeout_add_seconds(5, (GSourceFunc)release_grab_real, self);
+}
+
 static void
 on_zoom_tl_completed(ClutterTimeline *zoom_tl, MapScreen *self)
 {
     MapScreenPrivate *priv = self->priv;
-    gint zoom_diff;
+    gint zoom, zoom_diff;
     gboolean ended;
 
     priv->num_zoom_tl_completed++;
@@ -170,7 +212,13 @@ on_zoom_tl_completed(ClutterTimeline *zoom_tl, MapScreen *self)
         if (priv->zoom_direction_out)
             zoom_diff = -zoom_diff;
 
-        map_controller_set_zoom(controller, priv->zoom - zoom_diff);
+        zoom = map_controller_get_zoom(controller) - zoom_diff;
+        map_controller_set_zoom_no_act(controller, zoom);
+        map_screen_set_center_real(self,
+                                   priv->map_center_ux,
+                                   priv->map_center_uy,
+                                   zoom);
+        map_mark_update(MAP_MARK(priv->mark));
     }
 }
 
@@ -354,6 +402,12 @@ on_stage_event(ClutterActor *actor, ClutterEvent *event, MapScreen *screen)
             map_osm_set_reactive(MAP_OSM(priv->osm), FALSE);
             map_osm_show(MAP_OSM(priv->osm));
         }
+
+        if (priv->source_release_grab != 0)
+        {
+            g_source_remove(priv->source_release_grab);
+            priv->source_release_grab = 0;
+        }
     }
     else if (event->type == CLUTTER_BUTTON_RELEASE)
     {
@@ -362,7 +416,7 @@ on_stage_event(ClutterActor *actor, ClutterEvent *event, MapScreen *screen)
         map_osm_set_reactive(MAP_OSM(priv->osm), TRUE);
         if (priv->is_dragging)
         {
-            MapController *controller;
+            MapController *controller = map_controller_get_instance();
             MapPoint p;
 
             map_screen_pixel_to_screen_units(priv,
@@ -371,9 +425,10 @@ on_stage_event(ClutterActor *actor, ClutterEvent *event, MapScreen *screen)
                                              &dx, &dy);
             p.x = priv->map_center_ux - dx;
             p.y = priv->map_center_uy - dy;
-            controller = map_controller_get_instance();
-            map_controller_disable_auto_center(controller);
-            map_controller_set_center(controller, p, -1);
+            map_screen_set_center_real(screen, p.x, p.y, -1);
+            if (map_controller_get_center_mode(controller) == CENTER_MANUAL ||
+                !map_controller_get_gps_enabled(controller))
+                map_controller_set_center_no_act(controller, p, -1);
             handled = TRUE;
         }
 
@@ -381,6 +436,9 @@ on_stage_event(ClutterActor *actor, ClutterEvent *event, MapScreen *screen)
         priv->is_dragging = FALSE;
 
         map_osm_hide(MAP_OSM(priv->osm));
+
+        if (priv->grabbed)
+            release_grab(screen);
 
         if (be->click_count > 1)
         {
@@ -406,6 +464,7 @@ on_stage_event(ClutterActor *actor, ClutterEvent *event, MapScreen *screen)
             (ABS(dx) > TOUCH_RADIUS || ABS(dy) > TOUCH_RADIUS))
         {
             priv->is_dragging = TRUE;
+            priv->grabbed = TRUE;
         }
 
         if (priv->is_dragging)
@@ -1152,6 +1211,12 @@ map_screen_dispose(GObject *object)
         priv->source_panel_redraw = 0;
     }
 
+    if (priv->source_release_grab != 0)
+    {
+        g_source_remove (priv->source_release_grab);
+        priv->source_release_grab = 0;
+    }
+
     G_OBJECT_CLASS(map_screen_parent_class)->dispose(object);
 }
 
@@ -1247,15 +1312,8 @@ map_screen_class_init(MapScreenClass * klass)
     widget_class->size_allocate = map_screen_size_allocate;
 }
 
-/**
- * map_screen_set_center:
- * @screen: the #MapScreen.
- * @x: the x coordinate of the new center.
- * @y: the y coordinate of the new center.
- * @zoom: the new zoom level, or -1 to keep the current one.
- */
-void
-map_screen_set_center(MapScreen *screen, gint x, gint y, gint zoom)
+static void
+map_screen_set_center_real(MapScreen *screen, gint x, gint y, gint zoom)
 {
     MapScreenPrivate *priv;
     GtkAllocation *allocation;
@@ -1266,7 +1324,6 @@ map_screen_set_center(MapScreen *screen, gint x, gint y, gint zoom)
     gint cache_amount;
     gint new_zoom;
 
-    g_return_if_fail(MAP_IS_SCREEN(screen));
     priv = screen->priv;
 
     DEBUG("(%u, %u) zoom %d", x, y, zoom);
@@ -1331,6 +1388,27 @@ map_screen_set_center(MapScreen *screen, gint x, gint y, gint zoom)
 }
 
 /**
+ * map_screen_set_center:
+ * @screen: the #MapScreen.
+ * @x: the x coordinate of the new center.
+ * @y: the y coordinate of the new center.
+ * @zoom: the new zoom level, or -1 to keep the current one.
+ */
+void
+map_screen_set_center(MapScreen *screen, gint x, gint y, gint zoom)
+{
+    MapScreenPrivate *priv;
+
+    g_return_if_fail(MAP_IS_SCREEN(screen));
+    priv = screen->priv;
+
+    if (priv->grabbed)
+        return;
+
+    map_screen_set_center_real(screen, x, y, zoom);
+}
+
+/**
  * map_screen_set_rotation:
  * @screen: the #MapScreen.
  * @angle: the new rotation angle.
@@ -1343,6 +1421,10 @@ map_screen_set_rotation(MapScreen *screen, gint angle)
 
     g_return_if_fail(MAP_IS_SCREEN(screen));
     priv = screen->priv;
+
+    if (priv->grabbed)
+        return;
+
     priv->rotate_angle_start =
         -clutter_actor_get_rotation(priv->map, CLUTTER_Z_AXIS,
                                     NULL, NULL, NULL);
@@ -1611,7 +1693,7 @@ map_screen_refresh_map(MapScreen *self)
 
     priv = self->priv;
 
-    map_screen_set_center(self, priv->map_center_ux, priv->map_center_uy, priv->zoom);
+    map_screen_set_center_real(self, priv->map_center_ux, priv->map_center_uy, priv->zoom);
 }
 
 

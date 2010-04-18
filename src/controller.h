@@ -134,11 +134,14 @@ gboolean map_controller_get_show_zoom(MapController *self);
 void map_controller_set_show_gps_info(MapController *self, gboolean show);
 gboolean map_controller_get_show_gps_info(MapController *self);
 
+void map_controller_set_center_no_act(MapController *self, MapPoint center,
+                                      gint zoom);
 void map_controller_set_center(MapController *self, MapPoint center, gint zoom);
 void map_controller_get_center(MapController *self, MapPoint *center);
 void map_controller_set_rotation(MapController *self, gint angle);
 gint map_controller_get_rotation(MapController *self);
 void map_controller_rotate(MapController *self, gint angle);
+void map_controller_set_zoom_no_act(MapController *self, gint zoom);
 void map_controller_set_zoom(MapController *self, gint zoom);
 gint map_controller_get_zoom(MapController *self);
 void map_controller_calc_best_center(MapController *self, MapPoint *new_center);

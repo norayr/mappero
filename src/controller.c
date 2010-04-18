@@ -619,6 +619,21 @@ map_controller_get_show_gps_info(MapController *self)
 }
 
 void
+map_controller_set_center_no_act(MapController *self, MapPoint center,
+                                 gint zoom)
+{
+    MapControllerPrivate *priv;
+
+    g_return_if_fail(MAP_IS_CONTROLLER(self));
+    priv = self->priv;
+
+    DEBUG("(%d, %d, %d)", center.x, center.y, zoom);
+    if (zoom >= 0)
+        priv->zoom = zoom;
+    priv->center = center;
+}
+
+void
 map_controller_set_center(MapController *self, MapPoint center, gint zoom)
 {
     MapControllerPrivate *priv;
@@ -626,11 +641,8 @@ map_controller_set_center(MapController *self, MapPoint center, gint zoom)
     g_return_if_fail(MAP_IS_CONTROLLER(self));
     priv = self->priv;
 
-    if (zoom < 0)
-        zoom = priv->zoom;
-    else
-        priv->zoom = zoom;
-    priv->center = center;
+    DEBUG("(%d, %d, %d)", center.x, center.y, zoom);
+    map_controller_set_center_no_act(self, center, zoom);
 
     if (priv->display_on)
     {
@@ -682,6 +694,17 @@ map_controller_rotate(MapController *self, gint angle)
 }
 
 void
+map_controller_set_zoom_no_act(MapController *self, gint zoom)
+{
+    g_return_if_fail(MAP_IS_CONTROLLER(self));
+
+    DEBUG("called: %d", zoom);
+
+    if (zoom >= 0)
+        self->priv->zoom = zoom;
+}
+
+void
 map_controller_set_zoom(MapController *self, gint zoom)
 {
     MapControllerPrivate *priv;
@@ -693,9 +716,8 @@ map_controller_set_zoom(MapController *self, gint zoom)
     /* Round zoom according step in repository */
     zoom = zoom / priv->repository->zoom_step * priv->repository->zoom_step;
 
-    if (zoom == priv->zoom) return;
+    map_controller_set_zoom_no_act(self, zoom);
 
-    priv->zoom = zoom;
     map_controller_calc_best_center(self, &center);
     map_controller_set_center(self, center, zoom);
 }
