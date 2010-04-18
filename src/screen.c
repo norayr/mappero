@@ -1317,7 +1317,7 @@ map_screen_set_center_real(MapScreen *screen, gint x, gint y, gint zoom)
 {
     MapScreenPrivate *priv;
     GtkAllocation *allocation;
-    gint diag_halflength_units;
+    gint halflength_units;
     gint start_tilex, start_tiley, stop_tilex, stop_tiley;
     MapArea area;
     gint px, py;
@@ -1342,15 +1342,14 @@ map_screen_set_center_real(MapScreen *screen, gint x, gint y, gint zoom)
     /* Calculate cache amount */
     cache_amount = _auto_download_precache;
 
-    diag_halflength_units =
-        pixel2zunit(TILE_HALFDIAG_PIXELS +
-                    MAX(allocation->width, allocation->height) / 2,
+    halflength_units =
+        pixel2zunit(MAX(allocation->width, allocation->height) / 2,
                     new_zoom);
 
-    area.x1 = x - diag_halflength_units;
-    area.y1 = y - diag_halflength_units;
-    area.x2 = x + diag_halflength_units;
-    area.y2 = y + diag_halflength_units;
+    area.x1 = x - halflength_units;
+    area.y1 = y - halflength_units;
+    area.x2 = x + halflength_units + TILE_SIZE_PIXELS - 1;
+    area.y2 = y + halflength_units + TILE_SIZE_PIXELS - 1;
 
     start_tilex = unit2ztile(area.x1, new_zoom);
     start_tilex = MAX(start_tilex - cache_amount, 0);
