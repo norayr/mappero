@@ -1,3 +1,11 @@
+maemo-mapper (3.0+beta5) unstable; urgency=low
+
+  * Rewrote navigation algorithms and interface.
+  * Refactor Path class.
+  * Portrait mode support.
+
+ -- Alberto Mardegan <mardy@users.sourceforge.net>  Wed, 21 Apr 2010 16:36:50 +0300
+
 maemo-mapper (3.0+beta4) unstable; urgency=low
 
   * Fix bug #5408 - Unblank Screen Does Not Work.
