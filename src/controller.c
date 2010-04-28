@@ -43,6 +43,7 @@
 #include "settings.h"
 #include "tile.h"
 #include "tile_source.h"
+#include "util.h"
 
 #include <gconf/gconf-client.h>
 #include <hildon/hildon-banner.h>
@@ -774,9 +775,29 @@ void
 map_controller_calc_best_center(MapController *self, MapPoint *new_center)
 {
     MapControllerPrivate *priv;
+    MapGpsData *gps;
 
     g_return_if_fail(MAP_IS_CONTROLLER(self));
     priv = self->priv;
+    gps = &priv->gps_data;
+
+    /* if the error is huge and it covers the current center, then don't change
+     * the center */
+    if (G_UNLIKELY(gps->hdop > 5000))
+    {
+        gfloat distance;
+        MapGeo lat, lon;
+
+        unit2latlon(priv->center.x, priv->center.y, lat, lon);
+        distance = calculate_distance(gps->lat, gps->lon, lat, lon);
+        DEBUG("distance = %.1f, hdop = %d, (%.5f, %.5f) - (%.5f, %.5f)",
+              distance, gps->hdop, lat, lon, gps->lat, gps->lon);
+        if (distance <= gps->hdop)
+        {
+            *new_center = priv->center;
+            return;
+        }
+    }
 
     switch (_center_mode)
     {
