@@ -804,8 +804,8 @@ map_controller_calc_best_center(MapController *self, MapPoint *new_center)
     case CENTER_LEAD:
         {
             gfloat heading, speed;
-            heading = priv->gps_data.heading;
-            speed = priv->gps_data.speed;
+            heading = gps->heading;
+            speed = gps->speed;
 
             gfloat tmp = deg2rad(heading);
             gfloat screen_pixels = _view_width_pixels
