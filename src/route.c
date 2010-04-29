@@ -289,23 +289,29 @@ route_show_distance_to_next()
 }
 
 static void
-auto_calculate_route_cb(MapRouter *router, Path *path, const GError *error)
+map_route_take_path(Path *path, MapPathMergePolicy policy)
 {
     MapController *controller = map_controller_get_instance();
 
+    map_path_merge(path, &_route.path, policy);
+    path_save_route_to_db();
+
+    /* Find the nearest route point, if we're connected. */
+    route_find_nearest_point();
+
+    map_controller_refresh_paths(controller);
+}
+
+static void
+auto_calculate_route_cb(MapRouter *router, Path *path, const GError *error)
+{
     DEBUG("called (error = %p)", error);
 
     if (G_UNLIKELY(error))
         cancel_autoroute();
     else
     {
-        map_path_merge(path, &_route.path, MAP_PATH_MERGE_POLICY_REPLACE);
-        path_save_route_to_db();
-
-        /* Find the nearest route point, if we're connected. */
-        route_find_nearest_point();
-
-        map_controller_refresh_paths(controller);
+        map_route_take_path(path, MAP_PATH_MERGE_POLICY_REPLACE);
     }
 
     _autoroute_data.in_progress = FALSE;
@@ -599,7 +605,6 @@ calculate_route_cb(MapRouter *router, Path *path, const GError *error,
                    GtkDialog **p_dialog)
 {
     GtkDialog *dialog = *p_dialog;
-    MapController *controller = map_controller_get_instance();
     RouteDownloadInfo *rdi;
     GtkTreeIter iter;
     const gchar *from, *to;
@@ -628,15 +633,9 @@ calculate_route_cb(MapRouter *router, Path *path, const GError *error,
     /* Cancel any autoroute that might be occurring. */
     cancel_autoroute();
 
-    map_path_merge(path, &_route.path,
-                   rdi->replace ? MAP_PATH_MERGE_POLICY_REPLACE :
-                   MAP_PATH_MERGE_POLICY_APPEND);
-    path_save_route_to_db();
-
-    /* Find the nearest route point, if we're connected. */
-    route_find_nearest_point();
-
-    map_controller_refresh_paths(controller);
+    map_route_take_path(path,
+                        rdi->replace ? MAP_PATH_MERGE_POLICY_REPLACE :
+                        MAP_PATH_MERGE_POLICY_APPEND);
 
     if (hildon_check_button_get_active
         (HILDON_CHECK_BUTTON(rdi->autoroute)))
