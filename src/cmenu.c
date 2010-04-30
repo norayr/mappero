@@ -325,7 +325,7 @@ map_menu_point_map(const MapPoint *p)
 
     button = map_dialog_create_button(dlg, _("Show Distance to"), DISTANCE_TO);
 
-    button = map_dialog_create_button(dlg, _("Download Route to..."), ROUTE_TO);
+    button = map_dialog_create_button(dlg, _("Find route to..."), ROUTE_TO);
 
     button = map_dialog_create_button(dlg, _("Download POI..."), DOWNLOAD_POI);
 
@@ -399,7 +399,7 @@ map_menu_point_waypoint(WayPoint *way)
 
     button = map_dialog_create_button(dlg, _("Show Distance to"), DISTANCE_TO);
 
-    button = map_dialog_create_button(dlg, _("Download Route to..."), ROUTE_TO);
+    button = map_dialog_create_button(dlg, _("Find route to..."), ROUTE_TO);
 
     button = map_dialog_create_button(dlg, _("Delete..."), DELETE);
 
@@ -454,7 +454,7 @@ map_menu_point_poi(PoiInfo *poi)
 
     button = map_dialog_create_button(dlg, _("View/Edit..."), SHOW_EDIT);
     button = map_dialog_create_button(dlg, _("Show Distance to"), DISTANCE_TO);
-    button = map_dialog_create_button(dlg, _("Download Route to..."), ROUTE_TO);
+    button = map_dialog_create_button(dlg, _("Find route to..."), ROUTE_TO);
     button = map_dialog_create_button(dlg, _("Add Route Point"), ADD_ROUTE);
     button = map_dialog_create_button(dlg, _("Add Waypoint..."), ADD_WAYPOINT);
 

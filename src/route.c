@@ -794,7 +794,7 @@ route_download(gchar *to)
     DEBUG("");
     conic_recommend_connected();
 
-    dialog = map_dialog_new(_("Download Route"), GTK_WINDOW(_window), TRUE);
+    dialog = map_dialog_new(_("Find route"), GTK_WINDOW(_window), TRUE);
     gtk_dialog_add_button(GTK_DIALOG(dialog),
                           _("Options"), MAP_RESPONSE_OPTIONS);
     gtk_dialog_add_button(GTK_DIALOG(dialog),

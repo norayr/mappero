@@ -853,8 +853,8 @@ map_menu_route()
                             TRUE);
     dlg = (MapDialog *)dialog;
 
+    map_dialog_create_button(dlg, _("Set destination..."), ROUTE_DOWNLOAD);
     map_dialog_create_button(dlg, _("Open..."), ROUTE_OPEN);
-    map_dialog_create_button(dlg, _("Download..."), ROUTE_DOWNLOAD);
     map_dialog_create_button(dlg, _("Save..."), ROUTE_SAVE);
     map_dialog_create_button(dlg, _("Reset"), ROUTE_RESET);
     map_dialog_create_button(dlg, _("Clear"), ROUTE_CLEAR);
