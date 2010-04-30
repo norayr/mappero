@@ -830,14 +830,14 @@ route_download(gchar *to)
         hildon_touch_selector_append_text(origin_selector, _("Use End of Route"));
         rdi->origin_row_route = row++;
         rdi->origin_row_other = row++;
-        active_origin_row = rdi->origin_row_route;
     }
     else
     {
         rdi->origin_row_other = row++;
         rdi->origin_row_route = -1;
-        active_origin_row = (_pos.unit.x != 0 && _pos.unit.y != 0) ? rdi->origin_row_gps : rdi->origin_row_other;
     }
+    active_origin_row = (_pos.unit.x != 0 && _pos.unit.y != 0) ?
+        rdi->origin_row_gps : rdi->origin_row_other;
     hildon_touch_selector_append_text(origin_selector, _("Other..."));
     hildon_touch_selector_set_active(origin_selector, 0, active_origin_row);
 
