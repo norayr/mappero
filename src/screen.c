@@ -198,21 +198,30 @@ static void
 on_zoom_tl_completed(ClutterTimeline *zoom_tl, MapScreen *self)
 {
     MapScreenPrivate *priv = self->priv;
+    MapController *controller = map_controller_get_instance();
     gint zoom, zoom_diff;
     gboolean ended;
 
     priv->num_zoom_tl_completed++;
 
+    /* calculate the actual zoom level, to make sure we don't zoom too far or
+     * too near */
+
+    zoom_diff = priv->num_zoom_tl_completed;
+    if (priv->zoom_direction_out)
+        zoom_diff = -zoom_diff;
+    zoom = map_controller_get_zoom(controller) - zoom_diff;
+
+    if ((zoom <= MIN_ZOOM && !priv->zoom_direction_out) ||
+        (zoom >= MAX_ZOOM && priv->zoom_direction_out))
+    {
+        map_screen_zoom_stop(self);
+        clutter_timeline_stop(zoom_tl);
+    }
+
     ended = !clutter_timeline_get_loop(zoom_tl);
     if (ended)
     {
-        MapController *controller = map_controller_get_instance();
-
-        zoom_diff = priv->num_zoom_tl_completed;
-        if (priv->zoom_direction_out)
-            zoom_diff = -zoom_diff;
-
-        zoom = map_controller_get_zoom(controller) - zoom_diff;
         map_controller_set_zoom_no_act(controller, zoom);
         map_screen_set_center_real(self,
                                    priv->map_center_ux,

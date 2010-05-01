@@ -278,6 +278,7 @@ void
 map_controller_action_zoom_in(MapController *self)
 {
     g_return_if_fail(MAP_IS_CONTROLLER(self));
+    if (self->priv->zoom <= MIN_ZOOM) return;
     map_screen_zoom_start(self->priv->screen, MAP_SCREEN_ZOOM_IN);
 }
 
@@ -285,6 +286,7 @@ void
 map_controller_action_zoom_out(MapController *self)
 {
     g_return_if_fail(MAP_IS_CONTROLLER(self));
+    if (self->priv->zoom >= MAX_ZOOM) return;
     map_screen_zoom_start(self->priv->screen, MAP_SCREEN_ZOOM_OUT);
 }
 
