@@ -1559,6 +1559,8 @@ settings_init(GConfClient *gconf_client)
     {
         _zoom = gconf_value_get_int(value);
         gconf_value_free(value);
+        if (_zoom < MIN_ZOOM || _zoom >= MAX_ZOOM)
+            _zoom = 16;
     }
     else
         _zoom = 16;
