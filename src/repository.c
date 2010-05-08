@@ -929,14 +929,6 @@ repository_create_default_lists(GList **tile_sources, GList **repositories)
 
     /* repositories */
     repo = g_slice_new0(Repository);
-    repo->name = g_strdup("OpenStreet");
-    repo->min_zoom = REPO_DEFAULT_MIN_ZOOM;
-    repo->max_zoom = REPO_DEFAULT_MAX_ZOOM;
-    repo->zoom_step = 1;
-    repo->primary = osm;
-    *repositories = g_list_append(*repositories, repo);
-
-    repo = g_slice_new0(Repository);
     repo->name = g_strdup("Google Satellite");
     repo->min_zoom = REPO_DEFAULT_MIN_ZOOM;
     repo->max_zoom = REPO_DEFAULT_MAX_ZOOM;
@@ -958,6 +950,14 @@ repository_create_default_lists(GList **tile_sources, GList **repositories)
     repo_layer = g_slice_new0(RepositoryLayer);
     repo_layer->ts = traffic;
     g_ptr_array_add(repo->layers, repo_layer);
+    *repositories = g_list_append(*repositories, repo);
+
+    repo = g_slice_new0(Repository);
+    repo->name = g_strdup("OpenStreet");
+    repo->min_zoom = REPO_DEFAULT_MIN_ZOOM;
+    repo->max_zoom = REPO_DEFAULT_MAX_ZOOM;
+    repo->zoom_step = 1;
+    repo->primary = osm;
     *repositories = g_list_append(*repositories, repo);
 
     return repo;
