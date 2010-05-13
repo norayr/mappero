@@ -329,7 +329,7 @@ maemo_mapper_init(gint argc, gchar **argv)
 
     /* Initialize _program. */
     _program = HILDON_PROGRAM(hildon_program_get_instance());
-    g_set_application_name("Mapper");
+    g_set_application_name("Mappero");
 
     /* Initialize _window. */
     _window = GTK_WIDGET(hildon_window_new());

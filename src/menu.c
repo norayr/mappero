@@ -698,7 +698,7 @@ static gboolean
 menu_cb_about(GtkMenuItem *item)
 {
     he_about_dialog_present(GTK_WINDOW(_window),
-                            "Mapper", "maemo-mapper", VERSION,
+                            "Mappero", "maemo-mapper", VERSION,
                             _("Geographical mapping and driving directions"),
                             _("This application is free software.\n"
                               "Support its development by contributing code,\n"
