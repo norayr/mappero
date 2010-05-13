@@ -36,17 +36,30 @@ Description: Geographical mapping and driving directions.
  geo-related information.  It focuses in part on in-car navigation and
  usability.  Home page: http://www.gnuite.com/nokia770/maemo-mapper
 XSBC-Maemo-Display-Name: Mappero
-XB-Maemo-Upgrade-Description: New route/track info panel, About dialog
- Add About dialog.
+XB-Maemo-Upgrade-Description: Improve startup time, power consumption
+ Renamed application to Mappero.
  .
- Add an small panel which show basic information about the current track and
- route.
+ Make auto-center work in a more sensible way (everybody will love this!).
  .
- Fix "Error saving maps. Disk full?" message.
+ GPS: allow setting the polling interval, and add a power-saving mode.
  .
- Do not retry the download of non existing map tiles.
+ Avoid drawing to screen when the display is off.
  .
- Remove a few obsolete menu items.
+ Make OpenStreetMaps the default map repository.
+ .
+ Don't set the end of the route as the default starting point.
+ .
+ Reorganize some menu items.
+ .
+ Don't scroll the map when the error is too big.
+ .
+ Fix behaviour of tile pre-cache.
+ .
+ Reduce application startup time.
+ .
+ Remove support for all hardware keys.
+ .
+ Fixes: #5650 - Don't allow zooming outside of the supported range.
 XSBC-Bugtracker: https://garage.maemo.org/tracker/?group_id=29
 XB-Maemo-Icon-26:
  iVBORw0KGgoAAAANSUhEUgAAABoAAAAaCAYAAACpSkzOAAAF/ElEQVRIS42WyXMbxxXGf92z

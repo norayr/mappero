@@ -1,3 +1,20 @@
+maemo-mapper (3.0+beta6) unstable; urgency=low
+
+  * Renamed application to Mappero.
+  * Make OpenStreetMaps the default map repository.
+  * Fixes: #5650 - Don't allow zooming outside of the supported range.
+  * Don't set the end of the route as the default starting point.
+  * Reorganize some menu items.
+  * Don't scroll the map when the error is too big.
+  * Fix behaviour of tile pre-cache.
+  * Make auto-center work in a more sensible way.
+  * Reduce application startup time.
+  * Remove support for all hardware keys.
+  * Avoid drawing to screen when the display is off.
+  * GPS: allow setting the polling interval, and add a power-saving mode.
+
+ -- Alberto Mardegan <mardy@users.sourceforge.net>  Thu, 13 May 2010 11:03:12 +0300
+
 maemo-mapper (3.0+beta5) unstable; urgency=low
 
   * Rewrote navigation algorithms and interface.
