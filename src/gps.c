@@ -202,9 +202,6 @@ on_gps_changed(LocationGPSDevice *device, MapController *controller)
 
     _pos.unit = gps->unit;
 
-    if (_enable_tracking)
-        map_path_track_update(gps);
-
     /* We consider a fix only if the geocoordinates are given */
     if (device->status >= LOCATION_GPS_DEVICE_STATUS_FIX)
     {
@@ -227,6 +224,12 @@ on_gps_changed(LocationGPSDevice *device, MapController *controller)
         set_conn_state(RCVR_UP);
         map_move_mark();
     }
+
+    if (gps->fix == LOCATION_GPS_DEVICE_MODE_NOT_SEEN)
+        gps->hdop = 1000 * 1000 * 1000;
+
+    if (_enable_tracking)
+        map_path_track_update(gps);
 
     for(i = 0; device->satellites && i < device->satellites->len; i++)
         update_satellite_info((LocationGPSDeviceSatellite *)
