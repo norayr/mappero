@@ -1308,15 +1308,6 @@ display_open_file(GtkWindow *parent, gchar **bytes_out,
     {
         gtk_file_chooser_set_uri(
                 GTK_FILE_CHOOSER(dialog), *file);
-        if(chooser_action == GTK_FILE_CHOOSER_ACTION_SAVE)
-        {
-            /* Work around a bug in HildonFileChooserDialog. */
-            gchar *basename = g_path_get_basename(*file);
-            g_object_set(G_OBJECT(dialog), "autonaming", FALSE, NULL);
-            gtk_file_chooser_set_current_name(
-                    GTK_FILE_CHOOSER(dialog), basename);
-            g_free(basename);
-        }
     }
 
     gtk_widget_show_all(dialog);
