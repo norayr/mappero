@@ -295,6 +295,9 @@ map_controller_gps_disconnect(MapController *self)
 
     if(_window)
         set_conn_state(RCVR_OFF);
+
+    if (_enable_tracking)
+        map_path_append_break(&_track);
 }
 
 void
