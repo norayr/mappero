@@ -2,7 +2,7 @@
 Encoding=UTF-8
 Version=1.0
 Type=Application
-Name=Mapper
+Name=Mappero
 Exec=/usr/bin/maemo-mapper
 Icon=maemo-mapper
 StartupWMClass=maemo-mapper
