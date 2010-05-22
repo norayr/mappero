@@ -39,6 +39,7 @@ struct _MapSignPrivate
     ClutterActor *c_direction;
     ClutterActor *c_distance;
     ClutterActor *c_text;
+    CoglHandle background;
 
     PangoContext *context;
     PangoFontDescription *font_distance;
@@ -67,6 +68,33 @@ load_icon(const gchar *name)
     DEBUG("icon name = %s", icon_name);
     icon_theme = gtk_icon_theme_get_default();
     return gtk_icon_theme_load_icon(icon_theme, icon_name, ICON_SIZE, 0, NULL);
+}
+
+static void
+on_text_paint(ClutterActor *c_text, MapSign *self)
+{
+    MapSignPrivate *priv = self->priv;
+    gint w;
+
+    if (priv->background == COGL_INVALID_HANDLE)
+    {
+        GdkPixbuf *pixbuf = load_icon("bg");
+        priv->background =
+            cogl_texture_new_from_data(gdk_pixbuf_get_width(pixbuf),
+                                       gdk_pixbuf_get_height(pixbuf),
+                                       COGL_TEXTURE_NONE,
+                                       COGL_PIXEL_FORMAT_RGBA_8888,
+                                       COGL_PIXEL_FORMAT_ANY,
+                                       gdk_pixbuf_get_rowstride(pixbuf),
+                                       gdk_pixbuf_get_pixels(pixbuf));
+    }
+
+    cogl_set_source_texture(priv->background);
+    if (priv->width > priv->height)
+        w = priv->width - ICON_SIZE - DISTANCE_WIDTH;
+    else
+        w = priv->width;
+    cogl_rectangle(0, 0, w, priv->text_height);
 }
 
 static void
@@ -178,10 +206,6 @@ map_sign_draw_text(MapSign *self)
     cr = clutter_cairo_texture_create(CLUTTER_CAIRO_TEXTURE(priv->c_text));
     g_assert(cr != NULL);
 
-    cairo_rectangle(cr, 0, 0, w, h);
-    cairo_set_source_rgba(cr, 1, 1, 1, 0.8);
-    cairo_fill(cr);
-
     cairo_set_source_rgb(cr, 0, 0, 0);
     cairo_move_to(cr, TEXT_BORDER, TEXT_BORDER);
     pango_cairo_show_layout(cr, layout);
@@ -228,6 +252,9 @@ map_sign_dispose(GObject *object)
         g_object_unref(priv->context);
         priv->context = NULL;
     }
+
+    if (priv->background != COGL_INVALID_HANDLE)
+        cogl_handle_unref(priv->background);
 
     G_OBJECT_CLASS(map_sign_parent_class)->dispose(object);
 }
@@ -299,6 +326,10 @@ map_sign_init(MapSign *self)
 
     priv->c_text = clutter_cairo_texture_new(0, 0);
     clutter_container_add_actor(CLUTTER_CONTAINER(self), priv->c_text);
+    g_signal_connect(priv->c_text, "paint",
+                     G_CALLBACK(on_text_paint), self);
+
+    priv->background = COGL_INVALID_HANDLE;
 }
 
 static void
