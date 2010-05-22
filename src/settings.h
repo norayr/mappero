@@ -22,12 +22,13 @@
 #ifndef MAEMO_MAPPER_SETTINGS_H
 #define MAEMO_MAPPER_SETTINGS_H
 
+#include "mappero/globals.h"
+
 void settings_init(GConfClient *gconf_client);
 void settings_save(void);
 
 gboolean settings_dialog(void);
 
-#define GCONF_KEY_PREFIX "/apps/maemo/maemo-mapper"
 #define GCONF_KEY_GPS_RCVR_TYPE GCONF_KEY_PREFIX"/gps_rcvr_type"
 #define GCONF_KEY_GPS_BT_MAC GCONF_KEY_PREFIX"/receiver_mac"
 #define GCONF_KEY_GPS_GPSD_HOST GCONF_KEY_PREFIX"/gps_gpsd_host"

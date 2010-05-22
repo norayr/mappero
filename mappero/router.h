@@ -22,11 +22,9 @@
 #ifndef MAP_ROUTER_H
 #define MAP_ROUTER_H
 
+#include <mappero/globals.h>
+
 #include <gconf/gconf-client.h>
-
-#include "types.h"
-#include "settings.h"
-
 #include <glib.h>
 #include <glib-object.h>
 #include <gtk/gtk.h>
@@ -42,6 +40,16 @@ G_BEGIN_DECLS
 
 typedef struct _MapRouter MapRouter;
 typedef struct _MapRouterIface MapRouterIface;
+
+/**
+ * MapLocation:
+ * Definiton of a location in either geographic coordinates or as an address.
+ * If the @address field is not %NULL, it has priority over the coordinates.
+ */
+typedef struct {
+    MapPoint point;
+    gchar *address;
+} MapLocation;
 
 /**
  * MapRouterQuery:

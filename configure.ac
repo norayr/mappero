@@ -22,7 +22,7 @@ AC_INIT(Makefile.am)
 AM_INIT_AUTOMAKE(maemo-mapper, 3.0+beta8)
 
 AC_PROG_CPP
-AC_CONFIG_HEADERS(src/config.h)
+AC_CONFIG_HEADERS(config.h)
 AC_PROG_INSTALL
 AC_PROG_LIBTOOL
 
@@ -190,6 +190,7 @@ AC_DEFINE_UNQUOTED([PIXMAPDIR], "${pixmapdir}", [Runtime pixmap files path])
 # Produce output files
 AC_OUTPUT(
           Makefile \
+          mappero/Makefile \
           src/Makefile \
           data/Makefile \
           data/help/Makefile \

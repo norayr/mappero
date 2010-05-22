@@ -34,6 +34,7 @@
 #    include "config.h"
 #endif
 
+#include "mappero/globals.h"
 #include <time.h>
 #include <gdbm.h>
 #include <gtk/gtk.h>
@@ -224,27 +225,6 @@ typedef enum
     MAP_UPDATE_DELETE,
     MAP_UPDATE_ENUM_COUNT
 } MapUpdateType;
-
-#ifdef USE_DOUBLES_FOR_LATLON
-typedef gdouble MapGeo;
-#else
-typedef gfloat MapGeo;
-#endif
-
-/** A general definition of a point in the Maemo Mapper unit system. */
-typedef struct _MapPoint MapPoint;
-struct _MapPoint {
-    gint x;
-    gint y;
-};
-
-/**
- * Definiton of a location in either geographic coordinates or as an address.
- * If the @address field is not %NULL, it has priority over the coordinates. */
-typedef struct {
-    MapPoint point;
-    gchar *address;
-} MapLocation;
 
 /* Navigation directions */
 typedef enum {
