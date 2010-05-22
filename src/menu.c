@@ -706,7 +706,7 @@ menu_cb_about(GtkMenuItem *item)
                               "2009-2010 Alberto Mardegan\n"
                               "2009-2010 Max Lapan\n"
                               "2006-2009 John Costigan"),
-                            NULL,
+                            "http://www.mardy.it/mappero",
                             "https://garage.maemo.org/tracker/?group_id=29",
                             "https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=DLKNAWDRW4WVG");
 
