@@ -57,6 +57,18 @@ G_DEFINE_TYPE(MapSign, map_sign, CLUTTER_TYPE_GROUP);
 
 #define MAP_SIGN_PRIV(sign) (MAP_SIGN(sign)->priv)
 
+static GdkPixbuf *
+load_icon(const gchar *name)
+{
+    GtkIconTheme *icon_theme;
+    gchar icon_name[128];
+
+    g_snprintf(icon_name, sizeof(icon_name), PACKAGE "-nav-%s", name);
+    DEBUG("icon name = %s", icon_name);
+    icon_theme = gtk_icon_theme_get_default();
+    return gtk_icon_theme_load_icon(icon_theme, icon_name, ICON_SIZE, 0, NULL);
+}
+
 static void
 map_sign_relayout(MapSign *self)
 {
@@ -190,9 +202,7 @@ map_sign_redraw(MapSign *self)
 static GdkPixbuf *
 get_icon_for_direction(MapDirection dir)
 {
-    GtkIconTheme *icon_theme;
     const gchar *dir_name;
-    gchar icon_name[128];
 
     /* TODO: consider implementing caching */
 
@@ -200,10 +210,7 @@ get_icon_for_direction(MapDirection dir)
     DEBUG("name = %s", dir_name);
     if (!dir_name) return NULL;
 
-    g_snprintf(icon_name, sizeof(icon_name), PACKAGE "-nav-%s", dir_name);
-    DEBUG("icon name = %s", icon_name);
-    icon_theme = gtk_icon_theme_get_default();
-    return gtk_icon_theme_load_icon(icon_theme, icon_name, ICON_SIZE, 0, NULL);
+    return load_icon(dir_name);
 }
 
 static void
