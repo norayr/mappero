@@ -42,6 +42,7 @@ icon_scalable_DATA = icons/scalable/maemo-mapper.png icons/scalable/maemo-mapper
 	icons/scalable/maemo-mapper-go-to.png \
 	icons/scalable/maemo-mapper-gps-enable.png \
 	icons/scalable/maemo-mapper-gps-disable.png \
+	icons/scalable/maemo-mapper-nav-bg.png \
 	icons/scalable/maemo-mapper-nav-first-exit.png \
 	icons/scalable/maemo-mapper-nav-second-exit.png \
 	icons/scalable/maemo-mapper-nav-slight-left.png \
