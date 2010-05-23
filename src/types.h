@@ -226,56 +226,6 @@ typedef enum
     MAP_UPDATE_ENUM_COUNT
 } MapUpdateType;
 
-/* Navigation directions */
-typedef enum {
-    MAP_DIRECTION_UNKNOWN = 0,
-    MAP_DIRECTION_CS, /* continue straight */
-    MAP_DIRECTION_TR, /* turn right */
-    MAP_DIRECTION_TL,
-    MAP_DIRECTION_STR, /* slight turn right */
-    MAP_DIRECTION_STL,
-    MAP_DIRECTION_EX1, /* first exit */
-    MAP_DIRECTION_EX2,
-    MAP_DIRECTION_EX3,
-    MAP_DIRECTION_LAST,
-} MapDirection;
-
-/* definition of a track/route point */
-typedef struct _Point Point;
-struct _Point {
-    MapPoint unit;
-    time_t time;
-    gchar zoom; /* zoom level at which this point becomes visible */
-    gint16 altitude;
-    gfloat distance; /* distance from previous point */
-};
-
-/** A WayPoint, which is a Point with a description. */
-typedef struct _WayPoint WayPoint;
-struct _WayPoint {
-    Point *point;
-    MapDirection dir;
-    gchar *desc;
-};
-
-/** A Path is a set of PathPoints and WayPoints. */
-typedef struct _Path Path;
-struct _Path {
-    Point *_head; /* points to first element in array; NULL if empty. */
-    Point *_tail; /* points to last element in array. */
-    Point *_cap; /* points after last slot in array. */
-    WayPoint *whead; /* points to first element in array; NULL if empty. */
-    WayPoint *wtail; /* points to last element in array. */
-    WayPoint *wcap; /* points after last slot in array. */
-    GList *_lines; /* MapLine elements */
-    gfloat length; /* length of the path, in metres */
-    gfloat last_lat; /* coordinates of the last point */
-    gfloat last_lon;
-    gint points_with_distance; /* number of points with distance computed */
-    gint points_optimized;
-    gint first_unsaved;
-};
-
 /** Data to describe a POI. */
 typedef struct _PoiInfo PoiInfo;
 struct _PoiInfo {

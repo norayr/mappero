@@ -103,8 +103,6 @@
 #define TILE_HALFDIAG_PIXELS (181)
 #define TILE_SIZE_P2 (8)
 
-#define ARRAY_CHUNK_SIZE (1024)
-
 #define BUFFER_SIZE (2048)
 
 #define GPSD_PORT_DEFAULT (2947)
