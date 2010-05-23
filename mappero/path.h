@@ -40,32 +40,29 @@ typedef enum {
 } MapDirection;
 
 /* definition of a track/route point */
-typedef struct _Point Point;
-struct _Point {
+typedef struct {
     MapPoint unit;
     time_t time;
     gchar zoom; /* zoom level at which this point becomes visible */
     gint16 altitude;
     gfloat distance; /* distance from previous point */
-};
+} MapPathPoint;
 
-/** A WayPoint, which is a Point with a description. */
-typedef struct _WayPoint WayPoint;
-struct _WayPoint {
-    Point *point;
+/** A MapPathWayPoint, which is a MapPathPoint with a description. */
+typedef struct {
+    MapPathPoint *point;
     MapDirection dir;
     gchar *desc;
-};
+} MapPathWayPoint;
 
-/** A Path is a set of PathPoints and WayPoints. */
-typedef struct _Path Path;
-struct _Path {
-    Point *_head; /* points to first element in array; NULL if empty. */
-    Point *_tail; /* points to last element in array. */
-    Point *_cap; /* points after last slot in array. */
-    WayPoint *whead; /* points to first element in array; NULL if empty. */
-    WayPoint *wtail; /* points to last element in array. */
-    WayPoint *wcap; /* points after last slot in array. */
+/** A MapPath is a set of PathPoints and WayPoints. */
+typedef struct {
+    MapPathPoint *_head; /* points to first element in array; NULL if empty. */
+    MapPathPoint *_tail; /* points to last element in array. */
+    MapPathPoint *_cap; /* points after last slot in array. */
+    MapPathWayPoint *whead; /* first element in array; NULL if empty. */
+    MapPathWayPoint *wtail; /* points to last element in array. */
+    MapPathWayPoint *wcap; /* points after last slot in array. */
     GList *_lines; /* MapLine elements */
     gfloat length; /* length of the path, in metres */
     gfloat last_lat; /* coordinates of the last point */
@@ -73,20 +70,20 @@ struct _Path {
     gint points_with_distance; /* number of points with distance computed */
     gint points_optimized;
     gint first_unsaved;
-};
+} MapPath;
 
 typedef struct {
-    const Path *path;
+    const MapPath *path;
     GList *line;
 } MapLineIter;
 
-void path_resize(Path *path, gint size);
-void path_wresize(Path *path, gint wsize);
+void path_resize(MapPath *path, gint size);
+void path_wresize(MapPath *path, gint wsize);
 
-guint map_path_get_duration(const Path *path);
+guint map_path_get_duration(const MapPath *path);
 
-void map_path_init(Path *path);
-void map_path_unset(Path *path);
+void map_path_init(MapPath *path);
+void map_path_unset(MapPath *path);
 
 #define map_path_first(path) ((path)->_head)
 #define map_path_next(path, point) ((point) + 1)
@@ -95,17 +92,18 @@ void map_path_unset(Path *path);
 #define map_path_last(path) ((path)->_tail - 1)
 #define map_path_len(path) ((path)->_tail - (path)->_head)
 
-void map_path_line_iter_first(const Path *path, MapLineIter *iter);
-void map_path_line_iter_last(const Path *path, MapLineIter *iter);
-void map_path_line_iter_from_point(const Path *path, const Point *point,
+void map_path_line_iter_first(const MapPath *path, MapLineIter *iter);
+void map_path_line_iter_last(const MapPath *path, MapLineIter *iter);
+void map_path_line_iter_from_point(const MapPath *path,
+                                   const MapPathPoint *point,
                                    MapLineIter *iter);
 gboolean map_path_line_iter_next(MapLineIter *iter);
-Point *map_path_line_first(const MapLineIter *iter);
+MapPathPoint *map_path_line_first(const MapLineIter *iter);
 gint map_path_line_len(const MapLineIter *iter);
 
 /* must be terminated with map_path_append_point_end() */
-static inline Point *
-map_path_append_point_fast(Path *path, const Point *p)
+static inline MapPathPoint *
+map_path_append_point_fast(MapPath *path, const MapPathPoint *p)
 {
     if (path->_tail == path->_cap)
         path_resize(path, path->_cap - path->_head + ARRAY_CHUNK_SIZE);
@@ -113,24 +111,24 @@ map_path_append_point_fast(Path *path, const Point *p)
     return path->_tail++;
 }
 
-void map_path_append_point_end(Path *path);
+void map_path_append_point_end(MapPath *path);
 
-static inline Point *
-map_path_append_point(Path *path, const Point *p)
+static inline MapPathPoint *
+map_path_append_point(MapPath *path, const MapPathPoint *p)
 {
-    Point *p_in_path;
+    MapPathPoint *p_in_path;
     p_in_path = map_path_append_point_fast(path, p);
     map_path_append_point_end(path);
     return p_in_path;
 }
 
-static inline WayPoint *
-map_path_make_waypoint_full(Path *path, const Point *p, MapDirection dir,
-                            gchar *desc)
+static inline MapPathWayPoint *
+map_path_make_waypoint_full(MapPath *path, const MapPathPoint *p,
+                            MapDirection dir, gchar *desc)
 {
     if (++(path->wtail) == path->wcap)
         path_wresize(path, path->wcap - path->whead + ARRAY_CHUNK_SIZE);
-    path->wtail->point = (Point *)p;
+    path->wtail->point = (MapPathPoint *)p;
     path->wtail->dir = dir;
     path->wtail->desc = desc;
     return path->wtail;
@@ -139,20 +137,21 @@ map_path_make_waypoint_full(Path *path, const Point *p, MapDirection dir,
 #define map_path_make_waypoint(path, p, desc) \
     map_path_make_waypoint_full(path, p, MAP_DIRECTION_UNKNOWN, desc)
 
-/* Appends a point to @path, and creates a WayPoint if @desc is not %NULL */
-static inline Point *
-map_path_append_point_with_desc(Path *path, const Point *p, const gchar *desc,
-                                MapDirection dir)
+/* Appends a point to @path, and creates a MapPathWayPoint if @desc is not
+ * %NULL */
+static inline MapPathPoint *
+map_path_append_point_with_desc(MapPath *path, const MapPathPoint *p,
+                                const gchar *desc, MapDirection dir)
 {
-    Point *p_in_path;
+    MapPathPoint *p_in_path;
     p_in_path = map_path_append_point_fast(path, p);
     if (desc)
         map_path_make_waypoint_full(path, p_in_path, dir, g_strdup(desc));
     return p_in_path;
 }
 
-void map_path_optimize(Path *path);
-void map_path_calculate_distances(Path *path);
+void map_path_optimize(MapPath *path);
+void map_path_calculate_distances(MapPath *path);
 
 typedef enum {
     MAP_PATH_MERGE_POLICY_REPLACE = 0,
@@ -160,12 +159,14 @@ typedef enum {
     MAP_PATH_MERGE_POLICY_PREPEND,
 } MapPathMergePolicy;
 
-void map_path_merge(Path *src_path, Path *dest_path, MapPathMergePolicy policy);
-void map_path_remove_range(Path *path, Point *start, Point *end);
+void map_path_merge(MapPath *src_path, MapPath *dest_path,
+                    MapPathMergePolicy policy);
+void map_path_remove_range(MapPath *path,
+                           MapPathPoint *start, MapPathPoint *end);
 
-Point *map_path_append_unit(Path *path, const MapPoint *p);
-gboolean map_path_append_break(Path *path);
-gboolean map_path_end_is_break(const Path *path);
+MapPathPoint *map_path_append_unit(MapPath *path, const MapPoint *p);
+gboolean map_path_append_break(MapPath *path);
+gboolean map_path_end_is_break(const MapPath *path);
 
 typedef struct {
     gint p_near; /* index of the closest point */
@@ -175,7 +176,7 @@ typedef struct {
     gint64 dist_squared_after_near; /* "distance" to the one after p_near */
 } MapRouteNearInfo;
 
-gboolean map_path_update_near_info(const Path *path, const MapPoint *p,
+gboolean map_path_update_near_info(const MapPath *path, const MapPoint *p,
                                    MapRouteNearInfo *ni, gboolean local);
 
 #endif /* MAP_PATH_H */

@@ -61,7 +61,7 @@ map_router_get_type(void)
 }
 
 static void
-geocode_from_route_cb(MapRouter *router, Path *path, const GError *error,
+geocode_from_route_cb(MapRouter *router, MapPath *path, const GError *error,
                       MapGeocodeData *mgd)
 {
     MapPoint point = { 0, 0 };

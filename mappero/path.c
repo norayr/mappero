@@ -45,13 +45,13 @@ typedef struct {
 #define MAP_LINE_NEW(index) GINT_TO_POINTER(index)
 
 void
-path_resize(Path *path, gint size)
+path_resize(MapPath *path, gint size)
 {
     if(path->_head + size != path->_cap)
     {
-        Point *old_head = path->_head;
-        WayPoint *curr;
-        path->_head = g_renew(Point, old_head, size);
+        MapPathPoint *old_head = path->_head;
+        MapPathWayPoint *curr;
+        path->_head = g_renew(MapPathPoint, old_head, size);
         path->_cap = path->_head + size;
         if(path->_head != old_head)
         {
@@ -65,21 +65,21 @@ path_resize(Path *path, gint size)
 }
 
 void
-path_wresize(Path *path, gint wsize)
+path_wresize(MapPath *path, gint wsize)
 {
     if(path->whead + wsize != path->wcap)
     {
-        WayPoint *old_whead = path->whead;
-        path->whead = g_renew(WayPoint, old_whead, wsize);
+        MapPathWayPoint *old_whead = path->whead;
+        path->whead = g_renew(MapPathWayPoint, old_whead, wsize);
         path->wtail = path->whead + (path->wtail - old_whead);
         path->wcap = path->whead + wsize;
     }
 }
 
 void
-map_path_calculate_distances(Path *path)
+map_path_calculate_distances(MapPath *path)
 {
-    Point *curr, *first;
+    MapPathPoint *curr, *first;
     gfloat total = 0;
     MapGeo lat, lon, last_lat, last_lon;
     MapLineIter line;
@@ -99,7 +99,7 @@ map_path_calculate_distances(Path *path)
     map_path_line_iter_from_point(path, first, &line);
     do
     {
-        Point *start, *end;
+        MapPathPoint *start, *end;
         start = map_path_line_first(&line);
         end = start + map_path_line_len(&line);
         if (start < first)
@@ -147,22 +147,22 @@ map_path_calculate_distances(Path *path)
 
 /**
  * map_path_find_closest:
- * @path: a #Path.
+ * @path: a #MapPath.
  * @p: the reference #MapPoint.
- * @start: the index of starting #Point in @path.
+ * @start: the index of starting #MapPathPoint in @path.
  * @local: whether the search should be local only.
  *
  * Starting from @start, scans @path and returns the point which is closest to
  * @p. If @local is %TRUE, the search stops as soon as the distance is
  * increasing.
  *
- * Returns: the index of the closest #Point.
+ * Returns: the index of the closest #MapPathPoint.
  */
 static gint
-map_path_find_closest(const Path *path, const MapPoint *p, gint start,
+map_path_find_closest(const MapPath *path, const MapPoint *p, gint start,
                       gboolean local)
 {
-    Point *curr, *near;
+    MapPathPoint *curr, *near;
     gint64 near_dist_squared;
 
     if (start >= map_path_len(path)) return 0;
@@ -191,15 +191,16 @@ map_path_find_closest(const Path *path, const MapPoint *p, gint start,
 }
 
 static inline void
-compute_distances_to_near_and_following(const Path *path,
-                                        const MapPoint *p, const Point *near,
+compute_distances_to_near_and_following(const MapPath *path,
+                                        const MapPoint *p,
+                                        const MapPathPoint *near,
                                         gint64 *dist_squared_near,
                                         gint64 *dist_squared_after_near)
 {
     *dist_squared_near = DISTANCE_SQUARED(*p, near->unit);
     if (near < map_path_end(path))
     {
-        const Point *after_near = near + 1;
+        const MapPathPoint *after_near = near + 1;
         *dist_squared_after_near = DISTANCE_SQUARED(*p, after_near->unit);
     }
     else
@@ -208,7 +209,7 @@ compute_distances_to_near_and_following(const Path *path,
 
 /**
  * map_path_update_near_info:
- * @path: a #Path.
+ * @path: a #MapPath.
  * @p: the reference #MapPoint.
  * @ni: a #MapRouteNearInfo used as both input and output.
  * @local: whether the search should be local.
@@ -220,11 +221,11 @@ compute_distances_to_near_and_following(const Path *path,
  * Returns: %TRUE if the @ni has changed.
  */
 gboolean
-map_path_update_near_info(const Path *path, const MapPoint *p,
+map_path_update_near_info(const MapPath *path, const MapPoint *p,
                           MapRouteNearInfo *ni, gboolean local)
 {
-    WayPoint *wcurr, *wnext;
-    Point *near;
+    MapPathWayPoint *wcurr, *wnext;
+    MapPathPoint *near;
     gint p_near;
     gint64 dist_squared_near = -1, dist_squared_after_near;
     gboolean p_near_is_set = FALSE;
@@ -307,9 +308,9 @@ map_path_update_near_info(const Path *path, const MapPoint *p,
 }
 
 void
-map_path_optimize(Path *path)
+map_path_optimize(MapPath *path)
 {
-    Point *curr, *prev;
+    MapPathPoint *curr, *prev;
     gint tolerance = 8; /* TODO: make it configurable */
 
     /* for every point, set the zoom level at which the point must be rendered
@@ -345,7 +346,7 @@ map_path_optimize(Path *path)
 
         while (zoom >= prev->zoom)
         {
-            Point *prev_before;
+            MapPathPoint *prev_before;
             /* going back is safe (we don't risk going past the head) because
              * the first point will always have zoom set to 127 */
             for (prev_before = prev; prev->zoom <= zoom; prev--);
@@ -367,7 +368,7 @@ map_path_optimize(Path *path)
 }
 
 void
-map_path_merge(Path *src_path, Path *dest_path, MapPathMergePolicy policy)
+map_path_merge(MapPath *src_path, MapPath *dest_path, MapPathMergePolicy policy)
 {
     map_path_calculate_distances(src_path);
     map_path_optimize(src_path);
@@ -387,11 +388,11 @@ map_path_merge(Path *src_path, Path *dest_path, MapPathMergePolicy policy)
     if (policy != MAP_PATH_MERGE_POLICY_REPLACE
         && map_path_len(dest_path) > 0)
     {
-        Point *src_first;
-        Path *src, *dest;
+        MapPathPoint *src_first;
+        MapPath *src, *dest;
         gint num_dest_points;
         gint num_src_points;
-        WayPoint *curr;
+        MapPathWayPoint *curr;
         GList *list;
 
         if (policy == MAP_PATH_MERGE_POLICY_APPEND)
@@ -419,7 +420,7 @@ map_path_merge(Path *src_path, Path *dest_path, MapPathMergePolicy policy)
                     num_dest_points + num_src_points + ARRAY_CHUNK_SIZE);
 
         memcpy(map_path_end(dest), src_first,
-               num_src_points * sizeof(Point));
+               num_src_points * sizeof(MapPathPoint));
 
         dest->_tail += num_src_points;
 
@@ -470,13 +471,13 @@ map_path_merge(Path *src_path, Path *dest_path, MapPathMergePolicy policy)
 }
 
 void
-map_path_remove_range(Path *path, Point *start, Point *end)
+map_path_remove_range(MapPath *path, MapPathPoint *start, MapPathPoint *end)
 {
     g_warning("%s not implemented", G_STRFUNC);
 }
 
 guint
-map_path_get_duration(const Path *path)
+map_path_get_duration(const MapPath *path)
 {
     MapLineIter line;
     guint duration = 0;
@@ -484,7 +485,7 @@ map_path_get_duration(const Path *path)
     map_path_line_iter_first(path, &line);
     do
     {
-        Point *first, *last;
+        MapPathPoint *first, *last;
         first = map_path_line_first(&line);
         last = first + map_path_line_len(&line) - 1;
         if (last > first && first->time != 0 && last->time != 0)
@@ -496,16 +497,16 @@ map_path_get_duration(const Path *path)
 }
 
 void
-map_path_append_point_end(Path *path)
+map_path_append_point_end(MapPath *path)
 {
     map_path_calculate_distances(path);
     map_path_optimize(path);
 }
 
-Point *
-map_path_append_unit(Path *path, const MapPoint *p)
+MapPathPoint *
+map_path_append_unit(MapPath *path, const MapPoint *p)
 {
-    Point pt, *p_in_path;
+    MapPathPoint pt, *p_in_path;
 
     pt.unit = *p;
     pt.altitude = 0;
@@ -517,12 +518,12 @@ map_path_append_unit(Path *path, const MapPoint *p)
 
 /**
  * map_path_append_break:
- * @path: the #Path.
+ * @path: the #MapPath.
  *
  * Breaks the line. Returns %FALSE if the line was already broken.
  */
 gboolean
-map_path_append_break(Path *path)
+map_path_append_break(MapPath *path)
 {
     GList *list;
     MapLine *line;
@@ -544,12 +545,12 @@ map_path_append_break(Path *path)
 
 /**
  * map_path_end_is_break:
- * @path: the #Path.
+ * @path: the #MapPath.
  *
  * Returns %TRUE if the path ends with a break point.
  */
 gboolean
-map_path_end_is_break(const Path *path)
+map_path_end_is_break(const MapPath *path)
 {
     GList *list;
     MapLine *line;
@@ -566,11 +567,11 @@ map_path_end_is_break(const Path *path)
 }
 
 void
-map_path_init(Path *path)
+map_path_init(MapPath *path)
 {
-    path->_head = path->_tail = g_new(Point, ARRAY_CHUNK_SIZE);
+    path->_head = path->_tail = g_new(MapPathPoint, ARRAY_CHUNK_SIZE);
     path->_cap = path->_head + ARRAY_CHUNK_SIZE;
-    path->whead = g_new(WayPoint, ARRAY_CHUNK_SIZE);
+    path->whead = g_new(MapPathWayPoint, ARRAY_CHUNK_SIZE);
     path->wtail = path->whead - 1;
     path->wcap = path->whead + ARRAY_CHUNK_SIZE;
     path->length = 0;
@@ -583,10 +584,10 @@ map_path_init(Path *path)
 }
 
 void
-map_path_unset(Path *path)
+map_path_unset(MapPath *path)
 {
     if (path->_head) {
-        WayPoint *curr;
+        MapPathWayPoint *curr;
         g_free(path->_head);
         path->_head = path->_tail = path->_cap = NULL;
         for (curr = path->whead - 1; curr++ != path->wtail; )
@@ -599,7 +600,7 @@ map_path_unset(Path *path)
 }
 
 void
-map_path_line_iter_first(const Path *path, MapLineIter *iter)
+map_path_line_iter_first(const MapPath *path, MapLineIter *iter)
 {
     iter->path = path;
     iter->line = path->_lines;
@@ -607,7 +608,7 @@ map_path_line_iter_first(const Path *path, MapLineIter *iter)
 }
 
 void
-map_path_line_iter_last(const Path *path, MapLineIter *iter)
+map_path_line_iter_last(const MapPath *path, MapLineIter *iter)
 {
     iter->path = path;
     iter->line = g_list_last(path->_lines);
@@ -615,7 +616,7 @@ map_path_line_iter_last(const Path *path, MapLineIter *iter)
 }
 
 void
-map_path_line_iter_from_point(const Path *path, const Point *point,
+map_path_line_iter_from_point(const MapPath *path, const MapPathPoint *point,
                               MapLineIter *iter)
 {
     MapLineIter line;
@@ -638,7 +639,7 @@ map_path_line_iter_next(MapLineIter *iter)
     return iter->line != NULL;
 }
 
-Point *
+MapPathPoint *
 map_path_line_first(const MapLineIter *iter)
 {
     return map_path_first(iter->path) + MAP_LINE(iter->line)->idx_start;

@@ -66,7 +66,7 @@ typedef struct {
     GtkWindow *parent;
 } MapRouterQuery;
 
-typedef void (*MapRouterCalculateRouteCb)(MapRouter *router, Path *path,
+typedef void (*MapRouterCalculateRouteCb)(MapRouter *router, MapPath *path,
                                           const GError *error,
                                           gpointer user_data);
 typedef void (*MapRouterGeocodeCb)(MapRouter *router, MapPoint point,
