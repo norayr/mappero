@@ -1,3 +1,14 @@
+maemo-mapper (3.0+beta7) unstable; urgency=low
+
+  * New navigation icons, kindly provided by t.m.o. user dannycamps.
+  * Add link to website in About page.
+  * Fix suggestion of filename on saving.
+  * Add a break to the track when switching off the GPS.
+  * Workaround the wrong precision reported by the GPS when initially
+    retrieving the position based on the country.
+
+ -- Alberto Mardegan <mardy@users.sourceforge.net>  Sun, 23 May 2010 10:32:14 +0300
+
 maemo-mapper (3.0+beta6) unstable; urgency=low
 
   * Renamed application to Mappero.

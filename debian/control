@@ -36,30 +36,17 @@ Description: Geographical mapping and driving directions.
  geo-related information.  It focuses in part on in-car navigation and
  usability.  Home page: http://www.mardy.it/mappero
 XSBC-Maemo-Display-Name: Mappero
-XB-Maemo-Upgrade-Description: Improve startup time, power consumption
- Renamed application to Mappero.
+XB-Maemo-Upgrade-Description: New navigation icons, GPS fixes
+ New navigation icons, kindly provided by t.m.o. user dannycamps.
  .
- Make auto-center work in a more sensible way (everybody will love this!).
+ Add link to website in About page.
  .
- GPS: allow setting the polling interval, and add a power-saving mode.
+ Fix suggestion of filename on saving.
  .
- Avoid drawing to screen when the display is off.
+ Add a break to the track when switching off the GPS.
  .
- Make OpenStreetMaps the default map repository.
- .
- Don't set the end of the route as the default starting point.
- .
- Reorganize some menu items.
- .
- Don't scroll the map when the error is too big.
- .
- Fix behaviour of tile pre-cache.
- .
- Reduce application startup time.
- .
- Remove support for all hardware keys.
- .
- Fixes: #5650 - Don't allow zooming outside of the supported range.
+ Workaround the wrong precision reported by the GPS when initially
+ retrieving the position based on the country.
 XSBC-Bugtracker: https://garage.maemo.org/tracker/?group_id=29
 XB-Maemo-Icon-26:
  iVBORw0KGgoAAAANSUhEUgAAABoAAAAaCAYAAACpSkzOAAAF/ElEQVRIS42WyXMbxxXGf92z
