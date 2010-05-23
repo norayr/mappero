@@ -83,17 +83,7 @@ typedef struct {
 void path_resize(Path *path, gint size);
 void path_wresize(Path *path, gint wsize);
 
-void map_path_track_update(const MapGpsData *gps);
-void track_clear(void);
-void track_insert_break(gboolean temporary);
-
 guint map_path_get_duration(const Path *path);
-
-void path_init(void);
-void path_init_late(void);
-void path_destroy(void);
-
-void map_path_save_route(Path *path);
 
 void map_path_init(Path *path);
 void map_path_unset(Path *path);
