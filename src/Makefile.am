@@ -20,6 +20,7 @@
 bin_PROGRAMS = maemo-mapper
 
 maemo_mapper_CFLAGS = \
+	-I.. \
 	$(GTK_CFLAGS) \
 	$(OSSO_CFLAGS) \
 	$(HILDON_CFLAGS) \
@@ -35,6 +36,7 @@ maemo_mapper_CFLAGS = \
 	-std=c99 -Wall -Wno-switch
 
 maemo_mapper_LDADD = \
+	$(top_builddir)/mappero/libmappero.la \
 	$(GTK_LIBS) \
 	$(OSSO_LIBS) \
 	$(HILDON_LIBS) \
