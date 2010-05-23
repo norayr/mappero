@@ -30,13 +30,14 @@
 
 #include "types.h"
 #include "data.h"
-#include "debug.h"
 #include "defines.h"
 
 #include "gpx.h"
 #include "navigation.h"
 #include "path.h"
 #include "util.h"
+
+#include <mappero/debug.h>
 
 /** This enum defines the states of the SAX parsing state machine. */
 typedef enum
@@ -72,8 +73,8 @@ struct _SaxData {
 typedef struct _PathSaxData PathSaxData;
 struct _PathSaxData {
     SaxData sax_data;
-    Path path;
-    Point pt;
+    MapPath path;
+    MapPathPoint pt;
     MapDirection dir;
     gchar *desc;
 };
@@ -365,7 +366,7 @@ gpx_path_end_element(PathSaxData *data, const xmlChar *name)
         case INSIDE_PATH_POINT:
             if(!strcmp((gchar*)name, "trkpt"))
             {
-                Point *p;
+                MapPathPoint *p;
                 p = map_path_append_point_fast(&data->path, &data->pt);
                 if (data->desc)
                 {
@@ -498,7 +499,7 @@ gpx_path_end_element(PathSaxData *data, const xmlChar *name)
 }
 
 gboolean
-gpx_path_parse(Path *to_replace, gchar *buffer, gint size, gint policy_old)
+gpx_path_parse(MapPath *to_replace, gchar *buffer, gint size, gint policy_old)
 {
     PathSaxData data;
     xmlSAXHandler sax_handler;
@@ -547,10 +548,10 @@ gpx_path_parse(Path *to_replace, gchar *buffer, gint size, gint policy_old)
  ****************************************************************************/
 
 gboolean
-gpx_path_write(Path *path, GnomeVFSHandle *handle)
+gpx_path_write(MapPath *path, GnomeVFSHandle *handle)
 {
-    Point *curr = NULL;
-    WayPoint *wcurr = NULL;
+    MapPathPoint *curr = NULL;
+    MapPathWayPoint *wcurr = NULL;
     MapLineIter line;
 
     /* Write the header. */
@@ -564,7 +565,7 @@ gpx_path_write(Path *path, GnomeVFSHandle *handle)
     wcurr = path->whead;
     do
     {
-        Point *start, *end;
+        MapPathPoint *start, *end;
         gpx_write_string(handle, "    <trkseg>\n");
         start = map_path_line_first(&line);
         end = start + map_path_line_len(&line);

@@ -40,11 +40,12 @@
 
 #include "types.h"
 #include "data.h"
-#include "debug.h"
 #include "defines.h"
 
 #include "gpx.h"
 #include "util.h"
+
+#include <mappero/debug.h>
 
 gboolean convert_iaru_loc_to_lat_lon(const gchar* txt_lon,
                                      MapGeo *lat, MapGeo *lon);
@@ -137,7 +138,7 @@ MapPoint locate_address(GtkWidget *parent, const gchar *addr)
 
     /* TODO: reimplement */
 #if 0
-    Path temp;
+    MapPath temp;
     GnomeVFSResult vfs_result;
     gint size;
     gchar *bytes = NULL;

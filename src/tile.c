@@ -25,10 +25,10 @@
 #include "tile.h"
 
 #include "controller.h"
-#include "debug.h"
 #include "defines.h"
 
 #include <clutter-gtk/clutter-gtk.h>
+#include <mappero/debug.h>
 #include <stdlib.h>
 
 struct _MapTilePrivate

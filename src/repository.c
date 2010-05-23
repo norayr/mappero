@@ -35,7 +35,6 @@
 
 #include "controller.h"
 #include "data.h"
-#include "debug.h"
 #include "defines.h"
 #include "display.h"
 #include "menu.h"
@@ -44,6 +43,8 @@
 #include "tile_source.h"
 #include "types.h"
 #include "util.h"
+
+#include <mappero/debug.h>
 
 /* Tag names. Used in XML generator and parser. */
 #define REPO_ROOT		"Repositories"

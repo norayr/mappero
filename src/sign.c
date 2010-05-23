@@ -23,10 +23,10 @@
 #endif
 #include "sign.h"
 
-#include "debug.h"
 #include "navigation.h"
 #include "util.h"
 #include <clutter-gtk/clutter-gtk.h>
+#include <mappero/debug.h>
 #include <math.h>
 
 #define ICON_SIZE   128

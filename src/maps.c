@@ -54,7 +54,6 @@
 
 #include "types.h"
 #include "data.h"
-#include "debug.h"
 #include "defines.h"
 
 #include "controller.h"
@@ -69,6 +68,8 @@
 #include "settings.h"
 #include "tile_source.h"
 #include "util.h"
+
+#include <mappero/debug.h>
 
 typedef struct
 {
@@ -819,10 +820,10 @@ mapman_by_route(MapmanInfo *mapman_info, MapUpdateType update_type,
 {
     GtkWidget *confirm;
     gint prev_tilex, prev_tiley, num_maps = 0, z;
-    Point *curr;
+    MapPathPoint *curr;
     gchar buffer[80];
     Repository* rd = map_controller_get_repository(map_controller_get_instance());
-    Path *route = map_route_get_path();
+    MapPath *route = map_route_get_path();
     gint radius = hildon_number_editor_get_value(
             HILDON_NUMBER_EDITOR(mapman_info->num_route_radius));
     DEBUG("");

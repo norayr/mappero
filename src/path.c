@@ -36,7 +36,6 @@
 
 #include "types.h"
 #include "data.h"
-#include "debug.h"
 #include "defines.h"
 #include "display.h"
 #include "gpx.h"
@@ -45,6 +44,8 @@
 #include "route.h"
 #include "util.h"
 #include "screen.h"
+
+#include <mappero/debug.h>
 
 /* uncertainty below which a GPS position is considered to be precise enough 
  * to be added to the track (in metres) */
@@ -78,7 +79,7 @@ static sqlite3_stmt *_path_stmt_trans_commit = NULL;
 static sqlite3_stmt *_path_stmt_trans_rollback = NULL;
 
 static void
-read_path_from_db(Path *path, sqlite3_stmt *select_stmt)
+read_path_from_db(MapPath *path, sqlite3_stmt *select_stmt)
 {
     map_path_init(path);
     while(SQLITE_ROW == sqlite3_step(select_stmt))
@@ -86,7 +87,7 @@ read_path_from_db(Path *path, sqlite3_stmt *select_stmt)
         const gchar *desc;
         MapDirection dir;
         FieldMix mix;
-        Point pt;
+        MapPathPoint pt;
 
         pt.unit.x = sqlite3_column_int(select_stmt, 0);
         pt.unit.y = sqlite3_column_int(select_stmt, 1);
@@ -113,7 +114,7 @@ read_path_from_db(Path *path, sqlite3_stmt *select_stmt)
 }
 
 static gboolean
-write_point_to_db(const Point *p, sqlite3_stmt *insert_path_stmt)
+write_point_to_db(const MapPathPoint *p, sqlite3_stmt *insert_path_stmt)
 {
     FieldMix mix;
     gboolean success = TRUE;
@@ -143,14 +144,14 @@ write_point_to_db(const Point *p, sqlite3_stmt *insert_path_stmt)
 
 /* Returns the new next_update_index. */
 static gint
-write_path_to_db(Path *path,
+write_path_to_db(MapPath *path,
         sqlite3_stmt *delete_path_stmt,
         sqlite3_stmt *delete_way_stmt,
         sqlite3_stmt *insert_path_stmt,
         sqlite3_stmt *insert_way_stmt)
 {
-    Point *curr, *first;
-    WayPoint *wcurr;
+    MapPathPoint *curr, *first;
+    MapPathWayPoint *wcurr;
     gint saved = 0;
     gboolean success = TRUE;
     MapLineIter line;
@@ -183,7 +184,7 @@ write_path_to_db(Path *path,
     map_path_line_iter_from_point(path, first, &line);
     do
     {
-        Point *start, *end;
+        MapPathPoint *start, *end;
         start = map_path_line_first(&line);
         end = start + map_path_line_len(&line);
         if (start >= first)
@@ -242,7 +243,7 @@ write_path_to_db(Path *path,
 }
 
 void
-map_path_save_route(Path *path)
+map_path_save_route(MapPath *path)
 {
     if(_path_db)
     {
@@ -271,11 +272,11 @@ path_save_track_to_db()
  * Returns TRUE if the point needs to be added to the path.
  */
 static gboolean
-point_is_significant(const MapGpsData *gps, const Path *path)
+point_is_significant(const MapGpsData *gps, const MapPath *path)
 {
     gint xdiff, ydiff, min_distance_units;
     MapLineIter line;
-    Point *prev;
+    MapPathPoint *prev;
 
     /* check if the track is empty */
     if (map_path_len(path) == 0)
@@ -316,7 +317,7 @@ void
 map_path_track_update(const MapGpsData *gps)
 {
     MapController *controller = map_controller_get_instance();
-    Point pos = _point_null;
+    MapPathPoint pos = _point_null;
     gboolean must_add = FALSE;
 
     if (gps->fields & MAP_GPS_LATLON)

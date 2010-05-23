@@ -31,7 +31,6 @@
 
 #include "controller.h"
 #include "data.h"
-#include "debug.h"
 #include "defines.h"
 #include "display.h"
 #include "menu.h"
@@ -46,6 +45,7 @@
 #include <hildon/hildon-pannable-area.h>
 #include <hildon/hildon-picker-button.h>
 #include <hildon/hildon-touch-selector.h>
+#include <mappero/debug.h>
 
 /* Tag names. Used in XML generator and parser. */
 #define TS_ROOT  "TileSources"

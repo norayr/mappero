@@ -25,9 +25,9 @@
 
 MapDirection map_navigation_infer_direction(const gchar *text);
 
-void map_navigation_announce_voice(const WayPoint *wp);
+void map_navigation_announce_voice(const MapPathWayPoint *wp);
 
-void map_navigation_set_alert(gboolean active, const WayPoint *wp,
+void map_navigation_set_alert(gboolean active, const MapPathWayPoint *wp,
                               gfloat distance);
 
 const gchar *map_direction_get_name(MapDirection dir);

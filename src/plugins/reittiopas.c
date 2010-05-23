@@ -26,16 +26,16 @@
 #include "reittiopas.h"
 
 #include "data.h"
-#include "debug.h"
 #include "defines.h"
 #include "dialog.h"
 #include "error.h"
-#include "path.h"
 
 #include <gconf/gconf-client.h>
 #include <hildon/hildon-pannable-area.h>
 #include <hildon/hildon-picker-button.h>
 #include <libxml/xmlreader.h>
+#include <mappero/debug.h>
+#include <mappero/path.h>
 #include <math.h>
 #include <string.h>
 #include <time.h>
@@ -816,7 +816,7 @@ handle_end_element(SaxData *data, const xmlChar *name)
 }
 
 static void
-ro_point_to_path_point(const RoPoint *point, Point *p)
+ro_point_to_path_point(const RoPoint *point, MapPathPoint *p)
 {
     kkj22unit(&point->kkj, &p->unit);
     p->time = point->departure;
@@ -824,16 +824,16 @@ ro_point_to_path_point(const RoPoint *point, Point *p)
 }
 
 static void
-ro_route_to_path(const RoRoute *route, Path *path)
+ro_route_to_path(const RoRoute *route, MapPath *path)
 {
-    Point *last = NULL;
+    MapPathPoint *last = NULL;
     GList *list;
 
     for (list = route->lines; list != NULL; list = list->next)
     {
         RoLine *line = list->data;
         RoPoint *point;
-        Point path_point;
+        MapPathPoint path_point;
         gint i;
 
         if (line->points->len < 2) continue;
@@ -871,7 +871,7 @@ ro_route_to_path(const RoRoute *route, Path *path)
 
         for (i = 1; i < line->points->len; i++)
         {
-            Point pt;
+            MapPathPoint pt;
             point = &g_array_index(line->points, RoPoint, i);
 
             ro_point_to_path_point(point, &pt);
@@ -1524,7 +1524,7 @@ calculate_route_with_units(MapRouter *router,
                            gpointer user_data)
 {
     MapReittiopas *self = MAP_REITTIOPAS(router);
-    Path path;
+    MapPath path;
     RoRoutes routes;
     RoQuery query;
     GError *error = NULL;

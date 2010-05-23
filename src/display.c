@@ -39,10 +39,10 @@
 #include <hildon/hildon-defines.h>
 #include <hildon/hildon-picker-button.h>
 #include <hildon/hildon-sound.h>
+#include <mappero/debug.h>
 
 #include "types.h"
 #include "data.h"
-#include "debug.h"
 #include "defines.h"
 
 #include "dbus-ifc.h"

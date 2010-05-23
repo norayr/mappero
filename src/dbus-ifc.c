@@ -36,10 +36,11 @@
 #include "types.h"
 #include "data.h"
 #include "defines.h"
-#include "debug.h"
 
 #include "display.h"
 #include "dbus-ifc.h"
+
+#include <mappero/debug.h>
 
 static DBusConnection *_bus = NULL;
 

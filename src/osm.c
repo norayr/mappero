@@ -24,10 +24,10 @@
 #include "osm.h"
 
 #include "controller.h"
-#include "debug.h"
 #include "defines.h"
 #include "menu.h"
 #include <clutter-gtk/clutter-gtk.h>
+#include <mappero/debug.h>
 
 /* seconds to wait before hiding the menu */
 #define HIDE_TIMEOUT    5

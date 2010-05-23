@@ -207,8 +207,8 @@ GtkWidget *_text_time = NULL;
 GtkWidget *_heading_panel = NULL;
 
 /** GPS data. */
-Point _pos = { { 0, 0 }, 0, 0, SHRT_MIN, 0};
-const Point _point_null = { { 0, 0 }, 0, SCHAR_MAX, 0, 0};
+MapPathPoint _pos = { { 0, 0 }, 0, 0, SHRT_MIN, 0};
+const MapPathPoint _point_null = { { 0, 0 }, 0, SCHAR_MAX, 0, 0};
 
 GpsSatelliteData _gps_sat[MAX_SATELLITES];
 gboolean _satdetails_on = FALSE;
@@ -235,8 +235,8 @@ gint _view_halfwidth_pixels = 0;
 gint _view_halfheight_pixels = 0;
 
 /** The current track and route. */
-Path _track;
-Path _route;
+MapPath _track;
+MapPath _route;
 
 /** THE GdkGC OBJECTS USED FOR DRAWING. */
 GdkGC *_gc[COLORABLE_ENUM_COUNT];

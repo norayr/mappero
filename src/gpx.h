@@ -21,9 +21,9 @@
 #ifndef MAEMO_MAPPER_GPX_H
 #define MAEMO_MAPPER_GPX_H
 
-gboolean gpx_path_parse(Path *to_replace, gchar *buffer, gint size,
+gboolean gpx_path_parse(MapPath *to_replace, gchar *buffer, gint size,
         gint policy_old);
-gboolean gpx_path_write(Path *path, GnomeVFSHandle *handle);
+gboolean gpx_path_write(MapPath *path, GnomeVFSHandle *handle);
 
 gint gpx_poi_parse(gchar *buffer, gint size, GList **list);
 gint gpx_poi_write(GtkTreeModel *model, GnomeVFSHandle *handle);

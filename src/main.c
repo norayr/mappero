@@ -56,7 +56,6 @@
 
 #include "types.h"
 #include "data.h"
-#include "debug.h"
 #include "defines.h"
 
 #include "cmenu.h"
@@ -74,6 +73,7 @@
 #include "util.h"
 
 #include <clutter-gtk/clutter-gtk.h>
+#include <mappero/debug.h>
 #include <mce/dbus-names.h>
 #include <mce/mode-names.h>
 

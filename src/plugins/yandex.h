@@ -22,7 +22,7 @@
 #ifndef MAP_YANDEX_H
 #define MAP_YANDEX_H
 
-#include <router.h>
+#include <mappero/router.h>
  
 G_BEGIN_DECLS
 

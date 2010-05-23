@@ -35,6 +35,7 @@
 #endif
 
 #include "mappero/globals.h"
+#include "mappero/path.h"
 #include <time.h>
 #include <gdbm.h>
 #include <gtk/gtk.h>
@@ -333,7 +334,7 @@ typedef struct _MapRenderTask MapRenderTask;
 struct _MapRenderTask
 {
     TileSource *repo;
-    Point new_center;
+    MapPathPoint new_center;
     gint old_offsetx;
     gint old_offsety;
     gint screen_width_pixels;

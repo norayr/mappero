@@ -55,7 +55,6 @@ maemo_mapper_SOURCES = \
 	controller.c \
 	data.c \
 	dbus-ifc.c \
-	debug.c \
 	dialog.c \
 	display.c \
 	error.c \
@@ -77,7 +76,6 @@ maemo_mapper_SOURCES = \
 	plugins/yandex.c \
 	poi.c \
 	route.c \
-	router.c \
 	settings.c \
 	screen.c \
 	sign.c \

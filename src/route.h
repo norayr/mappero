@@ -29,7 +29,7 @@ typedef struct _MapRoute MapRoute;
 extern MapRoute *_p_route;
 
 #define map_route_get() _p_route
-#define map_route_get_path() ((Path *)_p_route)
+#define map_route_get_path() ((MapPath *)_p_route)
 
 void map_route_clear(void);
 void map_route_destroy(void);
@@ -39,14 +39,14 @@ void map_route_destroy(void);
 
 void map_route_path_changed(void);
 
-WayPoint *map_route_get_next_waypoint();
+MapPathWayPoint *map_route_get_next_waypoint();
 gfloat map_route_get_distance_to_next_waypoint();
 
 /* TODO: rename and review these functions */
 void path_save_route_to_db(void);
 void route_find_nearest_point(void);
-gboolean route_calc_distance_to(const Point *point, gfloat *distance);
-gboolean route_show_distance_to(Point *point);
+gboolean route_calc_distance_to(const MapPathPoint *point, gfloat *distance);
+gboolean route_show_distance_to(MapPathPoint *point);
 
 void map_path_route_step(const MapGpsData *gps, gboolean newly_fixed);
 void path_reset_route(void);
@@ -54,7 +54,7 @@ void path_reset_route(void);
 void cancel_autoroute(void);
 gboolean autoroute_enabled(void);
 
-WayPoint * find_nearest_waypoint(const MapPoint *p);
+MapPathWayPoint * find_nearest_waypoint(const MapPoint *p);
 
 gboolean route_download(gchar *to);
 void route_add_way_dialog(const MapPoint *p);

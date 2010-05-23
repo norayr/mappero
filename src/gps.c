@@ -46,16 +46,18 @@
 
 #include "types.h"
 #include "data.h"
-#include "debug.h"
 #include "defines.h"
 
 #include "display.h"
 #include "gps.h"
 #include "path.h"
 #include "route.h"
+#include "settings.h"
 #include "util.h"
 
 #include "controller-priv.h"
+
+#include <mappero/debug.h>
 
 static void
 load_settings(MapGpsData *gps, GConfClient *gconf_client)

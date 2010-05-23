@@ -74,8 +74,8 @@ extern GtkWidget *_text_time;
 extern GtkWidget *_heading_panel;
 
 /** GPS data. */
-extern Point _pos;
-extern const Point _point_null;
+extern MapPathPoint _pos;
+extern const MapPathPoint _point_null;
 
 extern GpsSatelliteData _gps_sat[MAX_SATELLITES];
 extern gboolean _satdetails_on;
@@ -103,7 +103,7 @@ extern gint _view_halfheight_pixels;
 
 
 /** The current track and route. */
-extern Path _track;
+extern MapPath _track;
 
 /** THE GdkGC OBJECTS USED FOR DRAWING. */
 extern GdkGC *_gc[COLORABLE_ENUM_COUNT];

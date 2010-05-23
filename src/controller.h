@@ -29,6 +29,7 @@
 #include <glib-object.h>
 #include <gtk/gtk.h>
 #include <gconf/gconf-client.h>
+#include <mappero/router.h>
  
 G_BEGIN_DECLS
 
@@ -44,7 +45,6 @@ typedef struct _MapControllerPrivate MapControllerPrivate;
 typedef struct _MapControllerClass MapControllerClass;
 
 #include "orientation.h"
-#include "router.h"
 #include "screen.h"
 
 struct _MapController

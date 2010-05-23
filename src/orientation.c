@@ -24,11 +24,11 @@
 
 #include "controller-priv.h"
 #include "data.h"
-#include "debug.h"
 
 #include <hildon/hildon-gtk.h>
 #include <hildon/hildon-gtk.h>
 #include <libosso.h>
+#include <mappero/debug.h>
 #include <mce/dbus-names.h>
 #include <mce/mode-names.h>
 #include <string.h>

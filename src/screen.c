@@ -24,7 +24,6 @@
 #include "screen.h"
 
 #include "data.h"
-#include "debug.h"
 #include "defines.h"
 #include "display.h"
 #include "maps.h"
@@ -41,6 +40,7 @@
 #include <cairo/cairo.h>
 #include <hildon/hildon-banner.h>
 #include <hildon/hildon-defines.h>
+#include <mappero/debug.h>
 #include <string.h>
 
 #define SCALE_WIDTH     100
@@ -518,12 +518,12 @@ draw_break(cairo_t *cr, GdkColor *color, gint x, gint y)
 }
 
 static void
-draw_path(MapScreen *screen, cairo_t *cr, Path *path, Colorable base)
+draw_path(MapScreen *screen, cairo_t *cr, MapPath *path, Colorable base)
 {
     MapScreenPrivate *priv = screen->priv;
     MapLineIter line;
-    Point *curr;
-    WayPoint *wcurr;
+    MapPathPoint *curr;
+    MapPathWayPoint *wcurr;
     gint x = 0, y = 0;
 #ifdef ENABLE_DEBUG
     gint segment_count = 0;
@@ -538,7 +538,7 @@ draw_path(MapScreen *screen, cairo_t *cr, Path *path, Colorable base)
     map_path_line_iter_first(path, &line);
     do
     {
-        Point *start, *end;
+        MapPathPoint *start, *end;
         gint len;
 
         start = map_path_line_first(&line);
@@ -596,7 +596,7 @@ draw_paths(MapScreen *screen, cairo_t *cr)
 {
     if ((_show_paths & ROUTES_MASK) && map_route_exists())
     {
-        WayPoint *next_way;
+        MapPathWayPoint *next_way;
 
         draw_path(screen, cr, map_route_get_path(), COLORABLE_ROUTE);
         next_way = map_route_get_next_waypoint();
@@ -896,7 +896,7 @@ panel_create_layouts(MapPanelData *pd, PangoContext *context)
 {
     PangoLayout *layout;
     static PangoFontDescription *font = NULL;
-    const WayPoint *waypoint;
+    const MapPathWayPoint *waypoint;
     gint w, h;
     gboolean has_data = FALSE;
 
@@ -935,10 +935,10 @@ panel_create_layouts(MapPanelData *pd, PangoContext *context)
     if (map_route_exists())
     {
         gchar *text, buffer[32];
-        Path *route = map_route_get_path();
+        MapPath *route = map_route_get_path();
         time_t time;
         gint n = 0;
-        Point *p;
+        MapPathPoint *p;
 
         if (has_data) pd->route_gap = PANEL_BORDER;
         layout = pango_layout_new(context);
@@ -1707,7 +1707,7 @@ map_screen_refresh_map(MapScreen *self)
 
 
 void
-map_screen_track_append(MapScreen *self, const Point *p)
+map_screen_track_append(MapScreen *self, const MapPathPoint *p)
 {
     MapScreenPrivate *priv;
     gint x, y;
@@ -1732,7 +1732,7 @@ map_screen_track_append(MapScreen *self, const Point *p)
     cairo_set_line_join(cr, CAIRO_LINE_JOIN_BEVEL);
     if (!map_path_end_is_break(&_track))
     {
-        Point *last = map_path_last(&_track);
+        MapPathPoint *last = map_path_last(&_track);
         point_to_pixels(priv, last->unit, &x, &y);
         cairo_move_to(cr, x, y);
         point_to_pixels(priv, p->unit, &x, &y);

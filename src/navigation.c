@@ -24,13 +24,13 @@
 #include "navigation.h"
 
 #include "data.h"
-#include "debug.h"
 #include "path.h"
 
 #include <canberra.h>
 #include <gst/gst.h>
 #include <hildon/hildon-banner.h>
 #include <hildon/hildon-sound.h>
+#include <mappero/debug.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -51,7 +51,7 @@ static const gchar *dir_names[] = {
 };
 
 static gfloat _initial_distance_from_waypoint = -1.f;
-static const WayPoint *_initial_distance_waypoint = NULL;
+static const MapPathWayPoint *_initial_distance_waypoint = NULL;
 static GstElement *_pipeline = NULL;
 
 /**
@@ -227,9 +227,9 @@ play_direction(MapDirection dir)
 }
 
 void
-map_navigation_announce_voice(const WayPoint *wp)
+map_navigation_announce_voice(const MapPathWayPoint *wp)
 {
-    static const WayPoint *last_wp = NULL;
+    static const MapPathWayPoint *last_wp = NULL;
     static struct timespec last_wp_time;
     struct timespec now;
 
@@ -274,7 +274,7 @@ map_navigation_announce_voice(const WayPoint *wp)
  * If @alert is %FALSE, such notifications are dismissed.
  */
 void
-map_navigation_set_alert(gboolean active, const WayPoint *wp, gfloat distance)
+map_navigation_set_alert(gboolean active, const MapPathWayPoint *wp, gfloat distance)
 {
     MapController *controller = map_controller_get_instance();
     MapScreen *screen = map_controller_get_screen(controller);

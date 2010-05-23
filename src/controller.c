@@ -27,7 +27,6 @@
 
 #include "cmenu.h"
 #include "data.h"
-#include "debug.h"
 #include "defines.h"
 #include "display.h"
 #include "gps.h"
@@ -47,6 +46,7 @@
 
 #include <gconf/gconf-client.h>
 #include <hildon/hildon-banner.h>
+#include <mappero/debug.h>
 #include <math.h>
 #include <string.h>
 
@@ -961,9 +961,9 @@ map_controller_get_repository(MapController *self)
 
 
 static void
-update_path_coords(Repository *from, Repository *to, Path *path)
+update_path_coords(Repository *from, Repository *to, MapPath *path)
 {
-    Point *curr;
+    MapPathPoint *curr;
     MapGeo lat, lon;
 
     for (curr = map_path_first(path);
@@ -999,7 +999,7 @@ map_controller_set_repository(MapController *self, Repository *repo)
        recalculate map center, current track and route (if needed) */
     if (curr_repo && curr_type->latlon_to_unit != new_type->latlon_to_unit) {
         MapGeo lat, lon;
-        Path *route = map_route_get_path();
+        MapPath *route = map_route_get_path();
 
         curr_type->unit_to_latlon(center.x, center.y, &lat, &lon);
         new_type->latlon_to_unit(lat, lon, &center.x, &center.y);

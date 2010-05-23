@@ -49,7 +49,6 @@
 
 #include "types.h"
 #include "data.h"
-#include "debug.h"
 #include "defines.h"
 
 #include "display.h"
@@ -60,6 +59,8 @@
 #include "route.h"
 #include "screen.h"
 #include "util.h"
+
+#include <mappero/debug.h>
 
 static sqlite3 *_poi_db = NULL;
 static sqlite3_stmt *_stmt_browse_poi = NULL;
@@ -2741,7 +2742,7 @@ poi_download_dialog(const MapPoint *point)
         {
             gchar strlat[32];
             gchar strlon[32];
-            Point *p;
+            MapPathPoint *p;
             MapGeo lat, lon;
 
             /* Use last route point. */
@@ -3041,7 +3042,7 @@ poi_browse_dialog(const MapPoint *point)
         {
             gchar strlat[32];
             gchar strlon[32];
-            Point *p;
+            MapPathPoint *p;
             MapGeo lat, lon;
 
             /* Use last route point. */

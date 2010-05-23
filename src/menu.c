@@ -43,7 +43,6 @@
 
 #include "types.h"
 #include "data.h"
-#include "debug.h"
 #include "defines.h"
 #include "dialog.h"
 #include "display.h"
@@ -64,6 +63,7 @@
 #include <hildon/hildon-check-button.h>
 #include <hildon/hildon-pannable-area.h>
 #include <hildon/hildon-picker-button.h>
+#include <mappero/debug.h>
 
 /****************************************************************************
  * BELOW: ROUTE MENU ********************************************************
@@ -285,7 +285,7 @@ menu_cb_track_insert_mark(GtkMenuItem *item)
 
         if(*desc)
         {
-            Point *p = map_path_last(&_track);
+            MapPathPoint *p = map_path_last(&_track);
             map_path_make_waypoint(&_track, p,
                 gtk_text_buffer_get_text(tbuf, &ti1, &ti2, TRUE));
         }
@@ -617,7 +617,7 @@ menu_cb_view_goto_gps(GtkMenuItem *item)
 gboolean
 menu_cb_view_goto_nextway(GtkMenuItem *item)
 {
-    WayPoint *next_way;
+    MapPathWayPoint *next_way;
     MapController *controller = map_controller_get_instance();
 
     next_way = map_route_get_next_waypoint();

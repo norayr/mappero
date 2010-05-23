@@ -29,10 +29,10 @@
 #include "dialog.h"
 #include "error.h"
 #include "gpx.h"
-#include "path.h"
 
 #include <gconf/gconf-client.h>
 #include <hildon/hildon-check-button.h>
+#include <mappero/path.h>
 #include <math.h>
 #include <string.h>
 
@@ -64,7 +64,7 @@ get_address(const MapLocation *loc, gchar *buffer, gsize len)
 }
 
 static void
-route_download_and_setup(Path *path, const gchar *source_url,
+route_download_and_setup(MapPath *path, const gchar *source_url,
                          const gchar *from, const gchar *to,
                          gboolean use_traffic, GError **error)
 {
@@ -151,7 +151,7 @@ map_yandex_calculate_route(MapRouter *router, const MapRouterQuery *query,
     gchar buf_from[64], buf_to[64];
     const gchar *from, *to;
     GError *error = NULL;
-    Path path;
+    MapPath path;
 
     from = get_address(&query->from, buf_from, sizeof(buf_from));
     to = get_address(&query->to, buf_to, sizeof(buf_to));

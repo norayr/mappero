@@ -22,7 +22,7 @@
 #ifndef MAP_REITTIOPAS_H
 #define MAP_REITTIOPAS_H
 
-#include <router.h>
+#include <mappero/router.h>
  
 G_BEGIN_DECLS
 
