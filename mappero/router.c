@@ -23,9 +23,6 @@
 #endif
 #include "router.h"
 
-#include "defines.h"
-#include "path.h"
-
 #include <string.h>
 
 typedef struct {

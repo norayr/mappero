@@ -23,6 +23,7 @@
 #define MAP_ROUTER_H
 
 #include <mappero/globals.h>
+#include <mappero/path.h>
 
 #include <gconf/gconf-client.h>
 #include <glib.h>
