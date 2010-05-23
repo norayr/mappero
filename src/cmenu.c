@@ -146,8 +146,11 @@ cmenu_distance_to(const MapPoint *p)
 static void
 cmenu_add_route(const MapPoint *p)
 {
+    MapController *controller = map_controller_get_instance();
+
     map_path_append_unit(map_route_get_path(), p);
     route_find_nearest_point();
+    map_controller_refresh_paths(controller);
 }
 
 static gboolean

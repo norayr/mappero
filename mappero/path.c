@@ -1092,7 +1092,6 @@ map_path_append_point_end(Path *path)
 Point *
 map_path_append_unit(Path *path, const MapPoint *p)
 {
-    MapController *controller = map_controller_get_instance();
     Point pt, *p_in_path;
 
     pt.unit = *p;
@@ -1100,8 +1099,6 @@ map_path_append_unit(Path *path, const MapPoint *p)
     pt.time = 0;
     pt.zoom = SCHAR_MAX;
     p_in_path = map_path_append_point(path, &pt);
-
-    map_controller_refresh_paths(controller);
     return p_in_path;
 }
 
