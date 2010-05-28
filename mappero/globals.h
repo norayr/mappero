@@ -38,6 +38,9 @@ typedef struct {
     gint y;
 } MapPoint;
 
+typedef void (*MapLatLonToUnit)(MapGeo lat, MapGeo lon, gint *x, gint *y);
+typedef void (*MapUnitToLatLon)(gint x, gint y, MapGeo *lat, MapGeo *lon);
+
 G_END_DECLS
 #endif /* MAP_GLOBALS_H */
 
