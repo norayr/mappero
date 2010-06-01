@@ -113,7 +113,7 @@ map_path_calculate_distances(MapPath *path)
         {
             /* the first point of the line is treated specially */
             start->distance = 0;
-            unit2latlon(start->unit.x, start->unit.y, last_lat, last_lon);
+            map_unit2latlon(start->unit.x, start->unit.y, last_lat, last_lon);
             start++;
         }
         else /* this line is empty */
@@ -123,7 +123,7 @@ map_path_calculate_distances(MapPath *path)
 
         for (curr = start; curr < end; curr++)
         {
-            unit2latlon(curr->unit.x, curr->unit.y, lat, lon);
+            map_unit2latlon(curr->unit.x, curr->unit.y, lat, lon);
             curr->distance = calculate_distance(last_lat, last_lon, lat, lon);
             total += curr->distance;
             last_lat = lat;

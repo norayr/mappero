@@ -171,9 +171,9 @@
 #define HELP_ID_POICAT HELP_ID_PREFIX"poicat"
 
 #define latlon2unit(lat, lon, unitx, unity) \
-    (tile_source_get_primary_type()->latlon_to_unit(lat, lon, &unitx, &unity))
+    map_latlon2unit(lat, lon, unitx, unity)
 #define unit2latlon(unitx, unity, lat, lon) \
-    (tile_source_get_primary_type()->unit_to_latlon(unitx, unity, &lat, &lon))
+    map_unit2latlon(unitx, unity, lat, lon)
 
 
 #define SQUARE(n) ((n) * (n))

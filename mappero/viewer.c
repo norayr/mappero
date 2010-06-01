@@ -33,10 +33,26 @@ enum
 
 static guint signals[LAST_SIGNAL] = { 0 };
 
+MapLatLonToUnit map_viewer_latlon2unit;
+MapUnitToLatLon map_viewer_unit2latlon;
+
+static void
+map_viewer_transformation_changed(MapViewer *viewer,
+                                  MapLatLonToUnit latlon2unit,
+                                  MapUnitToLatLon unit2latlon)
+{
+    /* update the global variables, for faster access to transformations */
+    map_viewer_latlon2unit = latlon2unit;
+    map_viewer_unit2latlon = unit2latlon;
+}
+
 static void
 class_init (gpointer klass, gpointer data)
 {
     GType type = G_TYPE_FROM_CLASS(klass);
+    MapViewerIface *viewer_iface = klass;
+
+    viewer_iface->transformation_changed = map_viewer_transformation_changed;
 
     /**
      * MapViewer::transformation-changed
@@ -48,7 +64,9 @@ class_init (gpointer klass, gpointer data)
      */
     signals[TRANSFORMATION_CHANGED] =
         g_signal_new("transformation-changed",
-                     type, G_SIGNAL_RUN_LAST, 0, NULL, NULL,
+                     type, G_SIGNAL_RUN_LAST,
+                     G_STRUCT_OFFSET(MapViewerIface, transformation_changed),
+                     NULL, NULL,
                      _map_marshal_VOID__POINTER_POINTER, G_TYPE_NONE,
                      2, G_TYPE_POINTER, G_TYPE_POINTER);
 }

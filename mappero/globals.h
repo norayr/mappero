@@ -41,6 +41,14 @@ typedef struct {
 typedef void (*MapLatLonToUnit)(MapGeo lat, MapGeo lon, gint *x, gint *y);
 typedef void (*MapUnitToLatLon)(gint x, gint y, MapGeo *lat, MapGeo *lon);
 
+#define map_latlon2unit(lat, lon, unitx, unity) \
+    map_viewer_latlon2unit(lat, lon, &unitx, &unity)
+#define map_unit2latlon(unitx, unity, lat, lon) \
+    map_viewer_unit2latlon(unitx, unity, &lat, &lon)
+/* These global variables are defined and updated inside viewwer.c */
+extern MapLatLonToUnit map_viewer_latlon2unit;
+extern MapUnitToLatLon map_viewer_unit2latlon;
+
 G_END_DECLS
 #endif /* MAP_GLOBALS_H */
 

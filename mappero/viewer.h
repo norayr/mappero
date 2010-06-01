@@ -45,6 +45,11 @@ struct _MapViewerIface
     void (*get_transformation)(MapViewer *viewer,
                                MapLatLonToUnit *latlon2unit,
                                MapUnitToLatLon *unit2latlon);
+
+    /* signals */
+    void (*transformation_changed)(MapViewer *viewer,
+                                   MapLatLonToUnit latlon2unit,
+                                   MapUnitToLatLon unit2latlon);
 };
 
 GType map_viewer_get_type (void) G_GNUC_CONST;
