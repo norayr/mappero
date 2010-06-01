@@ -49,6 +49,12 @@ typedef void (*MapUnitToLatLon)(gint x, gint y, MapGeo *lat, MapGeo *lon);
 extern MapLatLonToUnit map_viewer_latlon2unit;
 extern MapUnitToLatLon map_viewer_unit2latlon;
 
+/* Some more questionable macros */
+#define DISTANCE_SQUARED(a, b) \
+   ((guint64)((((gint64)(b).x)-(a).x)*(((gint64)(b).x)-(a).x))\
+  + (guint64)((((gint64)(b).y)-(a).y)*(((gint64)(b).y)-(a).y)))
+
+
 G_END_DECLS
 #endif /* MAP_GLOBALS_H */
 

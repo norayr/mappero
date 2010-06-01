@@ -178,10 +178,6 @@
 
 #define SQUARE(n) ((n) * (n))
 
-#define DISTANCE_SQUARED(a, b) \
-   ((guint64)((((gint64)(b).x)-(a).x)*(((gint64)(b).x)-(a).x))\
-  + (guint64)((((gint64)(b).y)-(a).y)*(((gint64)(b).y)-(a).y)))
-
 #define MACRO_QUEUE_DRAW_AREA()
 
 #define UNBLANK_SCREEN(MOVING, APPROACHING_WAYPOINT) { \
