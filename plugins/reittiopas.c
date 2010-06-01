@@ -251,7 +251,7 @@ location2units(const MapLocation *loc, MapPoint *u)
         }
         if (ret)
         {
-            latlon2unit(lat, lon, u->x, u->y);
+            map_latlon2unit(lat, lon, u->x, u->y);
         }
     }
     else
@@ -415,7 +415,7 @@ kkj22unit(const KKJ2 *k, MapPoint *p)
 
     kkj22latlon(k, &lat, &lon);
 
-    latlon2unit(lat, lon, p->x, p->y);
+    map_latlon2unit(lat, lon, p->x, p->y);
 }
 
 static void
@@ -438,7 +438,7 @@ unit2kkj2(const MapPoint *p, KKJ2 *k)
 {
     MapGeo lat, lon;
 
-    unit2latlon(p->x, p->y, lat, lon);
+    map_unit2latlon(p->x, p->y, lat, lon);
 
     latlon2kkj2(lat, lon, k);
 }
@@ -1619,7 +1619,7 @@ map_reittiopas_geocode(MapRouter *router, const gchar *address,
     fetch_geocode(address, &lat, &lon, &error);
     if (!error)
     {
-        latlon2unit(lat, lon, p.x, p.y);
+        map_latlon2unit(lat, lon, p.x, p.y);
         DEBUG("Got lat lon: %.6f, %.6f, units %u, %u", lat, lon, p.x, p.y);
         callback(router, p, NULL, user_data);
     }
@@ -1949,5 +1949,19 @@ map_reittiopas_init(MapReittiopas *self)
 static void
 map_reittiopas_class_init(MapReittiopasClass *klass)
 {
+}
+
+const gchar * const *
+map_plugin_list_objects()
+{
+    static const gchar *ids[] = { "router", NULL };
+    return ids;
+}
+
+GObject *
+map_plugin_get_object(const gchar *id)
+{
+    g_return_val_if_fail(strcmp(id, "router") == 0, NULL);
+    return g_object_new(MAP_TYPE_REITTIOPAS, NULL);
 }
 
