@@ -58,5 +58,9 @@ void map_viewer_get_transformation(MapViewer *viewer,
                                    MapLatLonToUnit *latlon2unit,
                                    MapUnitToLatLon *unit2latlon);
 
+void map_viewer_emit_transformation_changed(MapViewer *viewer,
+                                            MapLatLonToUnit latlon2unit,
+                                            MapUnitToLatLon unit2latlon);
+
 G_END_DECLS
 #endif /* MAP_VIEWER_H */

@@ -124,3 +124,20 @@ map_viewer_get_transformation(MapViewer *viewer,
     iface->get_transformation(viewer, latlon2unit, unit2latlon);
 }
 
+/**
+ * map_viewer_emit_transformation_changed:
+ * @viewer: the #MapViewer
+ * @latlon2unit: the function to transform from lat/lon to Mappero's units
+ * @unit2latlon: the function to transform from Mappero's units to lat/lon
+ *
+ * Signals that the viewer coordinate transformation has changed.
+ */
+void
+map_viewer_emit_transformation_changed(MapViewer *viewer,
+                                       MapLatLonToUnit latlon2unit,
+                                       MapUnitToLatLon unit2latlon)
+{
+    g_signal_emit(viewer, signals[TRANSFORMATION_CHANGED], 0,
+                  latlon2unit, unit2latlon);
+}
+
