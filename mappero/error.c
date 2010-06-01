@@ -18,18 +18,24 @@
  * You should have received a copy of the GNU General Public License
  * along with Mappero.  If not, see <http://www.gnu.org/licenses/>.
  */
+#ifdef HAVE_CONFIG_H
+#   include "config.h"
+#endif
+#include "error.h"
 
-#ifndef MAP_ERROR_UI_H
-#define MAP_ERROR_UI_H
+GQuark
+map_error_quark(void)
+{
+    static gsize quark = 0;
 
-#include <glib.h>
-#include <gtk/gtk.h>
-#include <mappero/error.h>
+    if (g_once_init_enter(&quark))
+    {
+        GQuark domain = g_quark_from_static_string("map-error");
 
-G_BEGIN_DECLS
+        g_assert(sizeof(GQuark) <= sizeof(gsize));
 
-void map_error_show(GtkWindow *parent, const GError *error);
-void map_error_show_and_clear(GtkWindow *parent, GError **error);
+        g_once_init_leave(&quark, domain);
+    }
+    return (GQuark) quark;
+}
 
-G_END_DECLS
-#endif /* MAP_ERROR_UI_H */

@@ -19,17 +19,24 @@
  * along with Mappero.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef MAP_ERROR_UI_H
-#define MAP_ERROR_UI_H
+#ifndef MAP_ERROR_H
+#define MAP_ERROR_H
 
 #include <glib.h>
-#include <gtk/gtk.h>
-#include <mappero/error.h>
 
 G_BEGIN_DECLS
 
-void map_error_show(GtkWindow *parent, const GError *error);
-void map_error_show_and_clear(GtkWindow *parent, GError **error);
+#define MAP_ERROR (map_error_quark())
+
+typedef enum {
+    MAP_ERROR_GENERIC = 0,
+    MAP_ERROR_NETWORK,
+    MAP_ERROR_INVALID_ADDRESS,
+    MAP_ERROR_USER_CANCELED,
+    MAP_ERROR_LAST,
+} MapError;
+
+GQuark map_error_quark(void);
 
 G_END_DECLS
-#endif /* MAP_ERROR_UI_H */
+#endif /* MAP_ERROR_H */

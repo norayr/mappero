@@ -47,19 +47,3 @@ map_error_show_and_clear(GtkWindow *parent, GError **error)
     g_clear_error(error);
 }
 
-GQuark
-map_error_quark(void)
-{
-    static gsize quark = 0;
-
-    if (g_once_init_enter(&quark))
-    {
-        GQuark domain = g_quark_from_static_string("map-error");
-
-        g_assert(sizeof(GQuark) <= sizeof(gsize));
-
-        g_once_init_leave(&quark, domain);
-    }
-    return (GQuark) quark;
-}
-

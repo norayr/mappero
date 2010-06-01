@@ -23,6 +23,7 @@ BUILT_SOURCES = \
 mappero_includedir = $(includedir)/mappero-@MAP_API_VERSION@/mappero
 mappero_include_HEADERS = \
 	debug.h \
+	error.h \
 	globals.h \
 	loader.h \
 	path.h \
@@ -31,6 +32,7 @@ mappero_include_HEADERS = \
 
 libmappero_la_SOURCES = \
 	debug.c \
+	error.c \
 	loader.c \
 	path.c \
 	router.c \
