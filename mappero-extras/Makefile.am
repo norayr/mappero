@@ -1,4 +1,4 @@
-noinst_LTLIBRARIES = libmappero-extras.la
+lib_LTLIBRARIES = libmappero-extras.la
 
 AM_CFLAGS = \
 	-I$(top_srcdir) \
