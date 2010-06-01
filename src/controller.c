@@ -47,6 +47,7 @@
 #include <gconf/gconf-client.h>
 #include <hildon/hildon-banner.h>
 #include <mappero/debug.h>
+#include <mappero/loader.h>
 #include <mappero/viewer.h>
 #include <math.h>
 #include <string.h>
@@ -216,6 +217,7 @@ map_controller_init(MapController *controller)
 {
     MapControllerPrivate *priv;
     GConfClient *gconf_client = gconf_client_get_default();
+    GList *list;
     GObject *plugin;
 
     TIME_START();
@@ -240,13 +242,16 @@ map_controller_init(MapController *controller)
     map_controller_set_default_router(controller, MAP_ROUTER(plugin));
     g_object_unref (plugin);
 
-    plugin = g_object_new(MAP_TYPE_REITTIOPAS, NULL);
-    map_controller_register_plugin(controller, plugin);
-    g_object_unref (plugin);
-
     plugin = g_object_new(MAP_TYPE_YANDEX, NULL);
     map_controller_register_plugin(controller, plugin);
     g_object_unref (plugin);
+
+    map_loader_read_dir(MAP_PLUGIN_DIR);
+    for (list = map_loader_get_objects(); list != NULL; list = list->next)
+    {
+        map_controller_register_plugin(controller, list->data);
+        g_object_unref(list->data);
+    }
 
     /* Load repositories. It is important to load repositories first, because settings need
      * controller for transformations. */
