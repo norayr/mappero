@@ -21,12 +21,14 @@ mappero_includedir = $(includedir)/mappero
 mappero_include_HEADERS = \
 	debug.h \
 	globals.h \
+	loader.h \
 	path.h \
 	router.h \
 	viewer.h
 
 libmappero_la_SOURCES = \
 	debug.c \
+	loader.c \
 	path.c \
 	router.c \
 	viewer.c
