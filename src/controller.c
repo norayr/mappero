@@ -47,6 +47,7 @@
 #include <gconf/gconf-client.h>
 #include <hildon/hildon-banner.h>
 #include <mappero/debug.h>
+#include <mappero/viewer.h>
 #include <math.h>
 #include <string.h>
 
@@ -54,11 +55,40 @@
 
 #include "controller-priv.h"
 
-G_DEFINE_TYPE(MapController, map_controller, G_TYPE_OBJECT);
+static void map_controller_viewer_init(MapViewerIface *iface,
+                                       gpointer iface_data);
+
+G_DEFINE_TYPE_WITH_CODE(MapController, map_controller, G_TYPE_OBJECT,
+                        G_IMPLEMENT_INTERFACE(MAP_TYPE_VIEWER,
+                                              map_controller_viewer_init);
+                       );
 
 #define MAP_CONTROLLER_PRIV(controller) (MAP_CONTROLLER(controller)->priv)
 
 static MapController *instance = NULL;
+
+static void
+map_controller_get_transformation(MapViewer *viewer,
+                                  MapLatLonToUnit *latlon2unit,
+                                  MapUnitToLatLon *unit2latlon)
+{
+    const TileSourceType *source_type;
+    source_type = tile_source_get_primary_type();
+    if (G_LIKELY(source_type)) {
+        *latlon2unit = source_type->latlon_to_unit;
+        *unit2latlon = source_type->unit_to_latlon;
+    } else {
+        g_warning("Tile source type is uninitialized");
+        *latlon2unit = NULL;
+        *unit2latlon = NULL;
+    }
+}
+
+static void
+map_controller_viewer_init(MapViewerIface *iface, gpointer iface_data)
+{
+    iface->get_transformation = map_controller_get_transformation;
+}
 
 static gboolean
 download_precache_real(MapController *self)
@@ -874,6 +904,7 @@ void
 map_controller_load_repositories(MapController *self, GConfClient *gconf_client)
 {
     MapControllerPrivate *priv;
+    const TileSourceType *source_type;
     GConfValue *value;
 
     g_return_if_fail(MAP_IS_CONTROLLER(self));
@@ -913,6 +944,13 @@ map_controller_load_repositories(MapController *self, GConfClient *gconf_client)
     }
 
     reset_tile_sources_countdown(self);
+
+    /* Emit the signal on the MapViewer interface */
+    source_type = priv->repository->primary->type;
+
+    map_viewer_emit_transformation_changed(MAP_VIEWER(self),
+                                           source_type->latlon_to_unit,
+                                           source_type->unit_to_latlon);
 }
 
 /*
@@ -1011,6 +1049,11 @@ map_controller_set_repository(MapController *self, Repository *repo)
             update_path_coords(curr_repo, repo, route);
         if ((_show_paths & TRACKS_MASK) && map_path_len(&_track) > 0)
             update_path_coords(curr_repo, repo, &_track);
+
+        /* Emit the signal on the MapViewer interface */
+        map_viewer_emit_transformation_changed(MAP_VIEWER(self),
+                                               new_type->latlon_to_unit,
+                                               new_type->unit_to_latlon);
     }
 
     priv->repository = repo;
