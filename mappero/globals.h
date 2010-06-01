@@ -54,6 +54,11 @@ extern MapUnitToLatLon map_viewer_unit2latlon;
    ((guint64)((((gint64)(b).x)-(a).x)*(((gint64)(b).x)-(a).x))\
   + (guint64)((((gint64)(b).y)-(a).y)*(((gint64)(b).y)-(a).y)))
 
+#define PI   ((MapGeo)3.14159265358979323846)
+
+#define deg2rad(deg) ((deg) * (PI / 180.0))
+#define rad2deg(rad) ((rad) * (180.0 / PI))
+
 
 G_END_DECLS
 #endif /* MAP_GLOBALS_H */
