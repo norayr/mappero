@@ -205,6 +205,9 @@ AC_SUBST(icon_aprsdir)
 AC_SUBST(icon_scalabledir)
 AC_SUBST(plugindesktopentrydir)
 
+pluginlibdir="${libdir}/mappero.${MAP_ABI_VERSION}"
+AC_SUBST(pluginlibdir)
+
 AC_DEFINE_UNQUOTED([LOCALEDIR], "${localedir}", [Runtime locale catalog files path])
 AC_DEFINE_UNQUOTED([PIXMAPDIR], "${pixmapdir}", [Runtime pixmap files path])
 
@@ -215,6 +218,7 @@ AC_OUTPUT(
           mappero/Makefile \
           mappero/mappero.pc \
           mappero-extras/Makefile \
+          plugins/Makefile \
           src/Makefile \
           data/Makefile \
           data/help/Makefile \

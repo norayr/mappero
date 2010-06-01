@@ -25,17 +25,18 @@
 
 #include "reittiopas.h"
 
-#include "data.h"
-#include "defines.h"
-#include "dialog.h"
-#include "error.h"
+#define H_(String) dgettext("hildon-libs", String)
 
 #include <gconf/gconf-client.h>
+#include <glib/gi18n.h>
 #include <hildon/hildon-pannable-area.h>
 #include <hildon/hildon-picker-button.h>
+#include <libgnomevfs/gnome-vfs.h>
 #include <libxml/xmlreader.h>
 #include <mappero/debug.h>
+#include <mappero/error.h>
 #include <mappero/path.h>
+#include <mappero-extras/dialog.h>
 #include <math.h>
 #include <string.h>
 #include <time.h>
