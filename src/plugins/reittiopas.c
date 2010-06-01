@@ -657,6 +657,7 @@ parse_attributes(Attributes *a, RoElement el, const gchar **attrs)
         memset(&tm, 0, sizeof(tm));
         strptime(date, "%Y%m%d", &tm);
         strptime(time, "%H%M", &tm);
+        tm.tm_isdst = -1;
         a->time = mktime(&tm);
     }
 }
