@@ -190,7 +190,6 @@ helpfile_fifidir=$datadir/osso-help/fi_FI
 AC_SUBST(helpfile_fifidir)
 
 # Hildon control panel plugin install directories
-pluginlibdir=`$PKG_CONFIG hildon-control-panel --variable=plugindir`
 plugindesktopentrydir=`$PKG_CONFIG hildon-control-panel --variable=plugindesktopentrydir`
 
 # Define as variables in Makefiles
@@ -204,7 +203,6 @@ AC_SUBST(icon_40x40dir)
 AC_SUBST(icon_50x50dir)
 AC_SUBST(icon_aprsdir)
 AC_SUBST(icon_scalabledir)
-AC_SUBST(pluginlibdir)
 AC_SUBST(plugindesktopentrydir)
 
 AC_DEFINE_UNQUOTED([LOCALEDIR], "${localedir}", [Runtime locale catalog files path])
