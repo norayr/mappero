@@ -38,6 +38,7 @@ maemo_mapper_CFLAGS = \
 
 maemo_mapper_LDADD = \
 	$(top_builddir)/mappero/libmappero.la \
+	$(top_builddir)/mappero-extras/libmappero-extras.la \
 	$(GTK_LIBS) \
 	$(OSSO_LIBS) \
 	$(HILDON_LIBS) \
@@ -56,7 +57,6 @@ maemo_mapper_SOURCES = \
 	controller.c \
 	data.c \
 	dbus-ifc.c \
-	dialog.c \
 	display.c \
 	error.c \
 	gps.c \

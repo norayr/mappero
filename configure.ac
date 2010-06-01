@@ -216,6 +216,7 @@ AC_OUTPUT(
           Makefile \
           mappero/Makefile \
           mappero/mappero.pc \
+          mappero-extras/Makefile \
           src/Makefile \
           data/Makefile \
           data/help/Makefile \

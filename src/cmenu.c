@@ -29,11 +29,11 @@
 
 #define _GNU_SOURCE
 
-#include <dialog.h>
 #include <string.h>
 #include <math.h>
 #include <gtk/gtk.h>
 #include <gconf/gconf-client.h>
+#include <mappero-extras/dialog.h>
 
 #ifndef LEGACY
 #    include <hildon/hildon-note.h>

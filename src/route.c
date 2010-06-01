@@ -25,7 +25,6 @@
 
 #include "controller.h"
 #include "data.h"
-#include "dialog.h"
 #include "error.h"
 #include "main.h"
 #include "navigation.h"
@@ -39,6 +38,7 @@
 #include <hildon/hildon-picker-button.h>
 #include <mappero/debug.h>
 #include <mappero/router.h>
+#include <mappero-extras/dialog.h>
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>

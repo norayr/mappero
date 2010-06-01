@@ -26,13 +26,13 @@
 
 #include "data.h"
 #include "defines.h"
-#include "dialog.h"
 #include "error.h"
 #include "gpx.h"
 
 #include <gconf/gconf-client.h>
 #include <hildon/hildon-check-button.h>
 #include <mappero/path.h>
+#include <mappero-extras/dialog.h>
 #include <math.h>
 #include <string.h>
 

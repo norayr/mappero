@@ -45,10 +45,11 @@
 #include <hildon/hildon-picker-button.h>
 #include <hildon/hildon-check-button.h>
 
+#include <mappero-extras/dialog.h>
+
 #include "types.h"
 #include "data.h"
 #include "defines.h"
-#include "dialog.h"
 
 #include "gps.h"
 #include "display.h"
