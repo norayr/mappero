@@ -37,6 +37,7 @@
 #include <mappero/error.h>
 #include <mappero/path.h>
 #include <mappero-extras/dialog.h>
+#include <mappero-extras/error.h>
 #include <math.h>
 #include <string.h>
 #include <time.h>

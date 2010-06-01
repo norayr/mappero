@@ -31,6 +31,7 @@
 
 #include <gconf/gconf-client.h>
 #include <hildon/hildon-check-button.h>
+#include <mappero/error.h>
 #include <mappero/path.h>
 #include <mappero-extras/dialog.h>
 #include <math.h>

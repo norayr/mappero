@@ -5,7 +5,8 @@ AM_CFLAGS = \
 	-std=c99 -Wall -Wno-switch
 
 libmappero_extras_la_SOURCES = \
-	dialog.c
+	dialog.c \
+	error.c
 
 libmappero_extras_la_CFLAGS = \
 	$(GCONF_CFLAGS) \

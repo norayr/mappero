@@ -58,7 +58,6 @@ maemo_mapper_SOURCES = \
 	data.c \
 	dbus-ifc.c \
 	display.c \
-	error.c \
 	gps.c \
 	gpsbt.c \
 	gpx.c \

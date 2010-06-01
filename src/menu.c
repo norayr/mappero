@@ -45,7 +45,6 @@
 #include "data.h"
 #include "defines.h"
 #include "display.h"
-#include "error.h"
 #include "gpx.h"
 #include "he-about-dialog.h"
 #include "maps.h"
@@ -64,6 +63,7 @@
 #include <hildon/hildon-picker-button.h>
 #include <mappero/debug.h>
 #include <mappero-extras/dialog.h>
+#include <mappero-extras/error.h>
 
 /****************************************************************************
  * BELOW: ROUTE MENU ********************************************************
