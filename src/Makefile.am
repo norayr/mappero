@@ -33,6 +33,7 @@ maemo_mapper_CFLAGS = \
 	$(LOCATION_CFLAGS) \
 	$(CLUTTER_CFLAGS) \
 	$(CAIRO_CFLAGS) \
+	-DMAP_PLUGIN_DIR=\"@libdir@/mappero.@MAP_ABI_VERSION@\" \
 	-std=c99 -Wall -Wno-switch
 
 maemo_mapper_LDADD = \

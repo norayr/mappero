@@ -1,5 +1,8 @@
 lib_LTLIBRARIES = libmappero.la
 
+pkgconfigdir = $(libdir)/pkgconfig
+pkgconfig_DATA = mappero.pc
+
 AM_CFLAGS = \
 	-I$(top_srcdir) \
 	-DG_LOG_DOMAIN=\"mappero\" \
@@ -17,7 +20,7 @@ nodist_libmappero_la_SOURCES = \
 BUILT_SOURCES = \
 	$(nodist_libmappero_la_SOURCES)
 
-mappero_includedir = $(includedir)/mappero
+mappero_includedir = $(includedir)/mappero-@MAP_API_VERSION@/mappero
 mappero_include_HEADERS = \
 	debug.h \
 	globals.h \
@@ -40,6 +43,9 @@ libmappero_la_CFLAGS = \
 libmappero_la_LIBADD = \
 	$(GCONF_LIBS) \
 	$(GTK_LIBS)
+
+libmappero_la_LDFLAGS = \
+	-version-info "@MAP_LT_CURRENT@":"@MAP_LT_REVISION@":"@MAP_LT_AGE@"
 
 EXTRA_DIST = \
 	map-signals-marshal.list

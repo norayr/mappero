@@ -26,6 +26,30 @@ AC_CONFIG_HEADERS(config.h)
 AC_PROG_INSTALL
 AC_PROG_LIBTOOL
 
+# If API has been removed or changed since last release, change MAP_API (which
+# is part of the directory name under /usr/include) to the version that
+# changed it
+MAP_API_VERSION=1.0
+AC_SUBST([MAP_API_VERSION])
+
+# If ABI has been removed or changed since last release
+#     increment current
+#     set age and revision to 0
+# else if ABI has been added since last release
+#     increment age and current
+#     set revision to 0
+# else if library source has changed since last release
+#     increment revision
+MAP_LT_CURRENT=0
+MAP_LT_REVISION=0
+MAP_LT_AGE=0
+AC_SUBST([MAP_LT_CURRENT])
+AC_SUBST([MAP_LT_REVISION])
+AC_SUBST([MAP_LT_AGE])
+# The ABI version appears in the name of the plugin directory
+MAP_ABI_VERSION=`expr ${MAP_LT_CURRENT} - ${MAP_LT_AGE}`
+AC_SUBST([MAP_ABI_VERSION])
+
 PKG_CHECK_MODULES(GTK, gtk+-2.0)
 AC_SUBST(GTK_LIBS)
 AC_SUBST(GTK_CFLAGS)
@@ -191,6 +215,7 @@ AC_DEFINE_UNQUOTED([PIXMAPDIR], "${pixmapdir}", [Runtime pixmap files path])
 AC_OUTPUT(
           Makefile \
           mappero/Makefile \
+          mappero/mappero.pc \
           src/Makefile \
           data/Makefile \
           data/help/Makefile \
