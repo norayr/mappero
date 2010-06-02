@@ -450,7 +450,7 @@ map_path_route_step(const MapGpsData *gps, gboolean newly_fixed)
     distance = map_route_get_distance_to_next_waypoint();
 
     /* this variable is measured in kilometres: */
-    announce_distance = 0.01 /* 10 metres */
+    announce_distance = 0.02 /* 20 metres */
         * _announce_notice_ratio; /* this settings varies between 1 and 20 */
 
     /* if the speed (which is stored in km/h) is high, let's give two
