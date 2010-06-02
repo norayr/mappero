@@ -781,7 +781,7 @@ run_announce_dialog(GtkWindow *parent)
     /* Enable Voice. */
     enable_voice = hildon_check_button_new(HILDON_SIZE_FINGER_HEIGHT);
     gtk_button_set_label(GTK_BUTTON(enable_voice),
-                         _("Enable Voice Synthesis (requires flite)"));
+                         _("Enable voice announcements"));
     gtk_table_attach(GTK_TABLE(table), enable_voice,
                      0, 2, 2, 3, GTK_FILL, 0, 2, 4);
 
