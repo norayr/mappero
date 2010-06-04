@@ -1,4 +1,4 @@
-navigation_soundsdir = $(datadir)/sounds/mapper
+navigation_soundsdir = $(datadir)/sounds/mapper/en_US
 navigation_sounds_DATA = \
 	first-exit.spx \
 	second-exit.spx \
@@ -9,4 +9,3 @@ navigation_sounds_DATA = \
 	turn-left.spx \
 	turn-right.spx
 
-SUBDIRS = en_US

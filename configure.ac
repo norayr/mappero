@@ -194,6 +194,7 @@ AC_OUTPUT(
           data/Makefile \
           data/help/Makefile \
           data/sounds/Makefile \
+          data/sounds/en_US/Makefile \
           po/Makefile.in \
           po/Makefile
 )
