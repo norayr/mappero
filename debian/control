@@ -36,17 +36,12 @@ Description: Geographical mapping and driving directions.
  geo-related information.  It focuses in part on in-car navigation and
  usability.  Home page: http://www.mardy.it/mappero
 XSBC-Maemo-Display-Name: Mappero
-XB-Maemo-Upgrade-Description: New navigation icons, GPS fixes
- New navigation icons, kindly provided by t.m.o. user dannycamps.
+XB-Maemo-Upgrade-Description: English voice for navigation
+ Add navigation voice for en_US locale (courtesy of jav_maemo).
  .
- Add link to website in About page.
+ Correct time in reittiopas routes.
  .
- Fix suggestion of filename on saving.
- .
- Add a break to the track when switching off the GPS.
- .
- Workaround the wrong precision reported by the GPS when initially
- retrieving the position based on the country.
+ Increase the distance of voice announcements.
 XSBC-Bugtracker: https://garage.maemo.org/tracker/?group_id=29
 XB-Maemo-Icon-26:
  iVBORw0KGgoAAAANSUhEUgAAABoAAAAaCAYAAACpSkzOAAAF/ElEQVRIS42WyXMbxxXGf92z
