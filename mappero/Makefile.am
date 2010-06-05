@@ -28,7 +28,8 @@ mappero_include_HEADERS = \
 	loader.h \
 	path.h \
 	router.h \
-	viewer.h
+	viewer.h \
+	util.h
 
 libmappero_la_SOURCES = \
 	debug.c \
@@ -36,7 +37,8 @@ libmappero_la_SOURCES = \
 	loader.c \
 	path.c \
 	router.c \
-	viewer.c
+	viewer.c \
+	util.c
 
 libmappero_la_CFLAGS = \
 	$(GCONF_CFLAGS) \
@@ -44,7 +46,8 @@ libmappero_la_CFLAGS = \
 
 libmappero_la_LIBADD = \
 	$(GCONF_LIBS) \
-	$(GTK_LIBS)
+	$(GTK_LIBS) \
+	-lm -lrt
 
 libmappero_la_LDFLAGS = \
 	-version-info "@MAP_LT_CURRENT@":"@MAP_LT_REVISION@":"@MAP_LT_AGE@" \

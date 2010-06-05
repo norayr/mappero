@@ -124,7 +124,8 @@ map_path_calculate_distances(MapPath *path)
         for (curr = start; curr < end; curr++)
         {
             map_unit2latlon(curr->unit.x, curr->unit.y, lat, lon);
-            curr->distance = calculate_distance(last_lat, last_lon, lat, lon);
+            curr->distance =
+                map_calculate_distance(last_lat, last_lon, lat, lon);
             total += curr->distance;
             last_lat = lat;
             last_lon = lon;
