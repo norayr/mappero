@@ -59,6 +59,31 @@ extern MapUnitToLatLon map_viewer_unit2latlon;
 #define deg2rad(deg) ((deg) * (PI / 180.0))
 #define rad2deg(rad) ((rad) * (180.0 / PI))
 
+#ifdef USE_DOUBLES_FOR_LATLON
+#define GSIN(x) sin(x)
+#define GCOS(x) cos(x)
+#define GASIN(x) asin(x)
+#define GTAN(x) tan(x)
+#define GATAN(x) atan(x)
+#define GATAN2(x, y) atan2(x, y)
+#define GEXP(x) exp(x)
+#define GLOG(x) log(x)
+#define GPOW(x, y) pow(x, y)
+#define GSQTR(x) sqrt(x)
+#else
+#define GSIN(x) sinf(x)
+#define GCOS(x) cosf(x)
+#define GASIN(x) asinf(x)
+#define GTAN(x) tanf(x)
+#define GATAN(x) atanf(x)
+#define GATAN2(x, y) atan2f(x, y)
+#define GEXP(x) expf(x)
+#define GLOG(x) logf(x)
+#define GPOW(x, y) powf(x, y)
+#define GSQTR(x) sqrtf(x)
+#endif
+
+#define EARTH_RADIUS (6378.13701) /* Kilometers */
 
 G_END_DECLS
 #endif /* MAP_GLOBALS_H */
