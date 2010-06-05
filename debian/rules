@@ -82,7 +82,9 @@ install: build
 	dh_installdirs
 
 	# Add here commands to install the package
-	$(MAKE) install DESTDIR=$(CURDIR)/debian/maemo-mapper
+	$(MAKE) install DESTDIR=$(CURDIR)/debian/tmp
+
+	dh_install --sourcedir=$(CURDIR)/debian/tmp
 
 # Build architecture-independent files here.
 binary-indep: build install
@@ -107,7 +109,7 @@ binary-arch: build install
 #	dh_installinfo
 #	dh_installman
 	dh_link
-	dh_strip
+	dh_strip --dbg-package=libmappero0
 	dh_compress
 	dh_fixperms
 #	dh_perl

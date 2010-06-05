@@ -24,6 +24,34 @@ Build-Depends: debhelper (>= 4.0.0),
  osso-af-settings
 Standards-Version: 3.6.0
 
+Package: libmappero0
+Architecture: any
+Section: libs
+Depends: ${shlibs:Depends}, ${misc:depends}
+Description: Mappero plugin interface library
+ Library for interfacing a mapping application with dynamically
+ loadable plugins.
+
+Package: libmappero0-dbg
+Architecture: any
+Section: libdevel
+Depends: libmappero0 (= ${Source-Version})
+Description: Mappero plugin interface library, debug symbols
+ Library for interfacing a mapping application with dynamically
+ loadable plugins.
+ .
+ This package contains the debugging symbols.
+
+Package: libmappero-dev
+Architecture: any
+Section: libdevel
+Depends: libmappero0 (= ${Source-Version})
+Description: Mappero plugin interface library, development files
+ Library for interfacing a mapping application with dynamically
+ loadable plugins.
+ .
+ Contains the header files and static libraries
+
 Package: maemo-mapper
 Architecture: armel i386
 Depends: ${shlibs:Depends}, gstreamer0.10-plugins-good-extra
