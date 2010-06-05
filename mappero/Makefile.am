@@ -47,7 +47,8 @@ libmappero_la_LIBADD = \
 	$(GTK_LIBS)
 
 libmappero_la_LDFLAGS = \
-	-version-info "@MAP_LT_CURRENT@":"@MAP_LT_REVISION@":"@MAP_LT_AGE@"
+	-version-info "@MAP_LT_CURRENT@":"@MAP_LT_REVISION@":"@MAP_LT_AGE@" \
+	-Wl,--no-undefined
 
 EXTRA_DIST = \
 	map-signals-marshal.list
