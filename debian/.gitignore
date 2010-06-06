@@ -1,0 +1,7 @@
+tmp
+*.debhelper
+*.substvars
+libmappero-dev/
+libmappero0-dbg/
+libmappero0/
+
