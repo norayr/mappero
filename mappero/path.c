@@ -26,10 +26,11 @@
 #    include "config.h"
 #endif
 
+#define _GNU_SOURCE
+
 #include "debug.h"
 #include "path.h"
-
-#define _GNU_SOURCE
+#include "util.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -45,7 +46,7 @@ typedef struct {
 #define MAP_LINE_NEW(index) GINT_TO_POINTER(index)
 
 void
-path_resize(MapPath *path, gint size)
+map_path_resize(MapPath *path, gint size)
 {
     if(path->_head + size != path->_cap)
     {
@@ -65,7 +66,7 @@ path_resize(MapPath *path, gint size)
 }
 
 void
-path_wresize(MapPath *path, gint wsize)
+map_path_wresize(MapPath *path, gint wsize)
 {
     if(path->whead + wsize != path->wcap)
     {
@@ -417,8 +418,8 @@ map_path_merge(MapPath *src_path, MapPath *dest_path, MapPathMergePolicy policy)
 
         /* Adjust dest->tail to be able to fit src route data
          * plus room for more route data. */
-        path_resize(dest,
-                    num_dest_points + num_src_points + ARRAY_CHUNK_SIZE);
+        map_path_resize(dest,
+                        num_dest_points + num_src_points + ARRAY_CHUNK_SIZE);
 
         memcpy(map_path_end(dest), src_first,
                num_src_points * sizeof(MapPathPoint));
@@ -426,8 +427,8 @@ map_path_merge(MapPath *src_path, MapPath *dest_path, MapPathMergePolicy policy)
         dest->_tail += num_src_points;
 
         /* Append waypoints from src to dest->. */
-        path_wresize(dest, (dest->wtail - dest->whead)
-                     + (src->wtail - src->whead) + 2 + ARRAY_CHUNK_SIZE);
+        map_path_wresize(dest, (dest->wtail - dest->whead)
+                         + (src->wtail - src->whead) + 2 + ARRAY_CHUNK_SIZE);
         for(curr = src->whead - 1; curr++ != src->wtail; )
         {
             (++(dest->wtail))->point =
@@ -465,8 +466,8 @@ map_path_merge(MapPath *src_path, MapPath *dest_path, MapPathMergePolicy policy)
         map_path_unset(dest_path);
         /* Overwrite with data.route. */
         (*dest_path) = *src_path;
-        path_resize(dest_path, map_path_len(dest_path) + ARRAY_CHUNK_SIZE);
-        path_wresize(dest_path, map_path_len(dest_path) + ARRAY_CHUNK_SIZE);
+        map_path_resize(dest_path, map_path_len(dest_path) + ARRAY_CHUNK_SIZE);
+        map_path_wresize(dest_path, map_path_len(dest_path) + ARRAY_CHUNK_SIZE);
     }
     DEBUG("total length: %.2f", dest_path->length);
 }

@@ -28,7 +28,7 @@
 #ifdef ENABLE_DEBUG
 
 #define DEBUG(format, ...) G_STMT_START {                   \
-    if (_map_debug_get_level() > 0)                         \
+    if (map_debug_get_level() > 0)                         \
         g_debug("%s: " format, G_STRFUNC, ##__VA_ARGS__);   \
 } G_STMT_END
 
@@ -60,13 +60,13 @@
 
 G_BEGIN_DECLS
 
-extern gint _map_debug_level;
+extern gint map_debug_level;
 
 void map_debug_init(void);
 
-static inline gint _map_debug_get_level(void)
+static inline gint map_debug_get_level(void)
 {
-    return _map_debug_level;
+    return map_debug_level;
 }
 
 G_END_DECLS

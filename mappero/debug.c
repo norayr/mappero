@@ -33,7 +33,7 @@
 #define DEFAULT_DEBUG_LEVEL 0
 #endif
 
-gint _map_debug_level = DEFAULT_DEBUG_LEVEL;
+gint map_debug_level = DEFAULT_DEBUG_LEVEL;
 
 void
 map_debug_init(void)
@@ -42,9 +42,9 @@ map_debug_init(void)
 
     env = getenv("MAP_DEBUG");
     if (env)
-        _map_debug_level = atoi(env);
+        map_debug_level = atoi(env);
 
-    if (_map_debug_level > 0)
+    if (map_debug_level > 0)
         g_debug("%s version %s", PACKAGE, VERSION);
 }
 

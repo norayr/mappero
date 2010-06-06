@@ -77,8 +77,8 @@ typedef struct {
     GList *line;
 } MapLineIter;
 
-void path_resize(MapPath *path, gint size);
-void path_wresize(MapPath *path, gint wsize);
+void map_path_resize(MapPath *path, gint size);
+void map_path_wresize(MapPath *path, gint wsize);
 
 guint map_path_get_duration(const MapPath *path);
 
@@ -106,7 +106,7 @@ static inline MapPathPoint *
 map_path_append_point_fast(MapPath *path, const MapPathPoint *p)
 {
     if (path->_tail == path->_cap)
-        path_resize(path, path->_cap - path->_head + ARRAY_CHUNK_SIZE);
+        map_path_resize(path, path->_cap - path->_head + ARRAY_CHUNK_SIZE);
     *path->_tail = *p;
     return path->_tail++;
 }
@@ -127,7 +127,7 @@ map_path_make_waypoint_full(MapPath *path, const MapPathPoint *p,
                             MapDirection dir, gchar *desc)
 {
     if (++(path->wtail) == path->wcap)
-        path_wresize(path, path->wcap - path->whead + ARRAY_CHUNK_SIZE);
+        map_path_wresize(path, path->wcap - path->whead + ARRAY_CHUNK_SIZE);
     path->wtail->point = (MapPathPoint *)p;
     path->wtail->dir = dir;
     path->wtail->desc = desc;
