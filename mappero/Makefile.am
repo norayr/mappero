@@ -3,16 +3,6 @@ lib_LTLIBRARIES = libmappero.la
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = mappero.pc
 
-AM_CFLAGS = \
-	-I$(top_srcdir) \
-	-DG_LOG_DOMAIN=\"mappero\" \
-	-std=c99 -Wall -Wno-switch
-
-LDADD = \
-	-export-dynamic \
-	-export-symbols-regex "^map.*" \
-	-rpath $(libdir)
-
 nodist_libmappero_la_SOURCES = \
 	map-signals-marshal.c \
 	map-signals-marshal.h
@@ -42,7 +32,10 @@ libmappero_la_SOURCES = \
 
 libmappero_la_CFLAGS = \
 	$(GCONF_CFLAGS) \
-	$(GTK_CFLAGS)
+	$(GTK_CFLAGS) \
+	-I$(top_srcdir) \
+	-DG_LOG_DOMAIN=\"mappero\" \
+	-std=c99 -Wall -Wno-switch
 
 libmappero_la_LIBADD = \
 	$(GCONF_LIBS) \
@@ -51,7 +44,10 @@ libmappero_la_LIBADD = \
 
 libmappero_la_LDFLAGS = \
 	-version-info "@MAP_LT_CURRENT@":"@MAP_LT_REVISION@":"@MAP_LT_AGE@" \
-	-Wl,--no-undefined
+	-Wl,--no-undefined \
+	-export-dynamic \
+	-export-symbols-regex "^map.*" \
+	-rpath $(libdir)
 
 EXTRA_DIST = \
 	map-signals-marshal.list
