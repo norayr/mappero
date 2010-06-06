@@ -155,6 +155,7 @@ if test "x$checks" = "xno"; then
     CFLAGS="$CFLAGS -DG_DISABLE_CHECKS"
 fi
 
+CFLAGS="-std=c99 -Wall -Wno-switch $CFLAGS"
 
 # Localisation
 localedir=`$PKG_CONFIG osso-af-settings --variable=localedir`
