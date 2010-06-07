@@ -27,7 +27,6 @@
 #include "data.h"
 #include "defines.h"
 #include "error.h"
-#include "navigation.h"
 
 #include <gconf/gconf-client.h>
 #include <hildon/hildon-check-button.h>
@@ -64,6 +63,67 @@ get_address(const MapLocation *loc, gchar *buffer, gsize len)
     }
 }
 
+/**
+ * infer_direction:
+ * @text: textual description of a waypoint.
+ *
+ * Tries to guess a #MapDirection from a text string.
+ */
+static MapDirection
+infer_direction(const gchar *text)
+{
+    MapDirection dir = MAP_DIRECTION_UNKNOWN;
+
+    if (!text) return dir;
+
+    if (strncmp(text, "Turn ", 5) == 0)
+    {
+        text += 5;
+        if (strncmp(text, "left", 4) == 0)
+            dir = MAP_DIRECTION_TL;
+        else
+            dir = MAP_DIRECTION_TR;
+    }
+    else if (strncmp(text, "Slight ", 7) == 0)
+    {
+        text += 7;
+        if (strncmp(text, "left", 4) == 0)
+            dir = MAP_DIRECTION_STL;
+        else
+            dir = MAP_DIRECTION_STR;
+    }
+    else if (strncmp(text, "Continue ", 9) == 0)
+        dir = MAP_DIRECTION_CS;
+    else
+    {
+        static const gchar *ordinals[] = { "1st ", "2nd ", "3rd ", NULL };
+        gchar *ptr;
+        gint i;
+
+        for (i = 0; ordinals[i] != NULL; i++)
+        {
+            ptr = strstr(text, ordinals[i]);
+            if (ptr != NULL) break;
+        }
+
+        if (ptr != NULL)
+        {
+            ptr += strlen(ordinals[i]);
+            if (strncmp(ptr, "exit", 4) == 0)
+                dir = MAP_DIRECTION_EX1 + i;
+            else if (strncmp(ptr, "left", 4) == 0)
+                dir = MAP_DIRECTION_TL;
+            else
+                dir = MAP_DIRECTION_TR;
+        }
+        else
+        {
+            /* all heuristics failed, add more here */
+        }
+    }
+    return dir;
+}
+
 static void
 add_directions(MapPath *path)
 {
@@ -71,7 +131,7 @@ add_directions(MapPath *path)
     for (curr = path->whead; curr != path->wtail; curr++)
     {
         if (curr->dir == MAP_DIRECTION_UNKNOWN)
-            curr->dir = map_navigation_infer_direction(curr->desc);
+            curr->dir = infer_direction(curr->desc);
     }
 }
 
