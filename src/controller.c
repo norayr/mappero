@@ -218,7 +218,6 @@ map_controller_init(MapController *controller)
     MapControllerPrivate *priv;
     GConfClient *gconf_client = gconf_client_get_default();
     GList *list;
-    GObject *plugin;
 
     TIME_START();
 
@@ -237,15 +236,6 @@ map_controller_init(MapController *controller)
                          GCONF_CLIENT_PRELOAD_RECURSIVE, NULL);
 
     /* register plugins */
-    plugin = g_object_new(MAP_TYPE_GOOGLE, NULL);
-    map_controller_register_plugin(controller, plugin);
-    map_controller_set_default_router(controller, MAP_ROUTER(plugin));
-    g_object_unref (plugin);
-
-    plugin = g_object_new(MAP_TYPE_YANDEX, NULL);
-    map_controller_register_plugin(controller, plugin);
-    g_object_unref (plugin);
-
     map_loader_read_dir(MAP_PLUGIN_DIR);
     for (list = map_loader_get_objects(); list != NULL; list = list->next)
     {

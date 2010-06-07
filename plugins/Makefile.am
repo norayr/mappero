@@ -1,6 +1,7 @@
 pluginlib_LTLIBRARIES = \
 	libgoogle.la \
-	libreittiopas.la
+	libreittiopas.la \
+	libyandex.la
 
 AM_CFLAGS = \
 	-I$(top_srcdir) \
@@ -27,3 +28,20 @@ libreittiopas_la_LIBADD = \
 	$(HILDON_LIBS) \
 	$(LIBXML2_LIBS) \
 	-lm
+
+libgoogle_la_SOURCES = \
+	google.c
+libgoogle_la_CFLAGS = \
+	$(HILDON_CFLAGS) \
+	$(AM_CFLAGS)
+libgoogle_la_LIBADD = \
+	$(HILDON_LIBS)
+
+libyandex_la_SOURCES = \
+	yandex.c
+libyandex_la_CFLAGS = \
+	$(HILDON_CFLAGS) \
+	$(AM_CFLAGS)
+libyandex_la_LIBADD = \
+	$(HILDON_LIBS)
+

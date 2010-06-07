@@ -70,8 +70,6 @@ maemo_mapper_SOURCES = \
 	orientation.c \
 	osm.c \
 	path.c \
-	plugins/google.c \
-	plugins/yandex.c \
 	poi.c \
 	route.c \
 	settings.c \

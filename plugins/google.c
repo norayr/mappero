@@ -24,11 +24,10 @@
 
 #include "google.h"
 
-#include "data.h"
-#include "defines.h"
-#include "error.h"
+#define H_(String) dgettext("hildon-libs", String)
 
 #include <gconf/gconf-client.h>
+#include <glib/gi18n.h>
 #include <hildon/hildon-check-button.h>
 #include <mappero/error.h>
 #include <mappero/gpx.h>
@@ -57,7 +56,7 @@ get_address(const MapLocation *loc, gchar *buffer, gsize len)
     else
     {
         MapGeo lat, lon;
-        unit2latlon(loc->point.x, loc->point.y, lat, lon);
+        map_unit2latlon(loc->point.x, loc->point.y, lat, lon);
         snprintf(buffer, len, "%.06f, %0.6f", lat, lon);
         return buffer;
     }
@@ -285,5 +284,19 @@ map_google_init(MapGoogle *google)
 static void
 map_google_class_init(MapGoogleClass *klass)
 {
+}
+
+const gchar * const *
+map_plugin_list_objects()
+{
+    static const gchar *ids[] = { "router", NULL };
+    return ids;
+}
+
+GObject *
+map_plugin_get_object(const gchar *id)
+{
+    g_return_val_if_fail(strcmp(id, "router") == 0, NULL);
+    return g_object_new(MAP_TYPE_GOOGLE, NULL);
 }
 
