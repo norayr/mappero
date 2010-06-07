@@ -1,4 +1,6 @@
-pluginlib_LTLIBRARIES = libreittiopas.la
+pluginlib_LTLIBRARIES = \
+	libgoogle.la \
+	libreittiopas.la
 
 AM_CFLAGS = \
 	-I$(top_srcdir) \

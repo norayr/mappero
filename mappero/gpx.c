@@ -24,20 +24,17 @@
 
 #define _GNU_SOURCE
 
+#include "gpx.h"
+
+#include "debug.h"
+#include "util.h"
+
 #include <string.h>
 #include <math.h>
 #include <libxml/parser.h>
 
-#include "types.h"
-#include "data.h"
-#include "defines.h"
-
-#include "gpx.h"
-#include "navigation.h"
-#include "path.h"
-#include "util.h"
-
-#include <mappero/debug.h>
+#define BUFFER_SIZE 2048
+#define XML_DATE_FORMAT "%FT%T"
 
 /** This enum defines the states of the SAX parsing state machine. */
 typedef enum
@@ -83,7 +80,7 @@ typedef struct _PoiSaxData PoiSaxData;
 struct _PoiSaxData {
     SaxData sax_data;
     GList *poi_list;
-    PoiInfo *curr_poi;
+    MapPoiInfo *curr_poi;
 };
 
 /**
@@ -153,12 +150,9 @@ gpx_write_string(GnomeVFSHandle *handle, const gchar *str)
     if(GNOME_VFS_OK != (vfs_result = gnome_vfs_write(
                     handle, str, strlen(str), &size)))
     {
-        gchar buffer[BUFFER_SIZE];
-        snprintf(buffer, sizeof(buffer),
-                "%s:\n%s\n%s", _("Error while writing to file"),
-                _("File is incomplete."),
-                gnome_vfs_result_to_string(vfs_result));
-        popup_error(_window, buffer);
+        g_warning("Error while writing to file: %s",
+                  gnome_vfs_result_to_string(vfs_result));
+        /* TODO: return error to client */
         return FALSE;
     }
     return TRUE;
@@ -181,12 +175,9 @@ gpx_write_escaped(GnomeVFSHandle *handle, const gchar *str)
             if(GNOME_VFS_OK != (vfs_result = gnome_vfs_write(
                             handle, ptr, newptr - ptr, &size)))
             {
-                gchar buffer[BUFFER_SIZE];
-                snprintf(buffer, sizeof(buffer),
-                        "%s:\n%s\n%s", _("Error while writing to file"),
-                        _("File is incomplete."),
-                        gnome_vfs_result_to_string(vfs_result));
-                popup_error(_window, buffer);
+                g_warning("Error while writing to file: %s",
+                          gnome_vfs_result_to_string(vfs_result));
+                /* TODO: return error to client */
                 return FALSE;
             }
 
@@ -288,7 +279,8 @@ gpx_path_start_element(PathSaxData *data,
                 }
                 if(has_lat && has_lon)
                 {
-                    latlon2unit(lat, lon, data->pt.unit.x, data->pt.unit.y);
+                    map_latlon2unit(lat, lon,
+                                    data->pt.unit.x, data->pt.unit.y);
                     data->pt.time = 0;
                     data->pt.altitude = 0;
                     data->sax_data.state = INSIDE_PATH_POINT;
@@ -370,8 +362,6 @@ gpx_path_end_element(PathSaxData *data, const xmlChar *name)
                 p = map_path_append_point_fast(&data->path, &data->pt);
                 if (data->desc)
                 {
-                    if (data->dir == MAP_DIRECTION_UNKNOWN)
-                        data->dir = map_navigation_infer_direction(data->desc);
                     map_path_make_waypoint_full(&data->path, p,
                                                 data->dir, data->desc);
                     data->desc = NULL;
@@ -499,7 +489,7 @@ gpx_path_end_element(PathSaxData *data, const xmlChar *name)
 }
 
 gboolean
-gpx_path_parse(MapPath *to_replace, gchar *buffer, gint size, gint policy_old)
+map_gpx_path_parse(MapPath *to_replace, gchar *buffer, gint size, gint policy_old)
 {
     PathSaxData data;
     xmlSAXHandler sax_handler;
@@ -548,7 +538,7 @@ gpx_path_parse(MapPath *to_replace, gchar *buffer, gint size, gint policy_old)
  ****************************************************************************/
 
 gboolean
-gpx_path_write(MapPath *path, GnomeVFSHandle *handle)
+map_gpx_path_write(MapPath *path, GnomeVFSHandle *handle)
 {
     MapPathPoint *curr = NULL;
     MapPathWayPoint *wcurr = NULL;
@@ -574,7 +564,7 @@ gpx_path_write(MapPath *path, GnomeVFSHandle *handle)
             MapGeo lat, lon;
             gchar buffer[80];
             gboolean first_sub = TRUE;
-            unit2latlon(curr->unit.x, curr->unit.y, lat, lon);
+            map_unit2latlon(curr->unit.x, curr->unit.y, lat, lon);
             gpx_write_string(handle, "      <trkpt lat=\"");
             g_ascii_formatd(buffer, sizeof(buffer), "%.06f", lat);
             gpx_write_string(handle, buffer);
@@ -707,7 +697,7 @@ gpx_poi_start_element(PoiSaxData *data,
                 if(has_lat && has_lon)
                 {
                     data->sax_data.state = INSIDE_WPT;
-                    data->curr_poi = g_slice_new0(PoiInfo);
+                    data->curr_poi = g_slice_new0(MapPoiInfo);
                     data->curr_poi->lat = lat;
                     data->curr_poi->lon = lon;
                     data->poi_list = g_list_append(
@@ -821,7 +811,7 @@ gpx_poi_end_element(PoiSaxData *data, const xmlChar *name)
 }
 
 gboolean
-gpx_poi_parse(gchar *buffer, gint size, GList **poi_list)
+map_gpx_poi_parse(gchar *buffer, gint size, GList **poi_list)
 {
     PoiSaxData data;
     xmlSAXHandler sax_handler;
@@ -860,7 +850,7 @@ gpx_poi_parse(gchar *buffer, gint size, GList **poi_list)
  ****************************************************************************/
 
 gint
-gpx_poi_write(GtkTreeModel *model, GnomeVFSHandle *handle)
+map_gpx_poi_write(GtkTreeModel *model, GnomeVFSHandle *handle)
 {
     gint num_written = 0;
     GtkTreeIter iter;
@@ -874,19 +864,19 @@ gpx_poi_write(GtkTreeModel *model, GnomeVFSHandle *handle)
     /* Iterate through the data model and import as desired. */
     if(gtk_tree_model_get_iter_first(model, &iter)) do
     {   
-        PoiInfo poi;
+        MapPoiInfo poi;
         gboolean selected;
         memset(&poi, 0, sizeof(poi));
 
         gtk_tree_model_get(model, &iter,
-                POI_SELECTED, &selected,
-                POI_POIID, &(poi.poi_id),
-                POI_CATID, &(poi.cat_id),
-                POI_LAT, &(poi.lat),
-                POI_LON, &(poi.lon),
-                POI_LABEL, &(poi.label),
-                POI_DESC, &(poi.desc),
-                POI_CLABEL, &(poi.clabel),
+                MAP_POI_SELECTED, &selected,
+                MAP_POI_POIID, &(poi.poi_id),
+                MAP_POI_CATID, &(poi.cat_id),
+                MAP_POI_LAT, &(poi.lat),
+                MAP_POI_LON, &(poi.lon),
+                MAP_POI_LABEL, &(poi.label),
+                MAP_POI_DESC, &(poi.desc),
+                MAP_POI_CLABEL, &(poi.clabel),
                 -1);
 
         if(selected)

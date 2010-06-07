@@ -27,11 +27,12 @@
 #include "data.h"
 #include "defines.h"
 #include "error.h"
-#include "gpx.h"
+#include "navigation.h"
 
 #include <gconf/gconf-client.h>
 #include <hildon/hildon-check-button.h>
 #include <mappero/error.h>
+#include <mappero/gpx.h>
 #include <mappero/path.h>
 #include <mappero-extras/dialog.h>
 #include <math.h>
@@ -60,6 +61,17 @@ get_address(const MapLocation *loc, gchar *buffer, gsize len)
         unit2latlon(loc->point.x, loc->point.y, lat, lon);
         snprintf(buffer, len, "%.06f, %0.6f", lat, lon);
         return buffer;
+    }
+}
+
+static void
+add_directions(MapPath *path)
+{
+    MapPathWayPoint *curr;
+    for (curr = path->whead; curr != path->wtail; curr++)
+    {
+        if (curr->dir == MAP_DIRECTION_UNKNOWN)
+            curr->dir = map_navigation_infer_direction(curr->desc);
     }
 }
 
@@ -108,7 +120,8 @@ route_download_and_setup(MapPath *path, const gchar *source_url,
     }
 
     /* TODO: remove last parameter, add error */
-    gpx_path_parse(path, bytes, size, FALSE);
+    map_gpx_path_parse(path, bytes, size, FALSE);
+    add_directions(path);
 
 finish:
     g_free(bytes);

@@ -45,7 +45,6 @@
 #include "data.h"
 #include "defines.h"
 #include "display.h"
-#include "gpx.h"
 #include "he-about-dialog.h"
 #include "maps.h"
 #include "menu.h"
@@ -64,6 +63,7 @@
 #include <mappero/debug.h>
 #include <mappero-extras/dialog.h>
 #include <mappero-extras/error.h>
+#include <mappero/gpx.h>
 
 /****************************************************************************
  * BELOW: ROUTE MENU ********************************************************
@@ -79,8 +79,8 @@ menu_cb_route_open(GtkMenuItem *item)
                 &_route_dir_uri, NULL, GTK_FILE_CHOOSER_ACTION_OPEN))
     {
         /* If auto is enabled, append the route, otherwise replace it. */
-        if(gpx_path_parse(map_route_get_path(), buffer, size,
-                          autoroute_enabled() ? 0 : 1))
+        if(map_gpx_path_parse(map_route_get_path(), buffer, size,
+                              autoroute_enabled() ? 0 : 1))
         {
             MapController *controller = map_controller_get_instance();
 
@@ -117,7 +117,7 @@ menu_cb_route_save(GtkMenuItem *item)
     if(display_open_file(GTK_WINDOW(_window), NULL, &handle, NULL,
                 &_route_dir_uri, NULL, GTK_FILE_CHOOSER_ACTION_SAVE))
     {
-        if(gpx_path_write(map_route_get_path(), handle))
+        if(map_gpx_path_write(map_route_get_path(), handle))
         {
             MACRO_BANNER_SHOW_INFO(_window, _("Route Saved"));
         }
@@ -161,7 +161,7 @@ menu_cb_track_open(GtkMenuItem *item)
     if(display_open_file(GTK_WINDOW(_window), &buffer, NULL, &size,
                 NULL, &_track_file_uri, GTK_FILE_CHOOSER_ACTION_OPEN))
     {
-        if(gpx_path_parse(&_track, buffer, size, -1))
+        if(map_gpx_path_parse(&_track, buffer, size, -1))
         {
             MapController *controller = map_controller_get_instance();
             map_controller_refresh_paths(controller);
@@ -183,7 +183,7 @@ menu_cb_track_save(GtkMenuItem *item)
     if(display_open_file(GTK_WINDOW(_window), NULL, &handle, NULL,
                 NULL, &_track_file_uri, GTK_FILE_CHOOSER_ACTION_SAVE))
     {
-        if(gpx_path_write(&_track, handle))
+        if(map_gpx_path_write(&_track, handle))
         {
             MACRO_BANNER_SHOW_INFO(_window, _("Track Saved"));
         }

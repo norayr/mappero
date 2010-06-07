@@ -18,14 +18,38 @@
  * along with Mappero.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef MAEMO_MAPPER_GPX_H
-#define MAEMO_MAPPER_GPX_H
+#ifndef MAP_POI_H
+#define MAP_POI_H
 
-gboolean gpx_path_parse(MapPath *to_replace, gchar *buffer, gint size,
-        gint policy_old);
-gboolean gpx_path_write(MapPath *path, GnomeVFSHandle *handle);
+#include <mappero/globals.h>
 
-gint gpx_poi_parse(gchar *buffer, gint size, GList **list);
-gint gpx_poi_write(GtkTreeModel *model, GnomeVFSHandle *handle);
+/* FIXME: all the types defined here should be reviewed */
 
-#endif /* #ifndef MAEMO_MAPPER_GPX_H */
+typedef enum
+{
+    MAP_POI_SELECTED,
+    MAP_POI_POIID,
+    MAP_POI_CATID,
+    MAP_POI_LAT,
+    MAP_POI_LON,
+    MAP_POI_LATLON,
+    MAP_POI_BEARING,
+    MAP_POI_DISTANCE,
+    MAP_POI_LABEL,
+    MAP_POI_DESC,
+    MAP_POI_CLABEL,
+    MAP_POI_NUM_COLUMNS
+} MapPoiList;
+
+typedef struct _MapPoiInfo MapPoiInfo;
+struct _MapPoiInfo {
+    gint poi_id;
+    gint cat_id;
+    MapGeo lat;
+    MapGeo lon;
+    gchar *label;
+    gchar *desc;
+    gchar *clabel;
+};
+
+#endif /* MAP_POI_H */

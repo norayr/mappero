@@ -52,7 +52,6 @@
 #include "defines.h"
 
 #include "display.h"
-#include "gpx.h"
 #include "main.h"
 #include "path.h"
 #include "poi.h"
@@ -61,6 +60,7 @@
 #include "util.h"
 
 #include <mappero/debug.h>
+#include <mappero/gpx.h>
 
 static sqlite3 *_poi_db = NULL;
 static sqlite3_stmt *_stmt_browse_poi = NULL;
@@ -2095,7 +2095,7 @@ poi_list_export_gpx(GtkWidget *widget, PoiListInfo *pli)
     if(display_open_file(GTK_WINDOW(pli->dialog2), NULL, &handle, NULL,
                 NULL, NULL, GTK_FILE_CHOOSER_ACTION_SAVE))
     {
-        gint num_exported = gpx_poi_write(
+        gint num_exported = map_gpx_poi_write(
                gtk_tree_view_get_model(GTK_TREE_VIEW(pli->tree_view)), handle);
         if(num_exported >= 0)
         {
@@ -2380,7 +2380,7 @@ poi_import_dialog(const MapPoint *point)
         {
             popup_error(dialog, gnome_vfs_result_to_string(vfs_result));
         }
-        else if(gpx_poi_parse(bytes, size, &poi_list))
+        else if(map_gpx_poi_parse(bytes, size, &poi_list))
         {
             static GtkWidget *cat_dialog = NULL;
             static GtkWidget *cmb_category = NULL;
@@ -2813,7 +2813,7 @@ poi_download_dialog(const MapPoint *point)
             popup_error(dialog, _("Invalid origin or query."));
             printf("bytes: %s\n", bytes);
         }
-        else if(gpx_poi_parse(bytes, size, &poi_list))
+        else if(map_gpx_poi_parse(bytes, size, &poi_list))
         {
             /* Insert the POIs into the database. */
             gint num_inserts = poi_list_insert(dialog, poi_list,

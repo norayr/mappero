@@ -42,7 +42,6 @@
 #include "data.h"
 #include "defines.h"
 
-#include "gpx.h"
 #include "util.h"
 
 #include <mappero/debug.h>

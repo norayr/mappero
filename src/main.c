@@ -62,7 +62,6 @@
 #include "controller.h"
 #include "dbus-ifc.h"
 #include "display.h"
-#include "gpx.h"
 #include "main.h"
 #include "maps.h"
 #include "menu.h"

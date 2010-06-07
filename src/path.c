@@ -38,7 +38,6 @@
 #include "data.h"
 #include "defines.h"
 #include "display.h"
-#include "gpx.h"
 #include "path.h"
 #include "poi.h"
 #include "route.h"

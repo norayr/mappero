@@ -27,11 +27,11 @@
 #include "data.h"
 #include "defines.h"
 #include "error.h"
-#include "gpx.h"
 
 #include <gconf/gconf-client.h>
 #include <hildon/hildon-check-button.h>
 #include <mappero/error.h>
+#include <mappero/gpx.h>
 #include <mappero/path.h>
 #include <mappero-extras/dialog.h>
 #include <math.h>
@@ -102,7 +102,7 @@ route_download_and_setup(MapPath *path, const gchar *source_url,
     }
 
     /* TODO: remove last parameter, add error */
-    gpx_path_parse(path, bytes, size, FALSE);
+    map_gpx_path_parse(path, bytes, size, FALSE);
 
 finish:
     g_free(bytes);
