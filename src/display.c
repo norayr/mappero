@@ -1293,7 +1293,7 @@ latlon_dialog(gdouble lat, gdouble lon)
  */
 gboolean
 display_open_file(GtkWindow *parent, gchar **bytes_out,
-        GnomeVFSHandle **handle_out, gint *size_out,
+        GOutputStream **handle_out, gsize *size_out,
         gchar **dir, gchar **file, GtkFileChooserAction chooser_action)
 {
     GtkWidget *dialog;
@@ -1315,31 +1315,34 @@ display_open_file(GtkWindow *parent, gchar **bytes_out,
     while(!success && gtk_dialog_run(GTK_DIALOG(dialog))==GTK_RESPONSE_OK)
     {
         gchar *file_uri_str;
-        GnomeVFSResult vfs_result;
+        GFile *handle;
+        GError *error = NULL;
+        GFileOutputStream *stream = NULL;
 
         /* Get the selected filename. */
         file_uri_str = gtk_file_chooser_get_uri(GTK_FILE_CHOOSER(dialog));
+        handle = g_file_new_for_uri(file_uri_str);
 
         if((chooser_action == GTK_FILE_CHOOSER_ACTION_OPEN
-                && (GNOME_VFS_OK != (vfs_result = gnome_vfs_read_entire_file(
-                        file_uri_str, size_out, bytes_out))))
+                && !g_file_load_contents(handle, NULL, bytes_out, size_out,
+                                         NULL, &error))
                 || (chooser_action == GTK_FILE_CHOOSER_ACTION_SAVE
-                    && GNOME_VFS_OK != (vfs_result = gnome_vfs_create(
-                            handle_out, file_uri_str,
-                            GNOME_VFS_OPEN_WRITE, FALSE, 0664))))
+                    && (stream = g_file_replace(handle, NULL, FALSE,
+                                                0, NULL, &error)) == NULL))
         {
             gchar buffer[BUFFER_SIZE];
             snprintf(buffer, sizeof(buffer),
-                    "%s:\n%s", chooser_action == GTK_FILE_CHOOSER_ACTION_OPEN
-                                ? _("Failed to open file for reading")
-                                : _("Failed to open file for writing"),
-                    gnome_vfs_result_to_string(vfs_result));
+                     "%s:\n%s", _("Failed to open file for reading"),
+                     error->message);
             popup_error(dialog, buffer);
         }
         else
             success = TRUE;
 
+        if (stream != NULL)
+            *handle_out = G_OUTPUT_STREAM(stream);
         g_free(file_uri_str);
+        g_object_unref(handle);
     }
 
     if(success)

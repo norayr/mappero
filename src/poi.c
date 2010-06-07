@@ -2090,7 +2090,7 @@ poi_list_delete(GtkWidget *widget, PoiListInfo *pli)
 static gboolean
 poi_list_export_gpx(GtkWidget *widget, PoiListInfo *pli)
 {
-    GnomeVFSHandle *handle;
+    GOutputStream *handle;
 
     if(display_open_file(GTK_WINDOW(pli->dialog2), NULL, &handle, NULL,
                 NULL, NULL, GTK_FILE_CHOOSER_ACTION_SAVE))
@@ -2106,7 +2106,7 @@ poi_list_export_gpx(GtkWidget *widget, PoiListInfo *pli)
         }
         else
             popup_error(pli->dialog2, _("Error writing GPX file."));
-        gnome_vfs_close(handle);
+        g_object_unref(handle);
     }
 
     return TRUE;

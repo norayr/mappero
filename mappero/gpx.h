@@ -24,14 +24,14 @@
 #include <mappero/path.h>
 #include <mappero/poi.h>
 
-#include <libgnomevfs/gnome-vfs.h> /* TODO: use GIO */
+#include <gio/gio.h>
 #include <gtk/gtk.h>
 
 gboolean map_gpx_path_parse(MapPath *to_replace, gchar *buffer, gint size,
                             gint policy_old);
-gboolean map_gpx_path_write(MapPath *path, GnomeVFSHandle *handle);
+gboolean map_gpx_path_write(MapPath *path, GOutputStream *stream);
 
 gint map_gpx_poi_parse(gchar *buffer, gint size, GList **list);
-gint map_gpx_poi_write(GtkTreeModel *model, GnomeVFSHandle *handle);
+gint map_gpx_poi_write(GtkTreeModel *model, GOutputStream *stream);
 
 #endif /* MAP_GPX_H */

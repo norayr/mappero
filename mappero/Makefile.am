@@ -35,7 +35,7 @@ libmappero_la_SOURCES = \
 
 libmappero_la_CFLAGS = \
 	$(GCONF_CFLAGS) \
-	$(GNOME_VFS_CFLAGS) \
+	$(GIO_CFLAGS) \
 	$(GTK_CFLAGS) \
 	$(LIBXML2_CFLAGS) \
 	-I$(top_srcdir) \
@@ -44,7 +44,7 @@ libmappero_la_CFLAGS = \
 
 libmappero_la_LIBADD = \
 	$(GCONF_LIBS) \
-	$(GNOME_VFS_LIBS) \
+	$(GIO_LIBS) \
 	$(GTK_LIBS) \
 	$(LIBXML2_LIBS) \
 	-lm -lrt

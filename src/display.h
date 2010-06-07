@@ -58,7 +58,7 @@ gboolean thread_render_map(MapRenderTask *mrt);
 gboolean latlon_dialog(gdouble lat, gdouble lon);
 
 gboolean display_open_file(GtkWindow *parent, gchar **bytes_out,
-        GnomeVFSHandle **handle_out, gint *size_out, gchar **dir, gchar **file,
+        GOutputStream **handle_out, gsize *size_out, gchar **dir, gchar **file,
         GtkFileChooserAction chooser_action);
 
 void map_download_refresh_idle(MapTileSpec *tile, GdkPixbuf *pixbuf,

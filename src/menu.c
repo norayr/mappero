@@ -73,7 +73,7 @@ static gboolean
 menu_cb_route_open(GtkMenuItem *item)
 {
     gchar *buffer;
-    gint size;
+    gsize size;
 
     if(display_open_file(GTK_WINDOW(_window), &buffer, NULL, &size,
                 &_route_dir_uri, NULL, GTK_FILE_CHOOSER_ACTION_OPEN))
@@ -112,7 +112,7 @@ menu_cb_route_download(GtkMenuItem *item)
 static gboolean
 menu_cb_route_save(GtkMenuItem *item)
 {
-    GnomeVFSHandle *handle;
+    GOutputStream *handle;
 
     if(display_open_file(GTK_WINDOW(_window), NULL, &handle, NULL,
                 &_route_dir_uri, NULL, GTK_FILE_CHOOSER_ACTION_SAVE))
@@ -123,7 +123,7 @@ menu_cb_route_save(GtkMenuItem *item)
         }
         else
             popup_error(_window, _("Error writing GPX file."));
-        gnome_vfs_close(handle);
+        g_object_unref(handle);
     }
 
     return TRUE;
@@ -156,7 +156,7 @@ static gboolean
 menu_cb_track_open(GtkMenuItem *item)
 {
     gchar *buffer;
-    gint size;
+    gsize size;
 
     if(display_open_file(GTK_WINDOW(_window), &buffer, NULL, &size,
                 NULL, &_track_file_uri, GTK_FILE_CHOOSER_ACTION_OPEN))
@@ -178,7 +178,7 @@ menu_cb_track_open(GtkMenuItem *item)
 static gboolean
 menu_cb_track_save(GtkMenuItem *item)
 {
-    GnomeVFSHandle *handle;
+    GOutputStream *handle;
 
     if(display_open_file(GTK_WINDOW(_window), NULL, &handle, NULL,
                 NULL, &_track_file_uri, GTK_FILE_CHOOSER_ACTION_SAVE))
@@ -189,7 +189,7 @@ menu_cb_track_save(GtkMenuItem *item)
         }
         else
             popup_error(_window, _("Error writing GPX file."));
-        gnome_vfs_close(handle);
+        g_object_unref(handle);
     }
 
     return TRUE;

@@ -139,15 +139,16 @@ gpx_error(SaxData *data, const gchar *msg, ...)
 }
 
 static gboolean
-gpx_write_string(GnomeVFSHandle *handle, const gchar *str)
+gpx_write_string(GOutputStream *stream, const gchar *str)
 {
-    GnomeVFSResult vfs_result;
-    GnomeVFSFileSize size;
-    if(GNOME_VFS_OK != (vfs_result = gnome_vfs_write(
-                    handle, str, strlen(str), &size)))
+    GError *error = NULL;
+
+    g_output_stream_write(stream, str, strlen(str), NULL, &error);
+    if (G_UNLIKELY(error != NULL))
     {
         g_warning("Error while writing to file: %s",
-                  gnome_vfs_result_to_string(vfs_result));
+                  error->message);
+        g_error_free(error);
         /* TODO: return error to client */
         return FALSE;
     }
@@ -155,7 +156,7 @@ gpx_write_string(GnomeVFSHandle *handle, const gchar *str)
 }
 
 static gboolean
-gpx_write_escaped(GnomeVFSHandle *handle, const gchar *str)
+gpx_write_escaped(GOutputStream *stream, const gchar *str)
 {
     const gchar *ptr = str;
     const gchar *nullchr = ptr + strlen(ptr);
@@ -166,13 +167,14 @@ gpx_write_escaped(GnomeVFSHandle *handle, const gchar *str)
         {
             /* First, write out what we have so far. */
             const gchar *to_write;
-            GnomeVFSResult vfs_result;
-            GnomeVFSFileSize size;
-            if(GNOME_VFS_OK != (vfs_result = gnome_vfs_write(
-                            handle, ptr, newptr - ptr, &size)))
+            GError *error = NULL;
+
+            g_output_stream_write(stream, ptr, newptr - ptr, NULL, &error);
+            if (G_UNLIKELY(error != NULL))
             {
                 g_warning("Error while writing to file: %s",
-                          gnome_vfs_result_to_string(vfs_result));
+                          error->message);
+                g_error_free(error);
                 /* TODO: return error to client */
                 return FALSE;
             }
@@ -192,7 +194,7 @@ gpx_write_escaped(GnomeVFSHandle *handle, const gchar *str)
                 default:
                     to_write = "";
             }
-            gpx_write_string(handle, to_write);
+            gpx_write_string(stream, to_write);
 
             /* Advance the pointer to continue searching for entities. */
             ptr = newptr + 1;
@@ -200,7 +202,7 @@ gpx_write_escaped(GnomeVFSHandle *handle, const gchar *str)
         else
         {
             /* No characters need escaping - write the whole thing. */
-            gpx_write_string(handle, ptr);
+            gpx_write_string(stream, ptr);
             ptr = nullchr;
         }
     }
@@ -534,7 +536,7 @@ map_gpx_path_parse(MapPath *to_replace, gchar *buffer, gint size, gint policy_ol
  ****************************************************************************/
 
 gboolean
-map_gpx_path_write(MapPath *path, GnomeVFSHandle *handle)
+map_gpx_path_write(MapPath *path, GOutputStream *handle)
 {
     MapPathPoint *curr = NULL;
     MapPathWayPoint *wcurr = NULL;
@@ -846,7 +848,7 @@ map_gpx_poi_parse(gchar *buffer, gint size, GList **poi_list)
  ****************************************************************************/
 
 gint
-map_gpx_poi_write(GtkTreeModel *model, GnomeVFSHandle *handle)
+map_gpx_poi_write(GtkTreeModel *model, GOutputStream *handle)
 {
     gint num_written = 0;
     GtkTreeIter iter;

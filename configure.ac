@@ -62,6 +62,10 @@ PKG_CHECK_MODULES(GNOME_VFS, gnome-vfs-2.0 >= 2.8.4.11 gnome-vfs-module-2.0 >= 2
 AC_SUBST(GNOME_VFS_LIBS)
 AC_SUBST(GNOME_VFS_CFLAGS)
 
+PKG_CHECK_MODULES(GIO, gio-2.0)
+AC_SUBST(GIO_LIBS)
+AC_SUBST(GIO_CFLAGS)
+
 PKG_CHECK_MODULES(GCONF, gconf-2.0 >= 2.6.2)
 AC_SUBST(GCONF_LIBS)
 AC_SUBST(GCONF_CFLAGS)
@@ -155,7 +159,7 @@ if test "x$checks" = "xno"; then
     CFLAGS="$CFLAGS -DG_DISABLE_CHECKS"
 fi
 
-CFLAGS="-std=c99 -Wall -Wno-switch $CFLAGS"
+CFLAGS="-std=c99 -Wall -Werror -Wno-switch $CFLAGS"
 
 # Localisation
 localedir=`$PKG_CONFIG osso-af-settings --variable=localedir`
