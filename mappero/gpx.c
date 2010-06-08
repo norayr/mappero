@@ -486,8 +486,35 @@ gpx_path_end_element(PathSaxData *data, const xmlChar *name)
     }
 }
 
+static gboolean
+parse_xml_stream(GInputStream *stream, xmlSAXHandler *sax_handler, void *data)
+{
+    xmlParserCtxtPtr ctx;
+    gchar buffer[1024];
+    gssize len;
+    int ret;
+
+    len = g_input_stream_read(stream, buffer, 4, NULL, NULL);
+    if (len <= 0) return FALSE;
+
+    ctx = xmlCreatePushParserCtxt(sax_handler, data,
+                                  buffer, len, NULL);
+    while ((len = g_input_stream_read(stream, buffer, sizeof(buffer),
+                                      NULL, NULL)) > 0)
+    {
+        DEBUG("Read %d bytes", len);
+        xmlParseChunk(ctx, buffer, len, 0);
+    }
+    xmlParseChunk(ctx, buffer, 0, 1);
+
+    if (ctx->myDoc)
+        xmlFreeDoc(ctx->myDoc);
+    xmlFreeParserCtxt(ctx);
+    return ret == 0;
+}
+
 gboolean
-map_gpx_path_parse(MapPath *to_replace, gchar *buffer, gint size, gint policy_old)
+map_gpx_path_parse(MapPath *to_replace, GInputStream *stream, gint policy_old)
 {
     PathSaxData data;
     xmlSAXHandler sax_handler;
@@ -507,7 +534,7 @@ map_gpx_path_parse(MapPath *to_replace, gchar *buffer, gint size, gint policy_ol
     sax_handler.error = (errorSAXFunc)gpx_error;
     sax_handler.fatalError = (fatalErrorSAXFunc)gpx_error;
 
-    xmlSAXUserParseMemory(&sax_handler, &data, buffer, size);
+    parse_xml_stream(stream, &sax_handler, &data);
     g_string_free(data.sax_data.chars, TRUE);
 
     if(data.sax_data.state != FINISH)
@@ -809,7 +836,7 @@ gpx_poi_end_element(PoiSaxData *data, const xmlChar *name)
 }
 
 gboolean
-map_gpx_poi_parse(gchar *buffer, gint size, GList **poi_list)
+map_gpx_poi_parse(GInputStream *stream, GList **poi_list)
 {
     PoiSaxData data;
     xmlSAXHandler sax_handler;
@@ -827,7 +854,7 @@ map_gpx_poi_parse(gchar *buffer, gint size, GList **poi_list)
     sax_handler.error = (errorSAXFunc)gpx_error;
     sax_handler.fatalError = (fatalErrorSAXFunc)gpx_error;
 
-    xmlSAXUserParseMemory(&sax_handler, &data, buffer, size);
+    parse_xml_stream(stream, &sax_handler, &data);
     g_string_free(data.sax_data.chars, TRUE);
     *poi_list = data.poi_list;
 

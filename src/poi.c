@@ -116,6 +116,18 @@ struct _DeletePOI {
     gboolean deleted;
 };
 
+static gint
+poi_parse_gpx(const gchar *buffer, gsize len, GList **list)
+{
+    GInputStream *stream;
+    gint ret;
+
+    stream = g_memory_input_stream_new_from_data(buffer, len, NULL);
+    ret = map_gpx_poi_parse(stream, list);
+    g_object_unref(stream);
+    return ret;
+}
+
 void
 poi_db_connect()
 {
@@ -2092,7 +2104,7 @@ poi_list_export_gpx(GtkWidget *widget, PoiListInfo *pli)
 {
     GOutputStream *handle;
 
-    if(display_open_file(GTK_WINDOW(pli->dialog2), NULL, &handle, NULL,
+    if(display_open_file(GTK_WINDOW(pli->dialog2), NULL, &handle,
                 NULL, NULL, GTK_FILE_CHOOSER_ACTION_SAVE))
     {
         gint num_exported = map_gpx_poi_write(
@@ -2358,15 +2370,14 @@ poi_import_dialog(const MapPoint *point)
 {
     GtkWidget *dialog = NULL;
     gboolean success = FALSE;
-    gchar *bytes = NULL;
-    gsize size;
+    GInputStream *stream = NULL;
 
-    if (display_open_file(GTK_WINDOW(_window), &bytes, NULL, &size,
+    if (display_open_file(GTK_WINDOW(_window), &stream, NULL,
                           NULL, NULL, GTK_FILE_CHOOSER_ACTION_OPEN))
     {
         GList *poi_list = NULL;
 
-        if(map_gpx_poi_parse(bytes, size, &poi_list))
+        if(map_gpx_poi_parse(stream, &poi_list))
         {
             static GtkWidget *cat_dialog = NULL;
             static GtkWidget *cmb_category = NULL;
@@ -2441,7 +2452,7 @@ poi_import_dialog(const MapPoint *point)
         else
             popup_error(dialog, _("Error parsing GPX file."));
 
-        g_free(bytes);
+        g_object_unref(stream);
     }
 
     return success;
@@ -2795,7 +2806,7 @@ poi_download_dialog(const MapPoint *point)
             popup_error(dialog, _("Invalid origin or query."));
             printf("bytes: %s\n", bytes);
         }
-        else if(map_gpx_poi_parse(bytes, size, &poi_list))
+        else if(poi_parse_gpx(bytes, size, &poi_list))
         {
             /* Insert the POIs into the database. */
             gint num_inserts = poi_list_insert(dialog, poi_list,

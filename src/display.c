@@ -1286,15 +1286,16 @@ latlon_dialog(gdouble lat, gdouble lon)
 /**
  * This is a multi-purpose function for allowing the user to select a file
  * for either reading or writing.  If chooser_action is
- * GTK_FILE_CHOOSER_ACTION_OPEN, then bytes_out and size_out must be
+ * GTK_FILE_CHOOSER_ACTION_OPEN, then @input must be
  * non-NULL.  If chooser_action is GTK_FILE_CHOOSER_ACTION_SAVE, then
- * handle_out must be non-NULL.  Either dir or file (or both) can be NULL.
+ * @output must be non-NULL.  Either dir or file (or both) can be NULL.
  * This function returns TRUE if a file was successfully opened.
  */
 gboolean
-display_open_file(GtkWindow *parent, gchar **bytes_out,
-        GOutputStream **handle_out, gsize *size_out,
-        gchar **dir, gchar **file, GtkFileChooserAction chooser_action)
+display_open_file(GtkWindow *parent,
+                  GInputStream **input, GOutputStream **output,
+                  gchar **dir, gchar **file,
+                  GtkFileChooserAction chooser_action)
 {
     GtkWidget *dialog;
     gboolean success = FALSE;
@@ -1317,30 +1318,33 @@ display_open_file(GtkWindow *parent, gchar **bytes_out,
         gchar *file_uri_str;
         GFile *handle;
         GError *error = NULL;
-        GFileOutputStream *stream = NULL;
 
         /* Get the selected filename. */
         file_uri_str = gtk_file_chooser_get_uri(GTK_FILE_CHOOSER(dialog));
         handle = g_file_new_for_uri(file_uri_str);
 
-        if((chooser_action == GTK_FILE_CHOOSER_ACTION_OPEN
-                && !g_file_load_contents(handle, NULL, bytes_out, size_out,
-                                         NULL, &error))
-                || (chooser_action == GTK_FILE_CHOOSER_ACTION_SAVE
-                    && (stream = g_file_replace(handle, NULL, FALSE,
-                                                0, NULL, &error)) == NULL))
+        if (chooser_action == GTK_FILE_CHOOSER_ACTION_OPEN)
+        {
+            *input = (GInputStream *)g_file_read(handle, NULL, &error);
+        }
+        else if (chooser_action == GTK_FILE_CHOOSER_ACTION_SAVE)
+        {
+            *output = (GOutputStream *)g_file_replace(handle, NULL, FALSE,
+                                                      0, NULL, &error);
+        }
+
+        if (G_UNLIKELY(error != NULL))
         {
             gchar buffer[BUFFER_SIZE];
             snprintf(buffer, sizeof(buffer),
                      "%s:\n%s", _("Failed to open file for reading"),
                      error->message);
             popup_error(dialog, buffer);
+            g_error_free(error);
         }
         else
             success = TRUE;
 
-        if (stream != NULL)
-            *handle_out = G_OUTPUT_STREAM(stream);
         g_free(file_uri_str);
         g_object_unref(handle);
     }

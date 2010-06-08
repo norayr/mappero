@@ -72,14 +72,13 @@
 static gboolean
 menu_cb_route_open(GtkMenuItem *item)
 {
-    gchar *buffer;
-    gsize size;
+    GInputStream *stream = NULL;
 
-    if(display_open_file(GTK_WINDOW(_window), &buffer, NULL, &size,
+    if(display_open_file(GTK_WINDOW(_window), &stream, NULL,
                 &_route_dir_uri, NULL, GTK_FILE_CHOOSER_ACTION_OPEN))
     {
         /* If auto is enabled, append the route, otherwise replace it. */
-        if(map_gpx_path_parse(map_route_get_path(), buffer, size,
+        if(map_gpx_path_parse(map_route_get_path(), stream,
                               autoroute_enabled() ? 0 : 1))
         {
             MapController *controller = map_controller_get_instance();
@@ -96,7 +95,7 @@ menu_cb_route_open(GtkMenuItem *item)
         }
         else
             popup_error(_window, _("Error parsing GPX file."));
-        g_free(buffer);
+        g_object_unref(stream);
     }
 
     return TRUE;
@@ -114,7 +113,7 @@ menu_cb_route_save(GtkMenuItem *item)
 {
     GOutputStream *handle;
 
-    if(display_open_file(GTK_WINDOW(_window), NULL, &handle, NULL,
+    if(display_open_file(GTK_WINDOW(_window), NULL, &handle,
                 &_route_dir_uri, NULL, GTK_FILE_CHOOSER_ACTION_SAVE))
     {
         if(map_gpx_path_write(map_route_get_path(), handle))
@@ -155,13 +154,12 @@ menu_cb_route_clear(GtkMenuItem *item)
 static gboolean
 menu_cb_track_open(GtkMenuItem *item)
 {
-    gchar *buffer;
-    gsize size;
+    GInputStream *stream = NULL;
 
-    if(display_open_file(GTK_WINDOW(_window), &buffer, NULL, &size,
+    if(display_open_file(GTK_WINDOW(_window), &stream, NULL,
                 NULL, &_track_file_uri, GTK_FILE_CHOOSER_ACTION_OPEN))
     {
-        if(map_gpx_path_parse(&_track, buffer, size, -1))
+        if(map_gpx_path_parse(&_track, stream, -1))
         {
             MapController *controller = map_controller_get_instance();
             map_controller_refresh_paths(controller);
@@ -169,7 +167,7 @@ menu_cb_track_open(GtkMenuItem *item)
         }
         else
             popup_error(_window, _("Error parsing GPX file."));
-        g_free(buffer);
+        g_object_unref(stream);
     }
 
     return TRUE;
@@ -180,7 +178,7 @@ menu_cb_track_save(GtkMenuItem *item)
 {
     GOutputStream *handle;
 
-    if(display_open_file(GTK_WINDOW(_window), NULL, &handle, NULL,
+    if(display_open_file(GTK_WINDOW(_window), NULL, &handle,
                 NULL, &_track_file_uri, GTK_FILE_CHOOSER_ACTION_SAVE))
     {
         if(map_gpx_path_write(&_track, handle))
