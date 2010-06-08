@@ -2358,29 +2358,15 @@ poi_import_dialog(const MapPoint *point)
 {
     GtkWidget *dialog = NULL;
     gboolean success = FALSE;
+    gchar *bytes = NULL;
+    gsize size;
 
-    dialog = hildon_file_chooser_dialog_new(GTK_WINDOW(_window),
-            GTK_FILE_CHOOSER_ACTION_OPEN);
-
-    gtk_widget_show_all(dialog);
-
-    while(!success && gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_OK)
+    if (display_open_file(GTK_WINDOW(_window), &bytes, NULL, &size,
+                          NULL, NULL, GTK_FILE_CHOOSER_ACTION_OPEN))
     {
-        gchar *file_uri_str = NULL;
-        gchar *bytes = NULL;
-        gint size;
-        GnomeVFSResult vfs_result;
         GList *poi_list = NULL;
 
-        file_uri_str = gtk_file_chooser_get_uri(GTK_FILE_CHOOSER(dialog));
-
-        /* Parse the given file as GPX. */
-        if(GNOME_VFS_OK != (vfs_result = gnome_vfs_read_entire_file(
-                        file_uri_str, &size, &bytes)))
-        {
-            popup_error(dialog, gnome_vfs_result_to_string(vfs_result));
-        }
-        else if(map_gpx_poi_parse(bytes, size, &poi_list))
+        if(map_gpx_poi_parse(bytes, size, &poi_list))
         {
             static GtkWidget *cat_dialog = NULL;
             static GtkWidget *cmb_category = NULL;
@@ -2392,7 +2378,7 @@ poi_import_dialog(const MapPoint *point)
                 GtkWidget *hbox;
                 GtkWidget *label;
                 cat_dialog = gtk_dialog_new_with_buttons(_("Default Category"),
-                        GTK_WINDOW(dialog), GTK_DIALOG_MODAL,
+                        GTK_WINDOW(_window), GTK_DIALOG_MODAL,
                         GTK_STOCK_OK, GTK_RESPONSE_ACCEPT,
                         GTK_STOCK_CANCEL, GTK_RESPONSE_REJECT,
                         NULL);
@@ -2455,12 +2441,8 @@ poi_import_dialog(const MapPoint *point)
         else
             popup_error(dialog, _("Error parsing GPX file."));
 
-        g_free(file_uri_str);
         g_free(bytes);
     }
-
-    /* Hide the dialog. */
-    gtk_widget_destroy(dialog);
 
     return success;
 }
