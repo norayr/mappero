@@ -142,12 +142,11 @@ route_download_and_setup(MapPath *path, const gchar *source_url,
     gchar *from_escaped;
     gchar *to_escaped;
     gchar *buffer;
-    gchar *bytes = NULL;
-    gint size;
-    GnomeVFSResult vfs_result;
+    GFile *file;
+    GInputStream *stream;
 
-    from_escaped = gnome_vfs_escape_string(from);
-    to_escaped = gnome_vfs_escape_string(to);
+    from_escaped = g_uri_escape_string(from, NULL, FALSE);
+    to_escaped = g_uri_escape_string(to, NULL, FALSE);
     buffer = g_strdup_printf(source_url, from_escaped, to_escaped);
     g_free(from_escaped);
     g_free(to_escaped);
@@ -160,30 +159,28 @@ route_download_and_setup(MapPath *path, const gchar *source_url,
     }
 
     /* Attempt to download the route from the server. */
-    vfs_result = gnome_vfs_read_entire_file(buffer, &size, &bytes);
+    file = g_file_new_for_uri(buffer);
+    g_debug("uri: %s", buffer);
     g_free (buffer);
+    stream = (GInputStream *)g_file_read(file, NULL, error);
 
-    if (vfs_result != GNOME_VFS_OK)
-    {
-        g_set_error(error, MAP_ERROR, MAP_ERROR_NETWORK,
-                    gnome_vfs_result_to_string(vfs_result));
+    if (G_UNLIKELY(*error != NULL))
         goto finish;
-    }
 
-    if (strncmp(bytes, "<?xml", 5))
+    /* TODO: remove last parameter, add error */
+    if (!map_gpx_path_parse(path, stream, FALSE))
     {
-        /* Not an XML document - must be bad locations. */
         g_set_error(error, MAP_ERROR, MAP_ERROR_INVALID_ADDRESS,
                     _("Invalid source or destination."));
         goto finish;
     }
 
-    /* TODO: remove last parameter, add error */
-    map_gpx_path_parse(path, bytes, size, FALSE);
     add_directions(path);
 
 finish:
-    g_free(bytes);
+    if (stream)
+        g_object_unref(stream);
+    g_object_unref(file);
 }
 
 static const gchar *
