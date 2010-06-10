@@ -425,12 +425,12 @@ map_path_merge(MapPath *src_path, MapPath *dest_path, MapPathMergePolicy policy)
         /* Append waypoints from src to dest->. */
         map_path_wresize(dest, (dest->wtail - dest->whead)
                          + (src->wtail - src->whead) + 2 + ARRAY_CHUNK_SIZE);
-        for(curr = src->whead - 1; curr++ != src->wtail; )
+        for (curr = src->whead; curr != src->wtail; curr++)
         {
-            (++(dest->wtail))->point =
+            map_path_make_waypoint_full(dest,
                 map_path_first(dest) + num_dest_points
-                + (curr->point - src_first);
-            dest->wtail->desc = curr->desc;
+                + (curr->point - src_first),
+                curr->dir, curr->desc);
         }
 
         /* Adjust the indexes of the lines and concatenate the lists */
