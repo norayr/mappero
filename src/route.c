@@ -294,6 +294,7 @@ map_route_take_path(MapPath *path, MapPathMergePolicy policy)
     MapController *controller = map_controller_get_instance();
 
     map_path_merge(path, &_route.path, policy);
+    map_path_unset(path);
     path_save_route_to_db();
 
     /* Find the nearest route point, if we're connected. */

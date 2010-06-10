@@ -167,8 +167,7 @@ route_download_and_setup(MapPath *path, const gchar *source_url,
     if (G_UNLIKELY(*error != NULL))
         goto finish;
 
-    /* TODO: remove last parameter, add error */
-    if (!map_gpx_path_parse(path, stream, FALSE))
+    if (!map_gpx_path_parse(stream, path))
     {
         g_set_error(error, MAP_ERROR, MAP_ERROR_INVALID_ADDRESS,
                     _("Invalid source or destination."));
@@ -242,9 +241,9 @@ map_google_calculate_route(MapRouter *router, const MapRouterQuery *query,
     else
     {
         callback(router, NULL, error, user_data);
-        map_path_unset(&path);
         g_error_free(error);
     }
+    map_path_unset(&path);
 }
 
 static void

@@ -70,8 +70,6 @@ geocode_from_route_cb(MapRouter *router, MapPath *path, const GError *error,
     {
         if (map_path_len(path) > 0)
             point = map_path_first(path)->unit;
-
-        map_path_unset(path);
     }
 
     mgd->callback(router, point, error, mgd->user_data);

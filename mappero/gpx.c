@@ -66,7 +66,7 @@ struct _SaxData {
 typedef struct _PathSaxData PathSaxData;
 struct _PathSaxData {
     SaxData sax_data;
-    MapPath path;
+    MapPath *path;
     MapPathPoint pt;
     MapDirection dir;
     gchar *desc;
@@ -346,7 +346,7 @@ gpx_path_end_element(PathSaxData *data, const xmlChar *name)
             {
                 if(data->sax_data.at_least_one_trkpt)
                 {
-                    map_path_append_break(&data->path);
+                    map_path_append_break(data->path);
                 }
                 data->sax_data.state = INSIDE_PATH;
             }
@@ -357,10 +357,10 @@ gpx_path_end_element(PathSaxData *data, const xmlChar *name)
             if(!strcmp((gchar*)name, "trkpt"))
             {
                 MapPathPoint *p;
-                p = map_path_append_point_fast(&data->path, &data->pt);
+                p = map_path_append_point_fast(data->path, &data->pt);
                 if (data->desc)
                 {
-                    map_path_make_waypoint_full(&data->path, p,
+                    map_path_make_waypoint_full(data->path, p,
                                                 data->dir, data->desc);
                     data->desc = NULL;
                 }
@@ -514,13 +514,12 @@ parse_xml_stream(GInputStream *stream, xmlSAXHandler *sax_handler, void *data)
 }
 
 gboolean
-map_gpx_path_parse(MapPath *to_replace, GInputStream *stream, gint policy_old)
+map_gpx_path_parse(GInputStream *stream, MapPath *path)
 {
     PathSaxData data;
     xmlSAXHandler sax_handler;
-    MapPathMergePolicy policy;
 
-    map_path_init(&data.path);
+    data.path = path;
     data.desc = NULL;
     data.sax_data.state = START;
     data.sax_data.chars = g_string_new("");
@@ -542,14 +541,7 @@ map_gpx_path_parse(MapPath *to_replace, GInputStream *stream, gint policy_old)
         return FALSE;
     }
 
-    if (policy_old == 1)
-        policy = MAP_PATH_MERGE_POLICY_REPLACE;
-    else if (policy_old == 0)
-        policy = MAP_PATH_MERGE_POLICY_APPEND;
-    else
-        policy = MAP_PATH_MERGE_POLICY_PREPEND;
-    map_path_append_point_end(&data.path);
-    map_path_merge(&data.path, to_replace, policy);
+    map_path_append_point_end(data.path);
 
     return TRUE;
 }

@@ -77,12 +77,17 @@ menu_cb_route_open(GtkMenuItem *item)
     if(display_open_file(GTK_WINDOW(_window), &stream, NULL,
                 &_route_dir_uri, NULL, GTK_FILE_CHOOSER_ACTION_OPEN))
     {
-        /* If auto is enabled, append the route, otherwise replace it. */
-        if(map_gpx_path_parse(map_route_get_path(), stream,
-                              autoroute_enabled() ? 0 : 1))
+        MapPath path;
+
+        map_path_init(&path);
+        if (map_gpx_path_parse(stream, &path))
         {
             MapController *controller = map_controller_get_instance();
 
+            /* If auto is enabled, append the route, otherwise replace it. */
+            map_path_merge(&path, map_route_get_path(), autoroute_enabled() ?
+                           MAP_PATH_MERGE_POLICY_APPEND :
+                           MAP_PATH_MERGE_POLICY_REPLACE);
             path_save_route_to_db();
 
             cancel_autoroute();
@@ -95,6 +100,7 @@ menu_cb_route_open(GtkMenuItem *item)
         }
         else
             popup_error(_window, _("Error parsing GPX file."));
+        map_path_unset(&path);
         g_object_unref(stream);
     }
 
@@ -159,14 +165,20 @@ menu_cb_track_open(GtkMenuItem *item)
     if(display_open_file(GTK_WINDOW(_window), &stream, NULL,
                 NULL, &_track_file_uri, GTK_FILE_CHOOSER_ACTION_OPEN))
     {
-        if(map_gpx_path_parse(&_track, stream, -1))
+        MapPath path;
+
+        map_path_init(&path);
+        if (map_gpx_path_parse(stream, &path))
         {
             MapController *controller = map_controller_get_instance();
+
+            map_path_merge(&path, &_track, MAP_PATH_MERGE_POLICY_PREPEND);
             map_controller_refresh_paths(controller);
             MACRO_BANNER_SHOW_INFO(_window, _("Track Opened"));
         }
         else
             popup_error(_window, _("Error parsing GPX file."));
+        map_path_unset(&path);
         g_object_unref(stream);
     }
 

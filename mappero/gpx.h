@@ -27,8 +27,7 @@
 #include <gio/gio.h>
 #include <gtk/gtk.h>
 
-gboolean map_gpx_path_parse(MapPath *to_replace, GInputStream *stream,
-                            gint policy_old);
+gboolean map_gpx_path_parse(GInputStream *stream, MapPath *path);
 gboolean map_gpx_path_write(MapPath *path, GOutputStream *stream);
 
 gint map_gpx_poi_parse(GInputStream *stream, GList **list);

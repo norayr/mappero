@@ -1547,6 +1547,7 @@ calculate_route_with_units(MapRouter *router,
             map_path_init(&path);
             ro_route_to_path(&routes.routes[id], &path);
             callback(router, &path, NULL, user_data);
+            map_path_unset(&path);
         }
         else
         {
