@@ -365,6 +365,15 @@ map_path_optimize(MapPath *path)
     path->points_optimized = map_path_len(path);
 }
 
+/**
+ * map_path_merge:
+ * @src_path: source path.
+ * @dest_path: destination path.
+ * @policy: merge algorithm.
+ *
+ * This function prepends, sets or appends @src_path into @dest_path.
+ * Note that @src_path might be altered too.
+ */
 void
 map_path_merge(MapPath *src_path, MapPath *dest_path, MapPathMergePolicy policy)
 {
@@ -454,6 +463,7 @@ map_path_merge(MapPath *src_path, MapPath *dest_path, MapPathMergePolicy policy)
          * would free the string desc's that we just moved to data.route. */
         g_free(src->_head);
         g_free(src->whead);
+        memset(src_path, 0, sizeof(MapPath));
         if (policy == MAP_PATH_MERGE_POLICY_PREPEND)
             (*dest_path) = *dest;
     }
@@ -464,6 +474,7 @@ map_path_merge(MapPath *src_path, MapPath *dest_path, MapPathMergePolicy policy)
         (*dest_path) = *src_path;
         map_path_resize(dest_path, map_path_len(dest_path) + ARRAY_CHUNK_SIZE);
         map_path_wresize(dest_path, map_path_len(dest_path) + ARRAY_CHUNK_SIZE);
+        memset(src_path, 0, sizeof(MapPath));
     }
     DEBUG("total length: %.2f", dest_path->length);
 }
