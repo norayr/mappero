@@ -34,7 +34,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define SOUND_DIR "file:///usr/share/sounds/mapper/"
+#define SOUND_DIR "file:///usr/share/sounds/mapper"
+#define URI_PREFIX_LEN  7
 
 /* these need to be aligned with the MapDirection enum values */
 static const gchar *dir_names[] = {
@@ -216,11 +217,11 @@ play_direction(MapDirection dir)
     lang = g_getenv("LC_MESSAGES");
     if (!lang) lang = "";
 
-    i = g_snprintf(path, sizeof(path), SOUND_DIR "%s/", lang);
-    if (!g_file_test(path, G_FILE_TEST_IS_DIR))
+    i = g_snprintf(path, sizeof(path), SOUND_DIR "/%s", lang);
+    if (!g_file_test(path + URI_PREFIX_LEN, G_FILE_TEST_IS_DIR))
         i = g_snprintf(path, sizeof(path), SOUND_DIR);
 
-    g_snprintf(path + i, sizeof(path) - i, "%s.spx", direction_name);
+    g_snprintf(path + i, sizeof(path) - i, "/%s.spx", direction_name);
 
     DEBUG("Playing %s", path);
     play_sound_with_alert(path);
