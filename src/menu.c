@@ -84,6 +84,7 @@ menu_cb_route_open(GtkMenuItem *item)
         {
             MapController *controller = map_controller_get_instance();
 
+            map_path_infer_directions(&path);
             /* If auto is enabled, append the route, otherwise replace it. */
             map_path_merge(&path, map_route_get_path(), autoroute_enabled() ?
                            MAP_PATH_MERGE_POLICY_APPEND :

@@ -179,4 +179,6 @@ typedef struct {
 gboolean map_path_update_near_info(const MapPath *path, const MapPoint *p,
                                    MapRouteNearInfo *ni, gboolean local);
 
+void map_path_infer_directions(MapPath *path);
+
 #endif /* MAP_PATH_H */
