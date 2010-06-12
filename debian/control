@@ -26,7 +26,7 @@ Standards-Version: 3.6.0
 
 Package: maemo-mapper
 Architecture: armel i386
-Depends: ${shlibs:Depends}, gstreamer0.10-plugins-good-extra
+Depends: ${shlibs:Depends}, gstreamer0.10-plugins-good-extra, ogg-support
 Suggests: flite, proj
 Description: Geographical mapping and driving directions.
  Specifically designed for the Maemo platform and the Nokia 900 form factor.
