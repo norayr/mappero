@@ -16,6 +16,7 @@ mappero_include_HEADERS = \
 	error.h \
 	globals.h \
 	gpx.h \
+	kml.h \
 	loader.h \
 	path.h \
 	poi.h \
@@ -27,6 +28,7 @@ libmappero_la_SOURCES = \
 	debug.c \
 	error.c \
 	gpx.c \
+	kml.c \
 	loader.c \
 	path.c \
 	router.c \
