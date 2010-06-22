@@ -288,7 +288,7 @@ route_show_distance_to_next()
     }
 }
 
-static void
+void
 map_route_take_path(MapPath *path, MapPathMergePolicy policy)
 {
     MapController *controller = map_controller_get_instance();
