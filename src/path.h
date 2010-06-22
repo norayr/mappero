@@ -33,4 +33,6 @@ void path_destroy(void);
 
 void map_path_save_route(MapPath *path);
 
+gboolean map_path_load_from_stream(GInputStream *stream, MapPath *path);
+
 #endif /* ifndef MAEMO_MAPPER_PATH_H */

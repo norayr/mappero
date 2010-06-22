@@ -80,7 +80,7 @@ menu_cb_route_open(GtkMenuItem *item)
         MapPath path;
 
         map_path_init(&path);
-        if (map_gpx_path_parse(stream, &path))
+        if (map_path_load_from_stream(stream, &path))
         {
             map_path_infer_directions(&path);
             map_route_take_path(&path, MAP_PATH_MERGE_POLICY_REPLACE);
@@ -156,7 +156,7 @@ menu_cb_track_open(GtkMenuItem *item)
         MapPath path;
 
         map_path_init(&path);
-        if (map_gpx_path_parse(stream, &path))
+        if (map_path_load_from_stream(stream, &path))
         {
             MapController *controller = map_controller_get_instance();
 
