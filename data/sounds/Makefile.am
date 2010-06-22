@@ -9,4 +9,11 @@ navigation_sounds_DATA = \
 	turn-left.spx \
 	turn-right.spx
 
-SUBDIRS = en_US
+navigation_languages = de_DE en_US
+install-data-local:
+	for lang in $(navigation_languages); \
+	do \
+	    install -d $(DESTDIR)$(navigation_soundsdir)/$$lang; \
+	    install -c -m 644 $$lang/*.spx $(DESTDIR)$(navigation_soundsdir)/$$lang; \
+	done
+
