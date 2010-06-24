@@ -733,7 +733,7 @@ void
 map_path_infer_directions(MapPath *path)
 {
     MapPathWayPoint *curr;
-    for (curr = path->whead; curr != path->wtail; curr++)
+    for (curr = path->whead; curr < path->wtail; curr++)
     {
         if (curr->dir == MAP_DIRECTION_UNKNOWN)
             curr->dir = infer_direction(curr->desc);
