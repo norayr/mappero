@@ -586,9 +586,13 @@ path_init_late()
             popup_error(_window, buffer);
         }
         else
-        {   
-            read_path_from_db(map_route_get_path(), _route_stmt_select);
-            map_route_path_changed();
+        {
+            /* don't load the route if we got one already */
+            if (!map_route_exists())
+            {
+                read_path_from_db(map_route_get_path(), _route_stmt_select);
+                map_route_path_changed();
+            }
             read_path_from_db(&_track, _track_stmt_select);
         }
     }
