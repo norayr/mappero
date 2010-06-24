@@ -1614,7 +1614,7 @@ map_reittiopas_geocode(MapRouter *router, const gchar *address,
                        MapRouterGeocodeCb callback, gpointer user_data)
 {
     GError *error = NULL;
-    gfloat lat, lon;
+    gfloat lat = 0, lon = 0;
     MapPoint p = { 0, 0 };
 
     fetch_geocode(address, &lat, &lon, &error);

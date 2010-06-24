@@ -1148,7 +1148,7 @@ map_menu_maps()
     HildonTouchSelector *selector;
     GList *list, *repositories;
     Repository *current;
-    gint i, active, response;
+    gint i, active = 0, response;
     enum {
         MAPS_REPOSITORIES,
         MAPS_TILES,

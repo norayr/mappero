@@ -41,8 +41,7 @@ libmappero_la_CFLAGS = \
 	$(GTK_CFLAGS) \
 	$(LIBXML2_CFLAGS) \
 	-I$(top_srcdir) \
-	-DG_LOG_DOMAIN=\"mappero\" \
-	-std=c99 -Wall -Wno-switch
+	-DG_LOG_DOMAIN=\"mappero\"
 
 libmappero_la_LIBADD = \
 	$(GCONF_LIBS) \
