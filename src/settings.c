@@ -1719,27 +1719,6 @@ settings_init(GConfClient *gconf_client)
     /* Get GPS Info flag.  Default is FALSE. */
     _gps_info = gconf_client_get_bool(gconf_client, GCONF_KEY_GPS_INFO, NULL);
 
-    /* Get default router. */
-    str = gconf_client_get_string(gconf_client, GCONF_KEY_ROUTER_NAME, NULL);
-    if (str)
-    {
-        const GSList *list;
-        for (list = map_controller_list_plugins(controller); list != NULL;
-             list = list->next)
-        {
-            MapRouter *router = list->data;
-
-            if (!MAP_IS_ROUTER(router)) continue;
-
-            if (strcmp(map_router_get_name(router), str) == 0)
-            {
-                map_controller_set_default_router(controller, router);
-                break;
-            }
-        }
-        g_free(str);
-    }
-
     /* Get Route Download Radius.  Default is 4. */
     value = gconf_client_get(gconf_client, GCONF_KEY_ROUTE_DL_RADIUS, NULL);
     if(value)

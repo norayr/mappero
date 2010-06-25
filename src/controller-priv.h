@@ -21,6 +21,7 @@
 #ifndef CONTROLLER_PRIV_H
 #define CONTROLLER_PRIV_H
 
+#include <gconf/gconf-client.h>
 #include <location/location-gpsd-control.h>
 #include <location/location-gps-device.h>
 
@@ -29,6 +30,7 @@ struct _MapControllerPrivate
     GList *repositories_list;
     GList *tile_sources_list;
     Repository *repository;
+    GConfClient *gconf_client;
     GtkWindow *window;
     MapScreen *screen;
     MapOrientation orientation;
@@ -52,6 +54,7 @@ struct _MapControllerPrivate
 
     guint source_map_center;
     guint source_download_precache;
+    guint source_init_late;
 
     guint is_disposed : 1;
     guint device_active : 1;

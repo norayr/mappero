@@ -44,7 +44,6 @@
 #include "tile_source.h"
 #include "util.h"
 
-#include <gconf/gconf-client.h>
 #include <hildon/hildon-banner.h>
 #include <mappero/debug.h>
 #include <mappero/loader.h>
@@ -209,15 +208,52 @@ map_controller_dispose(GObject *object)
         priv->plugins = g_slist_delete_link(priv->plugins, priv->plugins);
     }
 
+    if (priv->gconf_client)
+    {
+        g_object_unref(priv->gconf_client);
+        priv->gconf_client = NULL;
+    }
+
+    if (priv->source_init_late != 0)
+    {
+        g_source_remove(priv->source_init_late);
+        priv->source_init_late = 0;
+    }
+
     G_OBJECT_CLASS(map_controller_parent_class)->dispose(object);
+}
+
+static gboolean
+map_controller_init_late(MapController *controller)
+{
+    MapControllerPrivate *priv = controller->priv;
+    GList *list;
+
+    priv->source_init_late = 0;
+
+    /* register plugins */
+    map_loader_read_dir(MAP_PLUGIN_DIR);
+    for (list = map_loader_get_objects(); list != NULL; list = list->next)
+    {
+        map_controller_register_plugin(controller, list->data);
+        g_object_unref(list->data);
+    }
+
+    /* Load router settings */
+    map_controller_load_routers_options(controller, priv->gconf_client);
+
+    /* free the GConf client, we don't need it anymore */
+    gconf_client_clear_cache(priv->gconf_client);
+    g_object_unref(priv->gconf_client);
+    priv->gconf_client = NULL;
+
+    return FALSE;
 }
 
 static void
 map_controller_init(MapController *controller)
 {
     MapControllerPrivate *priv;
-    GConfClient *gconf_client = gconf_client_get_default();
-    GList *list;
 
     TIME_START();
 
@@ -232,30 +268,20 @@ map_controller_init(MapController *controller)
     /* until we know the display state, assume it's on */
     priv->display_on = TRUE;
 
-    gconf_client_preload(gconf_client, GCONF_KEY_PREFIX,
+    priv->gconf_client = gconf_client_get_default();
+    gconf_client_preload(priv->gconf_client, GCONF_KEY_PREFIX,
                          GCONF_CLIENT_PRELOAD_RECURSIVE, NULL);
-
-    /* register plugins */
-    map_loader_read_dir(MAP_PLUGIN_DIR);
-    for (list = map_loader_get_objects(); list != NULL; list = list->next)
-    {
-        map_controller_register_plugin(controller, list->data);
-        g_object_unref(list->data);
-    }
 
     /* Load repositories. It is important to load repositories first, because settings need
      * controller for transformations. */
-    map_controller_load_repositories(controller, gconf_client);
+    map_controller_load_repositories(controller, priv->gconf_client);
 
     /* init GPS */
-    map_controller_gps_init(controller, gconf_client);
+    map_controller_gps_init(controller, priv->gconf_client);
     g_idle_add((GSourceFunc)activate_gps, controller);
 
     /* Load settings */
-    settings_init(gconf_client);
-
-    /* Load router settings */
-    map_controller_load_routers_options(controller, gconf_client);
+    settings_init(priv->gconf_client);
 
     priv->screen = g_object_new(MAP_TYPE_SCREEN, NULL);
     map_screen_show_compass(priv->screen, _show_comprose);
@@ -265,8 +291,11 @@ map_controller_init(MapController *controller)
     /* TODO: eliminate global _next_center, _next_zoom, _center, _zoom, etc values */
     map_controller_set_center(controller, _next_center, _next_zoom);
 
-    gconf_client_clear_cache(gconf_client);
-    g_object_unref(gconf_client);
+    priv->source_init_late =
+        g_idle_add_full(G_PRIORITY_LOW,
+                        (GSourceFunc)map_controller_init_late, controller,
+                        NULL);
+
     TIME_STOP();
 }
 
@@ -1323,16 +1352,32 @@ map_controller_get_default_router(MapController *self)
 void
 map_controller_load_routers_options(MapController *self, GConfClient *gconf_client)
 {
+    gchar *router_name;
     GSList *p;
 
     g_return_if_fail(MAP_IS_CONTROLLER(self));
     p = self->priv->plugins;
 
+    /* Get default router. */
+    router_name = gconf_client_get_string(gconf_client,
+                                          GCONF_KEY_ROUTER_NAME, NULL);
+    if (!router_name) router_name = g_strdup("google");
     while (p) {
         MapRouter *router = p->data;
+
+        if (!MAP_IS_ROUTER(router)) continue;
         map_router_load_options(router, gconf_client);
+
+        if (router_name &&
+            strcmp(map_router_get_name(router), router_name) == 0)
+        {
+            map_controller_set_default_router(self, router);
+        }
+
         p = p->next;
     }
+
+    g_free(router_name);
 }
 
 
