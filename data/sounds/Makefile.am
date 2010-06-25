@@ -9,7 +9,11 @@ navigation_sounds_DATA = \
 	turn-left.spx \
 	turn-right.spx
 
-navigation_languages = de_DE en_US
+navigation_languages = \
+	de_DE \
+	en_US \
+	fi_FI
+
 install-data-local:
 	for lang in $(navigation_languages); \
 	do \
