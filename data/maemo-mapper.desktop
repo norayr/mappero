@@ -11,3 +11,4 @@ X-HildonDesk-ShowInToolbar=true
 X-Osso-Service=com.gnuite.maemo_mapper
 X-Osso-Type=application/x-executable
 Terminal=false
+MimeType=application/vnd.google-earth.kml+xml;application/gpx+xml;

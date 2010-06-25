@@ -80,23 +80,10 @@ menu_cb_route_open(GtkMenuItem *item)
         MapPath path;
 
         map_path_init(&path);
-        if (map_gpx_path_parse(stream, &path))
+        if (map_path_load_from_stream(stream, &path))
         {
-            MapController *controller = map_controller_get_instance();
-
             map_path_infer_directions(&path);
-            /* If auto is enabled, append the route, otherwise replace it. */
-            map_path_merge(&path, map_route_get_path(), autoroute_enabled() ?
-                           MAP_PATH_MERGE_POLICY_APPEND :
-                           MAP_PATH_MERGE_POLICY_REPLACE);
-            path_save_route_to_db();
-
-            cancel_autoroute();
-
-            /* Find the nearest route point, if we're connected. */
-            route_find_nearest_point();
-
-            map_controller_refresh_paths(controller);
+            map_route_take_path(&path, MAP_PATH_MERGE_POLICY_REPLACE);
             MACRO_BANNER_SHOW_INFO(_window, _("Route Opened"));
         }
         else
@@ -169,7 +156,7 @@ menu_cb_track_open(GtkMenuItem *item)
         MapPath path;
 
         map_path_init(&path);
-        if (map_gpx_path_parse(stream, &path))
+        if (map_path_load_from_stream(stream, &path))
         {
             MapController *controller = map_controller_get_instance();
 
@@ -1161,7 +1148,7 @@ map_menu_maps()
     HildonTouchSelector *selector;
     GList *list, *repositories;
     Repository *current;
-    gint i, active, response;
+    gint i, active = 0, response;
     enum {
         MAPS_REPOSITORIES,
         MAPS_TILES,

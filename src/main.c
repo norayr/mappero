@@ -67,6 +67,7 @@
 #include "menu.h"
 #include "path.h"
 #include "poi.h"
+#include "route.h"
 #include "screen.h"
 #include "settings.h"
 #include "util.h"
@@ -88,6 +89,46 @@ static gboolean _conic_conn_failed = FALSE;
 static GMutex *_conic_connection_mutex = NULL;
 static GCond *_conic_connection_cond = NULL;
 #endif
+
+static void
+mime_cb(gpointer data, gint argc, gchar **argv)
+{
+    GFile *file;
+    GInputStream *stream;
+    GError *error = NULL;
+    MapPath path;
+
+    DEBUG("%d files, first is %s", argc, argc > 0 ? argv[0] : "--");
+    if (G_UNLIKELY(argc == 0)) return;
+
+    /* The only file we support opening at the moment is a route */
+    file = g_file_new_for_path(argv[0]);
+    g_assert(file != NULL);
+
+    stream = (GInputStream *)g_file_read(file, NULL, &error);
+    if (G_UNLIKELY(error != NULL))
+    {
+        gchar buffer[BUFFER_SIZE];
+        snprintf(buffer, sizeof(buffer),
+                 "%s:\n%s", _("Failed to open file for reading"),
+                 error->message);
+        popup_error(_window, buffer);
+        g_error_free(error);
+        return;
+    }
+
+    map_path_init(&path);
+    if (map_path_load_from_stream(stream, &path))
+    {
+        map_path_infer_directions(&path);
+        map_route_take_path(&path, MAP_PATH_MERGE_POLICY_REPLACE);
+        MACRO_BANNER_SHOW_INFO(_window, _("Route Opened"));
+    }
+    map_path_unset(&path);
+
+    g_object_unref(stream);
+    g_object_unref(file);
+}
 
 static DBusHandlerResult
 dbus_handle_mce_message(DBusConnection *conn, DBusMessage *msg, gpointer data)
@@ -371,6 +412,7 @@ maemo_mapper_init(gint argc, gchar **argv)
 #endif
 
     osso_hw_set_event_cb(_osso, NULL, osso_cb_hw_state, NULL);
+    osso_mime_set_cb(_osso, mime_cb, NULL);
 
     /* Lets go fullscreen if so requested in saved config */
     if (_fullscreen) {

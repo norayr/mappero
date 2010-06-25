@@ -486,16 +486,15 @@ gpx_path_end_element(PathSaxData *data, const xmlChar *name)
     }
 }
 
-static gboolean
+static void
 parse_xml_stream(GInputStream *stream, xmlSAXHandler *sax_handler, void *data)
 {
     xmlParserCtxtPtr ctx;
     gchar buffer[1024];
     gssize len;
-    int ret;
 
     len = g_input_stream_read(stream, buffer, 4, NULL, NULL);
-    if (len <= 0) return FALSE;
+    if (len <= 0) return;
 
     ctx = xmlCreatePushParserCtxt(sax_handler, data,
                                   buffer, len, NULL);
@@ -510,7 +509,6 @@ parse_xml_stream(GInputStream *stream, xmlSAXHandler *sax_handler, void *data)
     if (ctx->myDoc)
         xmlFreeDoc(ctx->myDoc);
     xmlFreeParserCtxt(ctx);
-    return ret == 0;
 }
 
 gboolean

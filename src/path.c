@@ -45,6 +45,8 @@
 #include "screen.h"
 
 #include <mappero/debug.h>
+#include <mappero/gpx.h>
+#include <mappero/kml.h>
 
 /* uncertainty below which a GPS position is considered to be precise enough 
  * to be added to the track (in metres) */
@@ -584,9 +586,13 @@ path_init_late()
             popup_error(_window, buffer);
         }
         else
-        {   
-            read_path_from_db(map_route_get_path(), _route_stmt_select);
-            map_route_path_changed();
+        {
+            /* don't load the route if we got one already */
+            if (!map_route_exists())
+            {
+                read_path_from_db(map_route_get_path(), _route_stmt_select);
+                map_route_path_changed();
+            }
             read_path_from_db(&_track, _track_stmt_select);
         }
     }
@@ -620,5 +626,16 @@ path_destroy()
 
     map_path_unset(&_track);
     map_route_destroy();
+}
+
+gboolean
+map_path_load_from_stream(GInputStream *stream, MapPath *path)
+{
+    if (map_gpx_path_parse(stream, path))
+        return TRUE;
+
+    /* rewing the stream */
+    g_seekable_seek(G_SEEKABLE(stream), 0, G_SEEK_SET, NULL, NULL);
+    return map_kml_path_parse(stream, path);
 }
 

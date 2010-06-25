@@ -23,6 +23,9 @@ service_DATA = com.gnuite.maemo_mapper.service
 desktopdir = $(datadir)/applications/hildon
 desktop_DATA = maemo-mapper.desktop
 
+mimedir = $(datadir)/share/mime/packages
+mime_DATA = mappero-mime.xml
+
 icon_reittiopas = \
 	icons/reittiopas/maemo-mapper-bus.png \
 	icons/reittiopas/maemo-mapper-ferry.png \

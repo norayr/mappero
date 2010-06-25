@@ -38,7 +38,7 @@ typedef struct {
 
 /* since the MapLine fits in a pointer, we directly store it in the GList
  * data field */
-#define MAP_LINE(list)  ((MapLine *)(&(list->data)))
+#define MAP_LINE(list)  ((MapLine *)(void *)(&(list->data)))
 #define MAP_LINE_NEW(index) GINT_TO_POINTER(index)
 
 /**
@@ -75,7 +75,7 @@ infer_direction(const gchar *text)
     else
     {
         static const gchar *ordinals[] = { "1st ", "2nd ", "3rd ", NULL };
-        gchar *ptr;
+        gchar *ptr = NULL;
         gint i;
 
         for (i = 0; ordinals[i] != NULL; i++)
@@ -733,7 +733,7 @@ void
 map_path_infer_directions(MapPath *path)
 {
     MapPathWayPoint *curr;
-    for (curr = path->whead; curr <= path->wtail; curr++)
+    for (curr = path->whead; curr < path->wtail; curr++)
     {
         if (curr->dir == MAP_DIRECTION_UNKNOWN)
             curr->dir = infer_direction(curr->desc);

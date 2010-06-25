@@ -59,5 +59,6 @@ MapPathWayPoint * find_nearest_waypoint(const MapPoint *p);
 gboolean route_download(gchar *to);
 void route_add_way_dialog(const MapPoint *p);
 
+void map_route_take_path(MapPath *path, MapPathMergePolicy policy);
 
 #endif /* MAP_ROUTE_H */
