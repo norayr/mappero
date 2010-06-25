@@ -1,3 +1,15 @@
+maemo-mapper (3.0+beta9) unstable; urgency=low
+
+  * Reduced memory consumption by a few megabytes.
+  * Fix playing of language navigation files.
+  * Add navigation voice for de_DE (courtesy of jav_maemo).
+  * Add navigation voice for fi_FI (courtesy of Steffe69).
+  * Create libmappero, make plugins dynamically loadable.
+  * Support for parsing KML route files.
+  * Install Mappero as MIME handler for GPX and KML files.
+
+ -- Alberto Mardegan <mardy@users.sourceforge.net>  Fri, 25 Jun 2010 11:52:07 +0300
+
 maemo-mapper (3.0+beta8) unstable; urgency=low
 
   * Fix time for reittiopas router.

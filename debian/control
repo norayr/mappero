@@ -64,12 +64,19 @@ Description: Geographical mapping and driving directions.
  geo-related information.  It focuses in part on in-car navigation and
  usability.  Home page: http://www.mardy.it/mappero
 XSBC-Maemo-Display-Name: Mappero
-XB-Maemo-Upgrade-Description: English voice for navigation
- Add navigation voice for en_US locale (courtesy of jav_maemo).
+XB-Maemo-Upgrade-Description: Read routes in KML format
+ Reduced memory consumption by a few megabytes.
  .
- Correct time in reittiopas routes.
+ Fix playing of language navigation files.
  .
- Increase the distance of voice announcements.
+ Add navigation voice for de_DE (courtesy of jav_maemo).
+ Add navigation voice for fi_FI (courtesy of Steffe69).
+ .
+ Support for parsing KML route files.
+ .
+ Install Mappero as MIME handler for GPX and KML files.
+ .
+ Create libmappero, make plugins dynamically loadable.
 XSBC-Bugtracker: https://garage.maemo.org/tracker/?group_id=29
 XB-Maemo-Icon-26:
  iVBORw0KGgoAAAANSUhEUgAAABoAAAAaCAYAAACpSkzOAAAF/ElEQVRIS42WyXMbxxXGf92z
