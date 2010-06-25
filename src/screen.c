@@ -702,6 +702,8 @@ load_tiles_into_map(MapScreen *screen, Repository *repo, gint zoom,
                 tile = map_tile_load(repo->primary, zoom, tx, ty, &new_tile);
                 if (new_tile)
                     clutter_container_add_actor(tile_group, tile);
+                else
+                    clutter_actor_reparent(tile, priv->tile_group);
             }
 
             clutter_actor_set_position(tile,
@@ -723,6 +725,8 @@ load_tiles_into_map(MapScreen *screen, Repository *repo, gint zoom,
                         tile = map_tile_load(repo_layer->ts, zoom, tx, ty, &new_tile);
                         if (new_tile)
                             clutter_container_add_actor(layers_group, tile);
+                        else
+                            clutter_actor_reparent(tile, priv->layers_group);
                     }
 
                     clutter_actor_set_position(tile,
