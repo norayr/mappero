@@ -698,8 +698,6 @@ map_controller_set_center_no_act(MapController *self, MapPoint center,
     if (zoom >= 0)
         priv->zoom = zoom;
     priv->center = center;
-
-    map_controller_download_precache(self);
 }
 
 void
@@ -715,6 +713,7 @@ map_controller_set_center(MapController *self, MapPoint center, gint zoom)
 
     if (priv->display_on)
     {
+        map_controller_download_precache(self);
         if (priv->source_map_center == 0)
             priv->source_map_center =
                 g_idle_add((GSourceFunc)set_center_real, self);
