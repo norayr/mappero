@@ -1,20 +1,20 @@
 /*
  * Copyright (C) 2010 Alberto Mardegan <mardy@users.sourceforge.net>
  *
- * This file is part of Maemo Mapper.
+ * This file is part of Mappero.
  *
- * Maemo Mapper is free software: you can redistribute it and/or modify
+ * Mappero is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * Maemo Mapper is distributed in the hope that it will be useful,
+ * Mappero is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with Maemo Mapper.  If not, see <http://www.gnu.org/licenses/>.
+ * along with Mappero.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 #ifndef MAP_ROUTE_H
@@ -29,7 +29,7 @@ typedef struct _MapRoute MapRoute;
 extern MapRoute *_p_route;
 
 #define map_route_get() _p_route
-#define map_route_get_path() ((Path *)_p_route)
+#define map_route_get_path() ((MapPath *)_p_route)
 
 void map_route_clear(void);
 void map_route_destroy(void);
@@ -39,14 +39,14 @@ void map_route_destroy(void);
 
 void map_route_path_changed(void);
 
-WayPoint *map_route_get_next_waypoint();
+MapPathWayPoint *map_route_get_next_waypoint();
 gfloat map_route_get_distance_to_next_waypoint();
 
 /* TODO: rename and review these functions */
 void path_save_route_to_db(void);
 void route_find_nearest_point(void);
-gboolean route_calc_distance_to(const Point *point, gfloat *distance);
-gboolean route_show_distance_to(Point *point);
+gboolean route_calc_distance_to(const MapPathPoint *point, gfloat *distance);
+gboolean route_show_distance_to(MapPathPoint *point);
 
 void map_path_route_step(const MapGpsData *gps, gboolean newly_fixed);
 void path_reset_route(void);
@@ -54,7 +54,7 @@ void path_reset_route(void);
 void cancel_autoroute(void);
 gboolean autoroute_enabled(void);
 
-WayPoint * find_nearest_waypoint(const MapPoint *p);
+MapPathWayPoint * find_nearest_waypoint(const MapPoint *p);
 
 gboolean route_download(gchar *to);
 void route_add_way_dialog(const MapPoint *p);

@@ -3,20 +3,20 @@
 /*
  * Copyright (C) 2010 Alberto Mardegan <mardy@users.sourceforge.net>
  *
- * This file is part of Maemo Mapper.
+ * This file is part of Mappero.
  *
- * Maemo Mapper is free software: you can redistribute it and/or modify
+ * Mappero is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * Maemo Mapper is distributed in the hope that it will be useful,
+ * Mappero is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with Maemo Mapper.  If not, see <http://www.gnu.org/licenses/>.
+ * along with Mappero.  If not, see <http://www.gnu.org/licenses/>.
  */
 #define _XOPEN_SOURCE
 #ifdef HAVE_CONFIG_H
@@ -25,17 +25,19 @@
 
 #include "reittiopas.h"
 
-#include "data.h"
-#include "debug.h"
-#include "defines.h"
-#include "dialog.h"
-#include "error.h"
-#include "path.h"
+#define H_(String) dgettext("hildon-libs", String)
 
 #include <gconf/gconf-client.h>
+#include <glib/gi18n.h>
 #include <hildon/hildon-pannable-area.h>
 #include <hildon/hildon-picker-button.h>
+#include <libgnomevfs/gnome-vfs.h>
 #include <libxml/xmlreader.h>
+#include <mappero/debug.h>
+#include <mappero/error.h>
+#include <mappero/path.h>
+#include <mappero-extras/dialog.h>
+#include <mappero-extras/error.h>
 #include <math.h>
 #include <string.h>
 #include <time.h>
@@ -249,7 +251,7 @@ location2units(const MapLocation *loc, MapPoint *u)
         }
         if (ret)
         {
-            latlon2unit(lat, lon, u->x, u->y);
+            map_latlon2unit(lat, lon, u->x, u->y);
         }
     }
     else
@@ -413,7 +415,7 @@ kkj22unit(const KKJ2 *k, MapPoint *p)
 
     kkj22latlon(k, &lat, &lon);
 
-    latlon2unit(lat, lon, p->x, p->y);
+    map_latlon2unit(lat, lon, p->x, p->y);
 }
 
 static void
@@ -436,7 +438,7 @@ unit2kkj2(const MapPoint *p, KKJ2 *k)
 {
     MapGeo lat, lon;
 
-    unit2latlon(p->x, p->y, lat, lon);
+    map_unit2latlon(p->x, p->y, lat, lon);
 
     latlon2kkj2(lat, lon, k);
 }
@@ -816,7 +818,7 @@ handle_end_element(SaxData *data, const xmlChar *name)
 }
 
 static void
-ro_point_to_path_point(const RoPoint *point, Point *p)
+ro_point_to_path_point(const RoPoint *point, MapPathPoint *p)
 {
     kkj22unit(&point->kkj, &p->unit);
     p->time = point->departure;
@@ -824,16 +826,16 @@ ro_point_to_path_point(const RoPoint *point, Point *p)
 }
 
 static void
-ro_route_to_path(const RoRoute *route, Path *path)
+ro_route_to_path(const RoRoute *route, MapPath *path)
 {
-    Point *last = NULL;
+    MapPathPoint *last = NULL;
     GList *list;
 
     for (list = route->lines; list != NULL; list = list->next)
     {
         RoLine *line = list->data;
         RoPoint *point;
-        Point path_point;
+        MapPathPoint path_point;
         gint i;
 
         if (line->points->len < 2) continue;
@@ -871,7 +873,7 @@ ro_route_to_path(const RoRoute *route, Path *path)
 
         for (i = 1; i < line->points->len; i++)
         {
-            Point pt;
+            MapPathPoint pt;
             point = &g_array_index(line->points, RoPoint, i);
 
             ro_point_to_path_point(point, &pt);
@@ -1524,7 +1526,7 @@ calculate_route_with_units(MapRouter *router,
                            gpointer user_data)
 {
     MapReittiopas *self = MAP_REITTIOPAS(router);
-    Path path;
+    MapPath path;
     RoRoutes routes;
     RoQuery query;
     GError *error = NULL;
@@ -1545,6 +1547,7 @@ calculate_route_with_units(MapRouter *router,
             map_path_init(&path);
             ro_route_to_path(&routes.routes[id], &path);
             callback(router, &path, NULL, user_data);
+            map_path_unset(&path);
         }
         else
         {
@@ -1617,7 +1620,7 @@ map_reittiopas_geocode(MapRouter *router, const gchar *address,
     fetch_geocode(address, &lat, &lon, &error);
     if (!error)
     {
-        latlon2unit(lat, lon, p.x, p.y);
+        map_latlon2unit(lat, lon, p.x, p.y);
         DEBUG("Got lat lon: %.6f, %.6f, units %u, %u", lat, lon, p.x, p.y);
         callback(router, p, NULL, user_data);
     }
@@ -1947,5 +1950,19 @@ map_reittiopas_init(MapReittiopas *self)
 static void
 map_reittiopas_class_init(MapReittiopasClass *klass)
 {
+}
+
+const gchar * const *
+map_plugin_list_objects()
+{
+    static const gchar *ids[] = { "router", NULL };
+    return ids;
+}
+
+GObject *
+map_plugin_get_object(const gchar *id)
+{
+    g_return_val_if_fail(strcmp(id, "router") == 0, NULL);
+    return g_object_new(MAP_TYPE_REITTIOPAS, NULL);
 }
 

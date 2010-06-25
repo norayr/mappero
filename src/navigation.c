@@ -1,20 +1,20 @@
 /*
  * Copyright (C) 2010 Alberto Mardegan <mardy@users.sourceforge.net>
  *
- * This file is part of Maemo Mapper.
+ * This file is part of Mappero.
  *
- * Maemo Mapper is free software: you can redistribute it and/or modify
+ * Mappero is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * Maemo Mapper is distributed in the hope that it will be useful,
+ * Mappero is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with Maemo Mapper.  If not, see <http://www.gnu.org/licenses/>.
+ * along with Mappero.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 #ifdef HAVE_CONFIG_H
@@ -24,13 +24,13 @@
 #include "navigation.h"
 
 #include "data.h"
-#include "debug.h"
 #include "path.h"
 
 #include <canberra.h>
 #include <gst/gst.h>
 #include <hildon/hildon-banner.h>
 #include <hildon/hildon-sound.h>
+#include <mappero/debug.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -52,73 +52,8 @@ static const gchar *dir_names[] = {
 };
 
 static gfloat _initial_distance_from_waypoint = -1.f;
-static const WayPoint *_initial_distance_waypoint = NULL;
+static const MapPathWayPoint *_initial_distance_waypoint = NULL;
 static GstElement *_pipeline = NULL;
-
-/**
- * map_navigation_infer_direction:
- * @text: textual description of a waypoint.
- *
- * Tries to guess a #MapDirection from a text string. Ideally this function
- * should not exists, if all routers provided properly formatted directions.
- * This is just a hack to recognize google router descriptions, and should
- * probably belong there; it's here so that we can recognize directions in
- * previously saved routes.
- */
-MapDirection
-map_navigation_infer_direction(const gchar *text)
-{
-    MapDirection dir = MAP_DIRECTION_UNKNOWN;
-
-    if (!text) return dir;
-
-    if (strncmp(text, "Turn ", 5) == 0)
-    {
-        text += 5;
-        if (strncmp(text, "left", 4) == 0)
-            dir = MAP_DIRECTION_TL;
-        else
-            dir = MAP_DIRECTION_TR;
-    }
-    else if (strncmp(text, "Slight ", 7) == 0)
-    {
-        text += 7;
-        if (strncmp(text, "left", 4) == 0)
-            dir = MAP_DIRECTION_STL;
-        else
-            dir = MAP_DIRECTION_STR;
-    }
-    else if (strncmp(text, "Continue ", 9) == 0)
-        dir = MAP_DIRECTION_CS;
-    else
-    {
-        static const gchar *ordinals[] = { "1st ", "2nd ", "3rd ", NULL };
-        gchar *ptr;
-        gint i;
-
-        for (i = 0; ordinals[i] != NULL; i++)
-        {
-            ptr = strstr(text, ordinals[i]);
-            if (ptr != NULL) break;
-        }
-
-        if (ptr != NULL)
-        {
-            ptr += strlen(ordinals[i]);
-            if (strncmp(ptr, "exit", 4) == 0)
-                dir = MAP_DIRECTION_EX1 + i;
-            else if (strncmp(ptr, "left", 4) == 0)
-                dir = MAP_DIRECTION_TL;
-            else
-                dir = MAP_DIRECTION_TR;
-        }
-        else
-        {
-            /* all heuristics failed, add more here */
-        }
-    }
-    return dir;
-}
 
 static ca_context *
 map_ca_context_get (void)
@@ -228,9 +163,9 @@ play_direction(MapDirection dir)
 }
 
 void
-map_navigation_announce_voice(const WayPoint *wp)
+map_navigation_announce_voice(const MapPathWayPoint *wp)
 {
-    static const WayPoint *last_wp = NULL;
+    static const MapPathWayPoint *last_wp = NULL;
     static struct timespec last_wp_time;
     struct timespec now;
 
@@ -275,7 +210,7 @@ map_navigation_announce_voice(const WayPoint *wp)
  * If @alert is %FALSE, such notifications are dismissed.
  */
 void
-map_navigation_set_alert(gboolean active, const WayPoint *wp, gfloat distance)
+map_navigation_set_alert(gboolean active, const MapPathWayPoint *wp, gfloat distance)
 {
     MapController *controller = map_controller_get_instance();
     MapScreen *screen = map_controller_get_screen(controller);

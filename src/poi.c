@@ -6,20 +6,20 @@
  *
  * Default map data provided by http://www.openstreetmap.org/
  *
- * This file is part of Maemo Mapper.
+ * This file is part of Mappero.
  *
- * Maemo Mapper is free software: you can redistribute it and/or modify
+ * Mappero is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * Maemo Mapper is distributed in the hope that it will be useful,
+ * Mappero is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with Maemo Mapper.  If not, see <http://www.gnu.org/licenses/>.
+ * along with Mappero.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 #ifdef HAVE_CONFIG_H
@@ -49,17 +49,18 @@
 
 #include "types.h"
 #include "data.h"
-#include "debug.h"
 #include "defines.h"
 
 #include "display.h"
-#include "gpx.h"
 #include "main.h"
 #include "path.h"
 #include "poi.h"
 #include "route.h"
 #include "screen.h"
 #include "util.h"
+
+#include <mappero/debug.h>
+#include <mappero/gpx.h>
 
 static sqlite3 *_poi_db = NULL;
 static sqlite3_stmt *_stmt_browse_poi = NULL;
@@ -114,6 +115,18 @@ struct _DeletePOI {
     gint id;
     gboolean deleted;
 };
+
+static gint
+poi_parse_gpx(const gchar *buffer, gsize len, GList **list)
+{
+    GInputStream *stream;
+    gint ret;
+
+    stream = g_memory_input_stream_new_from_data(buffer, len, NULL);
+    ret = map_gpx_poi_parse(stream, list);
+    g_object_unref(stream);
+    return ret;
+}
 
 void
 poi_db_connect()
@@ -2089,12 +2102,12 @@ poi_list_delete(GtkWidget *widget, PoiListInfo *pli)
 static gboolean
 poi_list_export_gpx(GtkWidget *widget, PoiListInfo *pli)
 {
-    GnomeVFSHandle *handle;
+    GOutputStream *handle;
 
-    if(display_open_file(GTK_WINDOW(pli->dialog2), NULL, &handle, NULL,
+    if(display_open_file(GTK_WINDOW(pli->dialog2), NULL, &handle,
                 NULL, NULL, GTK_FILE_CHOOSER_ACTION_SAVE))
     {
-        gint num_exported = gpx_poi_write(
+        gint num_exported = map_gpx_poi_write(
                gtk_tree_view_get_model(GTK_TREE_VIEW(pli->tree_view)), handle);
         if(num_exported >= 0)
         {
@@ -2105,7 +2118,7 @@ poi_list_export_gpx(GtkWidget *widget, PoiListInfo *pli)
         }
         else
             popup_error(pli->dialog2, _("Error writing GPX file."));
-        gnome_vfs_close(handle);
+        g_object_unref(handle);
     }
 
     return TRUE;
@@ -2357,29 +2370,14 @@ poi_import_dialog(const MapPoint *point)
 {
     GtkWidget *dialog = NULL;
     gboolean success = FALSE;
+    GInputStream *stream = NULL;
 
-    dialog = hildon_file_chooser_dialog_new(GTK_WINDOW(_window),
-            GTK_FILE_CHOOSER_ACTION_OPEN);
-
-    gtk_widget_show_all(dialog);
-
-    while(!success && gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_OK)
+    if (display_open_file(GTK_WINDOW(_window), &stream, NULL,
+                          NULL, NULL, GTK_FILE_CHOOSER_ACTION_OPEN))
     {
-        gchar *file_uri_str = NULL;
-        gchar *bytes = NULL;
-        gint size;
-        GnomeVFSResult vfs_result;
         GList *poi_list = NULL;
 
-        file_uri_str = gtk_file_chooser_get_uri(GTK_FILE_CHOOSER(dialog));
-
-        /* Parse the given file as GPX. */
-        if(GNOME_VFS_OK != (vfs_result = gnome_vfs_read_entire_file(
-                        file_uri_str, &size, &bytes)))
-        {
-            popup_error(dialog, gnome_vfs_result_to_string(vfs_result));
-        }
-        else if(gpx_poi_parse(bytes, size, &poi_list))
+        if(map_gpx_poi_parse(stream, &poi_list))
         {
             static GtkWidget *cat_dialog = NULL;
             static GtkWidget *cmb_category = NULL;
@@ -2391,7 +2389,7 @@ poi_import_dialog(const MapPoint *point)
                 GtkWidget *hbox;
                 GtkWidget *label;
                 cat_dialog = gtk_dialog_new_with_buttons(_("Default Category"),
-                        GTK_WINDOW(dialog), GTK_DIALOG_MODAL,
+                        GTK_WINDOW(_window), GTK_DIALOG_MODAL,
                         GTK_STOCK_OK, GTK_RESPONSE_ACCEPT,
                         GTK_STOCK_CANCEL, GTK_RESPONSE_REJECT,
                         NULL);
@@ -2454,12 +2452,8 @@ poi_import_dialog(const MapPoint *point)
         else
             popup_error(dialog, _("Error parsing GPX file."));
 
-        g_free(file_uri_str);
-        g_free(bytes);
+        g_object_unref(stream);
     }
-
-    /* Hide the dialog. */
-    gtk_widget_destroy(dialog);
 
     return success;
 }
@@ -2741,7 +2735,7 @@ poi_download_dialog(const MapPoint *point)
         {
             gchar strlat[32];
             gchar strlon[32];
-            Point *p;
+            MapPathPoint *p;
             MapGeo lat, lon;
 
             /* Use last route point. */
@@ -2812,7 +2806,7 @@ poi_download_dialog(const MapPoint *point)
             popup_error(dialog, _("Invalid origin or query."));
             printf("bytes: %s\n", bytes);
         }
-        else if(gpx_poi_parse(bytes, size, &poi_list))
+        else if(poi_parse_gpx(bytes, size, &poi_list))
         {
             /* Insert the POIs into the database. */
             gint num_inserts = poi_list_insert(dialog, poi_list,
@@ -3041,7 +3035,7 @@ poi_browse_dialog(const MapPoint *point)
         {
             gchar strlat[32];
             gchar strlon[32];
-            Point *p;
+            MapPathPoint *p;
             MapGeo lat, lon;
 
             /* Use last route point. */

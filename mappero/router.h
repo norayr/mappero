@@ -3,30 +3,29 @@
 /*
  * Copyright (C) 2010 Alberto Mardegan <mardy@users.sourceforge.net>
  *
- * This file is part of Maemo Mapper.
+ * This file is part of libMappero.
  *
- * Maemo Mapper is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
+ * libMappero is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * Maemo Mapper is distributed in the hope that it will be useful,
+ * libMappero is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * GNU Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with Maemo Mapper.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with libMappero.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 #ifndef MAP_ROUTER_H
 #define MAP_ROUTER_H
 
+#include <mappero/globals.h>
+#include <mappero/path.h>
+
 #include <gconf/gconf-client.h>
-
-#include "types.h"
-#include "settings.h"
-
 #include <glib.h>
 #include <glib-object.h>
 #include <gtk/gtk.h>
@@ -44,6 +43,16 @@ typedef struct _MapRouter MapRouter;
 typedef struct _MapRouterIface MapRouterIface;
 
 /**
+ * MapLocation:
+ * Definiton of a location in either geographic coordinates or as an address.
+ * If the @address field is not %NULL, it has priority over the coordinates.
+ */
+typedef struct {
+    MapPoint point;
+    gchar *address;
+} MapLocation;
+
+/**
  * MapRouterQuery:
  * @from: starting location
  * @to: destination
@@ -57,7 +66,7 @@ typedef struct {
     GtkWindow *parent;
 } MapRouterQuery;
 
-typedef void (*MapRouterCalculateRouteCb)(MapRouter *router, Path *path,
+typedef void (*MapRouterCalculateRouteCb)(MapRouter *router, MapPath *path,
                                           const GError *error,
                                           gpointer user_data);
 typedef void (*MapRouterGeocodeCb)(MapRouter *router, MapPoint point,

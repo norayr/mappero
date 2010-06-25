@@ -48,5 +48,15 @@ data/help
 debian/files
 debian/maemo-mapper.substvars
 debian/maemo-mapper/
+*.la
+*.lo
+*.loT
 *.o
 *~
+.deps
+.libs
+config.h*
+stamp*
+*marshal.*
+*.swp
+mappero/mappero.pc

@@ -6,20 +6,20 @@
  *
  * Default map data provided by http://www.openstreetmap.org/
  *
- * This file is part of Maemo Mapper.
+ * This file is part of Mappero.
  *
- * Maemo Mapper is free software: you can redistribute it and/or modify
+ * Mappero is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * Maemo Mapper is distributed in the hope that it will be useful,
+ * Mappero is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with Maemo Mapper.  If not, see <http://www.gnu.org/licenses/>.
+ * along with Mappero.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 #ifdef HAVE_CONFIG_H
@@ -43,12 +43,8 @@
 
 #include "types.h"
 #include "data.h"
-#include "debug.h"
 #include "defines.h"
-#include "dialog.h"
 #include "display.h"
-#include "error.h"
-#include "gpx.h"
 #include "he-about-dialog.h"
 #include "maps.h"
 #include "menu.h"
@@ -64,6 +60,10 @@
 #include <hildon/hildon-check-button.h>
 #include <hildon/hildon-pannable-area.h>
 #include <hildon/hildon-picker-button.h>
+#include <mappero/debug.h>
+#include <mappero-extras/dialog.h>
+#include <mappero-extras/error.h>
+#include <mappero/gpx.h>
 
 /****************************************************************************
  * BELOW: ROUTE MENU ********************************************************
@@ -72,18 +72,23 @@
 static gboolean
 menu_cb_route_open(GtkMenuItem *item)
 {
-    gchar *buffer;
-    gint size;
+    GInputStream *stream = NULL;
 
-    if(display_open_file(GTK_WINDOW(_window), &buffer, NULL, &size,
+    if(display_open_file(GTK_WINDOW(_window), &stream, NULL,
                 &_route_dir_uri, NULL, GTK_FILE_CHOOSER_ACTION_OPEN))
     {
-        /* If auto is enabled, append the route, otherwise replace it. */
-        if(gpx_path_parse(map_route_get_path(), buffer, size,
-                          autoroute_enabled() ? 0 : 1))
+        MapPath path;
+
+        map_path_init(&path);
+        if (map_gpx_path_parse(stream, &path))
         {
             MapController *controller = map_controller_get_instance();
 
+            map_path_infer_directions(&path);
+            /* If auto is enabled, append the route, otherwise replace it. */
+            map_path_merge(&path, map_route_get_path(), autoroute_enabled() ?
+                           MAP_PATH_MERGE_POLICY_APPEND :
+                           MAP_PATH_MERGE_POLICY_REPLACE);
             path_save_route_to_db();
 
             cancel_autoroute();
@@ -96,7 +101,8 @@ menu_cb_route_open(GtkMenuItem *item)
         }
         else
             popup_error(_window, _("Error parsing GPX file."));
-        g_free(buffer);
+        map_path_unset(&path);
+        g_object_unref(stream);
     }
 
     return TRUE;
@@ -112,18 +118,18 @@ menu_cb_route_download(GtkMenuItem *item)
 static gboolean
 menu_cb_route_save(GtkMenuItem *item)
 {
-    GnomeVFSHandle *handle;
+    GOutputStream *handle;
 
-    if(display_open_file(GTK_WINDOW(_window), NULL, &handle, NULL,
+    if(display_open_file(GTK_WINDOW(_window), NULL, &handle,
                 &_route_dir_uri, NULL, GTK_FILE_CHOOSER_ACTION_SAVE))
     {
-        if(gpx_path_write(map_route_get_path(), handle))
+        if(map_gpx_path_write(map_route_get_path(), handle))
         {
             MACRO_BANNER_SHOW_INFO(_window, _("Route Saved"));
         }
         else
             popup_error(_window, _("Error writing GPX file."));
-        gnome_vfs_close(handle);
+        g_object_unref(handle);
     }
 
     return TRUE;
@@ -155,21 +161,26 @@ menu_cb_route_clear(GtkMenuItem *item)
 static gboolean
 menu_cb_track_open(GtkMenuItem *item)
 {
-    gchar *buffer;
-    gint size;
+    GInputStream *stream = NULL;
 
-    if(display_open_file(GTK_WINDOW(_window), &buffer, NULL, &size,
+    if(display_open_file(GTK_WINDOW(_window), &stream, NULL,
                 NULL, &_track_file_uri, GTK_FILE_CHOOSER_ACTION_OPEN))
     {
-        if(gpx_path_parse(&_track, buffer, size, -1))
+        MapPath path;
+
+        map_path_init(&path);
+        if (map_gpx_path_parse(stream, &path))
         {
             MapController *controller = map_controller_get_instance();
+
+            map_path_merge(&path, &_track, MAP_PATH_MERGE_POLICY_PREPEND);
             map_controller_refresh_paths(controller);
             MACRO_BANNER_SHOW_INFO(_window, _("Track Opened"));
         }
         else
             popup_error(_window, _("Error parsing GPX file."));
-        g_free(buffer);
+        map_path_unset(&path);
+        g_object_unref(stream);
     }
 
     return TRUE;
@@ -178,18 +189,18 @@ menu_cb_track_open(GtkMenuItem *item)
 static gboolean
 menu_cb_track_save(GtkMenuItem *item)
 {
-    GnomeVFSHandle *handle;
+    GOutputStream *handle;
 
-    if(display_open_file(GTK_WINDOW(_window), NULL, &handle, NULL,
+    if(display_open_file(GTK_WINDOW(_window), NULL, &handle,
                 NULL, &_track_file_uri, GTK_FILE_CHOOSER_ACTION_SAVE))
     {
-        if(gpx_path_write(&_track, handle))
+        if(map_gpx_path_write(&_track, handle))
         {
             MACRO_BANNER_SHOW_INFO(_window, _("Track Saved"));
         }
         else
             popup_error(_window, _("Error writing GPX file."));
-        gnome_vfs_close(handle);
+        g_object_unref(handle);
     }
 
     return TRUE;
@@ -285,7 +296,7 @@ menu_cb_track_insert_mark(GtkMenuItem *item)
 
         if(*desc)
         {
-            Point *p = map_path_last(&_track);
+            MapPathPoint *p = map_path_last(&_track);
             map_path_make_waypoint(&_track, p,
                 gtk_text_buffer_get_text(tbuf, &ti1, &ti2, TRUE));
         }
@@ -617,7 +628,7 @@ menu_cb_view_goto_gps(GtkMenuItem *item)
 gboolean
 menu_cb_view_goto_nextway(GtkMenuItem *item)
 {
-    WayPoint *next_way;
+    MapPathWayPoint *next_way;
     MapController *controller = map_controller_get_instance();
 
     next_way = map_route_get_next_waypoint();

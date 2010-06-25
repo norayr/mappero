@@ -6,20 +6,20 @@
  *
  * Default map data provided by http://www.openstreetmap.org/
  *
- * This file is part of Maemo Mapper.
+ * This file is part of Mappero.
  *
- * Maemo Mapper is free software: you can redistribute it and/or modify
+ * Mappero is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * Maemo Mapper is distributed in the hope that it will be useful,
+ * Mappero is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with Maemo Mapper.  If not, see <http://www.gnu.org/licenses/>.
+ * along with Mappero.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 #ifdef HAVE_CONFIG_H
@@ -39,10 +39,10 @@
 #include <hildon/hildon-defines.h>
 #include <hildon/hildon-picker-button.h>
 #include <hildon/hildon-sound.h>
+#include <mappero/debug.h>
 
 #include "types.h"
 #include "data.h"
-#include "debug.h"
 #include "defines.h"
 
 #include "dbus-ifc.h"
@@ -1286,15 +1286,16 @@ latlon_dialog(gdouble lat, gdouble lon)
 /**
  * This is a multi-purpose function for allowing the user to select a file
  * for either reading or writing.  If chooser_action is
- * GTK_FILE_CHOOSER_ACTION_OPEN, then bytes_out and size_out must be
+ * GTK_FILE_CHOOSER_ACTION_OPEN, then @input must be
  * non-NULL.  If chooser_action is GTK_FILE_CHOOSER_ACTION_SAVE, then
- * handle_out must be non-NULL.  Either dir or file (or both) can be NULL.
+ * @output must be non-NULL.  Either dir or file (or both) can be NULL.
  * This function returns TRUE if a file was successfully opened.
  */
 gboolean
-display_open_file(GtkWindow *parent, gchar **bytes_out,
-        GnomeVFSHandle **handle_out, gint *size_out,
-        gchar **dir, gchar **file, GtkFileChooserAction chooser_action)
+display_open_file(GtkWindow *parent,
+                  GInputStream **input, GOutputStream **output,
+                  gchar **dir, gchar **file,
+                  GtkFileChooserAction chooser_action)
 {
     GtkWidget *dialog;
     gboolean success = FALSE;
@@ -1315,31 +1316,37 @@ display_open_file(GtkWindow *parent, gchar **bytes_out,
     while(!success && gtk_dialog_run(GTK_DIALOG(dialog))==GTK_RESPONSE_OK)
     {
         gchar *file_uri_str;
-        GnomeVFSResult vfs_result;
+        GFile *handle;
+        GError *error = NULL;
 
         /* Get the selected filename. */
         file_uri_str = gtk_file_chooser_get_uri(GTK_FILE_CHOOSER(dialog));
+        handle = g_file_new_for_uri(file_uri_str);
 
-        if((chooser_action == GTK_FILE_CHOOSER_ACTION_OPEN
-                && (GNOME_VFS_OK != (vfs_result = gnome_vfs_read_entire_file(
-                        file_uri_str, size_out, bytes_out))))
-                || (chooser_action == GTK_FILE_CHOOSER_ACTION_SAVE
-                    && GNOME_VFS_OK != (vfs_result = gnome_vfs_create(
-                            handle_out, file_uri_str,
-                            GNOME_VFS_OPEN_WRITE, FALSE, 0664))))
+        if (chooser_action == GTK_FILE_CHOOSER_ACTION_OPEN)
+        {
+            *input = (GInputStream *)g_file_read(handle, NULL, &error);
+        }
+        else if (chooser_action == GTK_FILE_CHOOSER_ACTION_SAVE)
+        {
+            *output = (GOutputStream *)g_file_replace(handle, NULL, FALSE,
+                                                      0, NULL, &error);
+        }
+
+        if (G_UNLIKELY(error != NULL))
         {
             gchar buffer[BUFFER_SIZE];
             snprintf(buffer, sizeof(buffer),
-                    "%s:\n%s", chooser_action == GTK_FILE_CHOOSER_ACTION_OPEN
-                                ? _("Failed to open file for reading")
-                                : _("Failed to open file for writing"),
-                    gnome_vfs_result_to_string(vfs_result));
+                     "%s:\n%s", _("Failed to open file for reading"),
+                     error->message);
             popup_error(dialog, buffer);
+            g_error_free(error);
         }
         else
             success = TRUE;
 
         g_free(file_uri_str);
+        g_object_unref(handle);
     }
 
     if(success)

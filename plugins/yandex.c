@@ -3,20 +3,20 @@
 /*
  * Copyright (C) 2010 Alberto Mardegan <mardy@users.sourceforge.net>
  *
- * This file is part of Maemo Mapper.
+ * This file is part of Mappero.
  *
- * Maemo Mapper is free software: you can redistribute it and/or modify
+ * Mappero is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * Maemo Mapper is distributed in the hope that it will be useful,
+ * Mappero is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with Maemo Mapper.  If not, see <http://www.gnu.org/licenses/>.
+ * along with Mappero.  If not, see <http://www.gnu.org/licenses/>.
  */
 #ifdef HAVE_CONFIG_H
 #   include "config.h"
@@ -24,15 +24,15 @@
 
 #include "yandex.h"
 
-#include "data.h"
-#include "defines.h"
-#include "dialog.h"
-#include "error.h"
-#include "gpx.h"
-#include "path.h"
+#define H_(String) dgettext("hildon-libs", String)
 
 #include <gconf/gconf-client.h>
+#include <glib/gi18n.h>
 #include <hildon/hildon-check-button.h>
+#include <mappero/error.h>
+#include <mappero/gpx.h>
+#include <mappero/path.h>
+#include <mappero-extras/dialog.h>
 #include <math.h>
 #include <string.h>
 
@@ -57,54 +57,48 @@ get_address(const MapLocation *loc, gchar *buffer, gsize len)
     else
     {
         MapGeo lat, lon;
-        unit2latlon(loc->point.x, loc->point.y, lat, lon);
+        map_unit2latlon(loc->point.x, loc->point.y, lat, lon);
         snprintf(buffer, len, "%.06f, %0.6f", lat, lon);
         return buffer;
     }
 }
 
 static void
-route_download_and_setup(Path *path, const gchar *source_url,
+route_download_and_setup(MapPath *path, const gchar *source_url,
                          const gchar *from, const gchar *to,
                          gboolean use_traffic, GError **error)
 {
     gchar *from_escaped;
     gchar *to_escaped;
     gchar *buffer;
-    gchar *bytes = NULL;
-    gint size;
-    GnomeVFSResult vfs_result;
+    GFile *file;
+    GInputStream *stream;
 
-    from_escaped = gnome_vfs_escape_string(from);
-    to_escaped = gnome_vfs_escape_string(to);
+    from_escaped = g_uri_escape_string(from, NULL, FALSE);
+    to_escaped = g_uri_escape_string(to, NULL, FALSE);
     buffer = g_strdup_printf(source_url, from_escaped, to_escaped, use_traffic ? 1 : 0);
     g_free(from_escaped);
     g_free(to_escaped);
 
     /* Attempt to download the route from the server. */
-    vfs_result = gnome_vfs_read_entire_file(buffer, &size, &bytes);
+    file = g_file_new_for_uri(buffer);
     g_free (buffer);
+    stream = (GInputStream *)g_file_read(file, NULL, error);
 
-    if (vfs_result != GNOME_VFS_OK)
-    {
-        g_set_error(error, MAP_ERROR, MAP_ERROR_NETWORK,
-                    gnome_vfs_result_to_string(vfs_result));
+    if (G_UNLIKELY(error != NULL))
         goto finish;
-    }
 
-    if (strncmp(bytes, "<?xml", 5))
+    if (!map_gpx_path_parse(stream, path))
     {
-        /* Not an XML document - must be bad locations. */
         g_set_error(error, MAP_ERROR, MAP_ERROR_INVALID_ADDRESS,
                     _("Invalid source or destination."));
         goto finish;
     }
 
-    /* TODO: remove last parameter, add error */
-    gpx_path_parse(path, bytes, size, FALSE);
-
 finish:
-    g_free(bytes);
+    if (stream)
+        g_object_unref(stream);
+    g_object_unref(file);
 }
 
 static const gchar *
@@ -151,7 +145,7 @@ map_yandex_calculate_route(MapRouter *router, const MapRouterQuery *query,
     gchar buf_from[64], buf_to[64];
     const gchar *from, *to;
     GError *error = NULL;
-    Path path;
+    MapPath path;
 
     from = get_address(&query->from, buf_from, sizeof(buf_from));
     to = get_address(&query->to, buf_to, sizeof(buf_to));
@@ -165,9 +159,9 @@ map_yandex_calculate_route(MapRouter *router, const MapRouterQuery *query,
     else
     {
         callback(router, NULL, error, user_data);
-        map_path_unset(&path);
         g_error_free(error);
     }
+    map_path_unset(&path);
 }
 
 static void
@@ -204,5 +198,19 @@ map_yandex_init(MapYandex *yandex)
 static void
 map_yandex_class_init(MapYandexClass *klass)
 {
+}
+
+const gchar * const *
+map_plugin_list_objects()
+{
+    static const gchar *ids[] = { "router", NULL };
+    return ids;
+}
+
+GObject *
+map_plugin_get_object(const gchar *id)
+{
+    g_return_val_if_fail(strcmp(id, "router") == 0, NULL);
+    return g_object_new(MAP_TYPE_YANDEX, NULL);
 }
 

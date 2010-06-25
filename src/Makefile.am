@@ -20,6 +20,7 @@
 bin_PROGRAMS = maemo-mapper
 
 maemo_mapper_CFLAGS = \
+	-I.. \
 	$(GTK_CFLAGS) \
 	$(OSSO_CFLAGS) \
 	$(HILDON_CFLAGS) \
@@ -32,9 +33,12 @@ maemo_mapper_CFLAGS = \
 	$(LOCATION_CFLAGS) \
 	$(CLUTTER_CFLAGS) \
 	$(CAIRO_CFLAGS) \
+	-DMAP_PLUGIN_DIR=\"@libdir@/mappero.@MAP_ABI_VERSION@\" \
 	-std=c99 -Wall -Wno-switch
 
 maemo_mapper_LDADD = \
+	$(top_builddir)/mappero/libmappero.la \
+	$(top_builddir)/mappero-extras/libmappero-extras.la \
 	$(GTK_LIBS) \
 	$(OSSO_LIBS) \
 	$(HILDON_LIBS) \
@@ -53,13 +57,9 @@ maemo_mapper_SOURCES = \
 	controller.c \
 	data.c \
 	dbus-ifc.c \
-	debug.c \
-	dialog.c \
 	display.c \
-	error.c \
 	gps.c \
 	gpsbt.c \
-	gpx.c \
 	he-about-dialog.c \
 	main.c \
 	maps.c \
@@ -70,12 +70,8 @@ maemo_mapper_SOURCES = \
 	orientation.c \
 	osm.c \
 	path.c \
-	plugins/google.c \
-	plugins/reittiopas.c \
-	plugins/yandex.c \
 	poi.c \
 	route.c \
-	router.c \
 	settings.c \
 	screen.c \
 	sign.c \

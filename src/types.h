@@ -2,20 +2,20 @@
  * Copyright (C) 2006, 2007 John Costigan.
  * Copyright (C) 2010 Alberto Mardegan <mardy@users.sourceforge.net>
  *
- * This file is part of Maemo Mapper.
+ * This file is part of Mappero.
  *
- * Maemo Mapper is free software: you can redistribute it and/or modify
+ * Mappero is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * Maemo Mapper is distributed in the hope that it will be useful,
+ * Mappero is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with Maemo Mapper.  If not, see <http://www.gnu.org/licenses/>.
+ * along with Mappero.  If not, see <http://www.gnu.org/licenses/>.
  *
  *  
  * Parts of this code have been ported from Xastir by Rob Williams (10 Aug 2008):
@@ -34,6 +34,8 @@
 #    include "config.h"
 #endif
 
+#include "mappero/globals.h"
+#include "mappero/path.h"
 #include <time.h>
 #include <gdbm.h>
 #include <gtk/gtk.h>
@@ -225,77 +227,6 @@ typedef enum
     MAP_UPDATE_ENUM_COUNT
 } MapUpdateType;
 
-#ifdef USE_DOUBLES_FOR_LATLON
-typedef gdouble MapGeo;
-#else
-typedef gfloat MapGeo;
-#endif
-
-/** A general definition of a point in the Maemo Mapper unit system. */
-typedef struct _MapPoint MapPoint;
-struct _MapPoint {
-    gint x;
-    gint y;
-};
-
-/**
- * Definiton of a location in either geographic coordinates or as an address.
- * If the @address field is not %NULL, it has priority over the coordinates. */
-typedef struct {
-    MapPoint point;
-    gchar *address;
-} MapLocation;
-
-/* Navigation directions */
-typedef enum {
-    MAP_DIRECTION_UNKNOWN = 0,
-    MAP_DIRECTION_CS, /* continue straight */
-    MAP_DIRECTION_TR, /* turn right */
-    MAP_DIRECTION_TL,
-    MAP_DIRECTION_STR, /* slight turn right */
-    MAP_DIRECTION_STL,
-    MAP_DIRECTION_EX1, /* first exit */
-    MAP_DIRECTION_EX2,
-    MAP_DIRECTION_EX3,
-    MAP_DIRECTION_LAST,
-} MapDirection;
-
-/* definition of a track/route point */
-typedef struct _Point Point;
-struct _Point {
-    MapPoint unit;
-    time_t time;
-    gchar zoom; /* zoom level at which this point becomes visible */
-    gint16 altitude;
-    gfloat distance; /* distance from previous point */
-};
-
-/** A WayPoint, which is a Point with a description. */
-typedef struct _WayPoint WayPoint;
-struct _WayPoint {
-    Point *point;
-    MapDirection dir;
-    gchar *desc;
-};
-
-/** A Path is a set of PathPoints and WayPoints. */
-typedef struct _Path Path;
-struct _Path {
-    Point *_head; /* points to first element in array; NULL if empty. */
-    Point *_tail; /* points to last element in array. */
-    Point *_cap; /* points after last slot in array. */
-    WayPoint *whead; /* points to first element in array; NULL if empty. */
-    WayPoint *wtail; /* points to last element in array. */
-    WayPoint *wcap; /* points after last slot in array. */
-    GList *_lines; /* MapLine elements */
-    gfloat length; /* length of the path, in metres */
-    gfloat last_lat; /* coordinates of the last point */
-    gfloat last_lon;
-    gint points_with_distance; /* number of points with distance computed */
-    gint points_optimized;
-    gint first_unsaved;
-};
-
 /** Data to describe a POI. */
 typedef struct _PoiInfo PoiInfo;
 struct _PoiInfo {
@@ -403,7 +334,7 @@ typedef struct _MapRenderTask MapRenderTask;
 struct _MapRenderTask
 {
     TileSource *repo;
-    Point new_center;
+    MapPathPoint new_center;
     gint old_offsetx;
     gint old_offsety;
     gint screen_width_pixels;

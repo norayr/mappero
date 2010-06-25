@@ -3,20 +3,20 @@
 /*
  * Copyright (C) 2009-2010 Alberto Mardegan <mardy@users.sourceforge.net>
  *
- * This file is part of Maemo Mapper.
+ * This file is part of Mappero.
  *
- * Maemo Mapper is free software: you can redistribute it and/or modify
+ * Mappero is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * Maemo Mapper is distributed in the hope that it will be useful,
+ * Mappero is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with Maemo Mapper.  If not, see <http://www.gnu.org/licenses/>.
+ * along with Mappero.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 #ifndef MAP_SCREEN_H
@@ -87,7 +87,7 @@ void map_screen_refresh_tiles(MapScreen *self);
 void map_screen_refresh_pois(MapScreen *self, MapArea *poi_area);
 void map_screen_refresh_panel(MapScreen *self);
 
-void map_screen_track_append(MapScreen *self, const Point *p);
+void map_screen_track_append(MapScreen *self, const MapPathPoint *p);
 void map_screen_toggle_layers_visibility (MapScreen *self);
 
 void map_screen_show_sign(MapScreen *self, MapDirection dir, const gchar *text,

@@ -3,28 +3,25 @@
 /*
  * Copyright (C) 2010 Alberto Mardegan <mardy@users.sourceforge.net>
  *
- * This file is part of Maemo Mapper.
+ * This file is part of libMappero.
  *
- * Maemo Mapper is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
+ * libMappero is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * Maemo Mapper is distributed in the hope that it will be useful,
+ * libMappero is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * GNU Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with Maemo Mapper.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with libMappero.  If not, see <http://www.gnu.org/licenses/>.
  */
 #ifdef HAVE_CONFIG_H
 #   include "config.h"
 #endif
 #include "router.h"
-
-#include "defines.h"
-#include "path.h"
 
 #include <string.h>
 
@@ -64,7 +61,7 @@ map_router_get_type(void)
 }
 
 static void
-geocode_from_route_cb(MapRouter *router, Path *path, const GError *error,
+geocode_from_route_cb(MapRouter *router, MapPath *path, const GError *error,
                       MapGeocodeData *mgd)
 {
     MapPoint point = { 0, 0 };
@@ -73,8 +70,6 @@ geocode_from_route_cb(MapRouter *router, Path *path, const GError *error,
     {
         if (map_path_len(path) > 0)
             point = map_path_first(path)->unit;
-
-        map_path_unset(path);
     }
 
     mgd->callback(router, point, error, mgd->user_data);

@@ -22,9 +22,37 @@ AC_INIT(Makefile.am)
 AM_INIT_AUTOMAKE(maemo-mapper, 3.0+beta8)
 
 AC_PROG_CPP
-AC_CONFIG_HEADERS(src/config.h)
+AC_CONFIG_HEADERS(config.h)
 AC_PROG_INSTALL
 AC_PROG_LIBTOOL
+
+# If API has been removed or changed since last release, change MAP_API (which
+# is part of the directory name under /usr/include) to the version that
+# changed it
+MAP_API_VERSION=1.0
+AC_SUBST([MAP_API_VERSION])
+
+# If ABI has been removed or changed since last release
+#     increment current
+#     set age and revision to 0
+# else if ABI has been added since last release
+#     increment age and current
+#     set revision to 0
+# else if library source has changed since last release
+#     increment revision
+MAP_LT_CURRENT=0
+MAP_LT_REVISION=0
+MAP_LT_AGE=0
+AC_SUBST([MAP_LT_CURRENT])
+AC_SUBST([MAP_LT_REVISION])
+AC_SUBST([MAP_LT_AGE])
+# The ABI version appears in the name of the plugin directory
+MAP_ABI_VERSION=`expr ${MAP_LT_CURRENT} - ${MAP_LT_AGE}`
+AC_SUBST([MAP_ABI_VERSION])
+
+PKG_CHECK_MODULES(GLIB, glib-2.0)
+AC_SUBST(GLIB_LIBS)
+AC_SUBST(GLIB_CFLAGS)
 
 PKG_CHECK_MODULES(GTK, gtk+-2.0)
 AC_SUBST(GTK_LIBS)
@@ -33,6 +61,10 @@ AC_SUBST(GTK_CFLAGS)
 PKG_CHECK_MODULES(GNOME_VFS, gnome-vfs-2.0 >= 2.8.4.11 gnome-vfs-module-2.0 >= 2.8.4.11)
 AC_SUBST(GNOME_VFS_LIBS)
 AC_SUBST(GNOME_VFS_CFLAGS)
+
+PKG_CHECK_MODULES(GIO, gio-2.0)
+AC_SUBST(GIO_LIBS)
+AC_SUBST(GIO_CFLAGS)
 
 PKG_CHECK_MODULES(GCONF, gconf-2.0 >= 2.6.2)
 AC_SUBST(GCONF_LIBS)
@@ -127,6 +159,7 @@ if test "x$checks" = "xno"; then
     CFLAGS="$CFLAGS -DG_DISABLE_CHECKS"
 fi
 
+CFLAGS="-std=c99 -Wall -Werror -Wno-switch $CFLAGS"
 
 # Localisation
 localedir=`$PKG_CONFIG osso-af-settings --variable=localedir`
@@ -166,7 +199,6 @@ helpfile_fifidir=$datadir/osso-help/fi_FI
 AC_SUBST(helpfile_fifidir)
 
 # Hildon control panel plugin install directories
-pluginlibdir=`$PKG_CONFIG hildon-control-panel --variable=plugindir`
 plugindesktopentrydir=`$PKG_CONFIG hildon-control-panel --variable=plugindesktopentrydir`
 
 # Define as variables in Makefiles
@@ -180,8 +212,10 @@ AC_SUBST(icon_40x40dir)
 AC_SUBST(icon_50x50dir)
 AC_SUBST(icon_aprsdir)
 AC_SUBST(icon_scalabledir)
-AC_SUBST(pluginlibdir)
 AC_SUBST(plugindesktopentrydir)
+
+pluginlibdir="${libdir}/mappero.${MAP_ABI_VERSION}"
+AC_SUBST(pluginlibdir)
 
 AC_DEFINE_UNQUOTED([LOCALEDIR], "${localedir}", [Runtime locale catalog files path])
 AC_DEFINE_UNQUOTED([PIXMAPDIR], "${pixmapdir}", [Runtime pixmap files path])
@@ -190,6 +224,10 @@ AC_DEFINE_UNQUOTED([PIXMAPDIR], "${pixmapdir}", [Runtime pixmap files path])
 # Produce output files
 AC_OUTPUT(
           Makefile \
+          mappero/Makefile \
+          mappero/mappero.pc \
+          mappero-extras/Makefile \
+          plugins/Makefile \
           src/Makefile \
           data/Makefile \
           data/help/Makefile \

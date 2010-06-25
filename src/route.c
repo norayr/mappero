@@ -1,20 +1,20 @@
 /*
  * Copyright (C) 2010 Alberto Mardegan <mardy@users.sourceforge.net>
  *
- * This file is part of Maemo Mapper.
+ * This file is part of Mappero.
  *
- * Maemo Mapper is free software: you can redistribute it and/or modify
+ * Mappero is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * Maemo Mapper is distributed in the hope that it will be useful,
+ * Mappero is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with Maemo Mapper.  If not, see <http://www.gnu.org/licenses/>.
+ * along with Mappero.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 #ifdef HAVE_CONFIG_H
@@ -25,12 +25,8 @@
 
 #include "controller.h"
 #include "data.h"
-#include "debug.h"
-#include "dialog.h"
-#include "error.h"
 #include "main.h"
 #include "navigation.h"
-#include "router.h"
 #include "util.h"
 
 #include <hildon/hildon-banner.h>
@@ -39,12 +35,16 @@
 #include <hildon/hildon-note.h>
 #include <hildon/hildon-pannable-area.h>
 #include <hildon/hildon-picker-button.h>
+#include <mappero/debug.h>
+#include <mappero/router.h>
+#include <mappero-extras/dialog.h>
+#include <mappero-extras/error.h>
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
 
 struct _MapRoute {
-    Path path;
+    MapPath path;
     gfloat distance_to_next_waypoint;
 };
 
@@ -204,18 +204,18 @@ route_find_nearest_point()
  * next waypoint.
  */
 gboolean
-route_calc_distance_to(const Point *point, gfloat *distance)
+route_calc_distance_to(const MapPathPoint *point, gfloat *distance)
 {
     MapController *controller = map_controller_get_instance();
     MapGeo lat2, lon2;
-    Point *near_point;
+    MapPathPoint *near_point;
     const MapGpsData *gps;
     gfloat sum = 0.0;
 
     /* If point is NULL, use the next waypoint. */
     if (point == NULL)
     {
-        const WayPoint *next = map_route_get_next_waypoint();
+        const MapPathWayPoint *next = map_route_get_next_waypoint();
         if (next)
             point = next->point;
     }
@@ -229,7 +229,7 @@ route_calc_distance_to(const Point *point, gfloat *distance)
     near_point = map_path_first(&_route.path) + _near_info.p_near;
     if (point > near_point)
     {
-        Point *curr;
+        MapPathPoint *curr;
 
         /* we skip near_point here, because near_point->distance is the
          * distance to the previous point and we don't care about that. */
@@ -240,7 +240,7 @@ route_calc_distance_to(const Point *point, gfloat *distance)
     }
     else if (point < near_point)
     {
-        Point *curr;
+        MapPathPoint *curr;
         /* Going backwards, the near point is the one before the next */
         near_point--;
         for (curr = near_point; curr > point; --curr)
@@ -264,7 +264,7 @@ route_calc_distance_to(const Point *point, gfloat *distance)
  * next waypoint.
  */
 gboolean
-route_show_distance_to(Point *point)
+route_show_distance_to(MapPathPoint *point)
 {
     gchar buffer[80];
     gfloat sum;
@@ -289,11 +289,12 @@ route_show_distance_to_next()
 }
 
 static void
-map_route_take_path(Path *path, MapPathMergePolicy policy)
+map_route_take_path(MapPath *path, MapPathMergePolicy policy)
 {
     MapController *controller = map_controller_get_instance();
 
     map_path_merge(path, &_route.path, policy);
+    map_path_unset(path);
     path_save_route_to_db();
 
     /* Find the nearest route point, if we're connected. */
@@ -303,7 +304,7 @@ map_route_take_path(Path *path, MapPathMergePolicy policy)
 }
 
 static void
-auto_calculate_route_cb(MapRouter *router, Path *path, const GError *error)
+auto_calculate_route_cb(MapRouter *router, MapPath *path, const GError *error)
 {
     DEBUG("called (error = %p)", error);
 
@@ -380,8 +381,8 @@ map_path_route_step(const MapGpsData *gps, gboolean newly_fixed)
     gboolean approaching_waypoint = FALSE;
     gboolean late = FALSE, out_of_route = FALSE;
     gfloat distance = 0;
-    const WayPoint *next_way;
-    Point *near_point = NULL;
+    const MapPathWayPoint *next_way;
+    MapPathPoint *near_point = NULL;
 
     /* if we don't have a route to follow, nothing to do */
     if (map_path_len(&_route.path) == 0) return;
@@ -493,12 +494,12 @@ autoroute_enabled()
     return _autoroute_data.enabled;
 }
 
-WayPoint *
+MapPathWayPoint *
 find_nearest_waypoint(const MapPoint *point)
 {
     MapController *controller = map_controller_get_instance();
-    WayPoint *wcurr;
-    WayPoint *wnear;
+    MapPathWayPoint *wcurr;
+    MapPathWayPoint *wnear;
     gint64 nearest_squared;
     gint radius_unit, zoom;
     DEBUG("");
@@ -601,7 +602,7 @@ on_router_selector_changed(HildonPickerButton *button, RouteDownloadInfo *rdi)
 }
 
 static void
-calculate_route_cb(MapRouter *router, Path *path, const GError *error,
+calculate_route_cb(MapRouter *router, MapPath *path, const GError *error,
                    GtkDialog **p_dialog)
 {
     GtkDialog *dialog = *p_dialog;
@@ -706,7 +707,7 @@ on_dialog_response(GtkWidget *dialog, gint response, RouteDownloadInfo *rdi)
     }
     else if (rdi->origin_row_active == rdi->origin_row_route)
     {
-        Point *p = map_path_last(&_route.path);
+        MapPathPoint *p = map_path_last(&_route.path);
 
         rq.from.point = p->unit;
     }
@@ -1035,7 +1036,7 @@ route_add_way_dialog(const MapPoint *point)
         if(*desc)
         {
             /* There's a description.  Add a waypoint. */
-            Point *p_in_path = map_path_append_unit(&_route.path, point);
+            MapPathPoint *p_in_path = map_path_append_unit(&_route.path, point);
 
             map_path_make_waypoint(&_route.path, p_in_path,
                 gtk_text_buffer_get_text(tbuf, &ti1, &ti2, TRUE));
@@ -1076,10 +1077,10 @@ route_add_way_dialog(const MapPoint *point)
     _degformat = last_deg_format;
 }
 
-WayPoint *
+MapPathWayPoint *
 map_route_get_next_waypoint()
 {
-    WayPoint *wp;
+    MapPathWayPoint *wp;
     wp = _route.path.whead + _near_info.wp_next;
     return (wp <= _route.path.wtail) ? wp : NULL;
 }

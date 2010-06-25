@@ -4,20 +4,20 @@
  * Copyright (C) 2010 Max Lapan
  * Copyright (C) 2009-2010 Alberto Mardegan <mardy@users.sourceforge.net>
  *
- * This file is part of Maemo Mapper.
+ * This file is part of Mappero.
  *
- * Maemo Mapper is free software: you can redistribute it and/or modify
+ * Mappero is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * Maemo Mapper is distributed in the hope that it will be useful,
+ * Mappero is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with Maemo Mapper.  If not, see <http://www.gnu.org/licenses/>.
+ * along with Mappero.  If not, see <http://www.gnu.org/licenses/>.
  */
 #define _GNU_SOURCE
 #ifdef HAVE_CONFIG_H
@@ -27,7 +27,6 @@
 
 #include "cmenu.h"
 #include "data.h"
-#include "debug.h"
 #include "defines.h"
 #include "display.h"
 #include "gps.h"
@@ -47,6 +46,9 @@
 
 #include <gconf/gconf-client.h>
 #include <hildon/hildon-banner.h>
+#include <mappero/debug.h>
+#include <mappero/loader.h>
+#include <mappero/viewer.h>
 #include <math.h>
 #include <string.h>
 
@@ -54,11 +56,40 @@
 
 #include "controller-priv.h"
 
-G_DEFINE_TYPE(MapController, map_controller, G_TYPE_OBJECT);
+static void map_controller_viewer_init(MapViewerIface *iface,
+                                       gpointer iface_data);
+
+G_DEFINE_TYPE_WITH_CODE(MapController, map_controller, G_TYPE_OBJECT,
+                        G_IMPLEMENT_INTERFACE(MAP_TYPE_VIEWER,
+                                              map_controller_viewer_init);
+                       );
 
 #define MAP_CONTROLLER_PRIV(controller) (MAP_CONTROLLER(controller)->priv)
 
 static MapController *instance = NULL;
+
+static void
+map_controller_get_transformation(MapViewer *viewer,
+                                  MapLatLonToUnit *latlon2unit,
+                                  MapUnitToLatLon *unit2latlon)
+{
+    const TileSourceType *source_type;
+    source_type = tile_source_get_primary_type();
+    if (G_LIKELY(source_type)) {
+        *latlon2unit = source_type->latlon_to_unit;
+        *unit2latlon = source_type->unit_to_latlon;
+    } else {
+        g_warning("Tile source type is uninitialized");
+        *latlon2unit = NULL;
+        *unit2latlon = NULL;
+    }
+}
+
+static void
+map_controller_viewer_init(MapViewerIface *iface, gpointer iface_data)
+{
+    iface->get_transformation = map_controller_get_transformation;
+}
 
 static gboolean
 download_precache_real(MapController *self)
@@ -186,7 +217,7 @@ map_controller_init(MapController *controller)
 {
     MapControllerPrivate *priv;
     GConfClient *gconf_client = gconf_client_get_default();
-    GObject *plugin;
+    GList *list;
 
     TIME_START();
 
@@ -205,18 +236,12 @@ map_controller_init(MapController *controller)
                          GCONF_CLIENT_PRELOAD_RECURSIVE, NULL);
 
     /* register plugins */
-    plugin = g_object_new(MAP_TYPE_GOOGLE, NULL);
-    map_controller_register_plugin(controller, plugin);
-    map_controller_set_default_router(controller, MAP_ROUTER(plugin));
-    g_object_unref (plugin);
-
-    plugin = g_object_new(MAP_TYPE_REITTIOPAS, NULL);
-    map_controller_register_plugin(controller, plugin);
-    g_object_unref (plugin);
-
-    plugin = g_object_new(MAP_TYPE_YANDEX, NULL);
-    map_controller_register_plugin(controller, plugin);
-    g_object_unref (plugin);
+    map_loader_read_dir(MAP_PLUGIN_DIR);
+    for (list = map_loader_get_objects(); list != NULL; list = list->next)
+    {
+        map_controller_register_plugin(controller, list->data);
+        g_object_unref(list->data);
+    }
 
     /* Load repositories. It is important to load repositories first, because settings need
      * controller for transformations. */
@@ -874,6 +899,7 @@ void
 map_controller_load_repositories(MapController *self, GConfClient *gconf_client)
 {
     MapControllerPrivate *priv;
+    const TileSourceType *source_type;
     GConfValue *value;
 
     g_return_if_fail(MAP_IS_CONTROLLER(self));
@@ -913,6 +939,13 @@ map_controller_load_repositories(MapController *self, GConfClient *gconf_client)
     }
 
     reset_tile_sources_countdown(self);
+
+    /* Emit the signal on the MapViewer interface */
+    source_type = priv->repository->primary->type;
+
+    map_viewer_emit_transformation_changed(MAP_VIEWER(self),
+                                           source_type->latlon_to_unit,
+                                           source_type->unit_to_latlon);
 }
 
 /*
@@ -961,9 +994,9 @@ map_controller_get_repository(MapController *self)
 
 
 static void
-update_path_coords(Repository *from, Repository *to, Path *path)
+update_path_coords(Repository *from, Repository *to, MapPath *path)
 {
-    Point *curr;
+    MapPathPoint *curr;
     MapGeo lat, lon;
 
     for (curr = map_path_first(path);
@@ -999,7 +1032,7 @@ map_controller_set_repository(MapController *self, Repository *repo)
        recalculate map center, current track and route (if needed) */
     if (curr_repo && curr_type->latlon_to_unit != new_type->latlon_to_unit) {
         MapGeo lat, lon;
-        Path *route = map_route_get_path();
+        MapPath *route = map_route_get_path();
 
         curr_type->unit_to_latlon(center.x, center.y, &lat, &lon);
         new_type->latlon_to_unit(lat, lon, &center.x, &center.y);
@@ -1011,6 +1044,11 @@ map_controller_set_repository(MapController *self, Repository *repo)
             update_path_coords(curr_repo, repo, route);
         if ((_show_paths & TRACKS_MASK) && map_path_len(&_track) > 0)
             update_path_coords(curr_repo, repo, &_track);
+
+        /* Emit the signal on the MapViewer interface */
+        map_viewer_emit_transformation_changed(MAP_VIEWER(self),
+                                               new_type->latlon_to_unit,
+                                               new_type->unit_to_latlon);
     }
 
     priv->repository = repo;

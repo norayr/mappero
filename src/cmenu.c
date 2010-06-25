@@ -7,20 +7,20 @@
  *
  * Default map data provided by http://www.openstreetmap.org/
  *
- * This file is part of Maemo Mapper.
+ * This file is part of Mappero.
  *
- * Maemo Mapper is free software: you can redistribute it and/or modify
+ * Mappero is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * Maemo Mapper is distributed in the hope that it will be useful,
+ * Mappero is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with Maemo Mapper.  If not, see <http://www.gnu.org/licenses/>.
+ * along with Mappero.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 #ifdef HAVE_CONFIG_H
@@ -29,11 +29,11 @@
 
 #define _GNU_SOURCE
 
-#include <dialog.h>
 #include <string.h>
 #include <math.h>
 #include <gtk/gtk.h>
 #include <gconf/gconf-client.h>
+#include <mappero-extras/dialog.h>
 
 #ifndef LEGACY
 #    include <hildon/hildon-note.h>
@@ -146,8 +146,11 @@ cmenu_distance_to(const MapPoint *p)
 static void
 cmenu_add_route(const MapPoint *p)
 {
+    MapController *controller = map_controller_get_instance();
+
     map_path_append_unit(map_route_get_path(), p);
     route_find_nearest_point();
+    map_controller_refresh_paths(controller);
 }
 
 static gboolean
@@ -229,7 +232,7 @@ cmenu_cb_loc_set_gps(GtkMenuItem *item)
 }
 
 static void
-cmenu_way_delete(WayPoint *way)
+cmenu_way_delete(MapPathWayPoint *way)
 {
     gchar buffer[BUFFER_SIZE];
     GtkWidget *confirm;
@@ -241,9 +244,9 @@ cmenu_way_delete(WayPoint *way)
     if(GTK_RESPONSE_OK == gtk_dialog_run(GTK_DIALOG(confirm)))
     {
         MapController *controller = map_controller_get_instance();
-        Point *pdel_start, *pdel_end;
+        MapPathPoint *pdel_start, *pdel_end;
         MapLineIter line;
-        Path *route = map_route_get_path();
+        MapPath *route = map_route_get_path();
         gint num_del;
 
         /* Delete surrounding route data, too (from pdel_start inclusive till
@@ -273,7 +276,7 @@ cmenu_way_delete(WayPoint *way)
         num_del = pdel_end - pdel_start - 1;
 
         memmove(pdel_start + 1, pdel_end,
-                (_route.tail - pdel_end + 1) * sizeof(Point));
+                (_route.tail - pdel_end + 1) * sizeof(MapPathPoint));
         _route.tail -= num_del;
 #endif
         map_path_remove_range(route, pdel_start, pdel_end);
@@ -366,7 +369,7 @@ map_menu_point_map(const MapPoint *p)
 }
 
 void
-map_menu_point_waypoint(WayPoint *way)
+map_menu_point_waypoint(MapPathWayPoint *way)
 {
     GtkWidget *dialog, *button;
     MapController *controller;
@@ -481,7 +484,7 @@ map_menu_point_poi(PoiInfo *poi)
 }
 
 static void
-map_menu_point_select(const MapPoint *p, WayPoint *wp, GtkTreeModel *model)
+map_menu_point_select(const MapPoint *p, MapPathWayPoint *wp, GtkTreeModel *model)
 {
     GtkWidget *dialog, *button;
     MapController *controller;
@@ -529,7 +532,7 @@ void
 map_menu_point(const MapPoint *p, MapArea *area)
 {
     GtkTreeModel *model;
-    WayPoint *way;
+    MapPathWayPoint *way;
 
     /* check whether a waypoint is nearby */
     way = find_nearest_waypoint(p);

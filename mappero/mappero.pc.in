@@ -1,0 +1,15 @@
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+libdir=@libdir@
+includedir=@includedir@
+MAP_API_VERSION=@MAP_API_VERSION@
+MAP_ABI_VERSION=@MAP_ABI_VERSION@
+plugindir=${libdir}/mappero.@MAP_ABI_VERSION@
+
+Name: libmappero
+Description: Mappero plugin API
+Requires: gobject-2.0
+Version: @VERSION@
+Libs: -L${libdir} -lmappero
+Cflags: -I${includedir}/mappero-${MAP_API_VERSION}
+

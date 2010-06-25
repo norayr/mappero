@@ -2,20 +2,20 @@
  * Copyright (C) 2006, 2007 John Costigan.
  * Copyright (C) 2010 Alberto Mardegan <mardy@users.sourceforge.net>
  *
- * This file is part of Maemo Mapper.
+ * This file is part of Mappero.
  *
- * Maemo Mapper is free software: you can redistribute it and/or modify
+ * Mappero is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * Maemo Mapper is distributed in the hope that it will be useful,
+ * Mappero is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with Maemo Mapper.  If not, see <http://www.gnu.org/licenses/>.
+ * along with Mappero.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 #ifndef MAEMO_MAPPER_DISPLAY_H
@@ -57,9 +57,10 @@ gboolean thread_render_map(MapRenderTask *mrt);
 
 gboolean latlon_dialog(gdouble lat, gdouble lon);
 
-gboolean display_open_file(GtkWindow *parent, gchar **bytes_out,
-        GnomeVFSHandle **handle_out, gint *size_out, gchar **dir, gchar **file,
-        GtkFileChooserAction chooser_action);
+gboolean display_open_file(GtkWindow *parent,
+                           GInputStream **input, GOutputStream **output,
+                           gchar **dir, gchar **file,
+                           GtkFileChooserAction chooser_action);
 
 void map_download_refresh_idle(MapTileSpec *tile, GdkPixbuf *pixbuf,
                                const GError *error, gpointer user_data);

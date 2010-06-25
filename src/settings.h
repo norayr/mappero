@@ -3,31 +3,32 @@
  * Copyright (C) 2010 Max Lapan
  * Copyright (C) 2010 Alberto Mardegan <mardy@users.sourceforge.net>
  *
- * This file is part of Maemo Mapper.
+ * This file is part of Mappero.
  *
- * Maemo Mapper is free software: you can redistribute it and/or modify
+ * Mappero is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * Maemo Mapper is distributed in the hope that it will be useful,
+ * Mappero is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with Maemo Mapper.  If not, see <http://www.gnu.org/licenses/>.
+ * along with Mappero.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 #ifndef MAEMO_MAPPER_SETTINGS_H
 #define MAEMO_MAPPER_SETTINGS_H
+
+#include "mappero/globals.h"
 
 void settings_init(GConfClient *gconf_client);
 void settings_save(void);
 
 gboolean settings_dialog(void);
 
-#define GCONF_KEY_PREFIX "/apps/maemo/maemo-mapper"
 #define GCONF_KEY_GPS_RCVR_TYPE GCONF_KEY_PREFIX"/gps_rcvr_type"
 #define GCONF_KEY_GPS_BT_MAC GCONF_KEY_PREFIX"/receiver_mac"
 #define GCONF_KEY_GPS_GPSD_HOST GCONF_KEY_PREFIX"/gps_gpsd_host"

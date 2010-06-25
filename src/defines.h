@@ -2,20 +2,20 @@
  * Copyright (C) 2006, 2007 John Costigan.
  * Copyright (C) 2010 Alberto Mardegan <mardy@users.sourceforge.net>
  *
- * This file is part of Maemo Mapper.
+ * This file is part of Mappero.
  *
- * Maemo Mapper is free software: you can redistribute it and/or modify
+ * Mappero is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * Maemo Mapper is distributed in the hope that it will be useful,
+ * Mappero is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with Maemo Mapper.  If not, see <http://www.gnu.org/licenses/>.
+ * along with Mappero.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 #ifndef MAEMO_MAPPER_DEFINES
@@ -103,8 +103,6 @@
 #define TILE_HALFDIAG_PIXELS (181)
 #define TILE_SIZE_P2 (8)
 
-#define ARRAY_CHUNK_SIZE (1024)
-
 #define BUFFER_SIZE (2048)
 
 #define GPSD_PORT_DEFAULT (2947)
@@ -173,16 +171,12 @@
 #define HELP_ID_POICAT HELP_ID_PREFIX"poicat"
 
 #define latlon2unit(lat, lon, unitx, unity) \
-    (tile_source_get_primary_type()->latlon_to_unit(lat, lon, &unitx, &unity))
+    map_latlon2unit(lat, lon, unitx, unity)
 #define unit2latlon(unitx, unity, lat, lon) \
-    (tile_source_get_primary_type()->unit_to_latlon(unitx, unity, &lat, &lon))
+    map_unit2latlon(unitx, unity, lat, lon)
 
 
 #define SQUARE(n) ((n) * (n))
-
-#define DISTANCE_SQUARED(a, b) \
-   ((guint64)((((gint64)(b).x)-(a).x)*(((gint64)(b).x)-(a).x))\
-  + (guint64)((((gint64)(b).y)-(a).y)*(((gint64)(b).y)-(a).y)))
 
 #define MACRO_QUEUE_DRAW_AREA()
 

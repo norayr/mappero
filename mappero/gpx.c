@@ -2,41 +2,35 @@
  * Copyright (C) 2006, 2007 John Costigan.
  * Copyright (C) 2010 Alberto Mardegan <mardy@users.sourceforge.net>
  *
- * POI and GPS-Info code originally written by Cezary Jackiewicz.
+ * This file is part of libMappero.
  *
- * Default map data provided by http://www.openstreetmap.org/
- *
- * This file is part of Maemo Mapper.
- *
- * Maemo Mapper is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
+ * libMappero is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * Maemo Mapper is distributed in the hope that it will be useful,
+ * libMappero is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * GNU Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with Maemo Mapper.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with libMappero.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 #define _GNU_SOURCE
+
+#include "gpx.h"
+
+#include "debug.h"
+#include "util.h"
 
 #include <string.h>
 #include <math.h>
 #include <libxml/parser.h>
 
-#include "types.h"
-#include "data.h"
-#include "debug.h"
-#include "defines.h"
-
-#include "gpx.h"
-#include "navigation.h"
-#include "path.h"
-#include "util.h"
+#define BUFFER_SIZE 2048
+#define XML_DATE_FORMAT "%FT%T"
 
 /** This enum defines the states of the SAX parsing state machine. */
 typedef enum
@@ -72,8 +66,8 @@ struct _SaxData {
 typedef struct _PathSaxData PathSaxData;
 struct _PathSaxData {
     SaxData sax_data;
-    Path path;
-    Point pt;
+    MapPath *path;
+    MapPathPoint pt;
     MapDirection dir;
     gchar *desc;
 };
@@ -82,7 +76,7 @@ typedef struct _PoiSaxData PoiSaxData;
 struct _PoiSaxData {
     SaxData sax_data;
     GList *poi_list;
-    PoiInfo *curr_poi;
+    MapPoiInfo *curr_poi;
 };
 
 /**
@@ -145,26 +139,24 @@ gpx_error(SaxData *data, const gchar *msg, ...)
 }
 
 static gboolean
-gpx_write_string(GnomeVFSHandle *handle, const gchar *str)
+gpx_write_string(GOutputStream *stream, const gchar *str)
 {
-    GnomeVFSResult vfs_result;
-    GnomeVFSFileSize size;
-    if(GNOME_VFS_OK != (vfs_result = gnome_vfs_write(
-                    handle, str, strlen(str), &size)))
+    GError *error = NULL;
+
+    g_output_stream_write(stream, str, strlen(str), NULL, &error);
+    if (G_UNLIKELY(error != NULL))
     {
-        gchar buffer[BUFFER_SIZE];
-        snprintf(buffer, sizeof(buffer),
-                "%s:\n%s\n%s", _("Error while writing to file"),
-                _("File is incomplete."),
-                gnome_vfs_result_to_string(vfs_result));
-        popup_error(_window, buffer);
+        g_warning("Error while writing to file: %s",
+                  error->message);
+        g_error_free(error);
+        /* TODO: return error to client */
         return FALSE;
     }
     return TRUE;
 }
 
 static gboolean
-gpx_write_escaped(GnomeVFSHandle *handle, const gchar *str)
+gpx_write_escaped(GOutputStream *stream, const gchar *str)
 {
     const gchar *ptr = str;
     const gchar *nullchr = ptr + strlen(ptr);
@@ -175,17 +167,15 @@ gpx_write_escaped(GnomeVFSHandle *handle, const gchar *str)
         {
             /* First, write out what we have so far. */
             const gchar *to_write;
-            GnomeVFSResult vfs_result;
-            GnomeVFSFileSize size;
-            if(GNOME_VFS_OK != (vfs_result = gnome_vfs_write(
-                            handle, ptr, newptr - ptr, &size)))
+            GError *error = NULL;
+
+            g_output_stream_write(stream, ptr, newptr - ptr, NULL, &error);
+            if (G_UNLIKELY(error != NULL))
             {
-                gchar buffer[BUFFER_SIZE];
-                snprintf(buffer, sizeof(buffer),
-                        "%s:\n%s\n%s", _("Error while writing to file"),
-                        _("File is incomplete."),
-                        gnome_vfs_result_to_string(vfs_result));
-                popup_error(_window, buffer);
+                g_warning("Error while writing to file: %s",
+                          error->message);
+                g_error_free(error);
+                /* TODO: return error to client */
                 return FALSE;
             }
 
@@ -204,7 +194,7 @@ gpx_write_escaped(GnomeVFSHandle *handle, const gchar *str)
                 default:
                     to_write = "";
             }
-            gpx_write_string(handle, to_write);
+            gpx_write_string(stream, to_write);
 
             /* Advance the pointer to continue searching for entities. */
             ptr = newptr + 1;
@@ -212,7 +202,7 @@ gpx_write_escaped(GnomeVFSHandle *handle, const gchar *str)
         else
         {
             /* No characters need escaping - write the whole thing. */
-            gpx_write_string(handle, ptr);
+            gpx_write_string(stream, ptr);
             ptr = nullchr;
         }
     }
@@ -287,7 +277,8 @@ gpx_path_start_element(PathSaxData *data,
                 }
                 if(has_lat && has_lon)
                 {
-                    latlon2unit(lat, lon, data->pt.unit.x, data->pt.unit.y);
+                    map_latlon2unit(lat, lon,
+                                    data->pt.unit.x, data->pt.unit.y);
                     data->pt.time = 0;
                     data->pt.altitude = 0;
                     data->sax_data.state = INSIDE_PATH_POINT;
@@ -355,7 +346,7 @@ gpx_path_end_element(PathSaxData *data, const xmlChar *name)
             {
                 if(data->sax_data.at_least_one_trkpt)
                 {
-                    map_path_append_break(&data->path);
+                    map_path_append_break(data->path);
                 }
                 data->sax_data.state = INSIDE_PATH;
             }
@@ -365,13 +356,11 @@ gpx_path_end_element(PathSaxData *data, const xmlChar *name)
         case INSIDE_PATH_POINT:
             if(!strcmp((gchar*)name, "trkpt"))
             {
-                Point *p;
-                p = map_path_append_point_fast(&data->path, &data->pt);
+                MapPathPoint *p;
+                p = map_path_append_point_fast(data->path, &data->pt);
                 if (data->desc)
                 {
-                    if (data->dir == MAP_DIRECTION_UNKNOWN)
-                        data->dir = map_navigation_infer_direction(data->desc);
-                    map_path_make_waypoint_full(&data->path, p,
+                    map_path_make_waypoint_full(data->path, p,
                                                 data->dir, data->desc);
                     data->desc = NULL;
                 }
@@ -497,14 +486,40 @@ gpx_path_end_element(PathSaxData *data, const xmlChar *name)
     }
 }
 
+static gboolean
+parse_xml_stream(GInputStream *stream, xmlSAXHandler *sax_handler, void *data)
+{
+    xmlParserCtxtPtr ctx;
+    gchar buffer[1024];
+    gssize len;
+    int ret;
+
+    len = g_input_stream_read(stream, buffer, 4, NULL, NULL);
+    if (len <= 0) return FALSE;
+
+    ctx = xmlCreatePushParserCtxt(sax_handler, data,
+                                  buffer, len, NULL);
+    while ((len = g_input_stream_read(stream, buffer, sizeof(buffer),
+                                      NULL, NULL)) > 0)
+    {
+        DEBUG("Read %d bytes", len);
+        xmlParseChunk(ctx, buffer, len, 0);
+    }
+    xmlParseChunk(ctx, buffer, 0, 1);
+
+    if (ctx->myDoc)
+        xmlFreeDoc(ctx->myDoc);
+    xmlFreeParserCtxt(ctx);
+    return ret == 0;
+}
+
 gboolean
-gpx_path_parse(Path *to_replace, gchar *buffer, gint size, gint policy_old)
+map_gpx_path_parse(GInputStream *stream, MapPath *path)
 {
     PathSaxData data;
     xmlSAXHandler sax_handler;
-    MapPathMergePolicy policy;
 
-    map_path_init(&data.path);
+    data.path = path;
     data.desc = NULL;
     data.sax_data.state = START;
     data.sax_data.chars = g_string_new("");
@@ -518,7 +533,7 @@ gpx_path_parse(Path *to_replace, gchar *buffer, gint size, gint policy_old)
     sax_handler.error = (errorSAXFunc)gpx_error;
     sax_handler.fatalError = (fatalErrorSAXFunc)gpx_error;
 
-    xmlSAXUserParseMemory(&sax_handler, &data, buffer, size);
+    parse_xml_stream(stream, &sax_handler, &data);
     g_string_free(data.sax_data.chars, TRUE);
 
     if(data.sax_data.state != FINISH)
@@ -526,14 +541,7 @@ gpx_path_parse(Path *to_replace, gchar *buffer, gint size, gint policy_old)
         return FALSE;
     }
 
-    if (policy_old == 1)
-        policy = MAP_PATH_MERGE_POLICY_REPLACE;
-    else if (policy_old == 0)
-        policy = MAP_PATH_MERGE_POLICY_APPEND;
-    else
-        policy = MAP_PATH_MERGE_POLICY_PREPEND;
-    map_path_append_point_end(&data.path);
-    map_path_merge(&data.path, to_replace, policy);
+    map_path_append_point_end(data.path);
 
     return TRUE;
 }
@@ -547,10 +555,10 @@ gpx_path_parse(Path *to_replace, gchar *buffer, gint size, gint policy_old)
  ****************************************************************************/
 
 gboolean
-gpx_path_write(Path *path, GnomeVFSHandle *handle)
+map_gpx_path_write(MapPath *path, GOutputStream *handle)
 {
-    Point *curr = NULL;
-    WayPoint *wcurr = NULL;
+    MapPathPoint *curr = NULL;
+    MapPathWayPoint *wcurr = NULL;
     MapLineIter line;
 
     /* Write the header. */
@@ -564,7 +572,7 @@ gpx_path_write(Path *path, GnomeVFSHandle *handle)
     wcurr = path->whead;
     do
     {
-        Point *start, *end;
+        MapPathPoint *start, *end;
         gpx_write_string(handle, "    <trkseg>\n");
         start = map_path_line_first(&line);
         end = start + map_path_line_len(&line);
@@ -573,7 +581,7 @@ gpx_path_write(Path *path, GnomeVFSHandle *handle)
             MapGeo lat, lon;
             gchar buffer[80];
             gboolean first_sub = TRUE;
-            unit2latlon(curr->unit.x, curr->unit.y, lat, lon);
+            map_unit2latlon(curr->unit.x, curr->unit.y, lat, lon);
             gpx_write_string(handle, "      <trkpt lat=\"");
             g_ascii_formatd(buffer, sizeof(buffer), "%.06f", lat);
             gpx_write_string(handle, buffer);
@@ -706,7 +714,7 @@ gpx_poi_start_element(PoiSaxData *data,
                 if(has_lat && has_lon)
                 {
                     data->sax_data.state = INSIDE_WPT;
-                    data->curr_poi = g_slice_new0(PoiInfo);
+                    data->curr_poi = g_slice_new0(MapPoiInfo);
                     data->curr_poi->lat = lat;
                     data->curr_poi->lon = lon;
                     data->poi_list = g_list_append(
@@ -820,7 +828,7 @@ gpx_poi_end_element(PoiSaxData *data, const xmlChar *name)
 }
 
 gboolean
-gpx_poi_parse(gchar *buffer, gint size, GList **poi_list)
+map_gpx_poi_parse(GInputStream *stream, GList **poi_list)
 {
     PoiSaxData data;
     xmlSAXHandler sax_handler;
@@ -838,7 +846,7 @@ gpx_poi_parse(gchar *buffer, gint size, GList **poi_list)
     sax_handler.error = (errorSAXFunc)gpx_error;
     sax_handler.fatalError = (fatalErrorSAXFunc)gpx_error;
 
-    xmlSAXUserParseMemory(&sax_handler, &data, buffer, size);
+    parse_xml_stream(stream, &sax_handler, &data);
     g_string_free(data.sax_data.chars, TRUE);
     *poi_list = data.poi_list;
 
@@ -859,7 +867,7 @@ gpx_poi_parse(gchar *buffer, gint size, GList **poi_list)
  ****************************************************************************/
 
 gint
-gpx_poi_write(GtkTreeModel *model, GnomeVFSHandle *handle)
+map_gpx_poi_write(GtkTreeModel *model, GOutputStream *handle)
 {
     gint num_written = 0;
     GtkTreeIter iter;
@@ -873,19 +881,19 @@ gpx_poi_write(GtkTreeModel *model, GnomeVFSHandle *handle)
     /* Iterate through the data model and import as desired. */
     if(gtk_tree_model_get_iter_first(model, &iter)) do
     {   
-        PoiInfo poi;
+        MapPoiInfo poi;
         gboolean selected;
         memset(&poi, 0, sizeof(poi));
 
         gtk_tree_model_get(model, &iter,
-                POI_SELECTED, &selected,
-                POI_POIID, &(poi.poi_id),
-                POI_CATID, &(poi.cat_id),
-                POI_LAT, &(poi.lat),
-                POI_LON, &(poi.lon),
-                POI_LABEL, &(poi.label),
-                POI_DESC, &(poi.desc),
-                POI_CLABEL, &(poi.clabel),
+                MAP_POI_SELECTED, &selected,
+                MAP_POI_POIID, &(poi.poi_id),
+                MAP_POI_CATID, &(poi.cat_id),
+                MAP_POI_LAT, &(poi.lat),
+                MAP_POI_LON, &(poi.lon),
+                MAP_POI_LABEL, &(poi.label),
+                MAP_POI_DESC, &(poi.desc),
+                MAP_POI_CLABEL, &(poi.clabel),
                 -1);
 
         if(selected)

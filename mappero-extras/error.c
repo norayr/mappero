@@ -3,20 +3,20 @@
 /*
  * Copyright (C) 2010 Alberto Mardegan <mardy@users.sourceforge.net>
  *
- * This file is part of Maemo Mapper.
+ * This file is part of Mappero.
  *
- * Maemo Mapper is free software: you can redistribute it and/or modify
+ * Mappero is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * Maemo Mapper is distributed in the hope that it will be useful,
+ * Mappero is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with Maemo Mapper.  If not, see <http://www.gnu.org/licenses/>.
+ * along with Mappero.  If not, see <http://www.gnu.org/licenses/>.
  */
 #ifdef HAVE_CONFIG_H
 #   include "config.h"
@@ -45,21 +45,5 @@ map_error_show_and_clear(GtkWindow *parent, GError **error)
     if (G_LIKELY(error))
         map_error_show(parent, *error);
     g_clear_error(error);
-}
-
-GQuark
-map_error_quark(void)
-{
-    static gsize quark = 0;
-
-    if (g_once_init_enter(&quark))
-    {
-        GQuark domain = g_quark_from_static_string("map-error");
-
-        g_assert(sizeof(GQuark) <= sizeof(gsize));
-
-        g_once_init_leave(&quark, domain);
-    }
-    return (GQuark) quark;
 }
 

@@ -3,20 +3,20 @@
 /*
  * Copyright (C) 2010 Alberto Mardegan <mardy@users.sourceforge.net>
  *
- * This file is part of Maemo Mapper.
+ * This file is part of libMappero.
  *
- * Maemo Mapper is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
+ * libMappero is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * Maemo Mapper is distributed in the hope that it will be useful,
+ * libMappero is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * GNU Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with Maemo Mapper.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with libMappero.  If not, see <http://www.gnu.org/licenses/>.
  */
 #ifdef HAVE_CONFIG_H
 #   include "config.h"
@@ -33,7 +33,7 @@
 #define DEFAULT_DEBUG_LEVEL 0
 #endif
 
-gint _map_debug_level = DEFAULT_DEBUG_LEVEL;
+gint map_debug_level = DEFAULT_DEBUG_LEVEL;
 
 void
 map_debug_init(void)
@@ -42,9 +42,9 @@ map_debug_init(void)
 
     env = getenv("MAP_DEBUG");
     if (env)
-        _map_debug_level = atoi(env);
+        map_debug_level = atoi(env);
 
-    if (_map_debug_level > 0)
+    if (map_debug_level > 0)
         g_debug("%s version %s", PACKAGE, VERSION);
 }
 
