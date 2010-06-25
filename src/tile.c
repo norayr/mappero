@@ -41,10 +41,26 @@ G_DEFINE_TYPE(MapTile, map_tile, CLUTTER_TYPE_TEXTURE);
 
 #define MAP_TILE_PRIV(tile) (MAP_TILE(tile)->priv)
 
-#define MAX_CACHE_SIZE  140
+/* given the screen size, we usually load no more than 25 tiles per layer */
+#define NUM_TILES_PER_LAYER 25
+#define NUM_TILES_CACHED 15
+#define MAX_CACHE_SIZE  (NUM_TILES_PER_LAYER * (num_active_layers() + 1) + \
+                         NUM_TILES_CACHED)
+
 static GList *tile_cache = NULL;
 static GList *tile_cache_last = NULL;
 static gint tile_cache_size = 0;
+
+static gint
+num_active_layers()
+{
+    MapController *controller = map_controller_get_instance();
+    Repository *repository = map_controller_get_repository(controller);
+
+    if (G_UNLIKELY(!repository)) return 0;
+
+    return (repository->layers != NULL) ? repository->layers->len : 0;
+}
 
 static void
 map_tile_clear(MapTile *tile)
