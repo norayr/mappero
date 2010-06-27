@@ -40,6 +40,8 @@
 #include <hildon/hildon-picker-button.h>
 #include <hildon/hildon-sound.h>
 #include <mappero/debug.h>
+#include <mce/dbus-names.h>
+#include <mce/mode-names.h>
 
 #include "types.h"
 #include "data.h"
@@ -1460,3 +1462,31 @@ display_init()
         }
     }
 }
+
+void
+map_display_on()
+{
+    char *mode;
+    DBusMessage *message;
+
+    DEBUG("Unblanking screen..."); \
+
+    /* Get the system DBus connection */
+    DBusConnection *conn = osso_get_sys_dbus_connection(_osso);
+
+    /* Request T&K unlock */
+    message = dbus_message_new_method_call(MCE_SERVICE,
+                                           MCE_REQUEST_PATH,
+                                           MCE_REQUEST_IF,
+                                           MCE_TKLOCK_MODE_CHANGE_REQ);
+    mode = MCE_TK_UNLOCKED;
+    dbus_message_append_args(message,
+                             DBUS_TYPE_STRING, &mode,
+                             DBUS_TYPE_INVALID);
+
+    dbus_message_set_no_reply(message, TRUE);
+
+    dbus_connection_send(conn, message, NULL);
+    dbus_message_unref(message);
+}
+

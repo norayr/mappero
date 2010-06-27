@@ -67,4 +67,6 @@ void map_download_refresh_idle(MapTileSpec *tile, GdkPixbuf *pixbuf,
 
 void display_init(void);
 
+void map_display_on(void);
+
 #endif /* ifndef MAEMO_MAPPER_DISPLAY_H */

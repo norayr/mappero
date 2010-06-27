@@ -25,6 +25,7 @@
 
 #include "controller.h"
 #include "data.h"
+#include "display.h"
 #include "main.h"
 #include "navigation.h"
 #include "util.h"

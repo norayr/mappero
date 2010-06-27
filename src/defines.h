@@ -188,10 +188,7 @@
             break; \
         case UNBLANK_WAYPOINT: \
             if(APPROACHING_WAYPOINT) \
-            { \
-                DEBUG("Unblanking screen..."); \
-                osso_display_blanking_pause(_osso); \
-            } \
+                map_display_on(); \
             break; \
         default: \
         case UNBLANK_FULLSCREEN: \
@@ -201,8 +198,7 @@
             if(!(MOVING)) \
                 break; \
         case UNBLANK_WITH_GPS: \
-            DEBUG("Unblanking screen..."); \
-            osso_display_blanking_pause(_osso); \
+            map_display_on(); \
     } \
 }
 
