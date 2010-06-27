@@ -36,13 +36,15 @@
 #define MCE_MATCH_RULE "type='signal',interface='" MCE_SIGNAL_IF "',member='" MCE_DEVICE_ORIENTATION_SIG "'"
 
 static void
-set_orientation(const gchar *mode)
+set_orientation(const gchar *mode, gboolean support_portrait)
 {
-    HildonPortraitFlags flags = HILDON_PORTRAIT_MODE_SUPPORT;
+    HildonPortraitFlags flags;
 
     DEBUG("Setting orientation to %s", mode);
     if (strcmp(mode, "portrait") == 0)
-        flags += HILDON_PORTRAIT_MODE_REQUEST;
+        flags = HILDON_PORTRAIT_MODE_REQUEST | HILDON_PORTRAIT_MODE_SUPPORT;
+    else
+        flags = support_portrait ? HILDON_PORTRAIT_MODE_SUPPORT : 0;
     hildon_gtk_window_set_portrait_flags(GTK_WINDOW(_window), flags);
 }
 
@@ -56,7 +58,7 @@ dbus_handle_mce_message(DBusConnection *conn, DBusMessage *msg, gpointer data)
                                MCE_DEVICE_ORIENTATION_SIG)) {
         if (dbus_message_iter_init(msg, &iter)) {
             dbus_message_iter_get_basic(&iter, &mode);
-            set_orientation(mode);
+            set_orientation(mode, TRUE);
         }
     }
     return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
@@ -90,7 +92,7 @@ accelerometer_start()
     if (dbus_message_get_args(reply, NULL,
                               DBUS_TYPE_STRING, &mode,
                               DBUS_TYPE_INVALID)) {
-        set_orientation(mode);
+        set_orientation(mode, TRUE);
     }
     dbus_message_unref(reply); 
 }
@@ -127,7 +129,7 @@ map_controller_set_orientation(MapController *self, MapOrientation orientation)
         accelerometer_stop();
         
         set_orientation(orientation == MAP_ORIENTATION_LANDSCAPE ?
-                        "landscape" : "portrait");
+                        "landscape" : "portrait", FALSE);
     }
 
     self->priv->orientation = orientation;
