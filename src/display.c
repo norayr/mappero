@@ -1488,5 +1488,14 @@ map_display_on()
 
     dbus_connection_send(conn, message, NULL);
     dbus_message_unref(message);
+
+    /* request the screen to be active for a while */
+    message = dbus_message_new_method_call(MCE_SERVICE,
+                                           MCE_REQUEST_PATH,
+                                           MCE_REQUEST_IF,
+                                           MCE_PREVENT_BLANK_REQ);
+    dbus_message_set_no_reply(message, TRUE);
+    dbus_connection_send(conn, message, NULL);
+    dbus_message_unref(message);
 }
 
