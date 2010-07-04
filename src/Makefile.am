@@ -53,6 +53,7 @@ maemo_mapper_LDADD = \
 	$(CAIRO_LIBS)
 
 maemo_mapper_SOURCES = \
+	address-picker.c \
 	cmenu.c \
 	controller.c \
 	data.c \

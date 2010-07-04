@@ -98,7 +98,7 @@ menu_cb_route_open(GtkMenuItem *item)
 static gboolean
 menu_cb_route_download(GtkMenuItem *item)
 {
-    route_download(NULL);
+    map_route_download();
     return TRUE;
 }
 

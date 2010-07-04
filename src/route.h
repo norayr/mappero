@@ -56,7 +56,8 @@ gboolean autoroute_enabled(void);
 
 MapPathWayPoint * find_nearest_waypoint(const MapPoint *p);
 
-gboolean route_download(gchar *to);
+void map_route_download(void);
+void map_route_download_with_destination(gchar *to);
 void route_add_way_dialog(const MapPoint *p);
 
 void map_route_take_path(MapPath *path, MapPathMergePolicy policy);

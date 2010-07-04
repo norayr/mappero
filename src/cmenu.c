@@ -123,7 +123,7 @@ cmenu_route_to(const MapPoint *p)
     g_ascii_formatd(strlon, 32, "%.06f", lon);
     snprintf(buffer, sizeof(buffer), "%s, %s", strlat, strlon);
 
-    route_download(buffer);
+    map_route_download_with_destination(buffer);
 }
 
 static void

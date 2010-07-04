@@ -23,6 +23,7 @@
 #define _GNU_SOURCE
 #include "route.h"
 
+#include "address-picker.h"
 #include "controller.h"
 #include "data.h"
 #include "display.h"
@@ -722,7 +723,7 @@ on_dialog_response(GtkWidget *dialog, gint response, RouteDownloadInfo *rdi)
         }
     }
 
-    to = gtk_entry_get_text(GTK_ENTRY(rdi->destination));
+    to = hildon_button_get_value(HILDON_BUTTON(rdi->destination));
     if (STR_EMPTY(to))
     {
         popup_error(dialog, _("Please specify an end location."));
@@ -767,6 +768,21 @@ route_download_info_free(RouteDownloadInfo *rdi)
     g_slice_free(RouteDownloadInfo, rdi);
 }
 
+static void
+on_destination_clicked(HildonButton *button, GtkWindow *dialog)
+{
+    MapLocation location;
+    gboolean ok;
+
+    memset(&location, 0, sizeof(location));
+    location.address = g_strdup(hildon_button_get_value(button));
+    ok = map_address_picker_run(_("Enter your destination"), dialog,
+                                NULL, &location);
+    if (ok && location.address != NULL)
+        hildon_button_set_value(button, location.address);
+    g_free(location.address);
+}
+
 /**
  * Display a dialog box to the user asking them to download a route.  The
  * "From" and "To" textfields may be initialized using the first two
@@ -777,16 +793,13 @@ route_download_info_free(RouteDownloadInfo *rdi)
  * None of the passed strings are freed - that is left to the caller, and it is
  * safe to free either string as soon as this function returns.
  */
-gboolean
-route_download(gchar *to)
+void
+map_route_download_with_destination(gchar *to)
 {
     MapController *controller = map_controller_get_instance();
     GtkWidget *dialog;
     MapDialog *dlg;
-    GtkWidget *label;
     GtkWidget *widget;
-    GtkWidget *hbox;
-    GtkEntryCompletion *to_comp;
     HildonTouchSelector *origin_selector;
     RouteDownloadInfo *rdi;
     gint i;
@@ -810,15 +823,18 @@ route_download(gchar *to)
     rdi->dialog = GTK_WINDOW(dialog);
 
     /* Destination. */
-    hbox = gtk_hbox_new(FALSE, 0);
-    gtk_box_pack_start(GTK_BOX(hbox),
-                       label = gtk_label_new(_("Destination")),
-                       FALSE, TRUE, 0);
-    gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5f);
-    rdi->destination = hildon_entry_new(HILDON_SIZE_FINGER_HEIGHT);
-    gtk_box_pack_start(GTK_BOX(hbox), rdi->destination,
-                       TRUE, TRUE, 0);
-    map_dialog_add_widget(dlg, hbox);
+    rdi->destination =
+        g_object_new(HILDON_TYPE_BUTTON,
+                     "arrangement", HILDON_BUTTON_ARRANGEMENT_HORIZONTAL,
+                     "size", HILDON_SIZE_FINGER_HEIGHT,
+                     "style", HILDON_BUTTON_STYLE_PICKER,
+                     "title", _("Destination"),
+                     "value", to,
+                     "xalign", 0.0,
+                     NULL);
+    g_signal_connect(rdi->destination, "clicked",
+                     G_CALLBACK(on_destination_clicked), dialog);
+    map_dialog_add_widget(dlg, rdi->destination);
 
 
     /* Origin. */
@@ -899,22 +915,10 @@ route_download(gchar *to)
                      G_CALLBACK(on_router_selector_changed), rdi);
     map_dialog_add_widget(dlg, widget);
 
-    /* Set up auto-completion. */
-    to_comp = gtk_entry_completion_new();
-    gtk_entry_completion_set_model(to_comp, GTK_TREE_MODEL(_loc_model));
-    gtk_entry_completion_set_text_column(to_comp, 0);
-    gtk_entry_set_completion(GTK_ENTRY(rdi->destination), to_comp);
-
-    /* Initialize fields. */
-    if(to)
-        gtk_entry_set_text(GTK_ENTRY(rdi->destination), to);
-
     gtk_widget_show_all(dialog);
 
     g_signal_connect(dialog, "response",
                      G_CALLBACK(on_dialog_response), rdi);
-
-    return TRUE;
 }
 
 void
@@ -1092,5 +1096,23 @@ map_route_get_distance_to_next_waypoint()
     if (_route.distance_to_next_waypoint < 0)
         route_calc_distance_to(NULL, &_route.distance_to_next_waypoint);
     return _route.distance_to_next_waypoint;
+}
+
+void
+map_route_download()
+{
+    MapLocation location;
+
+    conic_recommend_connected();
+
+    memset(&location, 0, sizeof(location));
+    if (!map_address_picker_run(_("Enter your destination"),
+                                GTK_WINDOW(_window),
+                                NULL, &location))
+        return;
+
+    DEBUG("chosen: %s", location.address);
+    map_route_download_with_destination(location.address);
+    g_free(location.address);
 }
 
