@@ -1361,7 +1361,7 @@ map_controller_load_routers_options(MapController *self, GConfClient *gconf_clie
     /* Get default router. */
     router_name = gconf_client_get_string(gconf_client,
                                           GCONF_KEY_ROUTER_NAME, NULL);
-    if (!router_name) router_name = g_strdup("google");
+    if (!router_name) router_name = g_strdup("Google");
     while (p) {
         MapRouter *router = p->data;
 
