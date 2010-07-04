@@ -51,16 +51,17 @@ G_DEFINE_TYPE(MapAddressPicker, map_address_picker, GTK_TYPE_DIALOG);
 
 #define MAP_ADDRESS_PICKER_PRIV(address_picker) (MAP_ADDRESS_PICKER(address_picker)->priv)
 
-static void
+static gboolean
 map_address_picker_dup_location(MapAddressPicker *self, MapLocation *location)
 {
     const gchar *address;
-    g_return_if_fail(location != NULL);
+    g_return_val_if_fail(location != NULL, FALSE);
 
     g_free(location->address);
     address = gtk_entry_get_text(GTK_ENTRY(self->priv->w_address));
     if (address)
         location->address = g_strstrip(g_strdup(address));
+    return address != NULL;
 }
 
 static gboolean
@@ -262,9 +263,9 @@ map_address_picker_run(const gchar *title, GtkWindow *parent,
     response = gtk_dialog_run(GTK_DIALOG(picker));
     if (response == GTK_RESPONSE_ACCEPT)
     {
-        map_address_picker_dup_location(MAP_ADDRESS_PICKER(picker),
-                                        location);
-        location_set = TRUE;
+        if (map_address_picker_dup_location(MAP_ADDRESS_PICKER(picker),
+                                            location))
+            location_set = TRUE;
     }
 
     gtk_widget_destroy(picker);
