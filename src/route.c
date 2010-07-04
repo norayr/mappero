@@ -538,45 +538,21 @@ find_nearest_waypoint(const MapPoint *point)
 static void
 on_origin_changed_other(HildonPickerButton *button, RouteDownloadInfo *rdi)
 {
-    GtkEntryCompletion *completion;
-    GtkWidget *dialog;
-    GtkWidget *entry;
-    gboolean chose = FALSE;
+    MapLocation location;
 
     /* if the "Other" option is chosen then ask the user to enter a location */
     if (hildon_picker_button_get_active(button) != rdi->origin_row_other)
         return;
 
-    dialog = gtk_dialog_new_with_buttons
-        (_("Origin"), rdi->dialog, GTK_DIALOG_MODAL,
-         GTK_STOCK_OK, GTK_RESPONSE_ACCEPT,
-         NULL);
-
-    entry = hildon_entry_new(HILDON_SIZE_FINGER_HEIGHT);
-    completion = gtk_entry_completion_new();
-    gtk_entry_completion_set_model(completion, GTK_TREE_MODEL(_loc_model));
-    gtk_entry_completion_set_text_column(completion, 0);
-    gtk_entry_set_completion(GTK_ENTRY(entry), completion);
-    gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox), entry,
-                       FALSE, FALSE, 0);
-
-    gtk_widget_show_all(dialog);
-    if (gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_ACCEPT)
+    memset(&location, 0, sizeof(location));
+    if (map_address_picker_run(_("Starting point"), rdi->dialog,
+                               NULL, &location))
     {
-        const gchar *origin;
-
-        origin = gtk_entry_get_text(GTK_ENTRY(entry));
-        if (!STR_EMPTY(origin))
-        {
-            hildon_button_set_value(HILDON_BUTTON(button), origin);
-            chose = TRUE;
-        }
+        hildon_button_set_value(HILDON_BUTTON(button), location.address);
+        g_free(location.address);
     }
-
-    if (!chose)
+    else
         hildon_picker_button_set_active(button, 0);
-
-    gtk_widget_destroy(dialog);
 }
 
 static void
