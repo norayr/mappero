@@ -85,7 +85,7 @@ route_download_and_setup(MapPath *path, const gchar *source_url,
     g_free (buffer);
     stream = (GInputStream *)g_file_read(file, NULL, error);
 
-    if (G_UNLIKELY(error != NULL))
+    if (G_UNLIKELY(*error != NULL))
         goto finish;
 
     if (!map_gpx_path_parse(stream, path))
