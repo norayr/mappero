@@ -485,7 +485,7 @@ map_controller_disable_auto_center(MapController *self)
 {
     if (_center_mode > 0)
     {
-        map_controller_set_center_mode(self, -_center_mode);
+        map_controller_set_center_mode(self, CENTER_MANUAL);
         MACRO_BANNER_SHOW_INFO(_window, _("Auto-Center Off"));
     }
 }
