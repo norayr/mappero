@@ -582,12 +582,27 @@ on_router_selector_changed(HildonPickerButton *button, RouteDownloadInfo *rdi)
 static void
 save_location(MapLocation *location)
 {
-    const gchar *address;
+    const gchar *address, *ptr;
+    gboolean is_geolocation = TRUE;
     GtkTreeIter iter;
 
     g_return_if_fail(location != NULL);
     address = location->address;
     if (address == NULL) return;
+
+    /* only save real addresses, not GPS coordinates */
+    for (ptr = address; *ptr != '\0'; ptr++)
+    {
+        if (!g_ascii_isdigit(*ptr) &&
+            !g_ascii_isspace(*ptr) &&
+            !g_ascii_ispunct(*ptr) &&
+            *ptr != '+' && *ptr != '-')
+        {
+            is_geolocation = FALSE;
+            break;
+        }
+    }
+    if (is_geolocation) return;
 
     if (!g_slist_find_custom(_loc_list, address, (GCompareFunc)strcmp))
     {
