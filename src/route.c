@@ -580,13 +580,29 @@ on_router_selector_changed(HildonPickerButton *button, RouteDownloadInfo *rdi)
 }
 
 static void
+save_location(MapLocation *location)
+{
+    const gchar *address;
+    GtkTreeIter iter;
+
+    g_return_if_fail(location != NULL);
+    address = location->address;
+    if (address == NULL) return;
+
+    if (!g_slist_find_custom(_loc_list, address, (GCompareFunc)strcmp))
+    {
+        _loc_list = g_slist_prepend(_loc_list, g_strdup(address));
+        gtk_list_store_insert_with_values(_loc_model, &iter,
+                INT_MAX, 0, address, -1);
+    }
+}
+
+static void
 calculate_route_cb(MapRouter *router, MapPath *path, const GError *error,
                    GtkDialog **p_dialog)
 {
     GtkDialog *dialog = *p_dialog;
     RouteDownloadInfo *rdi;
-    GtkTreeIter iter;
-    const gchar *from, *to;
 
     DEBUG("called (error = %p)", error);
     g_slice_free(GtkDialog *, p_dialog);
@@ -626,24 +642,10 @@ calculate_route_cb(MapRouter *router, MapPath *path, const GError *error,
     }
 
     /* Save Origin in Route Locations list if not from GPS. */
-    from = rdi->from.address;
-    if (from != NULL &&
-        !g_slist_find_custom(_loc_list, from, (GCompareFunc)strcmp))
-    {
-        _loc_list = g_slist_prepend(_loc_list, g_strdup(from));
-        gtk_list_store_insert_with_values(_loc_model, &iter,
-                INT_MAX, 0, from, -1);
-    }
+    save_location(&rdi->from);
 
     /* Save Destination in Route Locations list. */
-    to = rdi->to.address;
-    if (to != NULL &&
-        !g_slist_find_custom(_loc_list, to, (GCompareFunc)strcmp))
-    {
-        _loc_list = g_slist_prepend(_loc_list, g_strdup(to));
-        gtk_list_store_insert_with_values(_loc_model, &iter,
-                INT_MAX, 0, to, -1);
-    }
+    save_location(&rdi->to);
 
     gtk_dialog_response(dialog, GTK_RESPONSE_CLOSE);
 }
