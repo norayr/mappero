@@ -30,7 +30,7 @@
 #include <glib/gi18n.h>
 #include <hildon/hildon-check-button.h>
 #include <mappero/error.h>
-#include <mappero/gpx.h>
+#include <mappero/kml.h>
 #include <mappero/path.h>
 #include <mappero-extras/dialog.h>
 #include <math.h>
@@ -40,7 +40,7 @@
 #define GCONF_GOOGLE_KEY_AVOID_HIGHWAYS GCONF_GOOGLE_KEY_PREFIX"/avoid_highways"
 
 #define GOOGLE_ROUTER_URL \
-    "http://www.gnuite.com/cgi-bin/gpx.cgi?saddr=%s&daddr=%s"
+    "http://maps.google.com/maps?saddr=%s&daddr=%s&output=kml"
 
 static void router_iface_init(MapRouterIface *iface);
 
@@ -82,7 +82,7 @@ route_download_and_setup(MapPath *path, const gchar *source_url,
     if (avoid_highways)
     {
         gchar *old = buffer;
-        buffer = g_strconcat(old, "&avoid_highways=on", NULL);
+        buffer = g_strconcat(old, "&dirflg=h", NULL);
         g_free(old);
     }
 
@@ -95,7 +95,7 @@ route_download_and_setup(MapPath *path, const gchar *source_url,
     if (G_UNLIKELY(*error != NULL))
         goto finish;
 
-    if (!map_gpx_path_parse(stream, path))
+    if (!map_kml_path_parse(stream, path))
     {
         g_set_error(error, MAP_ERROR, MAP_ERROR_INVALID_ADDRESS,
                     _("Invalid source or destination."));
