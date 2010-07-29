@@ -106,9 +106,27 @@ on_row_activated(GtkTreeView *tree_view, GtkTreePath *path,
 }
 
 static void
+on_show(MapAddressPicker *self)
+{
+    gtk_editable_select_region(GTK_EDITABLE(self->priv->w_address), 0, -1);
+}
+
+static void
 on_address_changed(GtkEditable *editable, MapAddressPicker *self)
 {
     gtk_tree_model_filter_refilter(GTK_TREE_MODEL_FILTER(self->priv->model));
+}
+
+static void
+map_address_picker_constructed(GObject *object)
+{
+    void (*constructed)(GObject *);
+
+    gtk_widget_show_all(GTK_WIDGET(object));
+
+    constructed = G_OBJECT_CLASS(map_address_picker_parent_class)->constructed;
+    if (constructed != NULL)
+        constructed(object);
 }
 
 static void
@@ -211,7 +229,7 @@ map_address_picker_init(MapAddressPicker *self)
     gtk_box_pack_start(GTK_BOX(GTK_DIALOG(self)->vbox), pannable,
                        TRUE, TRUE, 0);
 
-    gtk_widget_show_all(GTK_WIDGET(self));
+    g_signal_connect(self, "show", G_CALLBACK(on_show), NULL);
 }
 
 static void
@@ -221,6 +239,7 @@ map_address_picker_class_init(MapAddressPickerClass * klass)
 
     g_type_class_add_private(object_class, sizeof(MapAddressPickerPrivate));
 
+    object_class->constructed = map_address_picker_constructed;
     object_class->set_property = map_address_picker_set_property;
     object_class->dispose = map_address_picker_dispose;
 
