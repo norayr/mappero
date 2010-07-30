@@ -116,6 +116,11 @@ struct _DeletePOI {
     gboolean deleted;
 };
 
+typedef enum {
+    POI_ACTION_NEW,
+    POI_ACTION_EDIT,
+} PoiAction;
+
 static gint
 poi_parse_gpx(const gchar *buffer, gsize len, GList **list)
 {
@@ -1134,18 +1139,19 @@ poi_create_cat_combo()
     return cmb_category;
 }
 
-gboolean
-poi_add_dialog(GtkWidget *parent, const MapPoint *point)
+static gboolean
+poi_dialog_run(GtkWidget *parent, PoiInfo *poi, PoiAction action)
 {
-    static PoiInfo poi;
+    GtkTreeIter iter;
     static GtkWidget *dialog;
     static GtkWidget *table;
     static GtkWidget *label;
     static GtkWidget *txt_label;
     static GtkWidget *txt_lat;
-    static GtkWidget *txt_lon;
+    static GtkWidget *txt_lon = NULL;
     static GtkWidget *cmb_category;
     static GtkWidget *txt_desc;
+    static GtkWidget *btn_delete = NULL;
     static GtkWidget *btn_catedit;
     static GtkWidget *hbox;
     static GtkWidget *txt_scroll;
@@ -1153,42 +1159,36 @@ poi_add_dialog(GtkWidget *parent, const MapPoint *point)
     static GtkTextIter begin, end;
     static DeletePOI dpoi = {NULL, NULL, 0};
     static PoiCategoryEditInfo pcedit;
-    static int last_deg_format = 0;
-    
-    DEBUG("%d, %d", point->x, point->y);
-
-    unit2latlon(point->x, point->y, poi.lat, poi.lon);
-
     
     gint fallback_deg_format = _degformat;
     
-    if(!coord_system_check_lat_lon (poi.lat, poi.lon, &fallback_deg_format))
+    if(!coord_system_check_lat_lon (poi->lat, poi->lon, &fallback_deg_format))
     {
-    	last_deg_format = _degformat;
     	_degformat = fallback_deg_format;
-    	
-    	if(dialog != NULL) gtk_widget_destroy(dialog);
-    	dialog = NULL;
     }
-    else if(_degformat != last_deg_format)
-    {
-    	last_deg_format = _degformat;
-    	
-		if(dialog != NULL) gtk_widget_destroy(dialog);
-    	dialog = NULL;
-    }
-    
-    
 
-
-    if(dialog == NULL)
+    if (action == POI_ACTION_NEW)
     {
         dialog = gtk_dialog_new_with_buttons(_("Add POI"),
             GTK_WINDOW(parent), GTK_DIALOG_MODAL,
             GTK_STOCK_OK, GTK_RESPONSE_ACCEPT,
             GTK_STOCK_CANCEL, GTK_RESPONSE_REJECT,
             NULL);
+    }
+    else
+    {
+        dialog = gtk_dialog_new_with_buttons(_("Edit POI"),
+            GTK_WINDOW(parent), GTK_DIALOG_MODAL,
+            GTK_STOCK_OK, GTK_RESPONSE_ACCEPT,
+            NULL);
 
+        gtk_container_add(GTK_CONTAINER(GTK_DIALOG(dialog)->action_area),
+                btn_delete = gtk_button_new_with_label(_("Delete...")));
+        g_signal_connect(G_OBJECT(btn_delete), "clicked",
+                          G_CALLBACK(poi_delete), &dpoi);
+    }
+
+    {
         /* Set the lat/lon strings. */
         gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox),
                 table = gtk_table_new(6, 4, FALSE), TRUE, TRUE, 0);
@@ -1264,279 +1264,6 @@ poi_add_dialog(GtkWidget *parent, const MapPoint *point)
                 G_CALLBACK(poi_edit_cat), &pcedit);
     }
 
-    poi.poi_id = -1;
-    poi.cat_id = -1;
-    poi.clabel = NULL;
-    poi.desc = g_strdup("");
-
-    /* Lat/Lon */
-    {
-        gchar tmp1[LL_FMT_LEN], tmp2[LL_FMT_LEN];
-
-        format_lat_lon(poi.lat, poi.lon, tmp1, tmp2);
-        //lat_format(poi.lat, tmp1);
-        //lon_format(poi.lon, tmp2);
-
-        gtk_entry_set_text(GTK_ENTRY(txt_lat), tmp1);
-        
-        if(txt_lon != NULL)
-        	gtk_entry_set_text(GTK_ENTRY(txt_lon), tmp2);
-    }
-
-    /* Label */
-    if(SQLITE_ROW == sqlite3_step(_stmt_nextlabel_poi))
-        poi.label = g_strdup_printf("Point%06d",
-                sqlite3_column_int(_stmt_nextlabel_poi, 0));
-    else
-        poi.label = g_strdup("");
-    sqlite3_reset(_stmt_nextlabel_poi);
-    gtk_entry_set_text(GTK_ENTRY(txt_label), poi.label);
-
-    /* POI Desc. */
-    gtk_text_buffer_set_text(desc_txt, "", -1);
-
-    /* Category. */
-    {
-        GtkTreeIter iter;
-        gint cat_id = -1;
-        gboolean had_cat_id = FALSE;
-
-        if(gtk_combo_box_get_active_iter(
-                GTK_COMBO_BOX(cmb_category), &iter))
-        {
-            gtk_tree_model_get(
-                    gtk_combo_box_get_model(GTK_COMBO_BOX(cmb_category)),&iter,
-                    0, &cat_id,
-                    -1);
-            had_cat_id = TRUE;
-        }
-        gtk_list_store_clear(GTK_LIST_STORE(gtk_combo_box_get_model(
-                        GTK_COMBO_BOX(cmb_category))));
-        if(poi_populate_categories(GTK_LIST_STORE(gtk_combo_box_get_model(
-                    GTK_COMBO_BOX(cmb_category))), cat_id, &iter)
-                && had_cat_id)
-        {
-            gtk_combo_box_set_active_iter(GTK_COMBO_BOX(cmb_category), &iter);
-        }
-    }
-
-    pcedit.dialog = dialog;
-    pcedit.cmb_category = cmb_category;
-    pcedit.cat_id = poi.cat_id;
-
-    gtk_widget_show_all(dialog);
-
-    while(GTK_RESPONSE_ACCEPT == gtk_dialog_run(GTK_DIALOG(dialog)))
-    {
-        GtkTreeIter iter;
-        const gchar *lat, *lon = NULL;
-
-        lat = gtk_entry_get_text(GTK_ENTRY(txt_lat));
-        
-        if(txt_lon != NULL)
-        	lon = gtk_entry_get_text(GTK_ENTRY(txt_lon));
-        
-        if(!parse_coords(lat, lon, &poi.lat, &poi.lon))
-        {
-        	popup_error(dialog, _("Invalid Coordinate specified"));
-        	continue;
-        }
-        
-        if(strlen(gtk_entry_get_text(GTK_ENTRY(txt_label))))
-        {
-            if(poi.label)
-                g_free(poi.label);
-            poi.label = g_strdup(gtk_entry_get_text(GTK_ENTRY(txt_label)));
-        }
-        else
-        {
-            popup_error(dialog, _("Please specify a name."));
-            continue;
-        }
-
-        if(!gtk_combo_box_get_active_iter(
-                GTK_COMBO_BOX(cmb_category), &iter))
-        {
-            popup_error(dialog, _("Please specify a category."));
-            continue;
-        }
-
-        gtk_text_buffer_get_iter_at_offset(desc_txt, &begin,0 );
-        gtk_text_buffer_get_end_iter (desc_txt, &end);
-        if(poi.desc)
-            g_free(poi.desc);
-        poi.desc = gtk_text_buffer_get_text(desc_txt, &begin, &end, TRUE);
-
-        if(poi.clabel)
-            g_free(poi.clabel);
-        gtk_tree_model_get(
-                gtk_combo_box_get_model(GTK_COMBO_BOX(cmb_category)), &iter,
-                0, &poi.cat_id,
-                1, &poi.clabel,
-                -1);
-
-        /* add poi */
-        if(SQLITE_OK != sqlite3_bind_double(_stmt_insert_poi, 1, poi.lat)
-        || SQLITE_OK != sqlite3_bind_double(_stmt_insert_poi, 2, poi.lon)
-        || SQLITE_OK != sqlite3_bind_text(_stmt_insert_poi, 3, poi.label,
-               -1, SQLITE_STATIC)
-        || SQLITE_OK != sqlite3_bind_text(_stmt_insert_poi, 4, poi.desc,
-               -1, SQLITE_STATIC)
-        || SQLITE_OK != sqlite3_bind_int(_stmt_insert_poi, 5, poi.cat_id)
-        || SQLITE_DONE != sqlite3_step(_stmt_insert_poi))
-        {
-            MACRO_BANNER_SHOW_INFO(parent, _("Error adding POI"));
-        }
-
-        sqlite3_reset(_stmt_insert_poi);
-
-        /* We're done. */
-        break;
-    }
-
-    g_free(poi.label);
-    g_free(poi.desc);
-    g_free(dpoi.txt_label);
-
-    map_screen_refresh_pois(MAP_SCREEN(_w_map), NULL);
-
-    gtk_widget_hide(dialog);
-
-    _degformat = last_deg_format;
-    	
-    return !dpoi.deleted;
-}
-
-gboolean
-poi_view_dialog(GtkWidget *parent, PoiInfo *poi)
-{
-    GtkTreeIter iter;
-    static GtkWidget *dialog;
-    static GtkWidget *table;
-    static GtkWidget *label;
-    static GtkWidget *txt_label;
-    static GtkWidget *txt_lat;
-    static GtkWidget *txt_lon;
-    static GtkWidget *cmb_category;
-    static GtkWidget *txt_desc;
-    static GtkWidget *btn_delete = NULL;
-    static GtkWidget *btn_catedit;
-    static GtkWidget *hbox;
-    static GtkWidget *txt_scroll;
-    static GtkTextBuffer *desc_txt;
-    static GtkTextIter begin, end;
-    static DeletePOI dpoi = {NULL, NULL, 0};
-    static PoiCategoryEditInfo pcedit;
-    static int last_deg_format = 0;
-    
-    gint fallback_deg_format = _degformat;
-    
-    if(!coord_system_check_lat_lon (poi->lat, poi->lon, &fallback_deg_format))
-    {
-    	last_deg_format = _degformat;
-    	_degformat = fallback_deg_format;
-    	
-    	if(dialog != NULL) gtk_widget_destroy(dialog);
-    	dialog = NULL;
-    }
-    else if(_degformat != last_deg_format)
-    {
-    	last_deg_format = _degformat;
-    	
-		if(dialog != NULL) gtk_widget_destroy(dialog);
-    	dialog = NULL;
-    }
-
-    if(dialog == NULL)
-    {
-        dialog = gtk_dialog_new_with_buttons(_("Edit POI"),
-            GTK_WINDOW(parent), GTK_DIALOG_MODAL,
-            GTK_STOCK_OK, GTK_RESPONSE_ACCEPT,
-            NULL);
-
-        gtk_container_add(GTK_CONTAINER(GTK_DIALOG(dialog)->action_area),
-                btn_delete = gtk_button_new_with_label(_("Delete...")));
-
-        gtk_dialog_add_button(GTK_DIALOG(dialog),
-                GTK_STOCK_CANCEL, GTK_RESPONSE_REJECT);
-
-        /* Set the lat/lon strings. */
-        gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox),
-                table = gtk_table_new(6, 4, FALSE), TRUE, TRUE, 0);
-
-        gtk_table_attach(GTK_TABLE(table),
-                label = gtk_label_new(DEG_FORMAT_ENUM_TEXT[_degformat].short_field_1),
-                0, 1, 0, 1, GTK_FILL, 0, 2, 0);
-        gtk_misc_set_alignment(GTK_MISC(label), 1.f, 0.5f);
-        gtk_table_attach(GTK_TABLE(table),
-                txt_lat = gtk_entry_new(),
-                1, 2, 0, 1, GTK_FILL, 0, 2, 0);
-
-        if(DEG_FORMAT_ENUM_TEXT[_degformat].field_2_in_use)
-        {
-	        gtk_table_attach(GTK_TABLE(table),
-	                label = gtk_label_new(DEG_FORMAT_ENUM_TEXT[_degformat].short_field_2),
-	                2, 3, 0, 1, GTK_FILL, 0, 2, 0);
-	        gtk_misc_set_alignment(GTK_MISC(label), 1.f, 0.5f);
-	        gtk_table_attach(GTK_TABLE(table),
-	                txt_lon = gtk_entry_new(),
-	                3, 4, 0, 1, GTK_FILL, 0, 2, 0);
-        }
-        
-        gtk_table_attach(GTK_TABLE(table),
-                label = gtk_label_new(_("Label")),
-                0, 1, 1, 2, GTK_FILL, 0, 2, 0);
-        gtk_misc_set_alignment(GTK_MISC(label), 1.f, 0.5f);
-        gtk_table_attach(GTK_TABLE(table),
-                txt_label = gtk_entry_new(),
-                1, 4, 1, 2, GTK_EXPAND | GTK_FILL, 0, 2, 0);
-
-        gtk_table_attach(GTK_TABLE(table),
-                label = gtk_label_new(_("Category")),
-                0, 1, 3, 4, GTK_FILL, 0, 2, 0);
-        gtk_misc_set_alignment(GTK_MISC(label), 1.f, 0.5f);
-        gtk_table_attach(GTK_TABLE(table),
-                hbox = gtk_hbox_new(FALSE, 4),
-                1, 4, 3, 4, GTK_EXPAND | GTK_FILL, 0, 2, 0);
-        gtk_box_pack_start(GTK_BOX(hbox),
-                cmb_category = poi_create_cat_combo(),
-                FALSE, FALSE, 0);
-
-        gtk_box_pack_start(GTK_BOX(hbox),
-                btn_catedit = gtk_button_new_with_label(
-                    _("Edit Categories...")),
-                FALSE, FALSE, 0);
-
-        gtk_table_attach(GTK_TABLE(table),
-                label = gtk_label_new(_("Description")),
-                0, 1, 5, 6, GTK_FILL, GTK_FILL, 2, 0);
-        gtk_misc_set_alignment(GTK_MISC(label), 1.f, 0.0f);
-
-        txt_scroll = gtk_scrolled_window_new(NULL, NULL);
-        gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(txt_scroll),
-                GTK_SHADOW_IN);
-        gtk_table_attach(GTK_TABLE(table),
-                txt_scroll,
-                1, 4, 5, 6, GTK_EXPAND | GTK_FILL, 0, 2, 0);
-
-        gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(txt_scroll),
-                GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
-
-        txt_desc = gtk_text_view_new ();
-        gtk_text_view_set_wrap_mode(GTK_TEXT_VIEW(txt_desc), GTK_WRAP_WORD);
-
-        gtk_container_add(GTK_CONTAINER(txt_scroll), txt_desc);
-        gtk_widget_set_size_request(GTK_WIDGET(txt_scroll), 550, 120);
-
-        desc_txt = gtk_text_view_get_buffer (GTK_TEXT_VIEW (txt_desc));
-
-        g_signal_connect(G_OBJECT(btn_delete), "clicked",
-                          G_CALLBACK(poi_delete), &dpoi);
-
-        g_signal_connect(G_OBJECT(btn_catedit), "clicked",
-                G_CALLBACK(poi_edit_cat), &pcedit);
-    }
-
     dpoi.dialog = dialog;
     dpoi.txt_label = g_strdup(poi->label);
     dpoi.id = poi->poi_id;
@@ -1547,31 +1274,29 @@ poi_view_dialog(GtkWidget *parent, PoiInfo *poi)
         gchar tmp1[LL_FMT_LEN], tmp2[LL_FMT_LEN];
 
         format_lat_lon(poi->lat, poi->lon, tmp1, tmp2);
-        //lat_format(poi->lat, tmp1);
-        //lon_format(poi->lon, tmp2);
+        //lat_format(poi.lat, tmp1);
+        //lon_format(poi.lon, tmp2);
 
         gtk_entry_set_text(GTK_ENTRY(txt_lat), tmp1);
         
-        if(DEG_FORMAT_ENUM_TEXT[_degformat].field_2_in_use)
+        if(txt_lon != NULL)
         	gtk_entry_set_text(GTK_ENTRY(txt_lon), tmp2);
-        else
-        	gtk_entry_set_text(GTK_ENTRY(txt_lon), g_strdup(""));
     }
 
-    /* label */
+    /* Label */
     gtk_entry_set_text(GTK_ENTRY(txt_label), poi->label);
 
-    /* poi_desc */
+    /* POI Desc. */
     gtk_text_buffer_set_text(desc_txt, poi->desc, -1);
 
     /* Category. */
     gtk_list_store_clear(GTK_LIST_STORE(gtk_combo_box_get_model(
                     GTK_COMBO_BOX(cmb_category))));
     if(poi_populate_categories(GTK_LIST_STORE(gtk_combo_box_get_model(
-                GTK_COMBO_BOX(cmb_category))), poi->cat_id, &iter))
+                GTK_COMBO_BOX(cmb_category))), poi->cat_id, &iter)
+            && poi->cat_id >= 0)
         gtk_combo_box_set_active_iter(GTK_COMBO_BOX(cmb_category), &iter);
 
-    /* Connect Signals */
     pcedit.dialog = dialog;
     pcedit.cmb_category = cmb_category;
     pcedit.cat_id = poi->cat_id;
@@ -1580,17 +1305,18 @@ poi_view_dialog(GtkWidget *parent, PoiInfo *poi)
 
     while(GTK_RESPONSE_ACCEPT == gtk_dialog_run(GTK_DIALOG(dialog)))
     {
-        const gchar *text_lat, *text_lon;
+        const gchar *lat, *lon = NULL;
 
-        text_lat = gtk_entry_get_text(GTK_ENTRY(txt_lat));
-        text_lon = gtk_entry_get_text(GTK_ENTRY(txt_lon));
+        lat = gtk_entry_get_text(GTK_ENTRY(txt_lat));
         
-        if(!parse_coords(text_lat, text_lon, &poi->lat, &poi->lon))
+        if(txt_lon != NULL)
+        	lon = gtk_entry_get_text(GTK_ENTRY(txt_lon));
+        
+        if(!parse_coords(lat, lon, &poi->lat, &poi->lon))
         {
-        	popup_error(dialog, _("Invalid coordinate specified"));
+        	popup_error(dialog, _("Invalid Coordinate specified"));
         	continue;
         }
-
         
         if(strlen(gtk_entry_get_text(GTK_ENTRY(txt_label))))
         {
@@ -1625,25 +1351,45 @@ poi_view_dialog(GtkWidget *parent, PoiInfo *poi)
                 1, &poi->clabel,
                 -1);
 
-        /* edit poi */
-        if(SQLITE_OK != sqlite3_bind_double(
-                    _stmt_update_poi, 1, poi->lat) ||
-           SQLITE_OK != sqlite3_bind_double(
-               _stmt_update_poi, 2, poi->lon) ||
-           SQLITE_OK != sqlite3_bind_text(_stmt_update_poi, 3, poi->label,
-                    -1, SQLITE_STATIC) ||
-           SQLITE_OK != sqlite3_bind_text(_stmt_update_poi, 4, poi->desc,
-               -1, SQLITE_STATIC) ||
-           SQLITE_OK != sqlite3_bind_int(
-               _stmt_update_poi, 5, poi->cat_id) ||
-           SQLITE_OK != sqlite3_bind_int(
-               _stmt_update_poi, 6, poi->poi_id) ||
-           SQLITE_DONE != sqlite3_step(_stmt_update_poi))
+        if (action == POI_ACTION_NEW)
         {
-            MACRO_BANNER_SHOW_INFO(parent, _("Error updating POI"));
-        }
+            /* add poi */
+            if(SQLITE_OK != sqlite3_bind_double(_stmt_insert_poi, 1, poi->lat)
+            || SQLITE_OK != sqlite3_bind_double(_stmt_insert_poi, 2, poi->lon)
+            || SQLITE_OK != sqlite3_bind_text(_stmt_insert_poi, 3, poi->label,
+                   -1, SQLITE_STATIC)
+            || SQLITE_OK != sqlite3_bind_text(_stmt_insert_poi, 4, poi->desc,
+                   -1, SQLITE_STATIC)
+            || SQLITE_OK != sqlite3_bind_int(_stmt_insert_poi, 5, poi->cat_id)
+            || SQLITE_DONE != sqlite3_step(_stmt_insert_poi))
+            {
+                MACRO_BANNER_SHOW_INFO(parent, _("Error adding POI"));
+            }
 
-        sqlite3_reset(_stmt_update_poi);
+            sqlite3_reset(_stmt_insert_poi);
+        }
+        else
+        {
+            /* edit poi */
+            if(SQLITE_OK != sqlite3_bind_double(
+                        _stmt_update_poi, 1, poi->lat) ||
+               SQLITE_OK != sqlite3_bind_double(
+                   _stmt_update_poi, 2, poi->lon) ||
+               SQLITE_OK != sqlite3_bind_text(_stmt_update_poi, 3, poi->label,
+                        -1, SQLITE_STATIC) ||
+               SQLITE_OK != sqlite3_bind_text(_stmt_update_poi, 4, poi->desc,
+                   -1, SQLITE_STATIC) ||
+               SQLITE_OK != sqlite3_bind_int(
+                   _stmt_update_poi, 5, poi->cat_id) ||
+               SQLITE_OK != sqlite3_bind_int(
+                   _stmt_update_poi, 6, poi->poi_id) ||
+               SQLITE_DONE != sqlite3_step(_stmt_update_poi))
+            {
+                MACRO_BANNER_SHOW_INFO(parent, _("Error updating POI"));
+            }
+
+            sqlite3_reset(_stmt_update_poi);
+        }
 
         /* We're done. */
         break;
@@ -1651,13 +1397,46 @@ poi_view_dialog(GtkWidget *parent, PoiInfo *poi)
 
     g_free(dpoi.txt_label);
 
-    map_force_redraw();
+    map_screen_refresh_pois(MAP_SCREEN(_w_map), NULL);
 
-    gtk_widget_hide(dialog); /* Destroying causes a crash.... ??? */
+    gtk_widget_destroy(dialog);
 
-    _degformat = last_deg_format;
-    
     return !dpoi.deleted;
+}
+
+gboolean
+poi_add_dialog(GtkWidget *parent, const MapPoint *point)
+{
+    PoiInfo poi;
+    gboolean ret;
+
+    DEBUG("%d, %d", point->x, point->y);
+
+    unit2latlon(point->x, point->y, poi.lat, poi.lon);
+
+    poi.poi_id = -1;
+    poi.cat_id = -1;
+    poi.clabel = NULL;
+    poi.desc = g_strdup("");
+
+    if(SQLITE_ROW == sqlite3_step(_stmt_nextlabel_poi))
+        poi.label = g_strdup_printf("Point%06d",
+                sqlite3_column_int(_stmt_nextlabel_poi, 0));
+    else
+        poi.label = g_strdup("");
+    sqlite3_reset(_stmt_nextlabel_poi);
+
+    ret = poi_dialog_run(parent, &poi, POI_ACTION_NEW);
+
+    g_free(poi.label);
+    g_free(poi.desc);
+    return ret;
+}
+
+gboolean
+poi_view_dialog(GtkWidget *parent, PoiInfo *poi)
+{
+    return poi_dialog_run(parent, poi, POI_ACTION_EDIT);
 }
 
 static gint
