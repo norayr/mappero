@@ -65,6 +65,49 @@ struct _ColorsDialogInfo {
 };
 
 
+static gboolean
+is_geolocation(const gchar *address)
+{
+    const gchar *ptr;
+
+    if (address == NULL) return TRUE;
+
+    /* only save real addresses, not GPS coordinates */
+    for (ptr = address; *ptr != '\0'; ptr++)
+    {
+        if (!g_ascii_isdigit(*ptr) &&
+            !g_ascii_isspace(*ptr) &&
+            !g_ascii_ispunct(*ptr) &&
+            *ptr != '+' && *ptr != '-')
+        {
+            return FALSE;
+        }
+    }
+    return TRUE;
+}
+
+static GSList *
+filter_geocoordinates(GSList *locations)
+{
+    GSList *elem, *addresses = NULL;
+
+    for (elem = locations; elem != NULL; elem = elem->next)
+    {
+        gchar *location = elem->data;
+
+        if (is_geolocation(location))
+        {
+            /* forget about it */
+            g_free(location);
+        }
+        else
+            addresses = g_slist_prepend(addresses, location);
+    }
+
+    g_slist_free(locations);
+    return g_slist_reverse(addresses);
+}
+
 /**
  * Save all configuration data to GCONF.
  */
@@ -1682,11 +1725,12 @@ settings_init(GConfClient *gconf_client)
     /* Initialize _gps_state based on _enable_gps. */
     _gps_state = RCVR_OFF;
 
-    /* Load the route locations. */
+    /* Load the route locations. TODO: rework this (use a DB?) */
     {
         GSList *curr;
         _loc_list = gconf_client_get_list(gconf_client,
             GCONF_KEY_ROUTE_LOCATIONS, GCONF_VALUE_STRING, NULL);
+        _loc_list = filter_geocoordinates(_loc_list);
         _loc_model = gtk_list_store_new(1, G_TYPE_STRING);
         for(curr = _loc_list; curr != NULL; curr = curr->next)
         {
