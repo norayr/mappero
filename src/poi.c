@@ -403,8 +403,13 @@ poi_get_model_for_area(MapArea *area)
                                G_TYPE_BOOLEAN,/* Selected */
                                G_TYPE_INT,    /* POI ID */
                                G_TYPE_INT,    /* Category ID */
+#if USE_DOUBLES_FOR_LATLON
                                G_TYPE_DOUBLE,  /* Latitude */
                                G_TYPE_DOUBLE,  /* Longitude */
+#else
+                               G_TYPE_FLOAT,  /* Latitude */
+                               G_TYPE_FLOAT,  /* Longitude */
+#endif
                                G_TYPE_STRING, /* Lat/Lon */
                                G_TYPE_FLOAT,  /* Bearing */
                                G_TYPE_FLOAT,  /* Distance */
@@ -1981,8 +1986,13 @@ poi_list_dialog(GtkWidget *parent, const MapPoint *point, GList *poi_list)
                                    G_TYPE_BOOLEAN,/* Selected */
                                    G_TYPE_INT,    /* POI ID */
                                    G_TYPE_INT,    /* Category ID */
+#if USE_DOUBLES_FOR_LATLON
                                    G_TYPE_DOUBLE, /* Latitude */
                                    G_TYPE_DOUBLE, /* Longitude */
+#else
+                                   G_TYPE_FLOAT,  /* Latitude */
+                                   G_TYPE_FLOAT,  /* Longitude */
+#endif
                                    G_TYPE_STRING, /* Lat/Lon */
                                    G_TYPE_FLOAT,  /* Bearing */
                                    G_TYPE_FLOAT,  /* Distance */
