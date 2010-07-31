@@ -84,6 +84,7 @@ guint map_path_get_duration(const MapPath *path);
 
 void map_path_init(MapPath *path);
 void map_path_unset(MapPath *path);
+void map_path_steal(MapPath *src, MapPath *dst);
 
 #define map_path_first(path) ((path)->_head)
 #define map_path_next(path, point) ((point) + 1)

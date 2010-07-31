@@ -530,12 +530,7 @@ map_path_merge(MapPath *src_path, MapPath *dest_path, MapPathMergePolicy policy)
     }
     else
     {
-        map_path_unset(dest_path);
-        /* Overwrite with data.route. */
-        (*dest_path) = *src_path;
-        map_path_resize(dest_path, map_path_len(dest_path) + ARRAY_CHUNK_SIZE);
-        map_path_wresize(dest_path, map_path_len(dest_path) + ARRAY_CHUNK_SIZE);
-        memset(src_path, 0, sizeof(MapPath));
+        map_path_steal(src_path, dest_path);
     }
     DEBUG("total length: %.2f", dest_path->length);
 }
@@ -669,6 +664,26 @@ map_path_unset(MapPath *path)
     }
 }
 
+/**
+ * map_path_steal:
+ * @src: source path.
+ * @dst: destination path.
+ *
+ * Sets @dst to be as @src. After calling this function, @src is unset.
+ */
+void
+map_path_steal(MapPath *src, MapPath *dst)
+{
+    g_return_if_fail(src != NULL);
+    g_return_if_fail(dst != NULL);
+
+    map_path_unset(dst);
+    /* Overwrite with data.route. */
+    (*dst) = *src;
+    map_path_resize(dst, map_path_len(dst) + ARRAY_CHUNK_SIZE);
+    map_path_wresize(dst, map_path_len(dst) + ARRAY_CHUNK_SIZE);
+    memset(src, 0, sizeof(MapPath));
+}
 void
 map_path_line_iter_first(const MapPath *path, MapLineIter *iter)
 {
