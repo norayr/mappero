@@ -85,9 +85,16 @@ map_controller_get_transformation(MapViewer *viewer,
 }
 
 static void
+map_controller_viewer_get_center(MapViewer *viewer, MapPoint *center)
+{
+    map_controller_get_center(MAP_CONTROLLER(viewer), center);
+}
+
+static void
 map_controller_viewer_init(MapViewerIface *iface, gpointer iface_data)
 {
     iface->get_transformation = map_controller_get_transformation;
+    iface->get_center = map_controller_viewer_get_center;
 }
 
 static gboolean
