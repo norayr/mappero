@@ -439,6 +439,9 @@ map_kml_path_parse(GInputStream *stream, MapPath *path)
     if (parse_xml_stream(stream, &handler, &data))
     {
         ok = !data.error;
+        /* Do not accept empty paths */
+        if (ok && map_path_len(path) <= 0)
+            ok = FALSE;
     }
     sax_data_free(&data);
 
