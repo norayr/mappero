@@ -45,6 +45,7 @@ struct _MapViewerIface
     void (*get_transformation)(MapViewer *viewer,
                                MapLatLonToUnit *latlon2unit,
                                MapUnitToLatLon *unit2latlon);
+    void (*get_center)(MapViewer *viewer, MapPoint *center);
 
     /* signals */
     void (*transformation_changed)(MapViewer *viewer,
@@ -61,6 +62,8 @@ void map_viewer_get_transformation(MapViewer *viewer,
 void map_viewer_emit_transformation_changed(MapViewer *viewer,
                                             MapLatLonToUnit latlon2unit,
                                             MapUnitToLatLon unit2latlon);
+
+void map_viewer_get_center(MapViewer *viewer, MapPoint *center);
 
 G_END_DECLS
 #endif /* MAP_VIEWER_H */

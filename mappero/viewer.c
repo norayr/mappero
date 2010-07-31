@@ -141,3 +141,22 @@ map_viewer_emit_transformation_changed(MapViewer *viewer,
                   latlon2unit, unit2latlon);
 }
 
+/**
+ * map_viewer_get_center:
+ * @viewer: the #MapViewer
+ * @center: a #MapPoint which will be filled with the result.
+ *
+ * Retrieves the point currently shown at the center of the map.
+ */
+void
+map_viewer_get_center(MapViewer *viewer, MapPoint *center)
+{
+    MapViewerIface *iface = MAP_VIEWER_GET_IFACE(viewer);
+
+    g_return_if_fail(iface != NULL);
+    g_return_if_fail(iface->get_center != NULL);
+    g_return_if_fail(center != NULL);
+
+    iface->get_center(viewer, center);
+}
+
