@@ -1426,9 +1426,9 @@ map_controller_display_status_changed(MapController *self, const gchar *status)
         }
 
         /* refresh the screen */
+        map_controller_update_gps(self);
         set_center_real(self);
         map_screen_set_rotation(priv->screen, priv->rotation_angle);
-        map_screen_update_mark(priv->screen);
         map_screen_refresh_panel(priv->screen);
     }
 
