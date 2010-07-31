@@ -32,6 +32,7 @@ enum
 };
 
 static guint signals[LAST_SIGNAL] = { 0 };
+static MapViewer *instance;
 
 MapLatLonToUnit map_viewer_latlon2unit;
 MapUnitToLatLon map_viewer_unit2latlon;
@@ -69,6 +70,19 @@ class_init (gpointer klass, gpointer data)
                      NULL, NULL,
                      _map_marshal_VOID__POINTER_POINTER, G_TYPE_NONE,
                      2, G_TYPE_POINTER, G_TYPE_POINTER);
+}
+
+MapViewer *
+map_viewer_get_default(void)
+{
+    return instance;
+}
+
+void
+map_viewer_set_default(MapViewer *viewer)
+{
+    g_return_if_fail(instance == NULL);
+    instance = viewer;
 }
 
 GType

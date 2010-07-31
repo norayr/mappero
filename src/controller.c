@@ -270,6 +270,7 @@ map_controller_init(MapController *controller)
 
     g_assert(instance == NULL);
     instance = controller;
+    map_viewer_set_default(MAP_VIEWER(controller));
 
     priv->orientation = -1;
     /* until we know the display state, assume it's on */

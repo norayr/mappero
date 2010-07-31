@@ -53,6 +53,9 @@ struct _MapViewerIface
                                    MapUnitToLatLon unit2latlon);
 };
 
+MapViewer *map_viewer_get_default(void) G_GNUC_CONST;
+void map_viewer_set_default(MapViewer *viewer);
+
 GType map_viewer_get_type (void) G_GNUC_CONST;
 
 void map_viewer_get_transformation(MapViewer *viewer,
