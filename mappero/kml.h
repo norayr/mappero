@@ -25,6 +25,13 @@
 
 #include <gio/gio.h>
 
+typedef struct _MapKml MapKml;
+
+MapKml *map_kml_new_from_stream(GInputStream *stream);
+void map_kml_free(MapKml *kml);
+
+MapPath *map_kml_get_path(MapKml *kml);
+
 gboolean map_kml_path_parse(GInputStream *stream, MapPath *path);
 
 #endif /* MAP_KML_H */

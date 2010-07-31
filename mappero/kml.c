@@ -19,7 +19,7 @@
 
 #define _GNU_SOURCE
 
-#include "gpx.h"
+#include "kml.h"
 
 #include "debug.h"
 
@@ -28,6 +28,11 @@
 
 #define BUFFER_SIZE 2048
 #define MAX_LEVELS 32
+
+struct _MapKml {
+    MapPath path;
+    GList *placemarks;
+};
 
 /** This enum defines the states of the SAX parsing state machine. */
 typedef enum
@@ -403,28 +408,39 @@ parse_xml_stream(GInputStream *stream, xmlSAXHandler *sax_handler, void *data)
 static void
 sax_data_free(SaxData *data)
 {
-    while (data->placemarks)
-    {
-        KmlPlacemark *placemark = data->placemarks->data;
-        kml_placemark_free(placemark);
-        data->placemarks = g_list_delete_link(data->placemarks,
-                                              data->placemarks);
-    }
-
     g_free(data->name);
     g_free(data->description);
     g_string_free(data->chars, TRUE);
 }
 
-gboolean
-map_kml_path_parse(GInputStream *stream, MapPath *path)
+void
+map_kml_free(MapKml *kml)
 {
+    while (kml->placemarks)
+    {
+        KmlPlacemark *placemark = kml->placemarks->data;
+        kml_placemark_free(placemark);
+        kml->placemarks = g_list_delete_link(kml->placemarks,
+                                             kml->placemarks);
+    }
+
+    map_path_unset(&kml->path);
+    g_slice_free(MapKml, kml);
+}
+
+MapKml *
+map_kml_new_from_stream(GInputStream *stream)
+{
+    MapKml *ret;
     SaxData data;
     xmlSAXHandler handler;
     gboolean ok = FALSE;
 
+    ret = g_slice_new0(MapKml);
+    map_path_init(&ret->path);
+
     memset(&data, 0, sizeof(data));
-    data.path = path;
+    data.path = &ret->path;
     data.chars = g_string_new("");
 
     memset(&handler, 0, sizeof(handler));
@@ -439,11 +455,44 @@ map_kml_path_parse(GInputStream *stream, MapPath *path)
     if (parse_xml_stream(stream, &handler, &data))
     {
         ok = !data.error;
-        /* Do not accept empty paths */
-        if (ok && map_path_len(path) <= 0)
-            ok = FALSE;
     }
+    ret->placemarks = data.placemarks;
     sax_data_free(&data);
+
+    if (!ok)
+    {
+        map_kml_free(ret);
+        ret = 0;
+    }
+
+    return ret;
+}
+
+MapPath *
+map_kml_get_path(MapKml *kml)
+{
+    return &kml->path;
+}
+
+gboolean
+map_kml_path_parse(GInputStream *stream, MapPath *path)
+{
+    MapKml *kml;
+    MapPath *kml_path;
+    gboolean ok = FALSE;
+
+    kml = map_kml_new_from_stream(stream);
+    if (G_UNLIKELY(!kml)) return FALSE;
+
+    kml_path = map_kml_get_path(kml);
+    /* Do not accept empty paths */
+    if (map_path_len(kml_path) > 0)
+    {
+        map_path_steal(kml_path, path);
+        ok = TRUE;
+    }
+
+    map_kml_free(kml);
 
     return ok;
 }
