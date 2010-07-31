@@ -26,11 +26,19 @@
 #include <gio/gio.h>
 
 typedef struct _MapKml MapKml;
+typedef struct _MapKmlPlacemark MapKmlPlacemark;
 
 MapKml *map_kml_new_from_stream(GInputStream *stream);
 void map_kml_free(MapKml *kml);
 
 MapPath *map_kml_get_path(MapKml *kml);
+GList *map_kml_get_placemarks(MapKml *kml);
+
+/* Placemark API */
+const gchar *map_kml_placemark_get_name(MapKmlPlacemark *placemark);
+const gchar *map_kml_placemark_get_description(MapKmlPlacemark *placemark);
+const MapPoint *map_kml_placemark_get_point(MapKmlPlacemark *placemark);
+
 
 gboolean map_kml_path_parse(GInputStream *stream, MapPath *path);
 

@@ -60,11 +60,13 @@ typedef enum {
     KML_COORDS_3D,
 } KmlCoords;
 
-typedef struct {
+struct _MapKmlPlacemark {
     MapPathPoint point;
     gchar *name;
     gchar *description;
-} KmlPlacemark;
+};
+
+typedef struct _MapKmlPlacemark KmlPlacemark;
 
 typedef struct {
     gboolean error;
@@ -472,6 +474,33 @@ MapPath *
 map_kml_get_path(MapKml *kml)
 {
     return &kml->path;
+}
+
+GList *
+map_kml_get_placemarks(MapKml *kml)
+{
+    return kml->placemarks;
+}
+
+const gchar *
+map_kml_placemark_get_name(MapKmlPlacemark *placemark)
+{
+    g_return_val_if_fail(placemark != NULL, NULL);
+    return placemark->name;
+}
+
+const gchar *
+map_kml_placemark_get_description(MapKmlPlacemark *placemark)
+{
+    g_return_val_if_fail(placemark != NULL, NULL);
+    return placemark->description;
+}
+
+const MapPoint *
+map_kml_placemark_get_point(MapKmlPlacemark *placemark)
+{
+    g_return_val_if_fail(placemark != NULL, NULL);
+    return &placemark->point.unit;
 }
 
 gboolean
