@@ -1,3 +1,9 @@
+maemo-mapper (3.0+beta11) unstable; urgency=low
+
+  * Show an error message when getting an empty route.
+
+ -- Alberto Mardegan <mardy@users.sourceforge.net>  Sat, 31 Jul 2010 12:23:22 +0300
+
 maemo-mapper (3.0+beta10) unstable; urgency=low
 
   * Redesigned the route screen, by adding a separate dialog for address
