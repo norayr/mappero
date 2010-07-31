@@ -29,6 +29,7 @@
 #include <gconf/gconf-client.h>
 #include <glib/gi18n.h>
 #include <hildon/hildon-check-button.h>
+#include <hildon/hildon-picker-button.h>
 #include <mappero/error.h>
 #include <mappero/kml.h>
 #include <mappero/path.h>
@@ -37,7 +38,9 @@
 #include <string.h>
 
 #define GCONF_GOOGLE_KEY_PREFIX GCONF_ROUTER_KEY_PREFIX"/google"
+#define GCONF_GOOGLE_KEY_ROUTE_TYPE GCONF_GOOGLE_KEY_PREFIX"/route_type"
 #define GCONF_GOOGLE_KEY_AVOID_HIGHWAYS GCONF_GOOGLE_KEY_PREFIX"/avoid_highways"
+#define GCONF_GOOGLE_KEY_AVOID_TOLLS GCONF_GOOGLE_KEY_PREFIX"/avoid_tolls"
 
 #define GOOGLE_ROUTER_URL \
     "http://maps.google.com/maps?saddr=%s&daddr=%s&output=kml"
@@ -47,6 +50,11 @@ static void router_iface_init(MapRouterIface *iface);
 G_DEFINE_TYPE_WITH_CODE(MapGoogle, map_google, G_TYPE_OBJECT,
                         G_IMPLEMENT_INTERFACE(MAP_TYPE_ROUTER,
                                               router_iface_init));
+
+typedef struct {
+    GtkWidget *btn_highways;
+    GtkWidget *btn_tolls;
+} DialogData;
 
 static inline const gchar *
 get_address(const MapLocation *loc, gchar *buffer, gsize len)
@@ -138,29 +146,80 @@ map_google_get_name(MapRouter *router)
 }
 
 static void
+on_transport_changed(HildonTouchSelector *selector, gint column,
+                     DialogData *dd)
+{
+    MapGoogleRouteType route_type;
+    gboolean car_enabled;
+
+    route_type = hildon_touch_selector_get_active(selector, 0);
+    car_enabled = (route_type == MAP_GOOGLE_ROUTE_TYPE_CAR);
+    gtk_widget_set_sensitive(dd->btn_highways, car_enabled);
+    gtk_widget_set_sensitive(dd->btn_tolls, car_enabled);
+}
+
+static void
 map_google_run_options_dialog(MapRouter *router, GtkWindow *parent)
 {
     MapGoogle *google = MAP_GOOGLE(router);
     GtkWidget *dialog;
-    GtkWidget *btn_highways;
+    GtkWidget *widget;
+    HildonTouchSelector *transport;
+    DialogData dd;
 
     dialog = map_dialog_new(_("Google router options"), parent, TRUE);
     gtk_dialog_add_button(GTK_DIALOG(dialog),
                           H_("wdgt_bd_save"), GTK_RESPONSE_ACCEPT);
 
+    /* route type */
+    transport = HILDON_TOUCH_SELECTOR(hildon_touch_selector_new_text());
+    hildon_touch_selector_append_text(transport, _("car"));
+    hildon_touch_selector_append_text(transport, _("walking"));
+    hildon_touch_selector_append_text(transport, _("bike"));
+    hildon_touch_selector_set_active(transport, 0, google->route_type);
+    g_signal_connect(transport, "changed",
+                     G_CALLBACK(on_transport_changed), &dd);
+
+    widget =
+        g_object_new(HILDON_TYPE_PICKER_BUTTON,
+                     "arrangement", HILDON_BUTTON_ARRANGEMENT_HORIZONTAL,
+                     "size", HILDON_SIZE_FINGER_HEIGHT,
+                     "title", _("Route type"),
+                     "touch-selector", transport,
+                     "xalign", 0.0,
+                     NULL);
+    map_dialog_add_widget(MAP_DIALOG(dialog), widget);
+
     /* Avoid Highways. */
-    btn_highways = hildon_check_button_new(HILDON_SIZE_FINGER_HEIGHT);
-    gtk_button_set_label(GTK_BUTTON(btn_highways), _("Avoid Highways"));
-    map_dialog_add_widget(MAP_DIALOG(dialog), btn_highways);
-    hildon_check_button_set_active(HILDON_CHECK_BUTTON(btn_highways),
+    dd.btn_highways = hildon_check_button_new(HILDON_SIZE_FINGER_HEIGHT);
+    gtk_button_set_label(GTK_BUTTON(dd.btn_highways), _("Avoid Highways"));
+    map_dialog_add_widget(MAP_DIALOG(dialog), dd.btn_highways);
+    hildon_check_button_set_active(HILDON_CHECK_BUTTON(dd.btn_highways),
                                    google->avoid_highways);
+
+    /* Avoid tolls */
+    dd.btn_tolls = hildon_check_button_new(HILDON_SIZE_FINGER_HEIGHT);
+    gtk_button_set_label(GTK_BUTTON(dd.btn_tolls), _("Avoid tolls"));
+    map_dialog_add_widget(MAP_DIALOG(dialog), dd.btn_tolls);
+    hildon_check_button_set_active(HILDON_CHECK_BUTTON(dd.btn_tolls),
+                                   google->avoid_tolls);
+
+    /* check sensitivity of car controls */
+    on_transport_changed(transport, 0, &dd);
 
     gtk_widget_show_all(dialog);
 
     if (gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_ACCEPT)
     {
+        google->route_type = hildon_touch_selector_get_active(transport, 0);
+
         google->avoid_highways =
-            hildon_check_button_get_active(HILDON_CHECK_BUTTON(btn_highways));
+            hildon_check_button_get_active(
+                HILDON_CHECK_BUTTON(dd.btn_highways));
+
+        google->avoid_tolls =
+            hildon_check_button_get_active(
+                HILDON_CHECK_BUTTON(dd.btn_tolls));
     }
 
     gtk_widget_destroy(dialog);
@@ -199,7 +258,14 @@ map_google_load_options(MapRouter *router, GConfClient *gconf_client)
 {
     MapGoogle *google = MAP_GOOGLE(router);
 
-    google->avoid_highways = gconf_client_get_bool(gconf_client, GCONF_GOOGLE_KEY_AVOID_HIGHWAYS, NULL);
+    google->route_type =
+        gconf_client_get_int(gconf_client, GCONF_GOOGLE_KEY_ROUTE_TYPE, NULL);
+    google->avoid_highways =
+        gconf_client_get_bool(gconf_client, GCONF_GOOGLE_KEY_AVOID_HIGHWAYS,
+                              NULL);
+    google->avoid_tolls =
+        gconf_client_get_bool(gconf_client, GCONF_GOOGLE_KEY_AVOID_TOLLS,
+                              NULL);
 }
 
 static void
@@ -207,7 +273,12 @@ map_google_save_options(MapRouter *router, GConfClient *gconf_client)
 {
     MapGoogle *google = MAP_GOOGLE(router);
 
-    gconf_client_set_bool(gconf_client, GCONF_GOOGLE_KEY_AVOID_HIGHWAYS, google->avoid_highways, NULL);
+    gconf_client_set_int(gconf_client, GCONF_GOOGLE_KEY_ROUTE_TYPE,
+                         google->route_type, NULL);
+    gconf_client_set_bool(gconf_client, GCONF_GOOGLE_KEY_AVOID_HIGHWAYS,
+                          google->avoid_highways, NULL);
+    gconf_client_set_bool(gconf_client, GCONF_GOOGLE_KEY_AVOID_TOLLS,
+                          google->avoid_tolls, NULL);
 }
 
 static void
