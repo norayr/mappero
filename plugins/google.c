@@ -33,6 +33,7 @@
 #include <mappero/error.h>
 #include <mappero/kml.h>
 #include <mappero/path.h>
+#include <mappero/viewer.h>
 #include <mappero-extras/dialog.h>
 #include <math.h>
 #include <string.h>
@@ -82,6 +83,9 @@ route_download_and_setup(MapGoogle *self, MapPath *path,
     GInputStream *stream;
     GString *string;
     const gchar *dirflg = NULL;
+    MapViewer *viewer = map_viewer_get_default();
+    MapPoint center;
+    MapGeo c_lat, c_lon;
 
     string = g_string_sized_new(256);
     from_escaped = g_uri_escape_string(from, NULL, FALSE);
@@ -112,6 +116,10 @@ route_download_and_setup(MapGoogle *self, MapPath *path,
         g_string_append(string, "&dirflg=");
         g_string_append(string, dirflg);
     }
+
+    map_viewer_get_center(viewer, &center);
+    map_unit2latlon(center.x, center.y, c_lat, c_lon);
+    g_string_append_printf(string, "&sll=%.6f,%.6f", c_lat, c_lon);
 
     query = g_string_free(string, FALSE);
 
