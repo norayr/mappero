@@ -69,27 +69,48 @@ route_download_and_setup(MapGoogle *self, MapPath *path,
 {
     gchar *from_escaped;
     gchar *to_escaped;
-    gchar *buffer;
+    gchar *query;
     GFile *file;
     GInputStream *stream;
+    GString *string;
+    const gchar *dirflg = NULL;
 
+    string = g_string_sized_new(256);
     from_escaped = g_uri_escape_string(from, NULL, FALSE);
     to_escaped = g_uri_escape_string(to, NULL, FALSE);
-    buffer = g_strdup_printf(GOOGLE_ROUTER_URL, from_escaped, to_escaped);
+    g_string_append_printf(string, GOOGLE_ROUTER_URL, from_escaped, to_escaped);
     g_free(from_escaped);
     g_free(to_escaped);
 
-    if (self->avoid_highways)
+    if (self->route_type == MAP_GOOGLE_ROUTE_TYPE_WALK)
+        dirflg = "w";
+    else if (self->route_type == MAP_GOOGLE_ROUTE_TYPE_BIKE)
+        dirflg = "b";
+    else
     {
-        gchar *old = buffer;
-        buffer = g_strconcat(old, "&dirflg=h", NULL);
-        g_free(old);
+        static gchar dirflg_buf[3];
+        gint i = 0;
+
+        if (self->avoid_highways)
+            dirflg_buf[i++] = 'h';
+        if (self->avoid_tolls)
+            dirflg_buf[i++] = 't';
+        dirflg_buf[i] = '\0';
+        if (i > 0)
+            dirflg = dirflg_buf;
+    }
+    if (dirflg != NULL)
+    {
+        g_string_append(string, "&dirflg=");
+        g_string_append(string, dirflg);
     }
 
+    query = g_string_free(string, FALSE);
+
     /* Attempt to download the route from the server. */
-    file = g_file_new_for_uri(buffer);
-    g_debug("uri: %s", buffer);
-    g_free (buffer);
+    file = g_file_new_for_uri(query);
+    g_debug("uri: %s", query);
+    g_free (query);
     stream = (GInputStream *)g_file_read(file, NULL, error);
 
     if (G_UNLIKELY(*error != NULL))

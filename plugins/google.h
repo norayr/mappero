@@ -36,11 +36,18 @@ G_BEGIN_DECLS
 typedef struct _MapGoogle MapGoogle;
 typedef struct _MapGoogleClass MapGoogleClass;
 
+typedef enum {
+    MAP_GOOGLE_ROUTE_TYPE_CAR,
+    MAP_GOOGLE_ROUTE_TYPE_WALK,
+    MAP_GOOGLE_ROUTE_TYPE_BIKE,
+} MapGoogleRouteType;
 
 struct _MapGoogle
 {
     GObject parent;
     gboolean avoid_highways;
+    gboolean avoid_tolls;
+    MapGoogleRouteType route_type;
 };
 
 struct _MapGoogleClass
