@@ -63,9 +63,9 @@ get_address(const MapLocation *loc, gchar *buffer, gsize len)
 }
 
 static void
-route_download_and_setup(MapPath *path, const gchar *source_url,
+route_download_and_setup(MapGoogle *self, MapPath *path,
                          const gchar *from, const gchar *to,
-                         gboolean avoid_highways, GError **error)
+                         GError **error)
 {
     gchar *from_escaped;
     gchar *to_escaped;
@@ -75,11 +75,11 @@ route_download_and_setup(MapPath *path, const gchar *source_url,
 
     from_escaped = g_uri_escape_string(from, NULL, FALSE);
     to_escaped = g_uri_escape_string(to, NULL, FALSE);
-    buffer = g_strdup_printf(source_url, from_escaped, to_escaped);
+    buffer = g_strdup_printf(GOOGLE_ROUTER_URL, from_escaped, to_escaped);
     g_free(from_escaped);
     g_free(to_escaped);
 
-    if (avoid_highways)
+    if (self->avoid_highways)
     {
         gchar *old = buffer;
         buffer = g_strconcat(old, "&dirflg=h", NULL);
@@ -160,8 +160,7 @@ map_google_calculate_route(MapRouter *router, const MapRouterQuery *query,
     to = get_address(&query->to, buf_to, sizeof(buf_to));
 
     map_path_init(&path);
-    route_download_and_setup(&path, GOOGLE_ROUTER_URL, from, to,
-                             google->avoid_highways, &error);
+    route_download_and_setup(google, &path, from, to, &error);
     if (!error)
     {
         callback(router, &path, NULL, user_data);
