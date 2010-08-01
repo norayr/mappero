@@ -65,6 +65,9 @@ Description: Geographical mapping and driving directions.
  usability.  Home page: http://www.mardy.it/mappero
 XSBC-Maemo-Display-Name: Mappero
 XB-Maemo-Upgrade-Description: Bugfixes, routing works - and faster!
+ Show destination selection dialog when the route destination is not found and
+ Google Maps suggests some locations.
+ .
  Redesigned the route screen, by adding a separate dialog for address
  input, with auto-completion.
  .
