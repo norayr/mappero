@@ -30,6 +30,7 @@
 #include <glib/gi18n.h>
 #include <hildon/hildon-check-button.h>
 #include <hildon/hildon-picker-button.h>
+#include <hildon/hildon-picker-dialog.h>
 #include <libxml/parser.h>
 #include <libxml/parserInternals.h>
 #include <mappero/debug.h>
@@ -64,6 +65,37 @@ typedef struct {
     gchar *url;
     gchar *name;
 } GooglePlacemark;
+
+static GooglePlacemark *
+placemark_selection_run(MapGoogle *self, GList *placemarks, GtkWindow *parent)
+{
+    GtkWidget *dialog;
+    HildonTouchSelector *selector;
+    GooglePlacemark *gp = NULL;
+    GList *elem;
+
+    dialog = g_object_new(HILDON_TYPE_PICKER_DIALOG,
+                          "title", _("Select destination"),
+                          "transient-for", parent,
+                          NULL);
+    selector = (HildonTouchSelector *)hildon_touch_selector_new_text();
+    for (elem = placemarks; elem != NULL; elem = elem->next)
+    {
+        GooglePlacemark *gp = elem->data;
+        hildon_touch_selector_append_text(selector, gp->name);
+    }
+
+    hildon_picker_dialog_set_selector(HILDON_PICKER_DIALOG(dialog), selector);
+    gtk_widget_show_all(dialog);
+
+    if (gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_OK)
+    {
+        gint index = hildon_touch_selector_get_active(selector, 0);
+        gp = g_list_nth_data(placemarks, index);
+    }
+    gtk_widget_destroy(dialog);
+    return gp;
+}
 
 static GooglePlacemark *
 google_placemark_from_kml(const gchar *kml)
@@ -204,25 +236,26 @@ route_download_by_url(MapGoogle *self, MapPath *path, const gchar *url,
 
     if (placemarks != NULL)
     {
+        GooglePlacemark *gp;
         /* the route was not downloaded; instead, we are suggested some
          * (hopefully working) destinations */
         if (g_list_length(placemarks) > 1 && parent != NULL)
         {
             /* we have many choices, and can pop-up a selection to the user */
-            /* TODO */
-            g_set_error(error, MAP_ERROR, MAP_ERROR_INVALID_ADDRESS,
-                        _("Not implemented"));
+            gp = placemark_selection_run(self, placemarks, parent);
         }
         else
-        {
             /* pick the first */
-            GooglePlacemark *gp = placemarks->data;
+            gp = placemarks->data;
+
+        if (gp != NULL)
             route_download_by_url(self, path, gp->url, parent, error);
-        }
+        else
+            g_set_error_literal(error, MAP_ERROR, MAP_ERROR_USER_CANCELED, "");
 
         while (placemarks != NULL)
         {
-            GooglePlacemark *gp = placemarks->data;
+            gp = placemarks->data;
             google_placemark_free(gp);
             placemarks = g_list_delete_link(placemarks, placemarks);
         }
