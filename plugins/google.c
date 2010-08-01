@@ -77,6 +77,7 @@ route_download_by_url(MapGoogle *self, MapPath *path, const gchar *url,
 {
     GFile *file;
     GInputStream *stream;
+    gboolean ok;
 
     /* Attempt to download the route from the server. */
     file = g_file_new_for_uri(url);
@@ -84,21 +85,22 @@ route_download_by_url(MapGoogle *self, MapPath *path, const gchar *url,
     stream = (GInputStream *)g_file_read(file, NULL, error);
 
     if (G_UNLIKELY(*error != NULL))
-        goto finish;
+    {
+        g_object_unref(file);
+        return;
+    }
 
-    if (!map_kml_path_parse(stream, path))
+    ok = map_kml_path_parse(stream, path);
+    g_object_unref(stream);
+    g_object_unref(file);
+    if (!ok)
     {
         g_set_error(error, MAP_ERROR, MAP_ERROR_INVALID_ADDRESS,
                     _("Invalid source or destination."));
-        goto finish;
+        return;
     }
 
     map_path_infer_directions(path);
-
-finish:
-    if (stream)
-        g_object_unref(stream);
-    g_object_unref(file);
 }
 
 static void
