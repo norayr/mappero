@@ -72,15 +72,43 @@ get_address(const MapLocation *loc, gchar *buffer, gsize len)
 }
 
 static void
+route_download_by_url(MapGoogle *self, MapPath *path, const gchar *url,
+                      GtkWindow *parent, GError **error)
+{
+    GFile *file;
+    GInputStream *stream;
+
+    /* Attempt to download the route from the server. */
+    file = g_file_new_for_uri(url);
+    g_debug("uri: %s", url);
+    stream = (GInputStream *)g_file_read(file, NULL, error);
+
+    if (G_UNLIKELY(*error != NULL))
+        goto finish;
+
+    if (!map_kml_path_parse(stream, path))
+    {
+        g_set_error(error, MAP_ERROR, MAP_ERROR_INVALID_ADDRESS,
+                    _("Invalid source or destination."));
+        goto finish;
+    }
+
+    map_path_infer_directions(path);
+
+finish:
+    if (stream)
+        g_object_unref(stream);
+    g_object_unref(file);
+}
+
+static void
 route_download_and_setup(MapGoogle *self, MapPath *path,
-                         const gchar *from, const gchar *to,
+                         const gchar *from, const gchar *to, GtkWindow *parent,
                          GError **error)
 {
     gchar *from_escaped;
     gchar *to_escaped;
     gchar *query;
-    GFile *file;
-    GInputStream *stream;
     GString *string;
     const gchar *dirflg = NULL;
     MapViewer *viewer = map_viewer_get_default();
@@ -124,27 +152,8 @@ route_download_and_setup(MapGoogle *self, MapPath *path,
     query = g_string_free(string, FALSE);
 
     /* Attempt to download the route from the server. */
-    file = g_file_new_for_uri(query);
-    g_debug("uri: %s", query);
-    g_free (query);
-    stream = (GInputStream *)g_file_read(file, NULL, error);
-
-    if (G_UNLIKELY(*error != NULL))
-        goto finish;
-
-    if (!map_kml_path_parse(stream, path))
-    {
-        g_set_error(error, MAP_ERROR, MAP_ERROR_INVALID_ADDRESS,
-                    _("Invalid source or destination."));
-        goto finish;
-    }
-
-    map_path_infer_directions(path);
-
-finish:
-    if (stream)
-        g_object_unref(stream);
-    g_object_unref(file);
+    route_download_by_url(self, path, query, parent, error);
+    g_free(query);
 }
 
 static const gchar *
@@ -248,7 +257,7 @@ map_google_calculate_route(MapRouter *router, const MapRouterQuery *query,
     to = get_address(&query->to, buf_to, sizeof(buf_to));
 
     map_path_init(&path);
-    route_download_and_setup(google, &path, from, to, &error);
+    route_download_and_setup(google, &path, from, to, query->parent, &error);
     if (!error)
     {
         callback(router, &path, NULL, user_data);
