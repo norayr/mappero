@@ -30,6 +30,9 @@
 #include <glib/gi18n.h>
 #include <hildon/hildon-check-button.h>
 #include <hildon/hildon-picker-button.h>
+#include <libxml/parser.h>
+#include <libxml/parserInternals.h>
+#include <mappero/debug.h>
 #include <mappero/error.h>
 #include <mappero/kml.h>
 #include <mappero/path.h>
@@ -57,6 +60,104 @@ typedef struct {
     GtkWidget *btn_tolls;
 } DialogData;
 
+typedef struct {
+    gchar *url;
+    gchar *name;
+} GooglePlacemark;
+
+static GooglePlacemark *
+google_placemark_from_kml(const gchar *kml)
+{
+    GooglePlacemark gp;
+    const gchar *ptr, *p_url_start, *p_url_end, *p_name_start, *p_name_end;
+    gchar *name_undecoded;
+    xmlParserCtxtPtr parser;
+
+    ptr = strchr(kml, '"');
+    if (!ptr) return NULL;
+    p_url_start = ptr + 1;
+
+    ptr = strchr(p_url_start, '"');
+    if (!ptr) return NULL;
+    p_url_end = ptr;
+
+    ptr = strchr(kml, '>');
+    if (!ptr) return NULL;
+    p_name_start = ptr + 1;
+
+    ptr = strchr(p_name_start, '<');
+    if (!ptr) return NULL;
+    p_name_end = ptr;
+
+    name_undecoded = g_strndup(p_name_start, p_name_end - p_name_start);
+    /* parse XML entities from name */
+    parser = xmlNewParserCtxt();
+    gp.name =
+        (gchar *)xmlStringDecodeEntities(parser, (xmlChar *)name_undecoded,
+                                         XML_SUBSTITUTE_BOTH, 0, 0, 0);
+    xmlFreeParserCtxt(parser);
+    gp.url = g_strndup(p_url_start, p_url_end - p_url_start);
+
+    return g_slice_dup(GooglePlacemark, &gp);
+}
+
+static void
+google_placemark_free(GooglePlacemark *gp)
+{
+    g_return_if_fail(gp != NULL);
+    g_free(gp->url);
+    xmlFree((xmlChar *)gp->name);
+    g_slice_free(GooglePlacemark, gp);
+}
+
+static gboolean
+parse_kml_path(GInputStream *stream, MapPath *path, GList **suggestions)
+{
+    MapKml *kml;
+    MapPath *kml_path;
+    gboolean ok = FALSE;
+
+    kml = map_kml_new_from_stream(stream);
+    if (G_UNLIKELY(!kml)) return FALSE;
+
+    kml_path = map_kml_get_path(kml);
+    /* Do not accept empty paths */
+    if (map_path_len(kml_path) > 0)
+    {
+        map_path_steal(kml_path, path);
+        ok = TRUE;
+    }
+    else
+    {
+        /* did we get any placemarks? */
+        GList *placemarks = map_kml_get_placemarks(kml);
+
+        if (placemarks && suggestions)
+        {
+            GList *elem;
+
+            for (elem = placemarks; elem != NULL; elem = elem->next)
+            {
+                MapKmlPlacemark *pm = elem->data;
+                GooglePlacemark *gp;
+
+                gp = google_placemark_from_kml(map_kml_placemark_get_name(pm));
+                if (gp)
+                {
+                    DEBUG("url: %s", gp->url);
+                    DEBUG("name: %s", gp->name);
+                    *suggestions = g_list_append(*suggestions, gp);
+                    ok = TRUE;
+                }
+            }
+        }
+    }
+
+    map_kml_free(kml);
+
+    return ok;
+}
+
 static inline const gchar *
 get_address(const MapLocation *loc, gchar *buffer, gsize len)
 {
@@ -78,6 +179,7 @@ route_download_by_url(MapGoogle *self, MapPath *path, const gchar *url,
     GFile *file;
     GInputStream *stream;
     gboolean ok;
+    GList *placemarks = NULL;
 
     /* Attempt to download the route from the server. */
     file = g_file_new_for_uri(url);
@@ -90,7 +192,7 @@ route_download_by_url(MapGoogle *self, MapPath *path, const gchar *url,
         return;
     }
 
-    ok = map_kml_path_parse(stream, path);
+    ok = parse_kml_path(stream, path, &placemarks);
     g_object_unref(stream);
     g_object_unref(file);
     if (!ok)
@@ -100,7 +202,31 @@ route_download_by_url(MapGoogle *self, MapPath *path, const gchar *url,
         return;
     }
 
-    map_path_infer_directions(path);
+    if (placemarks != NULL)
+    {
+        /* the route was not downloaded; instead, we are suggested some
+         * (hopefully working) destinations */
+        if (g_list_length(placemarks) > 1 && parent != NULL)
+        {
+            /* we have many choices, and can pop-up a selection to the user */
+            /* TODO */
+            g_set_error(error, MAP_ERROR, MAP_ERROR_INVALID_ADDRESS,
+                        _("Not implemented"));
+        }
+        else
+        {
+            /* pick the first */
+            GooglePlacemark *gp = placemarks->data;
+            route_download_by_url(self, path, gp->url, parent, error);
+        }
+
+        while (placemarks != NULL)
+        {
+            GooglePlacemark *gp = placemarks->data;
+            google_placemark_free(gp);
+            placemarks = g_list_delete_link(placemarks, placemarks);
+        }
+    }
 }
 
 static void
@@ -262,6 +388,7 @@ map_google_calculate_route(MapRouter *router, const MapRouterQuery *query,
     route_download_and_setup(google, &path, from, to, query->parent, &error);
     if (!error)
     {
+        map_path_infer_directions(&path);
         callback(router, &path, NULL, user_data);
     }
     else

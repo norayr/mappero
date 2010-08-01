@@ -42,9 +42,11 @@ libgoogle_la_SOURCES = \
 	google.c
 libgoogle_la_CFLAGS = \
 	$(HILDON_CFLAGS) \
+	$(LIBXML2_CFLAGS) \
 	$(AM_CFLAGS)
 libgoogle_la_LIBADD = \
-	$(HILDON_LIBS)
+	$(HILDON_LIBS) \
+	$(LIBXML2_LIBS)
 
 libyandex_la_SOURCES = \
 	yandex.c
