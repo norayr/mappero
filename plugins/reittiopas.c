@@ -31,7 +31,6 @@
 #include <glib/gi18n.h>
 #include <hildon/hildon-pannable-area.h>
 #include <hildon/hildon-picker-button.h>
-#include <libgnomevfs/gnome-vfs.h>
 #include <libxml/xmlreader.h>
 #include <mappero/debug.h>
 #include <mappero/error.h>
@@ -225,6 +224,18 @@ typedef struct {
 static void
 download_route(MapReittiopas *self, RoRoutes *routes, const RoQuery *q,
                GError **error);
+
+static gboolean
+download_url(const gchar *url, gchar **contents, gsize *size, GError **error)
+{
+    GFile *file;
+    gboolean ok;
+
+    file = g_file_new_for_uri(url);
+    ok = g_file_load_contents(file, NULL, contents, size, NULL, error);
+    g_object_unref(file);
+    return ok;
+}
 
 static gboolean
 location2units(const MapLocation *loc, MapPoint *u)
@@ -1391,8 +1402,8 @@ download_route(MapReittiopas *self, RoRoutes *routes, const RoQuery *q,
 {
     gchar *query, *bytes;
     GString *string;
-    gint size;
-    GnomeVFSResult vfs_result;
+    gsize size;
+    gboolean ok;
     SaxData data;
 
     memset(routes, 0, sizeof(RoRoutes));
@@ -1432,13 +1443,11 @@ download_route(MapReittiopas *self, RoRoutes *routes, const RoQuery *q,
     DEBUG("URL: %s", query);
 
     /* Attempt to download the route from the server. */
-    vfs_result = gnome_vfs_read_entire_file(query, &size, &bytes);
+    ok = download_url(query, &bytes, &size, error);
     g_free(query);
 
-    if (vfs_result != GNOME_VFS_OK)
+    if (G_UNLIKELY(!ok))
     {
-        g_set_error(error, MAP_ERROR, MAP_ERROR_NETWORK,
-                    gnome_vfs_result_to_string(vfs_result));
         goto finish;
     }
 
@@ -1469,13 +1478,13 @@ static void
 fetch_geocode(const gchar *address, gfloat *lat, gfloat *lon, GError **error)
 {
     gchar *query, *address_latin1, *address_escaped, *bytes;
-    gint size;
-    GnomeVFSResult vfs_result;
+    gsize size;
+    gboolean ok;
     SaxData data;
 
     address_latin1 =
         g_convert(address, -1, "iso-8859-1", "utf-8", NULL, NULL, NULL);
-    address_escaped = gnome_vfs_escape_string(address_latin1);
+    address_escaped = g_uri_escape_string(address_latin1, NULL, FALSE);
     g_free(address_latin1);
     query = g_strdup_printf("%s&key=%s", REITTIOPAS_ROUTER_URL,
                             address_escaped);
@@ -1483,15 +1492,11 @@ fetch_geocode(const gchar *address, gfloat *lat, gfloat *lon, GError **error)
 
     DEBUG("URL: %s", query);
 
-    vfs_result = gnome_vfs_read_entire_file(query, &size, &bytes);
+    ok = download_url(query, &bytes, &size, error);
     g_free(query);
 
-    if (vfs_result != GNOME_VFS_OK)
-    {
-        g_set_error(error, MAP_ERROR, MAP_ERROR_NETWORK,
-                    gnome_vfs_result_to_string(vfs_result));
+    if (G_UNLIKELY(!ok))
         goto finish;
-    }
 
     if (strncmp(bytes, "<?xml", 5))
     {
