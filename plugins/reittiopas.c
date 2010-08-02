@@ -1524,6 +1524,33 @@ finish:
 }
 
 static void
+calculate_route_public(MapReittiopas *self, const RoQuery *query,
+                       GtkWindow *parent, MapPath *path, GError **error)
+{
+    RoRoutes routes;
+    GError *err_fetch = NULL;
+
+    download_route(self, &routes, query, &err_fetch);
+    if (err_fetch == NULL)
+    {
+        gint id = 0;
+        if (routes.n_routes > 1 && parent != NULL)
+            id = route_selection_dialog(self, parent, &routes, query);
+
+        if (id >= 0)
+            ro_route_to_path(&routes.routes[id], path);
+        else
+            g_set_error_literal(error, MAP_ERROR, MAP_ERROR_USER_CANCELED, "");
+
+        ro_routes_free(&routes);
+    }
+    else
+    {
+        g_propagate_error(error, err_fetch);
+    }
+}
+
+static void
 calculate_route_with_units(MapRouter *router,
                            const MapPoint *from_u, const MapPoint *to_u,
                            GtkWindow *parent,
@@ -1532,7 +1559,6 @@ calculate_route_with_units(MapRouter *router,
 {
     MapReittiopas *self = MAP_REITTIOPAS(router);
     MapPath path;
-    RoRoutes routes;
     RoQuery query;
     GError *error = NULL;
 
@@ -1540,33 +1566,18 @@ calculate_route_with_units(MapRouter *router,
     unit2kkj2(from_u, &query.from);
     unit2kkj2(to_u, &query.to);
 
-    download_route(self, &routes, &query, &error);
+    map_path_init(&path);
+    calculate_route_public(self, &query, parent, &path, &error);
     if (!error)
     {
-        gint id = 0;
-        if (routes.n_routes > 1 && parent != NULL)
-            id = route_selection_dialog(self, parent, &routes, &query);
-
-        if (id >= 0)
-        {
-            map_path_init(&path);
-            ro_route_to_path(&routes.routes[id], &path);
-            callback(router, &path, NULL, user_data);
-            map_path_unset(&path);
-        }
-        else
-        {
-            GError err = { MAP_ERROR, MAP_ERROR_USER_CANCELED, "" };
-            callback(router, NULL, &err, user_data);
-        }
-
-        ro_routes_free(&routes);
+        callback(router, &path, NULL, user_data);
     }
     else
     {
         callback(router, NULL, error, user_data);
         g_error_free(error);
     }
+    map_path_unset(&path);
 }
 
 static void
