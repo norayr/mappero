@@ -37,6 +37,11 @@ typedef struct _MapReittiopas MapReittiopas;
 typedef struct _MapReittiopasClass MapReittiopasClass;
 
 typedef enum {
+    RO_ROUTE_TYPE_PUBLIC = 0,
+    RO_ROUTE_TYPE_CYCLING,
+} RoRouteType;
+
+typedef enum {
     RO_TRANSPORT_TYPE_BUS = 0,
     RO_TRANSPORT_TYPE_TRAIN,
     RO_TRANSPORT_TYPE_FERRY,
@@ -61,13 +66,27 @@ typedef enum {
     RO_WALKSPEED_CYCLING,
 } RoWalkspeed;
 
+typedef enum {
+    RO_CW_OPTIMIZE_CYCLE = 0,
+    RO_CW_OPTIMIZE_ASPHALT,
+    RO_CW_OPTIMIZE_GRAVEL,
+    RO_CW_OPTIMIZE_SHORTEST,
+    RO_CW_OPTIMIZE_LAST
+} RoCWOptimize;
+
 struct _MapReittiopas
 {
     GObject parent;
+    RoRouteType route_type;
+
+    /* Public transport options */
     gboolean transport_allowed[RO_TRANSPORT_TYPE_LAST];
     RoOptimizeGoal optimize;
     RoWalkspeed walkspeed;
     gint margin;
+
+    /* cycling/walking options */
+    RoCWOptimize cw_optimize;
 };
 
 struct _MapReittiopasClass

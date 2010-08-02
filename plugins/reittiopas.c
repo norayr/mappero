@@ -34,6 +34,7 @@
 #include <libxml/xmlreader.h>
 #include <mappero/debug.h>
 #include <mappero/error.h>
+#include <mappero/kml.h>
 #include <mappero/path.h>
 #include <mappero-extras/dialog.h>
 #include <mappero-extras/error.h>
@@ -42,10 +43,13 @@
 #include <time.h>
 
 #define GCONF_REITTIOPAS_KEY_PREFIX GCONF_ROUTER_KEY_PREFIX"/reittiopas"
+#define GCONF_REITTIOPAS_KEY_ROUTE_TYPE GCONF_ROUTER_KEY_PREFIX"/route_type"
 #define GCONF_REITTIOPAS_KEY_MARGIN GCONF_REITTIOPAS_KEY_PREFIX"/margin"
 #define GCONF_REITTIOPAS_KEY_WALKSPEED GCONF_REITTIOPAS_KEY_PREFIX"/walkspeed"
 #define GCONF_REITTIOPAS_KEY_OPTIMIZE GCONF_REITTIOPAS_KEY_PREFIX"/optimize"
 #define GCONF_REITTIOPAS_KEY_ALLOWED GCONF_REITTIOPAS_KEY_PREFIX"/allowed"
+#define GCONF_REITTIOPAS_KEY_CW_OPTIMIZE \
+    GCONF_REITTIOPAS_KEY_PREFIX"/cw_optimize"
 
 #define REITTIOPAS_ROUTER_URL \
     "http://api.reittiopas.fi/public-ytv/fi/api/?user=maemomapper&pass=b4zmhurp"
@@ -220,6 +224,24 @@ typedef struct {
 } RouteSelectionData;
 
 #define strsame(s1, s2)  (strcmp((const gchar *)s1, s2) == 0)
+
+typedef struct {
+    GtkToggleButton *public;
+    GtkWidget *transport, *optimize, *walkspeed, *margin;
+    GtkWidget *cw_optimize;
+} DialogData;
+
+typedef struct {
+    gchar *label;
+    gchar *value;
+} RoCWOptimizeItem;
+
+static const RoCWOptimizeItem cw_optimize_table[RO_CW_OPTIMIZE_LAST] = {
+    [RO_CW_OPTIMIZE_CYCLE] = { N_("Prefer cycle paths"), "kleroweighted" },
+    [RO_CW_OPTIMIZE_ASPHALT] = { N_("Prefer asphalt paved"), "klerotarmac" },
+    [RO_CW_OPTIMIZE_GRAVEL] = { N_("Prefer gravelled"), "klerosand" },
+    [RO_CW_OPTIMIZE_SHORTEST] = { N_("Shortest route"), "kleroshortest" },
+};
 
 static void
 download_route(MapReittiopas *self, RoRoutes *routes, const RoQuery *q,
@@ -1551,6 +1573,56 @@ calculate_route_public(MapReittiopas *self, const RoQuery *query,
 }
 
 static void
+calculate_route_cycling(MapReittiopas *self, const RoQuery *q,
+                        MapPath *path, GError **error)
+{
+    GFile *file;
+    GInputStream *stream;
+    GString *string;
+    gchar *query;
+    gboolean ok;
+
+    string = g_string_sized_new(256);
+    g_string_append(string,
+                    "http://kevytliikenne.ytv.fi/en/getroute/?format=kml");
+
+    g_return_if_fail(self->cw_optimize >= 0);
+    g_return_if_fail(self->cw_optimize < RO_CW_OPTIMIZE_LAST);
+
+    g_string_append_printf(string, "&profile=%s",
+                           cw_optimize_table[self->cw_optimize].value);
+
+    g_string_append_printf(string, "&from=location**%.0f*%.0f",
+                           q->from.i, q->from.p);
+    g_string_append_printf(string, "&to=location**%.0f*%.0f",
+                           q->to.i, q->to.p);
+
+    query = g_string_free(string, FALSE);
+    DEBUG("URL: %s", query);
+
+    file = g_file_new_for_uri(query);
+    g_free(query);
+    stream = (GInputStream *)g_file_read(file, NULL, error);
+
+    if (G_UNLIKELY(*error != NULL))
+    {
+        g_object_unref(file);
+        return;
+    }
+
+    ok = map_kml_path_parse(stream, path);
+    g_object_unref(stream);
+    g_object_unref(file);
+    if (!ok || map_path_len(path) <= 0)
+    {
+        g_set_error(error, MAP_ERROR, MAP_ERROR_INVALID_ADDRESS,
+                    _("Invalid source or destination."));
+        return;
+    }
+
+}
+
+static void
 calculate_route_with_units(MapRouter *router,
                            const MapPoint *from_u, const MapPoint *to_u,
                            GtkWindow *parent,
@@ -1567,7 +1639,10 @@ calculate_route_with_units(MapRouter *router,
     unit2kkj2(to_u, &query.to);
 
     map_path_init(&path);
-    calculate_route_public(self, &query, parent, &path, &error);
+    if (self->route_type == RO_ROUTE_TYPE_PUBLIC)
+        calculate_route_public(self, &query, parent, &path, &error);
+    else
+        calculate_route_cycling(self, &query, &path, &error);
     if (!error)
     {
         callback(router, &path, NULL, user_data);
@@ -1702,13 +1777,40 @@ transport_print_func(HildonTouchSelector *selector, gpointer user_data)
         return g_strdup(text);
 }
 
+static inline void
+set_visible(GtkWidget *widget, gboolean visible)
+{
+    if (visible)
+        gtk_widget_show(widget);
+    else
+        gtk_widget_hide(widget);
+}
+
+static void
+on_public_button_toggled(GtkToggleButton *button, DialogData *dd)
+{
+    gboolean public_enabled = gtk_toggle_button_get_active(button);
+    /* public transport */
+    set_visible(dd->transport, public_enabled);
+    set_visible(dd->optimize, public_enabled);
+    set_visible(dd->walkspeed, public_enabled);
+    set_visible(dd->margin, public_enabled);
+    /* cycling/walking */
+    set_visible(dd->cw_optimize, !public_enabled);
+}
+
+
 static void
 map_reittiopas_run_options_dialog(MapRouter *router, GtkWindow *parent)
 {
     MapReittiopas *self = MAP_REITTIOPAS(router);
     GtkWidget *dialog;
     GtkWidget *widget;
+    GtkWidget *box;
+    GtkWidget *btn_public, *btn_cycling;
     HildonTouchSelector *transport, *optimize, *walkspeed, *margin;
+    HildonTouchSelector *cw_optimize;
+    DialogData dd;
     GtkTreeModel *model;
     GtkTreeIter iter;
     gboolean selector_hacked = FALSE;
@@ -1718,6 +1820,31 @@ map_reittiopas_run_options_dialog(MapRouter *router, GtkWindow *parent)
     dialog = map_dialog_new(_("Reittiopas router options"), parent, TRUE);
     gtk_dialog_add_button(GTK_DIALOG(dialog),
                           H_("wdgt_bd_save"), GTK_RESPONSE_ACCEPT);
+
+    box = gtk_hbox_new(TRUE, 0);
+
+    btn_public = hildon_gtk_radio_button_new(HILDON_SIZE_FINGER_HEIGHT, NULL);
+    gtk_toggle_button_set_mode(GTK_TOGGLE_BUTTON(btn_public), FALSE);
+    gtk_button_set_label(GTK_BUTTON(btn_public), _("Public tranport"));
+    gtk_box_pack_start(GTK_BOX(box), btn_public, TRUE, TRUE, 0);
+
+    btn_cycling =
+        hildon_gtk_radio_button_new_from_widget(HILDON_SIZE_FINGER_HEIGHT,
+                                                GTK_RADIO_BUTTON(btn_public));
+    gtk_toggle_button_set_mode(GTK_TOGGLE_BUTTON(btn_cycling), FALSE);
+    gtk_button_set_label(GTK_BUTTON(btn_cycling), _("Cycling/walking"));
+    gtk_box_pack_start(GTK_BOX(box), btn_cycling, TRUE, TRUE, 0);
+
+    if (self->route_type == RO_ROUTE_TYPE_PUBLIC)
+        gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(btn_public), TRUE);
+    else
+        gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(btn_cycling), TRUE);
+
+    g_signal_connect(btn_public, "toggled",
+                     G_CALLBACK(on_public_button_toggled), &dd);
+    map_dialog_add_widget(MAP_DIALOG(dialog), box);
+
+    gtk_widget_show_all(dialog);
 
     /* transfer margin */
     margin = HILDON_TOUCH_SELECTOR(hildon_touch_selector_new_text());
@@ -1737,6 +1864,7 @@ map_reittiopas_run_options_dialog(MapRouter *router, GtkWindow *parent)
                      "xalign", 0.0,
                      NULL);
     map_dialog_add_widget(MAP_DIALOG(dialog), widget);
+    dd.margin = widget;
 
     /* Optimization goal */
 
@@ -1756,6 +1884,7 @@ map_reittiopas_run_options_dialog(MapRouter *router, GtkWindow *parent)
                      "xalign", 0.0,
                      NULL);
     map_dialog_add_widget(MAP_DIALOG(dialog), widget);
+    dd.optimize = widget;
 
     /* Walking speed */
 
@@ -1777,6 +1906,7 @@ map_reittiopas_run_options_dialog(MapRouter *router, GtkWindow *parent)
                      "xalign", 0.0,
                      NULL);
     map_dialog_add_widget(MAP_DIALOG(dialog), widget);
+    dd.walkspeed = widget;
 
     transport=
         HILDON_TOUCH_SELECTOR(hildon_touch_selector_new_text());
@@ -1810,34 +1940,67 @@ map_reittiopas_run_options_dialog(MapRouter *router, GtkWindow *parent)
                      "xalign", 0.0,
                      NULL);
     map_dialog_add_widget(MAP_DIALOG(dialog), widget);
+    dd.transport = widget;
 
-    gtk_widget_show_all(dialog);
+    /* Cycling/walking optimization goal */
+    cw_optimize = HILDON_TOUCH_SELECTOR(hildon_touch_selector_new_text());
+    for (i = 0; i < RO_CW_OPTIMIZE_LAST; i++)
+        hildon_touch_selector_append_text(cw_optimize,
+                                          _(cw_optimize_table[i].label));
+    hildon_touch_selector_set_active(cw_optimize, 0, self->cw_optimize);
+
+    widget =
+        g_object_new(HILDON_TYPE_PICKER_BUTTON,
+                     "arrangement", HILDON_BUTTON_ARRANGEMENT_VERTICAL,
+                     "size", HILDON_SIZE_FINGER_HEIGHT,
+                     "title", _("Routing profile"),
+                     "touch-selector", cw_optimize,
+                     "xalign", 0.0,
+                     NULL);
+    map_dialog_add_widget(MAP_DIALOG(dialog), widget);
+    dd.cw_optimize = widget;
+
+    /* show either set of widgets */
+    on_public_button_toggled(GTK_TOGGLE_BUTTON(btn_public), &dd);
 
     if (gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_ACCEPT)
     {
         GList *selected_rows, *list;
 
-        for (i = 0; i < RO_TRANSPORT_TYPE_LAST; i++)
-            self->transport_allowed[i] = FALSE;
-        selected_rows = hildon_touch_selector_get_selected_rows(transport, 0);
-        for (list = selected_rows; list != NULL; list = list->next)
+        self->route_type =
+            gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(btn_public)) ?
+            RO_ROUTE_TYPE_PUBLIC : RO_ROUTE_TYPE_CYCLING;
+
+        if (self->route_type == RO_ROUTE_TYPE_PUBLIC)
         {
-            GtkTreePath *path = list->data;
-            gint *p_i;
+            for (i = 0; i < RO_TRANSPORT_TYPE_LAST; i++)
+                self->transport_allowed[i] = FALSE;
+            selected_rows =
+                hildon_touch_selector_get_selected_rows(transport, 0);
+            for (list = selected_rows; list != NULL; list = list->next)
+            {
+                GtkTreePath *path = list->data;
+                gint *p_i;
 
-            p_i = gtk_tree_path_get_indices(path);
-            if (*p_i < RO_TRANSPORT_TYPE_LAST)
-                self->transport_allowed[*p_i] = TRUE;
-            gtk_tree_path_free(path);
+                p_i = gtk_tree_path_get_indices(path);
+                if (*p_i < RO_TRANSPORT_TYPE_LAST)
+                    self->transport_allowed[*p_i] = TRUE;
+                gtk_tree_path_free(path);
+            }
+            g_list_free(selected_rows);
+
+            self->optimize = hildon_touch_selector_get_active(optimize, 0);
+
+            self->walkspeed = WALKSPEED_FROM_SELECTOR(
+                hildon_touch_selector_get_active(walkspeed, 0));
+
+            self->margin = hildon_touch_selector_get_active(margin, 0);
         }
-        g_list_free(selected_rows);
-
-        self->optimize = hildon_touch_selector_get_active(optimize, 0);
-
-        self->walkspeed = WALKSPEED_FROM_SELECTOR(
-            hildon_touch_selector_get_active(walkspeed, 0));
-
-        self->margin = hildon_touch_selector_get_active(margin, 0);
+        else
+        {
+            self->cw_optimize =
+                hildon_touch_selector_get_active(cw_optimize, 0);
+        }
     }
 
     gtk_widget_destroy(dialog);
@@ -1895,6 +2058,10 @@ map_reittiopas_load_options(MapRouter *router, GConfClient *gconf_client)
     GConfValue *value;
     gint i;
 
+    self->route_type =
+        gconf_client_get_int(gconf_client,
+                             GCONF_REITTIOPAS_KEY_ROUTE_TYPE, NULL);
+
     value = gconf_client_get(gconf_client, GCONF_REITTIOPAS_KEY_MARGIN, NULL);
     if (value) {
         self->margin = gconf_value_get_int(value);
@@ -1921,6 +2088,10 @@ map_reittiopas_load_options(MapRouter *router, GConfClient *gconf_client)
             gconf_value_free(value);
         }
     }
+
+    self->cw_optimize =
+        gconf_client_get_int(gconf_client,
+                             GCONF_REITTIOPAS_KEY_CW_OPTIMIZE, NULL);
 }
 
 static void
@@ -1930,6 +2101,8 @@ map_reittiopas_save_options(MapRouter *router, GConfClient *gconf_client)
     gchar key_buf[sizeof(GCONF_REITTIOPAS_KEY_ALLOWED) + 5];
     gint i;
 
+    gconf_client_set_int(gconf_client, GCONF_REITTIOPAS_KEY_ROUTE_TYPE,
+                         self->route_type, NULL);
     gconf_client_set_int(gconf_client, GCONF_REITTIOPAS_KEY_MARGIN, self->margin, NULL);
     gconf_client_set_int(gconf_client, GCONF_REITTIOPAS_KEY_WALKSPEED, self->walkspeed, NULL);
     gconf_client_set_int(gconf_client, GCONF_REITTIOPAS_KEY_OPTIMIZE, self->optimize, NULL);
@@ -1938,6 +2111,9 @@ map_reittiopas_save_options(MapRouter *router, GConfClient *gconf_client)
         g_snprintf(key_buf, sizeof(key_buf), "%s/%d", GCONF_REITTIOPAS_KEY_ALLOWED, i);
         gconf_client_set_bool(gconf_client, key_buf, self->transport_allowed[i], NULL);
     }
+
+    gconf_client_set_int(gconf_client, GCONF_REITTIOPAS_KEY_CW_OPTIMIZE,
+                         self->cw_optimize, NULL);
 }
 
 static void
