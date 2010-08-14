@@ -229,6 +229,7 @@ AC_OUTPUT(
           mappero-extras/Makefile \
           plugins/Makefile \
           src/Makefile \
+          src/hildon/Makefile \
           data/Makefile \
           data/help/Makefile \
           data/sounds/Makefile \

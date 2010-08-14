@@ -1,0 +1,93 @@
+#
+# Copyright (C) 2006, 2007 John Costigan.
+#
+# This file is part of Maemo Mapper.
+#
+# Maemo Mapper is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# Maemo Mapper is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Maemo Mapper.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+bin_PROGRAMS = maemo-mapper
+
+maemo_mapper_CFLAGS = \
+	-I.. \
+	$(GTK_CFLAGS) \
+	$(OSSO_CFLAGS) \
+	$(HILDON_CFLAGS) \
+	$(GNOME_VFS_CFLAGS) \
+	$(GCONF_CFLAGS) \
+	$(GSTREAMER_CFLAGS) \
+	$(LIBXML2_CFLAGS) \
+	$(SQLITE_CFLAGS) \
+	$(CONIC_CFLAGS) \
+	$(LOCATION_CFLAGS) \
+	$(CLUTTER_CFLAGS) \
+	$(CAIRO_CFLAGS) \
+	-DMAP_PLUGIN_DIR=\"@libdir@/mappero.@MAP_ABI_VERSION@\" \
+	-std=c99 -Wall -Wno-switch
+
+maemo_mapper_LDADD = \
+	$(top_builddir)/mappero/libmappero.la \
+	$(top_builddir)/mappero-extras/libmappero-extras.la \
+	$(GTK_LIBS) \
+	$(OSSO_LIBS) \
+	$(HILDON_LIBS) \
+	$(GNOME_VFS_LIBS) \
+	$(GCONF_LIBS) \
+	$(GSTREAMER_LIBS) \
+	$(LIBXML2_LIBS) \
+	$(SQLITE_LIBS) \
+	$(CONIC_LIBS) \
+	$(LOCATION_LIBS) \
+	$(CLUTTER_LIBS) \
+	$(CAIRO_LIBS)
+
+maemo_mapper_SOURCES = \
+	address-picker.c \
+	cmenu.c \
+	controller.c \
+	data.c \
+	dbus-ifc.c \
+	display.c \
+	gps.c \
+	gpsbt.c \
+	he-about-dialog.c \
+	main.c \
+	maps.c \
+	mark.c \
+	marshal.c \
+	menu.c \
+	navigation.c \
+	orientation.c \
+	osm.c \
+	path.c \
+	poi.c \
+	route.c \
+	settings.c \
+	screen.c \
+	sign.c \
+	tile.c \
+	util.c \
+	repository.c \
+	tile_source.c
+
+# bin_SCRIPTS = maemo-mapper.sh
+run: all
+	scp maemo-mapper rover:/usr/bin
+	ssh rover su - user -c maemo-mapper
+
+eraseconf:
+	ssh rover su -c "'gconftool-2 --recursive-unset /apps/maemo/maemo-mapper'" - user
+
+erasemaps:
+	ssh rover su -c "'rm -r /home/user/MyDocs/.maps'" - user
