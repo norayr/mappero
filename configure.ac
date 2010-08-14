@@ -21,6 +21,7 @@
 AC_INIT(Makefile.am)
 AM_INIT_AUTOMAKE(maemo-mapper, 3.1)
 
+AC_PROG_CXX
 AC_PROG_CPP
 AC_CONFIG_HEADERS(config.h)
 AC_PROG_INSTALL
@@ -49,6 +50,10 @@ AC_SUBST([MAP_LT_AGE])
 # The ABI version appears in the name of the plugin directory
 MAP_ABI_VERSION=`expr ${MAP_LT_CURRENT} - ${MAP_LT_AGE}`
 AC_SUBST([MAP_ABI_VERSION])
+
+PKG_CHECK_MODULES(QT, QtMaemo5 QtOpenGL)
+AC_SUBST(QT_LIBS)
+AC_SUBST(QT_CFLAGS)
 
 PKG_CHECK_MODULES(GLIB, glib-2.0)
 AC_SUBST(GLIB_LIBS)
@@ -230,6 +235,7 @@ AC_OUTPUT(
           plugins/Makefile \
           src/Makefile \
           src/hildon/Makefile \
+          src/qt/Makefile \
           data/Makefile \
           data/help/Makefile \
           data/sounds/Makefile \

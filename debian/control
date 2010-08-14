@@ -19,6 +19,7 @@ Build-Depends: debhelper (>= 4.0.0),
  liblocation-dev,
  libosso-dev,
  libosso-gnomevfs2-dev,
+ libqt4-dev,
  libsqlite3-dev,
  mce-dev,
  osso-af-settings
