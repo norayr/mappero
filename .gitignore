@@ -17,8 +17,6 @@ missing
 mkinstalldirs
 po/Makefile.in.in
 src/Makefile.in
-src/config.h.in
-src/maemo-mapper
 config.log
 libtool
 Makefile
@@ -40,7 +38,6 @@ po/stamp-it
 po/sv_SE.gmo
 src/.deps/
 src/Makefile
-src/config.h
 src/stamp-h1
 configure-stamp
 build-stamp
