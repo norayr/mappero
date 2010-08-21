@@ -1,3 +1,4 @@
+/* vi: set et sw=4 ts=8 cino=t0,(0: */
 /*
  * Copyright (C) 2010 Alberto Mardegan <mardy@users.sourceforge.net>
  *
@@ -18,19 +19,25 @@
  */
 
 #include "view.h"
+#include "view.moc.hpp"
 
-#include <QApplication>
+#include "osm.h"
+
+#include <QResizeEvent>
+#include <QGLWidget>
 #include <QGraphicsScene>
+#include <QGraphicsView>
 
-int main(int argc, char *argv[])
+using namespace Map;
+
+View::View(QGraphicsScene *scene):
+    QGraphicsView(scene)
 {
-    QApplication app(argc, argv);
-
-    QGraphicsScene scene;
-
-    Map::View view(&scene);
-    view.setWindowTitle("Mappero");
-    view.show();
-
-    return app.exec();
+    setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    setAttribute(Qt::WA_Maemo5AutoOrientation, true);
+    setAttribute(Qt::WA_Maemo5NonComposited, true);
+    setRenderHints(QPainter::Antialiasing);
+    setViewport(new QGLWidget);
 }
+

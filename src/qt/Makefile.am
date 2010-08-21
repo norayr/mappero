@@ -34,10 +34,11 @@ mappero_LDADD = \
 	$(LOCATION_LIBS)
 
 mappero_SOURCES = \
-	main.cpp
+	main.cpp \
+	view.cpp
 
 nodist_mappero_SOURCES = \
-	gps.moc.hpp
+	view.moc.hpp
 
 BUILT_SOURCES = \
 	$(nodist_mappero_SOURCES)

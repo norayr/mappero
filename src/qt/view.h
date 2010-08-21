@@ -1,3 +1,4 @@
+/* vi: set et sw=4 ts=8 cino=t0,(0: */
 /*
  * Copyright (C) 2010 Alberto Mardegan <mardy@users.sourceforge.net>
  *
@@ -17,20 +18,20 @@
  * along with Mappero.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "view.h"
+#ifndef MAP_VIEW_H
+#define MAP_VIEW_H
 
-#include <QApplication>
-#include <QGraphicsScene>
+#include <QGraphicsView>
 
-int main(int argc, char *argv[])
+namespace Map {
+
+class View: public QGraphicsView
 {
-    QApplication app(argc, argv);
+    Q_OBJECT
+public:
+    View(QGraphicsScene *scene);
+};
 
-    QGraphicsScene scene;
+};
 
-    Map::View view(&scene);
-    view.setWindowTitle("Mappero");
-    view.show();
-
-    return app.exec();
-}
+#endif /* MAP_VIEW_H */
