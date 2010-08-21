@@ -10,6 +10,7 @@ int main(int argc, char *argv[])
     QGraphicsScene scene;
 
     QGraphicsView view(&scene);
+    view.setWindowTitle("Mappero");
     view.setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     view.setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     view.setAttribute(Qt::WA_Maemo5AutoOrientation, true);
