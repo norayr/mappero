@@ -35,6 +35,7 @@ mappero_LDADD = \
 
 mappero_SOURCES = \
 	main.cpp \
+	osm.cpp \
 	view.cpp
 
 nodist_mappero_SOURCES = \

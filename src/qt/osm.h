@@ -1,6 +1,6 @@
 /* vi: set et sw=4 ts=8 cino=t0,(0: */
 /*
- * Copyright (C) 2010 Alberto Mardegan <mardy@users.sourceforge.net>
+ * Copyright (C) 2009-2010 Alberto Mardegan <mardy@users.sourceforge.net>
  *
  * This file is part of Mappero.
  *
@@ -18,26 +18,22 @@
  * along with Mappero.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef MAP_VIEW_H
-#define MAP_VIEW_H
+#ifndef MAP_OSM_H
+#define MAP_OSM_H
 
-#include <QGraphicsView>
+#include <QGraphicsItemGroup>
 
 namespace Map {
-class Osm;
 
-class View: public QGraphicsView
+class Osm: public QGraphicsItemGroup
 {
-    Q_OBJECT
 public:
-    View(QGraphicsScene *scene);
+    Osm();
 
-    virtual void resizeEvent(QResizeEvent *event);
-
-private:
-    Osm *osm;
+    void setSize(const QSize &size);
 };
 
 };
 
-#endif /* MAP_VIEW_H */
+
+#endif /* MAP_OSM_H */

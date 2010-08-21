@@ -39,5 +39,14 @@ View::View(QGraphicsScene *scene):
     setAttribute(Qt::WA_Maemo5NonComposited, true);
     setRenderHints(QPainter::Antialiasing);
     setViewport(new QGLWidget);
+
+    /* create the OSM */
+    osm = new Map::Osm();
+    scene->addItem(osm);
+}
+
+void View::resizeEvent(QResizeEvent *event)
+{
+    osm->setSize(event->size());
 }
 
