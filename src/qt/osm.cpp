@@ -72,6 +72,7 @@ static const char *btn_icons[N_BUTTONS] = {
 
 Osm::Osm()
 {
+    setFlags(QGraphicsItem::ItemHasNoContents);
     QString base = QString("/usr/share/icons/hicolor/scalable/hildon/");
     for (int i = 0; i < N_BUTTONS; i++) {
         new OsmButton(base + btn_icons[i], this);

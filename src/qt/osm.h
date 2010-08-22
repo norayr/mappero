@@ -21,16 +21,27 @@
 #ifndef MAP_OSM_H
 #define MAP_OSM_H
 
-#include <QGraphicsItemGroup>
+#include <QGraphicsItem>
 
 namespace Map {
 
-class Osm: public QGraphicsItemGroup
+class Osm: public QGraphicsItem
 {
 public:
     Osm();
 
     void setSize(const QSize &size);
+
+protected:
+    QRectF boundingRect() const
+    {
+        return QRectF(0, 0, 0, 0);
+    }
+
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
+               QWidget *widget)
+    {
+    }
 };
 
 };
