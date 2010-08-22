@@ -23,6 +23,7 @@
 
 #include "osm.h"
 
+#include <QDebug>
 #include <QResizeEvent>
 #include <QGLWidget>
 #include <QGraphicsScene>
@@ -38,6 +39,8 @@ View::View(QGraphicsScene *scene):
     setAttribute(Qt::WA_Maemo5AutoOrientation, true);
     setAttribute(Qt::WA_Maemo5NonComposited, true);
     setRenderHints(QPainter::Antialiasing);
+    setTransformationAnchor(QGraphicsView::NoAnchor);
+    setAlignment(Qt::AlignLeft | Qt::AlignTop);
     setViewport(new QGLWidget);
 
     /* create the OSM */
@@ -47,6 +50,8 @@ View::View(QGraphicsScene *scene):
 
 void View::resizeEvent(QResizeEvent *event)
 {
+    QGraphicsView::resizeEvent(event);
+    setSceneRect(QRectF(0, 0, event->size().width(), event->size().height()));
     osm->setSize(event->size());
 }
 
