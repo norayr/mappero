@@ -64,50 +64,7 @@ Description: Geographical mapping and driving directions.
  geo-related information.  It focuses in part on in-car navigation and
  usability.  Home page: http://www.mardy.it/mappero
 XSBC-Maemo-Display-Name: Mappero
-XB-Maemo-Upgrade-Description: Bugfixes, routing works - and faster!
- Show destination selection dialog when the route destination is not found and
- Google Maps suggests some locations.
- .
- Redesigned the route screen, by adding a separate dialog for address
- input, with auto-completion.
- .
- Routing: directly connect to Google Maps server: this is faster and more
- reliable.
- .
- Bugfix: show correct location when display is reactivated.
- .
- Bugfix: "turn left" and "turn right" instructions in German navigation
- were swapped.
- .
- New version of Finnish sound files (thanks Steffe69!).
- .
- Fixes: #5669 - POI edit screen corrupts coordinates.
- .
- Fixes: #5938 - "Unblanc when moving (full screen)" not working.
- .
- Fixes: #5974 - Orientation - Always landscape setting doesn't work.
- .
- Fixes: #5983 - Setting destination crashes mappero beta9.
- .
- Fixes: #5999 - Yandex routing isn't working in beta8 and beta9.
- .
- Fixes: #5975 - Map restarts it's position when GPS is enabled and go
- to location is selected.
- .
- Fixes: #5352 - Difficulty reaching single auto-complete options.
- .
- Reduced memory consumption by a few megabytes.
- .
- Fix playing of language navigation files.
- .
- Add navigation voice for de_DE (courtesy of jav_maemo).
- Add navigation voice for fi_FI (courtesy of Steffe69).
- .
- Support for parsing KML route files.
- .
- Install Mappero as MIME handler for GPX and KML files.
- .
- Create libmappero, make plugins dynamically loadable.
+XB-Maemo-Upgrade-Description: Bugfixes, cycle routing in Helsinki
 XSBC-Bugtracker: https://garage.maemo.org/tracker/?group_id=29
 XB-Maemo-Icon-26:
  iVBORw0KGgoAAAANSUhEUgAAABoAAAAaCAYAAACpSkzOAAAF/ElEQVRIS42WyXMbxxXGf92z

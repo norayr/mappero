@@ -1,3 +1,9 @@
+maemo-mapper (3.1) unstable; urgency=low
+
+  * Increase the version number for the autobuilder
+
+ -- Alberto Mardegan <mardy@users.sourceforge.net>  Wed,  1 Sep 2010 18:01:25 +0300
+
 maemo-mapper (3.0) unstable; urgency=low
 
   * Remove the "beta" keyword from the version number. :-)
