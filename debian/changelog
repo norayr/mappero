@@ -1,3 +1,13 @@
+maemo-mapper (3.0) unstable; urgency=low
+
+  * Remove the "beta" keyword from the version number. :-)
+  * Make the POI dialog slightly more usable
+  * Add fetching of cycling routes from reittiopas.fi
+  * Fixes: #6138 - Mappero crashes opening previously saved track
+  * Fixes: #6084 - Mappero crashes in 2-3 min after startup
+
+ -- Alberto Mardegan <mardy@users.sourceforge.net>  Wed,  1 Sep 2010 17:40:07 +0300
+
 maemo-mapper (3.0+beta12) unstable; urgency=low
 
   * Enforce installation of latest libmappero.
