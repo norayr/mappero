@@ -1096,7 +1096,8 @@ repository_tile_sources_expired(Repository *repository)
         /* Iterate over the active tile sources and if they have refresh turned
          * on, decrement coundown */
         for (i = 0; i < repository->layers->len; i++) {
-            ts = g_ptr_array_index(repository->layers, i);
+            RepositoryLayer *layer = g_ptr_array_index(repository->layers, i);
+            ts = layer->ts;
             if (ts->refresh) {
                 ts->countdown--;
                 if (ts->countdown < 0)
