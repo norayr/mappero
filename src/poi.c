@@ -36,6 +36,8 @@
 #    include <hildon/hildon-file-chooser-dialog.h>
 #    include <hildon/hildon-number-editor.h>
 #    include <hildon/hildon-banner.h>
+#    include <hildon/hildon-pannable-area.h>
+#    include <hildon/hildon-text-view.h>
 #else
 #    include <osso-helplib.h>
 #    include <hildon-widgets/hildon-note.h>
@@ -1159,7 +1161,7 @@ poi_dialog_run(GtkWidget *parent, PoiInfo *poi, PoiAction action)
     static GtkWidget *btn_delete = NULL;
     static GtkWidget *btn_catedit;
     static GtkWidget *hbox;
-    static GtkWidget *txt_scroll;
+    GtkWidget *pannable;
     static GtkTextBuffer *desc_txt;
     static GtkTextIter begin, end;
     static DeletePOI dpoi = {NULL, NULL, 0};
@@ -1193,10 +1195,15 @@ poi_dialog_run(GtkWidget *parent, PoiInfo *poi, PoiAction action)
                           G_CALLBACK(poi_delete), &dpoi);
     }
 
+    pannable = hildon_pannable_area_new();
+    hildon_pannable_area_set_size_request_policy(HILDON_PANNABLE_AREA(pannable),
+                                                 HILDON_SIZE_REQUEST_CHILDREN);
+    gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox), pannable,
+                       TRUE, TRUE, 0);
     {
         /* Set the lat/lon strings. */
-        gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox),
-                table = gtk_table_new(6, 4, FALSE), TRUE, TRUE, 0);
+        hildon_pannable_area_add_with_viewport(HILDON_PANNABLE_AREA(pannable),
+                table = gtk_table_new(6, 4, FALSE));
 
         gtk_table_attach(GTK_TABLE(table),
                 label = gtk_label_new(DEG_FORMAT_ENUM_TEXT[_degformat].short_field_1),
@@ -1242,26 +1249,13 @@ poi_dialog_run(GtkWidget *parent, PoiInfo *poi, PoiAction action)
                     _("Edit Categories...")),
                 FALSE, FALSE, 0);
 
-        gtk_table_attach(GTK_TABLE(table),
-                label = gtk_label_new(_("Description")),
-                0, 1, 5, 6, GTK_FILL, GTK_FILL, 2, 0);
-        gtk_misc_set_alignment(GTK_MISC(label), 1.f, 0.0f);
-
-        txt_scroll = gtk_scrolled_window_new(NULL, NULL);
-        gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(txt_scroll),
-                GTK_SHADOW_IN);
-        gtk_table_attach(GTK_TABLE(table),
-                txt_scroll,
-                1, 4, 5, 6, GTK_EXPAND | GTK_FILL, 0, 2, 0);
-
-        gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(txt_scroll),
-                GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
-
-        txt_desc = gtk_text_view_new ();
+        txt_desc = hildon_text_view_new();
+        hildon_gtk_text_view_set_placeholder_text(GTK_TEXT_VIEW(txt_desc),
+                                                  _("Description"));
         gtk_text_view_set_wrap_mode(GTK_TEXT_VIEW(txt_desc), GTK_WRAP_WORD);
-
-        gtk_container_add(GTK_CONTAINER(txt_scroll), txt_desc);
-        gtk_widget_set_size_request(GTK_WIDGET(txt_scroll), 550, 120);
+        gtk_table_attach(GTK_TABLE(table),
+                txt_desc,
+                0, 4, 5, 6, GTK_EXPAND | GTK_FILL, 0, 2, 0);
 
         desc_txt = gtk_text_view_get_buffer(GTK_TEXT_VIEW (txt_desc));
 
