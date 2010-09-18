@@ -1,5 +1,6 @@
+/* vi: set et sw=4 ts=8 cino=t0,(0: */
 /*
- * Copyright (C) 2010 Alberto Mardegan <mardy@users.sourceforge.net>
+ * Copyright (C) 2009-2010 Alberto Mardegan <mardy@users.sourceforge.net>
  *
  * This file is part of Mappero.
  *
@@ -17,23 +18,35 @@
  * along with Mappero.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "controller.h"
-#include "view.h"
+#ifndef MAP_CONTROLLER_H
+#define MAP_CONTROLLER_H
 
-#include <QApplication>
-#include <QGraphicsScene>
+#include <QObject>
 
-int main(int argc, char *argv[])
+namespace Map {
+
+class View;
+
+class ControllerPrivate;
+class Controller: public QObject
 {
-    QApplication app(argc, argv);
+    Q_OBJECT
 
-    QGraphicsScene scene;
+public:
+    Controller(QObject *parent = 0);
+    ~Controller();
 
-    Map::Controller controller;
-    Map::View view(&scene);
-    controller.setView(&view);
-    view.setWindowTitle("Mappero");
-    view.show();
+    static Controller *instance();
 
-    return app.exec();
-}
+    void setView(View *view);
+    View *view() const;
+
+private:
+    ControllerPrivate *d_ptr;
+    Q_DECLARE_PRIVATE(Controller)
+};
+
+};
+
+
+#endif /* MAP_CONTROLLER_H */

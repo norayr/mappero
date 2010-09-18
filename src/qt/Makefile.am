@@ -34,11 +34,13 @@ mappero_LDADD = \
 	$(LOCATION_LIBS)
 
 mappero_SOURCES = \
+	controller.cpp \
 	main.cpp \
 	osm.cpp \
 	view.cpp
 
 nodist_mappero_SOURCES = \
+	controller.moc.hpp \
 	view.moc.hpp
 
 BUILT_SOURCES = \
