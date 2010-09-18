@@ -22,8 +22,12 @@
 #endif
 #include "osm.h"
 
+#include "controller.h"
+#include "view.h"
+
 #include <QDebug>
 #include <QGraphicsPixmapItem>
+#include <QGraphicsSceneMouseEvent>
 
 /* number of buttons per column */
 #define N_BUTTONS_COLUMN   4
@@ -48,26 +52,65 @@ using namespace Map;
 class OsmButton: public QGraphicsPixmapItem
 {
 public:
-    OsmButton(const QString &fileName, QGraphicsItem *parent):
+    enum Action {
+        NONE,
+        POINT,
+        PATH,
+        ROUTE,
+        GO_TO,
+        ZOOM_IN,
+        ZOOM_OUT,
+        FULLSCREEN,
+        SETTINGS,
+        GPS_TOGGLE,
+    };
+
+    OsmButton(const QString &fileName, Action action, QGraphicsItem *parent):
         QGraphicsPixmapItem(QPixmap(fileName), parent)
     {
+        this->action = action;
+        setShapeMode(QGraphicsPixmapItem::BoundingRectShape);
     }
+
+    void mousePressEvent(QGraphicsSceneMouseEvent *event)
+    {
+        event->accept();
+    }
+
+    void mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
+    {
+        if (!contains(event->pos())) return;
+
+        switch (action) {
+        case FULLSCREEN:
+            Controller::instance()->view()->switchFullscreen();
+            break;
+        }
+    }
+
+private:
+    Action action;
 };
 
-static const char *btn_icons[N_BUTTONS] = {
+struct ButtonData {
+    const char *icon;
+    OsmButton::Action action;
+};
+
+static const ButtonData buttonData[N_BUTTONS] = {
     /* column 1 */
-    "maemo-mapper-point",
-    "maemo-mapper-path",
-    "maemo-mapper-route",
-    "maemo-mapper-go-to",
+    { "maemo-mapper-point", OsmButton::POINT },
+    { "maemo-mapper-path", OsmButton::PATH },
+    { "maemo-mapper-route", OsmButton::ROUTE },
+    { "maemo-mapper-go-to", OsmButton::GO_TO },
     /* column 2 */
-    "maemo-mapper-zoom-in",
-    "maemo-mapper-zoom-out",
-    NULL,
-    "maemo-mapper-fullscreen",
+    { "maemo-mapper-zoom-in", OsmButton::ZOOM_IN },
+    { "maemo-mapper-zoom-out", OsmButton::ZOOM_OUT },
+    { NULL, OsmButton::NONE },
+    { "maemo-mapper-fullscreen", OsmButton::FULLSCREEN },
     /* bottom row */
-    "maemo-mapper-settings",
-    "maemo-mapper-gps-disable",
+    { "maemo-mapper-settings", OsmButton::SETTINGS },
+    { "maemo-mapper-gps-disable", OsmButton::GPS_TOGGLE },
 };
 
 Osm::Osm()
@@ -75,7 +118,7 @@ Osm::Osm()
     setFlags(QGraphicsItem::ItemHasNoContents);
     QString base = QString("/usr/share/icons/hicolor/scalable/hildon/");
     for (int i = 0; i < N_BUTTONS; i++) {
-        new OsmButton(base + btn_icons[i], this);
+        new OsmButton(base + buttonData[i].icon, buttonData[i].action, this);
     }
 }
 
