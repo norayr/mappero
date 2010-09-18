@@ -55,3 +55,12 @@ void View::resizeEvent(QResizeEvent *event)
     osm->setSize(event->size());
 }
 
+void View::switchFullscreen()
+{
+    bool isFullScreen = windowState() & Qt::WindowFullScreen;
+    if (isFullScreen)
+        showNormal();
+    else
+        showFullScreen();
+}
+

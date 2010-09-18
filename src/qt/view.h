@@ -34,6 +34,9 @@ public:
 
     virtual void resizeEvent(QResizeEvent *event);
 
+public slots:
+    void switchFullscreen();
+
 private:
     Osm *osm;
 };
