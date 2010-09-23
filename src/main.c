@@ -35,6 +35,8 @@
 #include <gst/gst.h>
 #include <locale.h>
 
+#include <gdk/gdkkeysyms.h>
+
 #include <gconf/gconf-client.h>
 
 #ifdef MAEMO_CHANGES /* probably not the best macro to check for here */
@@ -320,6 +322,157 @@ maemo_mapper_destroy()
     g_thread_pool_free(_mut_thread_pool, TRUE, TRUE);
 }
 
+static void
+move(MapController *controller, MapPoint *point,
+     gint angle, gint distance)
+{
+    gint new_angle;
+
+    new_angle = map_controller_get_rotation(controller) + angle;
+    (*point).x += distance * GCOS(deg2rad(new_angle));
+    (*point).y += distance * GSIN(deg2rad(new_angle));
+}
+
+static gboolean
+key_press (GtkWidget *widget,
+           GdkEventKey *event,
+           MapController *controller)
+{
+    MapPoint center;
+    switch (event->keyval) {
+    case ' ': /* fullscreen */
+        map_controller_action_switch_fullscreen(controller);
+        break;
+
+    /* s,f have +,- signs on them */
+    case 'f':
+        map_controller_action_zoom_out(controller);
+        break;
+    case 's':
+        map_controller_action_zoom_in(controller);
+        break;
+
+    case GDK_Left:
+        map_controller_get_center(controller, &center);
+        move(controller, &center, 180,
+             50 << map_controller_get_zoom(controller));
+        map_controller_set_center(controller, center, -1);
+        break;
+    case GDK_Right:
+        map_controller_get_center(controller, &center);
+        move(controller, &center, 0,
+             50 << map_controller_get_zoom(controller));
+        map_controller_set_center(controller, center, -1);
+        break;
+    case GDK_Down:
+        map_controller_get_center(controller, &center);
+        move(controller, &center, 90,
+             50 << map_controller_get_zoom(controller));
+        map_controller_set_center(controller, center, -1);
+        break;
+    case GDK_Up:
+        map_controller_get_center(controller, &center);
+        move(controller, &center, 270,
+             50 << map_controller_get_zoom(controller));
+        map_controller_set_center(controller, center, -1);
+        break;
+
+    case 'G':
+        map_controller_set_gps_enabled(controller,
+            !map_controller_get_gps_enabled(controller));
+        break;
+
+    case 'g':
+        map_controller_set_show_gps_info(controller,
+            !map_controller_get_show_gps_info(controller));
+        break;
+    case 'v':
+        map_controller_set_show_velocity(controller,
+            !map_controller_get_show_velocity(controller));
+        break;
+    case 'z':
+        map_controller_set_show_zoom(controller,
+            !map_controller_get_show_zoom(controller));
+        break;
+    case 'p':
+        map_controller_set_show_poi(controller,
+            !map_controller_get_show_poi(controller));
+        break;
+    case 'l':
+        map_controller_set_show_scale(controller,
+            !map_controller_get_show_scale(controller));
+        break;
+    case 't':
+        map_controller_set_show_tracks(controller,
+            !map_controller_get_show_tracks(controller));
+        break;
+    case 'c':
+        map_controller_set_show_compass(controller,
+            !map_controller_get_show_compass(controller));
+        break;
+    case 'r':
+        map_controller_set_show_routes(controller,
+            !map_controller_get_show_routes(controller));
+        break;
+
+    case 'x':
+        map_controller_set_center_mode(controller,
+            !map_controller_get_center_mode(controller));
+        break;
+    case 'a':
+        map_controller_set_auto_rotate(controller,
+            !map_controller_get_auto_rotate(controller));
+        break;
+
+    /* menus */
+    case 'o':
+        map_controller_action_go_to(controller);
+        break;
+    case 'm':
+        map_controller_action_route(controller);
+        break;
+    case 'n':
+        map_controller_action_track(controller);
+        break;
+    case 'b':
+        map_controller_action_view(controller);
+        break;
+    case 'i':
+        map_controller_action_point(controller);
+        break;
+    case 'u':
+        map_controller_get_center(controller, &center);
+        map_controller_activate_menu_point(controller, &center);
+        break;
+
+    /* menu items */
+    case 'P':
+        map_controller_disable_auto_center(controller);
+        map_controller_set_center(controller, _pos.unit, -1);
+        break;
+    case 'W':
+        menu_cb_view_goto_nextway(NULL);
+        break;
+    }
+    return FALSE;
+}
+
+static gboolean
+key_release (GtkWidget *widget,
+             GdkEventKey *event,
+             MapController *controller)
+{
+    switch (event->keyval) {
+    /* s,f have +,- signs on them */
+    case 'f':
+    case 's':
+        map_controller_action_zoom_stop(controller);
+        break;
+    }
+    return FALSE;
+}
+
+
 /**
  * Initialize everything required in preparation for calling gtk_main().
  */
@@ -396,6 +549,15 @@ maemo_mapper_init(gint argc, gchar **argv)
     /* Connect signals. */
     g_signal_connect(G_OBJECT(_window), "destroy",
             G_CALLBACK(gtk_main_quit), NULL);
+
+    /* keyboard events */
+    gtk_widget_add_events (_window, GDK_KEY_PRESS_MASK);
+    g_signal_connect (G_OBJECT(_window), "key-release-event",
+                      G_CALLBACK (key_release),
+                      _controller);
+    g_signal_connect (G_OBJECT(_window), "key-press-event",
+                      G_CALLBACK (key_press),
+                      _controller);
 
     gtk_widget_show(_window);
     menu_init();
