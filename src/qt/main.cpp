@@ -29,8 +29,8 @@ int main(int argc, char *argv[])
 
     QGraphicsScene scene;
 
-    Map::Controller controller;
-    Map::View view(&scene);
+    Mappero::Controller controller;
+    Mappero::View view(&scene);
     controller.setView(&view);
     view.setWindowTitle("Mappero");
     view.show();

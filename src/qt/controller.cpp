@@ -25,11 +25,11 @@
 
 #include <QDebug>
 
-using namespace Map;
+using namespace Mappero;
 
 static Controller *controller = 0;
 
-namespace Map {
+namespace Mappero {
 class ControllerPrivate
 {
     Q_DECLARE_PUBLIC(Controller)

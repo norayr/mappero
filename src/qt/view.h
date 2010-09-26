@@ -23,7 +23,7 @@
 
 #include <QGraphicsView>
 
-namespace Map {
+namespace Mappero {
 class Osm;
 
 class View: public QGraphicsView

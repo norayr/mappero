@@ -29,7 +29,7 @@
 #include <QGraphicsScene>
 #include <QGraphicsView>
 
-using namespace Map;
+using namespace Mappero;
 
 View::View(QGraphicsScene *scene):
     QGraphicsView(scene)
@@ -44,7 +44,7 @@ View::View(QGraphicsScene *scene):
     setViewport(new QGLWidget);
 
     /* create the OSM */
-    osm = new Map::Osm();
+    osm = new Osm();
     scene->addItem(osm);
 }
 

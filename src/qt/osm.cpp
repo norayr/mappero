@@ -47,7 +47,7 @@
 #define BUTTON_X_OFFSET ((BUTTON_SIZE_X / 2) + BUTTON_BORDER_OFFSET)
 #define BUTTON_Y_OFFSET ((BUTTON_SIZE_Y / 2) + BUTTON_BORDER_OFFSET)
 
-using namespace Map;
+using namespace Mappero;
 
 class OsmButton: public QGraphicsPixmapItem
 {

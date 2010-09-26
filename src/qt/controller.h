@@ -23,7 +23,7 @@
 
 #include <QObject>
 
-namespace Map {
+namespace Mappero {
 
 class View;
 
