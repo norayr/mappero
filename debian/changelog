@@ -1,3 +1,15 @@
+maemo-mapper (3.2) unstable; urgency=low
+
+  * Re-generate translation files.
+  * Add keyboard shortcuts. Patch by Matan Ziv-Av <matan@svgalib.org>
+  * Add Chinese translation. Patch by: <willkr@vip.qq.com>
+    Fixes: MB#6645 - maemo mapper chinese pack
+  * Real-time update of distance to end of route
+    Patch by Matan Ziv-Av <matan@svgalib.org>
+    Fixes: MB#6436 - Refrest distance value continuously
+
+ -- Alberto Mardegan <mardy@users.sourceforge.net>  Fri, 24 Dec 2010 12:09:05 +0200
+
 maemo-mapper (3.1) unstable; urgency=low
 
   * Increase the version number for the autobuilder
