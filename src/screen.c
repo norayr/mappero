@@ -1,4 +1,4 @@
-/* vi: set et sw=4 ts=8 cino=t0,(0: */
+/* vi: set et sw=4 ts=4 cino=t0,(0: */
 /* -*- Mode: C; indent-tabs-mode: nil; c-basic-offset: 4; tab-width: 8 -*- */
 /*
  * Copyright (C) 2009-2010 Alberto Mardegan <mardy@users.sourceforge.net>
@@ -943,6 +943,7 @@ panel_create_layouts(MapPanelData *pd, PangoContext *context)
         time_t time;
         gint n = 0;
         MapPathPoint *p;
+        gfloat distance;
 
         if (has_data) pd->route_gap = PANEL_BORDER;
         layout = pango_layout_new(context);
@@ -958,7 +959,16 @@ panel_create_layouts(MapPanelData *pd, PangoContext *context)
         if (time != 0)
             n += time_to_string(buffer + n, sizeof(buffer) - n, " %H:%M", time);
 
-        text = g_strdup_printf("<b>%s</b>", buffer);
+        if (route_calc_distance_to(p, &distance))
+        {
+            gchar dt[16];
+            distance_to_string(dt, sizeof(dt) - 1, distance);
+            text = g_strdup_printf("%s/<b>%s</b>", dt, buffer);
+        }
+        else
+        {
+            text = g_strdup_printf("<b>%s</b>", buffer);
+        }
         pango_layout_set_markup(layout, text, -1);
         g_free(text);
         pango_layout_get_pixel_size(layout, &w, &h);
