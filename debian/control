@@ -20,6 +20,7 @@ Build-Depends: debhelper (>= 4.0.0),
  libosso-dev,
  libosso-gnomevfs2-dev,
  libsqlite3-dev,
+ libtool,
  mce-dev,
  osso-af-settings
 Standards-Version: 3.6.0
