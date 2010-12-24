@@ -1,0 +1,1330 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2010-12-24 11:59+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=CHARSET\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: ../src/poi.c:1014
+msgid "# POIs"
+msgstr ""
+
+#: ../src/settings.c:881
+#, c-format
+msgid "%d seconds"
+msgstr ""
+
+#: ../src/settings.c:877
+msgid "1 second"
+msgstr ""
+
+#: ../src/he-about-dialog.c:122
+msgid "About"
+msgstr ""
+
+#: ../src/he-about-dialog.c:124 ../src/he-about-dialog.c:297
+#, c-format
+msgid "About %s"
+msgstr ""
+
+#: ../src/menu.c:823
+msgid "About..."
+msgstr ""
+
+#: ../src/poi.c:705
+msgid "Add Category"
+msgstr ""
+
+#: ../src/poi.c:1179
+msgid "Add POI"
+msgstr ""
+
+#: ../src/cmenu.c:341 ../src/cmenu.c:409
+msgid "Add POI..."
+msgstr ""
+
+#: ../src/cmenu.c:337 ../src/cmenu.c:461
+msgid "Add Route Point"
+msgstr ""
+
+#: ../src/route.c:954
+msgid "Add Waypoint"
+msgstr ""
+
+#: ../src/cmenu.c:339 ../src/cmenu.c:462
+msgid "Add Waypoint..."
+msgstr ""
+
+#: ../src/poi.c:970
+msgid "Add..."
+msgstr ""
+
+#: ../src/menu.c:580
+msgid "Address"
+msgstr ""
+
+#: ../src/menu.c:950
+msgid "Address..."
+msgstr ""
+
+#: ../src/settings.c:811
+msgid "Advance Notice"
+msgstr ""
+
+#: ../src/maps.c:1122
+msgid "Along Route - Radius (tiles):"
+msgstr ""
+
+#: ../src/display.c:757
+msgid "Altitude"
+msgstr ""
+
+#: ../src/settings.c:976
+msgid "Always landscape"
+msgstr ""
+
+#: ../src/settings.c:977
+msgid "Always portrait"
+msgstr ""
+
+#: ../src/settings.c:793 ../src/settings.c:1281
+msgid "Announce"
+msgstr ""
+
+#: ../src/maps.c:1162
+msgid "Area"
+msgstr ""
+
+#: ../src/menu.c:1001 ../src/settings.c:686 ../src/settings.c:1280
+msgid "Auto-Center"
+msgstr ""
+
+#: ../src/controller.c:497
+msgid "Auto-Center Off"
+msgstr ""
+
+#: ../src/menu.c:1195
+msgid "Auto-Download"
+msgstr ""
+
+#: ../src/settings.c:1061
+msgid "Auto-Download Pre-cache"
+msgstr ""
+
+#: ../src/menu.c:1019
+msgid "Auto-Rotate"
+msgstr ""
+
+#: ../src/route.c:871
+msgid "Auto-Update"
+msgstr ""
+
+#: ../src/settings.c:975
+msgid "Automatic"
+msgstr ""
+
+#: ../src/poi.c:2040
+msgid "Bear."
+msgstr ""
+
+#: ../src/main.c:588
+msgid "Bottom-Left"
+msgstr ""
+
+#: ../src/main.c:587 ../src/maps.c:1271
+msgid "Bottom-Right"
+msgstr ""
+
+#: ../src/cmenu.c:335
+msgid "Browse POI..."
+msgstr ""
+
+#: ../src/poi.c:2639
+msgid "Browse POIs"
+msgstr ""
+
+#: ../src/menu.c:1256
+msgid "Browse..."
+msgstr ""
+
+#: ../src/poi.c:211
+msgid "Bus stops, airports, train stations, etc."
+msgstr ""
+
+#: ../src/poi.c:216
+msgid "Business"
+msgstr ""
+
+#: ../src/maps.c:1113
+msgid "By Area (see tab)"
+msgstr ""
+
+#: ../src/tile_source.c:746
+msgid "Cache dir"
+msgstr ""
+
+#: ../src/tile_source.c:832
+msgid "Cache dir is required"
+msgstr ""
+
+#: ../src/menu.c:1257
+msgid "Categories..."
+msgstr ""
+
+#: ../src/poi.c:521 ../src/poi.c:1237 ../src/poi.c:1615 ../src/poi.c:2022
+#: ../src/poi.c:2184 ../src/poi.c:2354 ../src/poi.c:2673
+msgid "Category"
+msgstr ""
+
+#: ../src/poi.c:1912 ../src/poi.c:2075
+msgid "Checked POI Actions..."
+msgstr ""
+
+#: ../src/maps.c:1066 ../src/menu.c:859 ../src/menu.c:902
+msgid "Clear"
+msgstr ""
+
+#: ../src/settings.c:450
+msgid "Colors"
+msgstr ""
+
+#: ../src/settings.c:1285
+msgid "Colors..."
+msgstr ""
+
+#: ../src/menu.c:1075
+msgid "Compass Rose"
+msgstr ""
+
+#: ../src/maps.c:765 ../src/maps.c:861
+msgid "Confirm DELETION of"
+msgstr ""
+
+#: ../src/cmenu.c:241
+msgid "Confirm delete of waypoint"
+msgstr ""
+
+#: ../src/maps.c:771 ../src/maps.c:867
+msgid "Confirm download of"
+msgstr ""
+
+#: ../src/display.c:1241
+msgid "Copy"
+msgstr ""
+
+#: ../src/cmenu.c:401
+msgid "Copy Description"
+msgstr ""
+
+#: ../src/cmenu.c:399
+msgid "Copy Position"
+msgstr ""
+
+#: ../src/route.c:1049
+msgid ""
+"Creating a \"waypoint\" with no description actually adds a break point.  Is "
+"that what you want?"
+msgstr ""
+
+#: ../src/display.c:197
+msgid "DGPS"
+msgstr ""
+
+#: ../src/poi.c:2174
+msgid "Default Category"
+msgstr ""
+
+#: ../src/settings.c:1043
+msgid "Degrees Format"
+msgstr ""
+
+#: ../src/maps.c:1103
+msgid "Delete Maps"
+msgstr ""
+
+#: ../src/poi.c:1050
+msgid "Delete POI?"
+msgstr ""
+
+#: ../src/poi.c:609
+msgid "Delete category?"
+msgstr ""
+
+#: ../src/poi.c:1831
+msgid "Delete selected POI?"
+msgstr ""
+
+#: ../src/cmenu.c:407 ../src/poi.c:685 ../src/poi.c:1193 ../src/poi.c:1927
+msgid "Delete..."
+msgstr ""
+
+#: ../src/menu.c:238 ../src/poi.c:724 ../src/poi.c:1009 ../src/poi.c:1254
+#: ../src/route.c:986
+msgid "Description"
+msgstr ""
+
+#: ../src/route.c:824
+msgid "Destination"
+msgstr ""
+
+#: ../src/settings.c:1073
+msgid "Disabled"
+msgstr ""
+
+#: ../src/poi.c:2030
+msgid "Dist."
+msgstr ""
+
+#: ../src/cmenu.c:139 ../src/route.c:277
+msgid "Distance"
+msgstr ""
+
+#: ../src/repository.c:228
+#, c-format
+msgid ""
+"Do you really want to delete repository\n"
+"%s?"
+msgstr ""
+
+#: ../src/tile_source.c:507
+#, c-format
+msgid ""
+"Do you really want to delete tile source\n"
+"%s?"
+msgstr ""
+
+#: ../src/he-about-dialog.c:360
+msgid "Donate"
+msgstr ""
+
+#: ../src/maps.c:1090
+msgid "Download Maps"
+msgstr ""
+
+#: ../src/cmenu.c:333
+msgid "Download POI..."
+msgstr ""
+
+#: ../src/poi.c:2310
+msgid "Download POIs"
+msgstr ""
+
+#: ../src/menu.c:1255
+msgid "Download..."
+msgstr ""
+
+#: ../src/poi.c:1249 ../src/poi.c:1624 ../src/poi.c:2193
+msgid "Edit Categories..."
+msgstr ""
+
+#: ../src/poi.c:679
+msgid "Edit Category"
+msgstr ""
+
+#: ../src/poi.c:1187
+msgid "Edit POI"
+msgstr ""
+
+#: ../src/poi.c:967 ../src/poi.c:2071
+msgid "Edit..."
+msgstr ""
+
+#: ../src/poi.c:215
+msgid "Elementary schools, college campuses, etc."
+msgstr ""
+
+#: ../src/menu.c:904
+msgid "Enable Tracking"
+msgstr ""
+
+#: ../src/settings.c:805
+msgid "Enable Waypoint Announcements"
+msgstr ""
+
+#: ../src/settings.c:828
+msgid "Enable voice announcements"
+msgstr ""
+
+#: ../src/poi.c:748 ../src/poi.c:999
+msgid "Enabled"
+msgstr ""
+
+#: ../src/route.c:772 ../src/route.c:1102
+msgid "Enter your destination"
+msgstr ""
+
+#: ../src/poi.c:1365
+msgid "Error adding POI"
+msgstr ""
+
+#: ../src/poi.c:811
+msgid "Error adding category"
+msgstr ""
+
+#: ../src/poi.c:624 ../src/poi.c:1061 ../src/poi.c:1860
+msgid "Error deleting POI"
+msgstr ""
+
+#: ../src/poi.c:633
+msgid "Error deleting category"
+msgstr ""
+
+#: ../src/menu.c:90 ../src/menu.c:168 ../src/poi.c:2236 ../src/poi.c:2607
+msgid "Error parsing GPX file."
+msgstr ""
+
+#: ../src/maps.c:642
+msgid "Error saving map to disk - disk full?"
+msgstr ""
+
+#: ../src/poi.c:853
+msgid "Error updating Category"
+msgstr ""
+
+#: ../src/poi.c:1387 ../src/poi.c:1700
+msgid "Error updating POI"
+msgstr ""
+
+#: ../src/poi.c:796
+msgid "Error updating category"
+msgstr ""
+
+#: ../src/poi.c:162
+msgid "Error with POI database"
+msgstr ""
+
+#: ../src/menu.c:118 ../src/menu.c:189 ../src/poi.c:1898
+msgid "Error writing GPX file."
+msgstr ""
+
+#: ../src/gps.c:279
+msgid "Establishing GPS fix"
+msgstr ""
+
+#: ../src/display.c:201
+msgid "Estimated"
+msgstr ""
+
+#: ../src/poi.c:1932
+msgid "Export to GPX..."
+msgstr ""
+
+#: ../src/util.c:157
+msgid "Failed to connect to GPX Directions server"
+msgstr ""
+
+#: ../src/settings.c:1363
+msgid "Failed to initialize GConf.  Quitting."
+msgstr ""
+
+#: ../src/settings.c:133
+msgid "Failed to initialize GConf.  Settings were not saved."
+msgstr ""
+
+#: ../src/display.c:1342 ../src/main.c:116
+msgid "Failed to open file for reading"
+msgstr ""
+
+#: ../src/poi.c:229
+msgid "Failed to open or create database"
+msgstr ""
+
+#: ../src/path.c:580
+msgid "Failed to open path database. Tracks and routes will not be saved."
+msgstr ""
+
+#: ../src/path.c:136 ../src/path.c:173 ../src/path.c:215
+msgid "Failed to write to path database. Tracks and routes may not be saved."
+msgstr ""
+
+#: ../src/route.c:805
+msgid "Find route"
+msgstr ""
+
+#: ../src/cmenu.c:331 ../src/cmenu.c:405 ../src/cmenu.c:460
+msgid "Find route to..."
+msgstr ""
+
+#: ../src/display.c:802
+msgid "Fix"
+msgstr ""
+
+#: ../src/display.c:811
+msgid "Fix Quality"
+msgstr ""
+
+#: ../src/settings.c:697
+msgid "Fixed"
+msgstr ""
+
+#: ../src/display.c:200
+msgid "Float RTK"
+msgstr ""
+
+#: ../src/display.c:1234 ../src/tile_source.c:790
+msgid "Format"
+msgstr ""
+
+#: ../src/settings.c:468 ../src/settings.c:869 ../src/settings.c:1282
+msgid "GPS"
+msgstr ""
+
+#: ../src/display.c:705
+msgid "GPS Details"
+msgstr ""
+
+#: ../src/menu.c:814
+msgid "GPS Details..."
+msgstr ""
+
+#: ../src/display.c:718
+msgid "GPS Information"
+msgstr ""
+
+#: ../src/maps.c:1180 ../src/menu.c:951
+msgid "GPS Location"
+msgstr ""
+
+#: ../src/settings.c:890
+msgid "GPS polling interval"
+msgstr ""
+
+#: ../src/menu.c:1105
+msgid "GPS status"
+msgstr ""
+
+#: ../src/poi.c:219
+msgid "General landmarks."
+msgstr ""
+
+#: ../src/poi.c:217
+msgid "General places of business."
+msgstr ""
+
+#: ../src/menu.c:700
+msgid "Geographical mapping and driving directions"
+msgstr ""
+
+#: ../src/menu.c:944 ../src/poi.c:2068
+msgid "Go to"
+msgstr ""
+
+#: ../src/menu.c:570
+msgid "Go to Address"
+msgstr ""
+
+#: ../src/menu.c:408
+msgid "Go to Lat/Lon"
+msgstr ""
+
+#: ../src/display.c:766
+msgid "Heading"
+msgstr ""
+
+#: ../src/poi.c:203
+msgid "Houses, apartments, or other residences of import."
+msgstr ""
+
+#: ../src/poi.c:991
+msgid "ID"
+msgstr ""
+
+#: ../src/tile_source.c:828
+msgid "ID is not unique"
+msgstr ""
+
+#: ../src/tile_source.c:822
+msgid "ID is required"
+msgstr ""
+
+#: ../src/menu.c:1254
+msgid "Import..."
+msgstr ""
+
+#: ../src/poi.c:209
+msgid "Indoor or Outdoor places to have fun."
+msgstr ""
+
+#: ../src/settings.c:1013
+msgid "Info Font Size"
+msgstr ""
+
+#: ../src/menu.c:900
+msgid "Insert Break"
+msgstr ""
+
+#: ../src/menu.c:218
+msgid "Insert Mark"
+msgstr ""
+
+#: ../src/menu.c:901
+msgid "Insert Mark..."
+msgstr ""
+
+#: ../src/maps.c:1423
+msgid "Invalid Bottom-Right coordinate specified"
+msgstr ""
+
+#: ../src/poi.c:1316
+msgid "Invalid Coordinate specified"
+msgstr ""
+
+#: ../src/menu.c:486
+msgid "Invalid Latitude"
+msgstr ""
+
+#: ../src/menu.c:493
+msgid "Invalid Longitude"
+msgstr ""
+
+#: ../src/maps.c:1414
+msgid "Invalid Top-Left coordinate specified"
+msgstr ""
+
+#: ../src/util.c:168
+msgid "Invalid address."
+msgstr ""
+
+#: ../src/poi.c:2589
+msgid "Invalid origin or query."
+msgstr ""
+
+#: ../src/poi.c:516 ../src/poi.c:716 ../src/poi.c:1004 ../src/poi.c:1229
+#: ../src/poi.c:2049
+msgid "Label"
+msgstr ""
+
+#: ../src/poi.c:218
+msgid "Landmark"
+msgstr ""
+
+#: ../src/menu.c:228
+msgid "Lat, Lon:"
+msgstr ""
+
+#: ../src/menu.c:994
+msgid "Lat/Lon"
+msgstr ""
+
+#: ../src/menu.c:949
+msgid "Lat/Lon..."
+msgstr ""
+
+#: ../src/display.c:730 ../src/menu.c:418
+msgid "Latitude"
+msgstr ""
+
+#: ../src/tile_source.c:769
+msgid "Layer"
+msgstr ""
+
+#: ../src/repository.c:715
+msgid "Layers"
+msgstr ""
+
+#: ../src/repository.c:396
+#, c-format
+msgid ""
+"Layers: %d new, %d updated\n"
+"Repositories: %d new, %d updated\n"
+msgstr ""
+
+#: ../src/menu.c:995
+msgid "Lead"
+msgstr ""
+
+#: ../src/settings.c:702
+msgid "Lead Amount"
+msgstr ""
+
+#: ../src/settings.c:967
+msgid "Line Width"
+msgstr ""
+
+#: ../src/display.c:775
+msgid "Local time"
+msgstr ""
+
+#: ../src/poi.c:511 ../src/settings.c:1099
+msgid "Location"
+msgstr ""
+
+#: ../src/poi.c:212
+msgid "Lodging"
+msgstr ""
+
+#: ../src/display.c:739 ../src/menu.c:439
+msgid "Longitude"
+msgstr ""
+
+#: ../src/maps.c:1052
+msgid "Manage Maps"
+msgstr ""
+
+#: ../src/menu.c:1202
+msgid "Manage Maps..."
+msgstr ""
+
+#: ../src/display.c:202
+msgid "Manual"
+msgstr ""
+
+#: ../src/cmenu.c:320 ../src/cmenu.c:506
+msgid "Map Point"
+msgstr ""
+
+#: ../src/menu.c:1185
+msgid "Map repository"
+msgstr ""
+
+#: ../src/menu.c:804 ../src/menu.c:1160
+msgid "Maps"
+msgstr ""
+
+#: ../src/display.c:820
+msgid "Max speed"
+msgstr ""
+
+#: ../src/repository.c:682
+msgid "Max zoom"
+msgstr ""
+
+#: ../src/repository.c:674
+msgid "Min zoom"
+msgstr ""
+
+#: ../src/settings.c:747
+msgid "Min. Speed"
+msgstr ""
+
+#: ../src/settings.c:942 ../src/settings.c:1283
+msgid "Misc."
+msgstr ""
+
+#: ../src/poi.c:221
+msgid "Miscellaneous category for everything else."
+msgstr ""
+
+#: ../src/repository.c:648 ../src/tile_source.c:734
+msgid "Name"
+msgstr ""
+
+#: ../src/tile_source.c:818
+msgid "Name is required"
+msgstr ""
+
+#: ../src/menu.c:953
+msgid "Nearest POI"
+msgstr ""
+
+#: ../src/main.c:575
+msgid "Never"
+msgstr ""
+
+#: ../src/repository.c:1030
+msgid "New repository"
+msgstr ""
+
+#: ../src/menu.c:952
+msgid "Next Waypoint"
+msgstr ""
+
+#: ../src/menu.c:663 ../src/poi.c:580 ../src/poi.c:2916
+msgid "No POIs found."
+msgstr ""
+
+#: ../src/poi.c:1512
+msgid "No POIs were found."
+msgstr ""
+
+#: ../src/repository.c:394
+msgid "No changes in repositories"
+msgstr ""
+
+#: ../src/menu.c:996
+msgid "None"
+msgstr ""
+
+#: ../src/menu.c:855 ../src/menu.c:898
+msgid "Open..."
+msgstr ""
+
+#: ../src/route.c:807
+msgid "Options"
+msgstr ""
+
+#: ../src/settings.c:982
+msgid "Orientation"
+msgstr ""
+
+#: ../src/poi.c:2379 ../src/poi.c:2698 ../src/route.c:859
+msgid "Origin"
+msgstr ""
+
+#: ../src/poi.c:220
+msgid "Other"
+msgstr ""
+
+#: ../src/route.c:852
+msgid "Other..."
+msgstr ""
+
+#: ../src/maps.c:1097
+msgid "Overwrite"
+msgstr ""
+
+#: ../src/poi.c:2263
+msgid "Overwrite query with the following text?"
+msgstr ""
+
+#: ../src/cmenu.c:453 ../src/cmenu.c:510 ../src/menu.c:794 ../src/menu.c:1099
+#: ../src/menu.c:1249 ../src/settings.c:513 ../src/settings.c:1176
+#: ../src/settings.c:1284
+msgid "POI"
+msgstr ""
+
+#: ../src/poi.c:954
+msgid "POI Categories"
+msgstr ""
+
+#: ../src/poi.c:1975
+msgid "POI List"
+msgstr ""
+
+#: ../src/settings.c:1185
+msgid "POI database"
+msgstr ""
+
+#: ../src/poi.c:1894
+msgid "POIs Exported"
+msgstr ""
+
+#: ../src/poi.c:1506
+msgid ""
+"POIs were added to the POI database.  The following screen will allow you to "
+"modify or delete any of the new POIs."
+msgstr ""
+
+#: ../src/display.c:198
+msgid "PPS"
+msgstr ""
+
+#: ../src/poi.c:2363
+msgid "Page"
+msgstr ""
+
+#: ../src/settings.c:722
+msgid "Pan Sensitivity"
+msgstr ""
+
+#: ../src/poi.c:205
+msgid "Places to eat or drink."
+msgstr ""
+
+#: ../src/poi.c:207
+msgid "Places to shop or acquire services."
+msgstr ""
+
+#: ../src/poi.c:213
+msgid "Places to stay temporarily or for the night."
+msgstr ""
+
+#: ../src/menu.c:293
+msgid "Please provide a description for the mark."
+msgstr ""
+
+#: ../src/poi.c:1335 ../src/poi.c:1648
+msgid "Please specify a category."
+msgstr ""
+
+#: ../src/poi.c:2211 ../src/poi.c:2554
+msgid "Please specify a default category."
+msgstr ""
+
+#: ../src/poi.c:774
+msgid "Please specify a name for the category."
+msgstr ""
+
+#: ../src/poi.c:1328
+msgid "Please specify a name."
+msgstr ""
+
+#: ../src/poi.c:2561
+msgid "Please specify a query."
+msgstr ""
+
+#: ../src/poi.c:2496
+msgid "Please specify a source URL."
+msgstr ""
+
+#: ../src/route.c:714
+msgid "Please specify a start location."
+msgstr ""
+
+#: ../src/route.c:722
+msgid "Please specify an end location."
+msgstr ""
+
+#: ../src/poi.c:2548 ../src/poi.c:2844
+msgid "Please specify an origin."
+msgstr ""
+
+#: ../src/maps.c:285
+msgid "Processing Maps"
+msgstr ""
+
+#: ../src/poi.c:2396 ../src/poi.c:2715
+msgid "Query"
+msgstr ""
+
+#: ../src/display.c:199
+msgid "Real Time Kinematic"
+msgstr ""
+
+#: ../src/path.c:388
+msgid "Really clear the track?"
+msgstr ""
+
+#: ../src/route.c:441
+msgid "Recalculating directions..."
+msgstr ""
+
+#: ../src/poi.c:208
+msgid "Recreation"
+msgstr ""
+
+#: ../src/settings.c:901
+msgid "Reduce GPS usage on screen off"
+msgstr ""
+
+#: ../src/tile_source.c:780
+msgid "Refresh, min"
+msgstr ""
+
+#: ../src/he-about-dialog.c:348
+msgid "Report bug"
+msgstr ""
+
+#: ../src/menu.c:1163 ../src/repository.c:1006
+msgid "Repositories"
+msgstr ""
+
+#: ../src/repository.c:639
+msgid "Repository"
+msgstr ""
+
+#: ../src/repository.c:495
+msgid "Repository's layers"
+msgstr ""
+
+#: ../src/menu.c:858
+msgid "Reset"
+msgstr ""
+
+#: ../src/settings.c:422
+msgid "Reset all colors to their original defaults?"
+msgstr ""
+
+#: ../src/settings.c:456
+msgid "Reset..."
+msgstr ""
+
+#: ../src/poi.c:202
+msgid "Residence"
+msgstr ""
+
+#: ../src/poi.c:204
+msgid "Restaurant"
+msgstr ""
+
+#: ../src/menu.c:849 ../src/menu.c:1081 ../src/settings.c:498
+msgid "Route"
+msgstr ""
+
+#: ../src/main.c:128 ../src/menu.c:87
+msgid "Route Opened"
+msgstr ""
+
+#: ../src/menu.c:115
+msgid "Route Saved"
+msgstr ""
+
+#: ../src/route.c:903
+msgid "Router"
+msgstr ""
+
+#: ../src/controller.c:584
+msgid "Routes are now hidden"
+msgstr ""
+
+#: ../src/controller.c:579
+msgid "Routes are now shown"
+msgstr ""
+
+#: ../src/display.c:196
+msgid "SPS"
+msgstr ""
+
+#: ../src/display.c:793
+msgid "Sat in use"
+msgstr ""
+
+#: ../src/display.c:784
+msgid "Sat in view"
+msgstr ""
+
+#: ../src/display.c:725
+msgid "Satellites details"
+msgstr ""
+
+#: ../src/display.c:662
+msgid "Satellites in view"
+msgstr ""
+
+#: ../src/menu.c:857 ../src/menu.c:899
+msgid "Save..."
+msgstr ""
+
+#: ../src/menu.c:1069
+msgid "Scale"
+msgstr ""
+
+#: ../src/poi.c:214
+msgid "School"
+msgstr ""
+
+#: ../src/poi.c:484
+msgid "Select POI"
+msgstr ""
+
+#: ../src/poi.c:1917
+msgid ""
+"Select an operation to perform\n"
+"on the POIs that you checked\n"
+"in the POI list."
+msgstr ""
+
+#: ../src/poi.c:548
+msgid "Select one POI from the list."
+msgstr ""
+
+#: ../src/cmenu.c:501
+msgid "Select point"
+msgstr ""
+
+#: ../src/tile_source.c:810
+msgid "Selected layer is active, so, cannot be deleted."
+msgstr ""
+
+#: ../src/poi.c:200
+msgid "Service Station"
+msgstr ""
+
+#: ../src/poi.c:1605 ../src/poi.c:1923
+msgid "Set Category..."
+msgstr ""
+
+#: ../src/cmenu.c:343
+msgid "Set as GPS Location"
+msgstr ""
+
+#: ../src/menu.c:854
+msgid "Set destination..."
+msgstr ""
+
+#: ../src/settings.c:1276
+msgid "Settings"
+msgstr ""
+
+#: ../src/menu.c:819
+msgid "Settings..."
+msgstr ""
+
+#: ../src/maps.c:1080
+msgid "Setup"
+msgstr ""
+
+#: ../src/poi.c:206
+msgid "Shopping/Services"
+msgstr ""
+
+#: ../src/menu.c:809 ../src/menu.c:1055
+msgid "Show"
+msgstr ""
+
+#: ../src/cmenu.c:397
+msgid "Show Description"
+msgstr ""
+
+#: ../src/cmenu.c:329 ../src/cmenu.c:403 ../src/cmenu.c:459
+msgid "Show Distance to"
+msgstr ""
+
+#: ../src/settings.c:1203
+msgid "Show POI below zoom"
+msgstr ""
+
+#: ../src/cmenu.c:327 ../src/cmenu.c:395 ../src/display.c:1195
+msgid "Show Position"
+msgstr ""
+
+#: ../src/display.c:203
+msgid "Simulation"
+msgstr ""
+
+#: ../src/poi.c:2331
+msgid "Source URL"
+msgstr ""
+
+#: ../src/display.c:748
+msgid "Speed"
+msgstr ""
+
+#: ../src/settings.c:1084
+msgid "Speed Limit"
+msgstr ""
+
+#: ../src/settings.c:696
+msgid "Speed based"
+msgstr ""
+
+#: ../src/route.c:548
+msgid "Starting point"
+msgstr ""
+
+#: ../src/poi.c:201
+msgid "Stations for purchasing fuel for vehicles."
+msgstr ""
+
+#: ../src/screen.c:1638
+msgid "Tap a point on the map"
+msgstr ""
+
+#: ../src/menu.c:630 ../src/route.c:289
+msgid "There is no next waypoint."
+msgstr ""
+
+#: ../src/menu.c:701
+msgid ""
+"This application is free software.\n"
+"Support its development by contributing code,\n"
+"accurate bug reporting or donating money.\n"
+"2009-2010 Alberto Mardegan\n"
+"2009-2010 Max Lapan\n"
+"2006-2009 John Costigan"
+msgstr ""
+
+#: ../src/tile_source.c:722
+msgid "Tile source"
+msgstr ""
+
+#: ../src/repository.c:766
+msgid "Tile source is required"
+msgstr ""
+
+#: ../src/menu.c:1165 ../src/repository.c:704
+msgid "Tiles"
+msgstr ""
+
+#: ../src/tile_source.c:654
+msgid "Tiles and layers"
+msgstr ""
+
+#: ../src/main.c:585 ../src/maps.c:1224
+msgid "Top-Left"
+msgstr ""
+
+#: ../src/main.c:586
+msgid "Top-Right"
+msgstr ""
+
+#: ../src/menu.c:893 ../src/menu.c:1087 ../src/settings.c:483
+msgid "Track"
+msgstr ""
+
+#: ../src/menu.c:165
+msgid "Track Opened"
+msgstr ""
+
+#: ../src/menu.c:186
+msgid "Track Saved"
+msgstr ""
+
+#: ../src/controller.c:534
+msgid "Tracking Disabled"
+msgstr ""
+
+#: ../src/controller.c:529
+msgid "Tracking Enabled"
+msgstr ""
+
+#: ../src/controller.c:616
+msgid "Tracks are now hidden"
+msgstr ""
+
+#: ../src/controller.c:611
+msgid "Tracks are now shown"
+msgstr ""
+
+#: ../src/poi.c:210
+msgid "Transportation"
+msgstr ""
+
+#: ../src/tile_source.c:762
+msgid "Type"
+msgstr ""
+
+#: ../src/tile_source.c:752
+msgid "URL"
+msgstr ""
+
+#: ../src/tile_source.c:836
+msgid "URL is required"
+msgstr ""
+
+#: ../src/settings.c:999
+msgid "Unblank Screen"
+msgstr ""
+
+#: ../src/tile_source.c:740
+msgid "UniqID"
+msgstr ""
+
+#: ../src/settings.c:1027
+msgid "Units"
+msgstr ""
+
+#: ../src/util.c:173
+msgid "Unknown error while locating address."
+msgstr ""
+
+#: ../src/poi.c:2344 ../src/poi.c:2664 ../src/route.c:841
+msgid "Use End of Route"
+msgstr ""
+
+#: ../src/poi.c:2338 ../src/poi.c:2658 ../src/route.c:837
+msgid "Use GPS Location"
+msgstr ""
+
+#: ../src/menu.c:1093
+msgid "Velocity Vector"
+msgstr ""
+
+#: ../src/menu.c:986
+msgid "View"
+msgstr ""
+
+#: ../src/maps.c:1200
+msgid "View Center"
+msgstr ""
+
+#: ../src/cmenu.c:458
+msgid "View/Edit..."
+msgstr ""
+
+#: ../src/he-about-dialog.c:336
+msgid "Visit website"
+msgstr ""
+
+#: ../src/poi.c:611
+msgid "WARNING: All POIs in that category will also be deleted!"
+msgstr ""
+
+#: ../src/cmenu.c:390 ../src/cmenu.c:508
+msgid "Waypoint"
+msgstr ""
+
+#: ../src/main.c:574
+msgid "When Approaching a Waypoint"
+msgstr ""
+
+#: ../src/main.c:572
+msgid "When Moving"
+msgstr ""
+
+#: ../src/main.c:573
+msgid "When Moving (Full Screen Only)"
+msgstr ""
+
+#: ../src/main.c:571
+msgid "When Receiving Any GPS Data"
+msgstr ""
+
+#: ../src/maps.c:1135
+msgid "Zoom"
+msgstr ""
+
+#: ../src/menu.c:1063
+msgid "Zoom Level"
+msgstr ""
+
+#: ../src/maps.c:1141
+msgid "Zoom Levels to Download: (0 = most detail)"
+msgstr ""
+
+#: ../src/repository.c:690
+msgid "Zoom step"
+msgstr ""
+
+#: ../src/repository.c:1008
+msgid "_Sync"
+msgstr ""
+
+#: ../src/maps.c:861 ../src/maps.c:868
+msgid "about"
+msgstr ""
+
+#: ../src/display.c:663
+msgid "in use"
+msgstr ""
+
+#: ../src/main.c:563
+msgid "km"
+msgstr ""
+
+#: ../src/main.c:567
+msgid "m"
+msgstr ""
+
+#: ../src/maps.c:772 ../src/maps.c:869
+msgid "maps"
+msgstr ""
+
+#: ../src/maps.c:766 ../src/maps.c:862
+msgid "maps "
+msgstr ""
+
+#: ../src/display.c:924
+msgid "maps failed to download."
+msgstr ""
+
+#: ../src/main.c:564
+msgid "mi."
+msgstr ""
+
+#: ../src/main.c:565 ../src/main.c:569
+msgid "n.m."
+msgstr ""
+
+#: ../src/display.c:806
+msgid "nofix"
+msgstr ""
+
+#: ../src/display.c:204 ../src/display.c:815
+msgid "none"
+msgstr ""
+
+#: ../src/main.c:568
+msgid "y."
+msgstr ""
