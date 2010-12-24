@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: maemo-mapper 1.2.4\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2009-03-14 17:55-0700\n"
+"POT-Creation-Date: 2010-12-24 11:59+0200\n"
 "PO-Revision-Date: 2010-11-24 16:53+0800\n"
 "Last-Translator: willkr <willkr@sina.com>\n"
 "Language-Team: John Costigan <gnuite@gmail.com>\n"
@@ -10,923 +10,1022 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
+#: ../src/poi.c:1014
 msgid "# POIs"
 msgstr "# POIs"
 
+#: ../src/settings.c:881
+#, c-format
+msgid "%d seconds"
+msgstr ""
+
+#: ../src/settings.c:877
+msgid "1 second"
+msgstr ""
+
+#: ../src/he-about-dialog.c:122
+#, fuzzy
+msgid "About"
+msgstr "关于"
+
+#: ../src/he-about-dialog.c:124 ../src/he-about-dialog.c:297
+#, fuzzy, c-format
+msgid "About %s"
+msgstr "关于..."
+
+#: ../src/menu.c:823
 msgid "About..."
 msgstr "关于..."
 
+#: ../src/poi.c:705
 msgid "Add Category"
 msgstr "添加分类"
 
+#: ../src/poi.c:1179
 msgid "Add POI"
 msgstr "添加POI"
 
+#: ../src/cmenu.c:341 ../src/cmenu.c:409
 msgid "Add POI..."
 msgstr "添加POI..."
 
+#: ../src/cmenu.c:337 ../src/cmenu.c:461
 msgid "Add Route Point"
 msgstr "添加路径点"
 
+#: ../src/route.c:954
 msgid "Add Waypoint"
 msgstr "添加导航点"
 
+#: ../src/cmenu.c:339 ../src/cmenu.c:462
 msgid "Add Waypoint..."
 msgstr "添加导航点..."
 
+#: ../src/poi.c:970
 msgid "Add..."
 msgstr "添加..."
 
+#: ../src/menu.c:580
 msgid "Address"
 msgstr "地址"
 
-msgid "Address Located"
-msgstr "地址位于"
-
+#: ../src/menu.c:950
 msgid "Address..."
 msgstr "地址..."
 
+#: ../src/settings.c:811
 msgid "Advance Notice"
 msgstr "预告"
 
+#: ../src/maps.c:1122
 msgid "Along Route - Radius (tiles):"
 msgstr "沿路径- 半径(平铺):"
 
+#: ../src/display.c:757
 msgid "Altitude"
 msgstr "海拔"
 
-msgid "An error occurred while attempting to scan for bluetooth devices."
-msgstr "尝试扫描蓝牙设备时发生错误."
-
-msgid "An error occurred while retrieving the repositories.  The web service may be temporarily down."
-msgstr "检索资料库时发生错误. 该网站的服务器可能临时关闭."
-
-msgid "An error occurred while trying to compact the database."
-msgstr "尝试压缩数据库时发生错误."
-
-msgid ""
-"An error occurred while trying to reset the bluetooth radio.\n"
-"\n"
-"Did you make sure to modify\n"
-"the /etc/sudoers file?"
+#: ../src/settings.c:976
+msgid "Always landscape"
 msgstr ""
-"尝试重置蓝牙信号时发生错误.\n"
-"\n"
-"确定要修改\n"
-" /etc/sudoers 文件?"
 
+#: ../src/settings.c:977
+msgid "Always portrait"
+msgstr ""
+
+#: ../src/settings.c:793 ../src/settings.c:1281
 msgid "Announce"
 msgstr "通知"
 
-msgid "Apply Map Correction"
-msgstr "应地图校正"
-
+#: ../src/maps.c:1162
 msgid "Area"
 msgstr "区域"
 
+#: ../src/menu.c:1001 ../src/settings.c:686 ../src/settings.c:1280
 msgid "Auto-Center"
 msgstr "自动居中"
 
-msgid "Auto-Center Mode: Lat/Lon"
-msgstr "自动居中:纬度/经度"
-
-msgid "Auto-Center Mode: Lead"
-msgstr "自动居中:引导"
-
+#: ../src/controller.c:497
 msgid "Auto-Center Off"
 msgstr "自动居中 关闭"
 
+#: ../src/menu.c:1195
 msgid "Auto-Download"
 msgstr "自动下载"
 
+#: ../src/settings.c:1061
 msgid "Auto-Download Pre-cache"
 msgstr "自动下载 预缓存"
 
+#: ../src/menu.c:1019
 msgid "Auto-Rotate"
 msgstr "自动旋转"
 
-msgid "Auto-Rotate Disabled"
-msgstr "自动旋转 禁用"
-
-msgid "Auto-Rotate Enabled"
-msgstr "自动旋转 启用"
-
+#: ../src/route.c:871
 msgid "Auto-Update"
 msgstr "自动更新"
 
-msgid "Avoid Highways"
-msgstr "避开高速公路"
+#: ../src/settings.c:975
+#, fuzzy
+msgid "Automatic"
+msgstr "自动旋转"
 
+#: ../src/poi.c:2040
 msgid "Bear."
 msgstr "保持."
 
-msgid "Bluetooth"
-msgstr "蓝牙"
-
+#: ../src/main.c:588
 msgid "Bottom-Left"
 msgstr "左下"
 
+#: ../src/main.c:587 ../src/maps.c:1271
 msgid "Bottom-Right"
 msgstr "右下"
 
+#: ../src/cmenu.c:335
 msgid "Browse POI..."
 msgstr "浏览POI..."
 
+#: ../src/poi.c:2639
 msgid "Browse POIs"
 msgstr "浏览POI"
 
+#: ../src/menu.c:1256
 msgid "Browse..."
 msgstr "浏览..."
 
+#: ../src/poi.c:211
 msgid "Bus stops, airports, train stations, etc."
 msgstr "汽车站, 飞机场, 火车站, 等."
 
+#: ../src/poi.c:216
 msgid "Business"
 msgstr "商务"
 
+#: ../src/maps.c:1113
 msgid "By Area (see tab)"
 msgstr "按区域(见表)"
 
-msgid "Cache DB"
+#: ../src/tile_source.c:746
+#, fuzzy
+msgid "Cache dir"
 msgstr "数据库缓存"
 
-msgid "Cannot delete the last repository - there must be at lease one repository."
-msgstr "无法删除最后一个库 - 必须有一个库进行存储."
+#: ../src/tile_source.c:832
+msgid "Cache dir is required"
+msgstr ""
 
+#: ../src/menu.c:1257
 msgid "Categories..."
 msgstr "分类..."
 
+#: ../src/poi.c:521 ../src/poi.c:1237 ../src/poi.c:1615 ../src/poi.c:2022
+#: ../src/poi.c:2184 ../src/poi.c:2354 ../src/poi.c:2673
 msgid "Category"
 msgstr "分类"
 
+#: ../src/poi.c:1912 ../src/poi.c:2075
 msgid "Checked POI Actions..."
 msgstr "检查POI行为..."
 
+#: ../src/maps.c:1066 ../src/menu.c:859 ../src/menu.c:902
 msgid "Clear"
 msgstr "清除"
 
-msgid "Clear Track"
-msgstr "清除轨迹"
-
-msgid "Clockwise"
-msgstr "顺时针"
-
-msgid "Close"
-msgstr "关闭"
-
+#: ../src/settings.c:450
 msgid "Colors"
 msgstr "色彩"
 
+#: ../src/settings.c:1285
 msgid "Colors..."
 msgstr "色彩..."
 
-msgid "Compact Database"
-msgstr "压缩数据库"
-
-msgid "Compact..."
-msgstr "压缩..."
-
-msgid "Compacting database..."
-msgstr "压缩数据库..."
-
+#: ../src/menu.c:1075
 msgid "Compass Rose"
 msgstr "罗盘"
 
+#: ../src/maps.c:765 ../src/maps.c:861
 msgid "Confirm DELETION of"
 msgstr "确认删除"
 
-msgid "Confirm delete of repository"
-msgstr "确认删除库"
-
+#: ../src/cmenu.c:241
 msgid "Confirm delete of waypoint"
 msgstr "确认删除导航点"
 
+#: ../src/maps.c:771 ../src/maps.c:867
 msgid "Confirm download of"
 msgstr "确认下载"
 
-msgid "Continue?"
-msgstr "继续?"
-
+#: ../src/display.c:1241
 msgid "Copy"
 msgstr "复制"
 
+#: ../src/cmenu.c:401
 msgid "Copy Description"
 msgstr "复制说明"
 
-msgid "Counter"
-msgstr "计数器"
+#: ../src/cmenu.c:399
+#, fuzzy
+msgid "Copy Position"
+msgstr "显示位置"
 
-msgid "Creating a \"waypoint\" with no description actually adds a break point.  Is that what you want?"
+#: ../src/route.c:1049
+msgid ""
+"Creating a \"waypoint\" with no description actually adds a break point.  Is "
+"that what you want?"
 msgstr "创建一个没有描述的 \"导航点\"(实际上增加了一个断点).确定吗?"
 
+#: ../src/display.c:197
 msgid "DGPS"
 msgstr "差分GPS"
 
+#: ../src/poi.c:2174
 msgid "Default Category"
 msgstr "默认分类"
 
+#: ../src/settings.c:1043
 msgid "Degrees Format"
 msgstr "度格式"
 
+#: ../src/maps.c:1103
 msgid "Delete Maps"
 msgstr "删除地图"
 
+#: ../src/poi.c:1050
 msgid "Delete POI?"
 msgstr "删除POI?"
 
+#: ../src/poi.c:609
 msgid "Delete category?"
 msgstr "删除分类?"
 
+#: ../src/poi.c:1831
 msgid "Delete selected POI?"
 msgstr "删除选定POI?"
 
+#: ../src/cmenu.c:407 ../src/poi.c:685 ../src/poi.c:1193 ../src/poi.c:1927
 msgid "Delete..."
 msgstr "删除..."
 
+#: ../src/menu.c:238 ../src/poi.c:724 ../src/poi.c:1009 ../src/poi.c:1254
+#: ../src/route.c:986
 msgid "Description"
 msgstr "说明"
 
+#: ../src/route.c:824
 msgid "Destination"
 msgstr "目的地"
 
-msgid "Details..."
-msgstr "详情..."
+#: ../src/settings.c:1073
+#, fuzzy
+msgid "Disabled"
+msgstr "启用"
 
+#: ../src/poi.c:2030
 msgid "Dist."
 msgstr "区."
 
+#: ../src/cmenu.c:139 ../src/route.c:277
 msgid "Distance"
 msgstr "距离"
 
-msgid "Double Pixels"
-msgstr "双像素."
+#: ../src/repository.c:228
+#, c-format
+msgid ""
+"Do you really want to delete repository\n"
+"%s?"
+msgstr ""
 
-msgid "Down"
-msgstr "下载"
+#: ../src/tile_source.c:507
+#, c-format
+msgid ""
+"Do you really want to delete tile source\n"
+"%s?"
+msgstr ""
 
+#: ../src/he-about-dialog.c:360
+#, fuzzy
+msgid "Donate"
+msgstr "旋转"
+
+#: ../src/maps.c:1090
 msgid "Download Maps"
 msgstr "下载地图"
 
+#: ../src/cmenu.c:333
 msgid "Download POI..."
 msgstr "下载POI..."
 
+#: ../src/poi.c:2310
 msgid "Download POIs"
 msgstr "下载POI"
 
-msgid "Download Route"
-msgstr "下载路径"
-
-msgid "Download Route to..."
-msgstr "下载路径到..."
-
-msgid "Download Zoom Steps"
-msgstr "下载变焦阶段"
-
+#: ../src/menu.c:1255
 msgid "Download..."
 msgstr "下载..."
 
-msgid "Downloadable Zooms:"
-msgstr "下载放大:"
-
-msgid "Downloaded maps will not be cached."
-msgstr "下载的地图没有缓存."
-
-msgid "East"
-msgstr "东"
-
+#: ../src/poi.c:1249 ../src/poi.c:1624 ../src/poi.c:2193
 msgid "Edit Categories..."
 msgstr "编辑分类..."
 
+#: ../src/poi.c:679
 msgid "Edit Category"
 msgstr "编辑分类"
 
+#: ../src/poi.c:1187
 msgid "Edit POI"
 msgstr "编辑POI"
 
+#: ../src/poi.c:967 ../src/poi.c:2071
 msgid "Edit..."
 msgstr "编辑..."
 
+#: ../src/poi.c:215
 msgid "Elementary schools, college campuses, etc."
 msgstr "小学,大学, 等."
 
-msgid "Enable GPS"
-msgstr "启用GPS"
-
+#: ../src/menu.c:904
 msgid "Enable Tracking"
 msgstr "启用轨迹"
 
-msgid "Enable Voice Synthesis (requires flite)"
-msgstr "启用语音 (要求flite)"
-
+#: ../src/settings.c:805
 msgid "Enable Waypoint Announcements"
 msgstr "启用导航点提示"
 
+#: ../src/settings.c:828
+#, fuzzy
+msgid "Enable voice announcements"
+msgstr "启用导航点提示"
+
+#: ../src/poi.c:748 ../src/poi.c:999
 msgid "Enabled"
 msgstr "启用"
 
+#: ../src/route.c:772 ../src/route.c:1102
+#, fuzzy
+msgid "Enter your destination"
+msgstr "无效的源或目标"
+
+#: ../src/poi.c:1365
 msgid "Error adding POI"
 msgstr "无法添加POI"
 
+#: ../src/poi.c:811
 msgid "Error adding category"
 msgstr "无法添加分类"
 
-msgid "Error connecting to GPS receiver."
-msgstr "无法连接GPS接收器."
-
-msgid "Error connecting to GPSD server."
-msgstr "无法连接GPSD服务器."
-
+#: ../src/poi.c:624 ../src/poi.c:1061 ../src/poi.c:1860
 msgid "Error deleting POI"
 msgstr "无法删除POI"
 
+#: ../src/poi.c:633
 msgid "Error deleting category"
 msgstr "无法删除分类"
 
-msgid "Error opening GPS device."
-msgstr "无法打开GPS设备"
-
+#: ../src/menu.c:90 ../src/menu.c:168 ../src/poi.c:2236 ../src/poi.c:2607
 msgid "Error parsing GPX file."
 msgstr "无法解析GPX文件."
 
-msgid "Error reading GPS data."
-msgstr "无法读取GPS数据."
+#: ../src/maps.c:642
+msgid "Error saving map to disk - disk full?"
+msgstr ""
 
+#: ../src/poi.c:853
 msgid "Error updating Category"
 msgstr "无法更新分类"
 
+#: ../src/poi.c:1387 ../src/poi.c:1700
 msgid "Error updating POI"
 msgstr "无法更新POI"
 
+#: ../src/poi.c:796
 msgid "Error updating category"
 msgstr "无法更新分类"
 
-msgid "Error while writing to file"
-msgstr "写入文件出错"
-
+#: ../src/poi.c:162
 msgid "Error with POI database"
 msgstr "POI数据库出错"
 
+#: ../src/menu.c:118 ../src/menu.c:189 ../src/poi.c:1898
 msgid "Error writing GPX file."
 msgstr "无法写入GPX文件."
 
+#: ../src/gps.c:279
 msgid "Establishing GPS fix"
 msgstr "建立GPS定位"
 
+#: ../src/display.c:201
 msgid "Estimated"
 msgstr "预计"
 
+#: ../src/poi.c:1932
 msgid "Export to GPX..."
 msgstr "导出到GPX..."
 
+#: ../src/util.c:157
 msgid "Failed to connect to GPX Directions server"
 msgstr "无法连接到GPX指示服务器"
 
+#: ../src/settings.c:1363
 msgid "Failed to initialize GConf.  Quitting."
 msgstr "初始化GConf失败.退出."
 
+#: ../src/settings.c:133
 msgid "Failed to initialize GConf.  Settings were not saved."
 msgstr "初始化GConf失败.设置未保存."
 
+#: ../src/display.c:1342 ../src/main.c:116
 msgid "Failed to open file for reading"
 msgstr "无法读取文件"
 
-msgid "Failed to open file for writing"
-msgstr "无法写入文件"
-
-msgid "Failed to open map database for compacting."
-msgstr "无法打开压缩地图数据库."
-
-msgid "Failed to open map database for repository"
-msgstr "无法打开库中的地图数据"
-
+#: ../src/poi.c:229
 msgid "Failed to open or create database"
 msgstr "无法打开或创建数据库"
 
+#: ../src/path.c:580
 msgid "Failed to open path database. Tracks and routes will not be saved."
 msgstr "无法打开路径数据库.轨迹和路径将不被保存."
 
+#: ../src/path.c:136 ../src/path.c:173 ../src/path.c:215
 msgid "Failed to write to path database. Tracks and routes may not be saved."
 msgstr "无法写入路径数据库.轨迹和路径将不被保存."
 
-msgid "File"
-msgstr "文件"
+#: ../src/route.c:805
+#, fuzzy
+msgid "Find route"
+msgstr "使用中"
 
-msgid "File Path"
-msgstr "文件路径"
+#: ../src/cmenu.c:331 ../src/cmenu.c:405 ../src/cmenu.c:460
+#, fuzzy
+msgid "Find route to..."
+msgstr "下载路径到..."
 
-msgid "File is incomplete."
-msgstr "文件不完整."
-
+#: ../src/display.c:802
 msgid "Fix"
 msgstr "修复"
 
+#: ../src/display.c:811
 msgid "Fix Quality"
 msgstr "修复质量"
 
+#: ../src/settings.c:697
 msgid "Fixed"
 msgstr "固定"
 
+#: ../src/display.c:200
 msgid "Float RTK"
 msgstr "浮动RTK"
 
+#: ../src/display.c:1234 ../src/tile_source.c:790
 msgid "Format"
 msgstr "格式"
 
-msgid "Full Screen"
-msgstr "全屏"
-
+#: ../src/settings.c:468 ../src/settings.c:869 ../src/settings.c:1282
 msgid "GPS"
 msgstr "GPS"
 
+#: ../src/display.c:705
 msgid "GPS Details"
 msgstr "GPS详细"
 
+#: ../src/menu.c:814
+#, fuzzy
+msgid "GPS Details..."
+msgstr "GPS详细"
+
+#: ../src/display.c:718
 msgid "GPS Information"
 msgstr "GPS信息"
 
+#: ../src/maps.c:1180 ../src/menu.c:951
 msgid "GPS Location"
 msgstr "GPS定位"
 
-msgid "GPSD"
-msgstr "GPSD"
+#: ../src/settings.c:890
+msgid "GPS polling interval"
+msgstr ""
 
-msgid "GPSD Host"
-msgstr "GPSD Host"
+#: ../src/menu.c:1105
+#, fuzzy
+msgid "GPS status"
+msgstr "GPS详细"
 
+#: ../src/poi.c:219
 msgid "General landmarks."
 msgstr "地标."
 
+#: ../src/poi.c:217
 msgid "General places of business."
 msgstr "商业区域"
 
-msgid ""
-"Generally, deleted maps create an empty space in the database that is later reused when downloading new maps.  Compacting the database reorganizes it such that all that blank space is eliminated.  This is the only way that the size of the database can decrease.\n"
-"This reorganization requires creating a new file and inserting all the maps in the old database file into the new file. The new file is then renamed to the same name as the old file and dbf is updated to contain all the correct information about the new file.  Note that this can require free space on disk of an amount up to the size of the map database.\n"
-"This process may take several minutes, especially if your map database is large.  As a rough estimate, you can expect to wait approximately 2-5 seconds per megabyte of map data (34-85 minutes per gigabyte).  There is no progress indicator, although you can watch the new file grow in any file manager.  Do not attempt to close Maemo Mapper while the compacting operation is in progress."
+#: ../src/menu.c:700
+msgid "Geographical mapping and driving directions"
 msgstr ""
-"一般来说,删除地图 在数据库创建一个空白空间,当下载新地图时会被重新使用.压缩整理数据库时,空白空间会被清除.这位唯一缩小数据体积的方法.\n"
-"整理要求创建一个新文件并且插入所有旧的地图数据库文件到新文件中.新文件重命名为旧文件一样的名称并且更新关于新文件的所有正确的信息.注意可能需要额外的可用空间用于整理.\n"
-"这一过程需要一些时间,特别是当地图数据库特别大的时候.估计每1MB需要2-5秒(1GB需要34-85分钟).没有进度提示,虽然可以在文件管理器里看见新文件的增长.压缩整理时请不要关闭Maemo Mapper."
 
+#: ../src/menu.c:944 ../src/poi.c:2068
 msgid "Go to"
 msgstr "跳转"
 
+#: ../src/menu.c:570
 msgid "Go to Address"
 msgstr "跳转到 地址"
 
+#: ../src/menu.c:408
 msgid "Go to Lat/Lon"
 msgstr "跳转到 纬度/经度"
 
-msgid "Go to Nearest"
-msgstr "跳转到 最近"
-
-msgid "Go to Next"
-msgstr "跳转到 下一个"
-
-msgid "Hardware Keys"
-msgstr "硬件按键"
-
-msgid "Hardware Keys..."
-msgstr "硬件按键..."
-
+#: ../src/display.c:766
 msgid "Heading"
 msgstr "标题"
 
-msgid "Help..."
-msgstr "帮助..."
-
+#: ../src/poi.c:203
 msgid "Houses, apartments, or other residences of import."
 msgstr "房屋,公寓或者其他重要的住宅"
 
+#: ../src/poi.c:991
 msgid "ID"
 msgstr "ID"
 
+#: ../src/tile_source.c:828
+msgid "ID is not unique"
+msgstr ""
+
+#: ../src/tile_source.c:822
+msgid "ID is required"
+msgstr ""
+
+#: ../src/menu.c:1254
 msgid "Import..."
 msgstr "导入..."
 
+#: ../src/poi.c:209
 msgid "Indoor or Outdoor places to have fun."
 msgstr "室内外娱乐场所"
 
+#: ../src/settings.c:1013
 msgid "Info Font Size"
 msgstr "字体大小信息"
 
+#: ../src/menu.c:900
 msgid "Insert Break"
 msgstr "插入 分隔"
 
+#: ../src/menu.c:218
 msgid "Insert Mark"
 msgstr "插入 标记"
 
+#: ../src/menu.c:901
 msgid "Insert Mark..."
 msgstr "插入标记..."
 
-msgid "Insert Track Break"
-msgstr "插入 轨迹中断"
+#: ../src/maps.c:1423
+msgid "Invalid Bottom-Right coordinate specified"
+msgstr ""
 
+#: ../src/poi.c:1316
+msgid "Invalid Coordinate specified"
+msgstr ""
+
+#: ../src/menu.c:486
 msgid "Invalid Latitude"
 msgstr "无效的维度"
 
+#: ../src/menu.c:493
 msgid "Invalid Longitude"
 msgstr "无效的经度"
 
-msgid "Invalid NMEA input from receiver!"
-msgstr "接收无效的NMEA!"
+#: ../src/maps.c:1414
+msgid "Invalid Top-Left coordinate specified"
+msgstr ""
 
+#: ../src/util.c:168
 msgid "Invalid address."
 msgstr "无效的地址."
 
+#: ../src/poi.c:2589
 msgid "Invalid origin or query."
 msgstr "无效的起点或查询"
 
-msgid "Invalid source or destination."
-msgstr "无效的源或目标"
-
-msgid "It looks like this is your first time running Maemo Mapper.  Press OK to view the the help pages. Otherwise, press Cancel to continue."
-msgstr "首次运行 Maemo Mapper. 点击 OK 以查看帮助页面.否则点击 Cancel 继续."
-
+#: ../src/poi.c:516 ../src/poi.c:716 ../src/poi.c:1004 ../src/poi.c:1229
+#: ../src/poi.c:2049
 msgid "Label"
 msgstr "标签"
 
+#: ../src/poi.c:218
 msgid "Landmark"
 msgstr "里程碑"
 
+#: ../src/menu.c:228
 msgid "Lat, Lon:"
 msgstr "维度,经度:"
 
+#: ../src/menu.c:994
 msgid "Lat/Lon"
 msgstr "维度/经度"
 
+#: ../src/menu.c:949
 msgid "Lat/Lon..."
 msgstr "维度/经度..."
 
+#: ../src/display.c:730 ../src/menu.c:418
 msgid "Latitude"
 msgstr "维度"
 
+#: ../src/tile_source.c:769
+#, fuzzy
+msgid "Layer"
+msgstr "标签"
+
+#: ../src/repository.c:715
+msgid "Layers"
+msgstr ""
+
+#: ../src/repository.c:396
+#, c-format
+msgid ""
+"Layers: %d new, %d updated\n"
+"Repositories: %d new, %d updated\n"
+msgstr ""
+
+#: ../src/menu.c:995
 msgid "Lead"
 msgstr "引导"
 
+#: ../src/settings.c:702
 msgid "Lead Amount"
 msgstr "引导量"
 
-msgid "Left"
-msgstr "左"
-
+#: ../src/settings.c:967
 msgid "Line Width"
 msgstr "线宽"
 
+#: ../src/display.c:775
 msgid "Local time"
 msgstr "本地时间"
 
+#: ../src/poi.c:511 ../src/settings.c:1099
 msgid "Location"
 msgstr "所在地"
 
+#: ../src/poi.c:212
 msgid "Lodging"
 msgstr "暂住"
 
+#: ../src/display.c:739 ../src/menu.c:439
 msgid "Longitude"
 msgstr "经度"
 
-msgid "MAC"
-msgstr "MAC"
-
-msgid "Maemo Mapper will now download and add a list of possibly-duplicate repositories from the internet.  Continue?"
-msgstr "Maemo Mapper将要从互联网下载并且添加一个可能重复的库.继续吗?"
-
+#: ../src/maps.c:1052
 msgid "Manage Maps"
 msgstr "管理地图"
 
+#: ../src/menu.c:1202
 msgid "Manage Maps..."
 msgstr "管理地图..."
 
-msgid "Manage Repositories"
-msgstr "管理库"
-
-msgid "Manage Repositories..."
-msgstr "管理库..."
-
+#: ../src/display.c:202
 msgid "Manual"
 msgstr "手册"
 
-msgid "Map correction applied."
-msgstr "地图校正应用."
+#: ../src/cmenu.c:320 ../src/cmenu.c:506
+#, fuzzy
+msgid "Map Point"
+msgstr "敲击点"
 
-msgid "Map correction removed."
-msgstr "地图校正删除."
+#: ../src/menu.c:1185
+#, fuzzy
+msgid "Map repository"
+msgstr "新的库"
 
+#: ../src/menu.c:804 ../src/menu.c:1160
 msgid "Maps"
 msgstr "地图"
 
+#: ../src/display.c:820
 msgid "Max speed"
 msgstr "最大速度."
 
-msgid "Max."
-msgstr "最大."
+#: ../src/repository.c:682
+msgid "Max zoom"
+msgstr ""
 
-msgid "Min."
-msgstr "最小."
+#: ../src/repository.c:674
+msgid "Min zoom"
+msgstr ""
 
+#: ../src/settings.c:747
 msgid "Min. Speed"
 msgstr "最小速度."
 
-msgid "Minimum Downloadable Zoom must be less than Maximum Downloadable Zoom."
-msgstr "最低可下载的焦距必须小于最大可下载的焦距."
-
+#: ../src/settings.c:942 ../src/settings.c:1283
 msgid "Misc."
 msgstr "杂项."
 
-msgid "Misc. 2"
-msgstr "杂项. 2"
-
+#: ../src/poi.c:221
 msgid "Miscellaneous category for everything else."
 msgstr "杂项类的一切."
 
-msgid "NOTE: You must set a Map URI in the current repository in order to download maps."
-msgstr "注意: 为了下载地图,必须在当前库里设置地图UPI."
-
+#: ../src/repository.c:648 ../src/tile_source.c:734
 msgid "Name"
 msgstr "名称"
 
+#: ../src/tile_source.c:818
+msgid "Name is required"
+msgstr ""
+
+#: ../src/menu.c:953
 msgid "Nearest POI"
 msgstr "最近的POI"
 
+#: ../src/main.c:575
 msgid "Never"
 msgstr "从不"
 
-msgid "New Name"
-msgstr "新名称"
-
-msgid "New Repository"
+#: ../src/repository.c:1030
+#, fuzzy
+msgid "New repository"
 msgstr "新的库"
 
-msgid "New..."
-msgstr "新的..."
-
+#: ../src/menu.c:952
 msgid "Next Waypoint"
 msgstr "下一个导航点"
 
-msgid "Next-able"
-msgstr "下一个(能够)."
-
+#: ../src/menu.c:663 ../src/poi.c:580 ../src/poi.c:2916
 msgid "No POIs found."
 msgstr "没有找到POI."
 
+#: ../src/poi.c:1512
 msgid "No POIs were found."
 msgstr "没有找到POI."
 
+#: ../src/repository.c:394
+#, fuzzy
+msgid "No changes in repositories"
+msgstr "管理库"
+
+#: ../src/menu.c:996
 msgid "None"
 msgstr "没有"
 
-msgid "North"
-msgstr "北"
-
+#: ../src/menu.c:855 ../src/menu.c:898
 msgid "Open..."
 msgstr "打开..."
 
-msgid "OpenStreetMap.org provides public, free-to-use maps.  You can also download a sample set of repositories from  the internet by using the \"Download...\" button."
-msgstr "打开StreetMap.org提供公用的免费地图.也可通过互联网点击 \"下载...\" 按键下载一套样本库."
+#: ../src/route.c:807
+msgid "Options"
+msgstr ""
 
+#: ../src/settings.c:982
+#, fuzzy
+msgid "Orientation"
+msgstr "服务站"
+
+#: ../src/poi.c:2379 ../src/poi.c:2698 ../src/route.c:859
 msgid "Origin"
 msgstr "起点"
 
+#: ../src/poi.c:220
 msgid "Other"
 msgstr "其他"
 
+#: ../src/route.c:852
+#, fuzzy
+msgid "Other..."
+msgstr "其他"
+
+#: ../src/maps.c:1097
 msgid "Overwrite"
 msgstr "覆盖"
 
+#: ../src/poi.c:2263
 msgid "Overwrite query with the following text?"
 msgstr "覆盖查询以下文字?"
 
+#: ../src/cmenu.c:453 ../src/cmenu.c:510 ../src/menu.c:794 ../src/menu.c:1099
+#: ../src/menu.c:1249 ../src/settings.c:513 ../src/settings.c:1176
+#: ../src/settings.c:1284
 msgid "POI"
 msgstr "POI"
 
+#: ../src/poi.c:954
 msgid "POI Categories"
 msgstr "POI分类"
 
+#: ../src/poi.c:1975
 msgid "POI List"
 msgstr "POI列表"
 
+#: ../src/settings.c:1185
 msgid "POI database"
 msgstr "POI数据库"
 
+#: ../src/poi.c:1894
 msgid "POIs Exported"
 msgstr "POI导出"
 
-msgid "POIs were added to the POI database.  The following screen will allow you to modify or delete any of the new POIs."
+#: ../src/poi.c:1506
+msgid ""
+"POIs were added to the POI database.  The following screen will allow you to "
+"modify or delete any of the new POIs."
 msgstr "POI被添加到的POI数据库.下面的屏幕将允许修改或删除任何新的POI."
 
+#: ../src/display.c:198
 msgid "PPS"
 msgstr "PPS"
 
+#: ../src/poi.c:2363
 msgid "Page"
 msgstr "页"
 
-msgid "Pan"
-msgstr "镜头"
-
-msgid "Pan Down"
-msgstr "镜头缩小"
-
-msgid "Pan East"
-msgstr "镜头向东"
-
-msgid "Pan Left"
-msgstr "镜头左转"
-
-msgid "Pan North"
-msgstr "镜头向北"
-
-msgid "Pan Right"
-msgstr "镜头右转"
-
+#: ../src/settings.c:722
 msgid "Pan Sensitivity"
 msgstr "镜头灵敏度"
 
-msgid "Pan South"
-msgstr "镜头向南"
-
-msgid "Pan Up"
-msgstr "镜头放大"
-
-msgid "Pan West"
-msgstr "镜头向西"
-
+#: ../src/poi.c:205
 msgid "Places to eat or drink."
 msgstr "餐厅场所."
 
+#: ../src/poi.c:207
 msgid "Places to shop or acquire services."
 msgstr "购物休闲场所."
 
+#: ../src/poi.c:213
 msgid "Places to stay temporarily or for the night."
 msgstr "住宿场所."
 
+#: ../src/menu.c:293
 msgid "Please provide a description for the mark."
 msgstr "请提供该标记的描述."
 
-msgid "Please select a bluetooth device from the list."
-msgstr "请从列表中选择一个蓝牙设备."
-
-msgid "Please specify a GPS file pathname."
-msgstr "请指定一个GPS文件路径名."
-
-msgid "Please specify a GPSD hostname."
-msgstr "请指定GPSD主机名."
-
+#: ../src/poi.c:1335 ../src/poi.c:1648
 msgid "Please specify a category."
 msgstr "请指定一个分类."
 
+#: ../src/poi.c:2211 ../src/poi.c:2554
 msgid "Please specify a default category."
 msgstr "请指定一个默认分类."
 
+#: ../src/poi.c:774
 msgid "Please specify a name for the category."
 msgstr "请指定一个分类名称."
 
+#: ../src/poi.c:1328
 msgid "Please specify a name."
 msgstr "请指定一个名称."
 
+#: ../src/poi.c:2561
 msgid "Please specify a query."
 msgstr "请指定一个查询."
 
+#: ../src/poi.c:2496
 msgid "Please specify a source URL."
 msgstr "请注明来源网址."
 
+#: ../src/route.c:714
 msgid "Please specify a start location."
 msgstr "请指定开始的地点."
 
+#: ../src/route.c:722
 msgid "Please specify an end location."
 msgstr "请指定结束的地点."
 
+#: ../src/poi.c:2548 ../src/poi.c:2844
 msgid "Please specify an origin."
 msgstr "请指定起点."
 
-msgid "Points"
-msgstr "点"
-
-msgid "Port"
-msgstr "端口"
-
+#: ../src/maps.c:285
 msgid "Processing Maps"
 msgstr "处理地图"
 
+#: ../src/poi.c:2396 ../src/poi.c:2715
 msgid "Query"
 msgstr "查询"
 
+#: ../src/display.c:199
 msgid "Real Time Kinematic"
 msgstr "实时动态"
 
+#: ../src/path.c:388
 msgid "Really clear the track?"
 msgstr "真的清除轨迹?"
 
+#: ../src/route.c:441
 msgid "Recalculating directions..."
 msgstr "重新计算路线..."
 
+#: ../src/poi.c:208
 msgid "Recreation"
 msgstr "娱乐"
 
-msgid "Rename..."
-msgstr "重命名..."
+#: ../src/settings.c:901
+msgid "Reduce GPS usage on screen off"
+msgstr ""
 
-msgid "Replace all repositories with the default repository?"
-msgstr "初始化所有库到默认库?"
+#: ../src/tile_source.c:780
+msgid "Refresh, min"
+msgstr ""
 
+#: ../src/he-about-dialog.c:348
+msgid "Report bug"
+msgstr ""
+
+#: ../src/menu.c:1163 ../src/repository.c:1006
+#, fuzzy
+msgid "Repositories"
+msgstr "管理库"
+
+#: ../src/repository.c:639
+#, fuzzy
+msgid "Repository"
+msgstr "新的库"
+
+#: ../src/repository.c:495
+#, fuzzy
+msgid "Repository's layers"
+msgstr "新的库"
+
+#: ../src/menu.c:858
 msgid "Reset"
 msgstr "重置"
 
-msgid "Reset Bluetooth"
-msgstr "重置蓝牙"
-
-msgid "Reset Viewing Angle"
-msgstr "重置视角"
-
+#: ../src/settings.c:422
 msgid "Reset all colors to their original defaults?"
 msgstr "初始化所有色彩到原始色彩?"
 
-msgid "Reset all hardware keys to their original defaults?"
-msgstr "初始化所有硬件设置到预设值?"
-
+#: ../src/settings.c:456
 msgid "Reset..."
 msgstr "重置..."
 
+#: ../src/poi.c:202
 msgid "Residence"
 msgstr "住宅"
 
+#: ../src/poi.c:204
 msgid "Restaurant"
 msgstr "餐厅"
 
-msgid "Right"
-msgstr "右"
-
-msgid "Rotate"
-msgstr "旋转"
-
-msgid "Rotate Sensit."
-msgstr "旋转灵敏度."
-
-msgid "Rotate View Clockwise"
-msgstr "顺时针旋转查看"
-
-msgid "Rotate View Counter-Clockwise"
-msgstr "逆时针旋转查看"
-
+#: ../src/menu.c:849 ../src/menu.c:1081 ../src/settings.c:498
 msgid "Route"
 msgstr "路径"
 
-msgid "Route Downloaded"
-msgstr "路径下载"
-
+#: ../src/main.c:128 ../src/menu.c:87
 msgid "Route Opened"
 msgstr "路径开始"
 
+#: ../src/menu.c:115
 msgid "Route Saved"
 msgstr "路径保存"
 
+#: ../src/route.c:903
+#, fuzzy
+msgid "Router"
+msgstr "路径"
+
+#: ../src/controller.c:584
 msgid "Routes are now hidden"
 msgstr "隐藏路径"
 
+#: ../src/controller.c:579
 msgid "Routes are now shown"
 msgstr "显示路径"
 
+#: ../src/display.c:196
 msgid "SPS"
 msgstr "SPS"
 
+#: ../src/display.c:793
 msgid "Sat in use"
 msgstr "坐着使用"
 
+#: ../src/display.c:784
 msgid "Sat in view"
 msgstr "坐着查看"
 
+#: ../src/display.c:725
 msgid "Satellites details"
 msgstr "卫星详细"
 
+#: ../src/display.c:662
 msgid "Satellites in view"
 msgstr "可目测卫星数"
 
+#: ../src/menu.c:857 ../src/menu.c:899
 msgid "Save..."
 msgstr "保存..."
 
+#: ../src/menu.c:1069
 msgid "Scale"
 msgstr "比例"
 
-msgid "Scan..."
-msgstr "扫描..."
-
-msgid "Scanning for Bluetooth Devices"
-msgstr "扫描蓝牙设备"
-
+#: ../src/poi.c:214
 msgid "School"
 msgstr "学校"
 
-msgid "Searching for GPS receiver"
-msgstr "搜素GPS接收器"
-
-msgid "Select Bluetooth Device"
-msgstr "选择蓝牙设备"
-
-msgid "Select Next Repository"
-msgstr "选择下个库"
-
+#: ../src/poi.c:484
 msgid "Select POI"
 msgstr "选择POI"
 
+#: ../src/poi.c:1917
 msgid ""
 "Select an operation to perform\n"
 "on the POIs that you checked\n"
@@ -936,279 +1035,769 @@ msgstr ""
 "手动检查POI\n"
 "自动检查POI."
 
+#: ../src/poi.c:548
 msgid "Select one POI from the list."
 msgstr "选择一个POI列表."
 
+#: ../src/cmenu.c:501
+#, fuzzy
+msgid "Select point"
+msgstr "选择下个库"
+
+#: ../src/tile_source.c:810
+msgid "Selected layer is active, so, cannot be deleted."
+msgstr ""
+
+#: ../src/poi.c:200
 msgid "Service Station"
 msgstr "服务站"
 
+#: ../src/poi.c:1605 ../src/poi.c:1923
 msgid "Set Category..."
 msgstr "设置分类..."
 
+#: ../src/cmenu.c:343
 msgid "Set as GPS Location"
 msgstr "设为GPS定位"
 
+#: ../src/menu.c:854
+#, fuzzy
+msgid "Set destination..."
+msgstr "目的地"
+
+#: ../src/settings.c:1276
 msgid "Settings"
 msgstr "设置"
 
+#: ../src/menu.c:819
 msgid "Settings..."
 msgstr "设置..."
 
+#: ../src/maps.c:1080
 msgid "Setup"
 msgstr "安装"
 
+#: ../src/poi.c:206
 msgid "Shopping/Services"
 msgstr "购物/休闲"
 
+#: ../src/menu.c:809 ../src/menu.c:1055
 msgid "Show"
 msgstr "显示"
 
+#: ../src/cmenu.c:397
 msgid "Show Description"
 msgstr "显示说明"
 
-msgid "Show Distance from Beginning"
-msgstr "显示距离(从出发点)"
-
-msgid "Show Distance from Last Break"
-msgstr "显示距离(从最近的暂停点)"
-
-msgid "Show Distance from Last Mark"
-msgstr "显示距离(从标记点)"
-
+#: ../src/cmenu.c:329 ../src/cmenu.c:403 ../src/cmenu.c:459
 msgid "Show Distance to"
 msgstr "显示距离到"
 
-msgid "Show Distance to End of Route"
-msgstr "显示距离(到结束路径)"
-
-msgid "Show Distance to Next Waypoint"
-msgstr "显示距离(到下一个导航点)"
-
-msgid "Show Information"
-msgstr "显示信息"
-
+#: ../src/settings.c:1203
 msgid "Show POI below zoom"
 msgstr "显示POI(放大)"
 
+#: ../src/cmenu.c:327 ../src/cmenu.c:395 ../src/display.c:1195
 msgid "Show Position"
 msgstr "显示位置"
 
+#: ../src/display.c:203
 msgid "Simulation"
 msgstr "模拟"
 
+#: ../src/poi.c:2331
 msgid "Source URL"
 msgstr "来源网址"
 
-msgid "South"
-msgstr "南"
-
+#: ../src/display.c:748
 msgid "Speed"
 msgstr "速度"
 
+#: ../src/settings.c:1084
 msgid "Speed Limit"
 msgstr "限速"
 
+#: ../src/settings.c:696
+#, fuzzy
+msgid "Speed based"
+msgstr "速度"
+
+#: ../src/route.c:548
+msgid "Starting point"
+msgstr ""
+
+#: ../src/poi.c:201
 msgid "Stations for purchasing fuel for vehicles."
 msgstr "汽车加油站."
 
-msgid "Successfully compacted database."
-msgstr "成功压缩数据库."
+#: ../src/screen.c:1638
+msgid "Tap a point on the map"
+msgstr ""
 
-msgid "Tap Point"
-msgstr "敲击点"
-
-msgid "The current repository is in a legacy format and will be converted.  You should delete your old maps if you no longer plan to use them."
-msgstr "当前库是一个旧的格式并且将被转换.如果不想再使用的话,应该删除旧地图."
-
-msgid "The current route is empty."
-msgstr "当前路径是不存在的."
-
-msgid "The current track is empty."
-msgstr "当前轨迹是不存在的."
-
-msgid "The following action is mapped to multiple keys"
-msgstr "下面的操作映射到多个键"
-
-msgid "There are no other next-able repositories."
-msgstr "没有下一个(可用)库."
-
-msgid "There are no waypoints."
-msgstr "没有任何导航点."
-
+#: ../src/menu.c:630 ../src/route.c:289
 msgid "There is no next waypoint."
 msgstr "没有下一个导航点."
 
-msgid "Toggle Auto-Center"
-msgstr "切换 自动居中"
+#: ../src/menu.c:701
+msgid ""
+"This application is free software.\n"
+"Support its development by contributing code,\n"
+"accurate bug reporting or donating money.\n"
+"2009-2010 Alberto Mardegan\n"
+"2009-2010 Max Lapan\n"
+"2006-2009 John Costigan"
+msgstr ""
 
-msgid "Toggle Auto-Rotate"
-msgstr "切换 自动旋转"
+#: ../src/tile_source.c:722
+msgid "Tile source"
+msgstr ""
 
-msgid "Toggle Fullscreen"
-msgstr "切换 自动全屏"
+#: ../src/repository.c:766
+msgid "Tile source is required"
+msgstr ""
 
-msgid "Toggle GPS"
-msgstr "切换 GPS"
+#: ../src/menu.c:1165 ../src/repository.c:704
+#, fuzzy
+msgid "Tiles"
+msgstr "文件"
 
-msgid "Toggle GPS Info"
-msgstr "切换 GPS信息"
+#: ../src/tile_source.c:654
+msgid "Tiles and layers"
+msgstr ""
 
-msgid "Toggle POIs"
-msgstr "切换 POI"
-
-msgid "Toggle Scale"
-msgstr "切换 比例"
-
-msgid "Toggle Speed Limit"
-msgstr "切换 限速"
-
-msgid "Toggle Tracking"
-msgstr "切换 轨迹"
-
-msgid "Toggle Tracks/Routes"
-msgstr "切换 轨迹/路径"
-
+#: ../src/main.c:585 ../src/maps.c:1224
 msgid "Top-Left"
 msgstr "左上角"
 
+#: ../src/main.c:586
 msgid "Top-Right"
 msgstr "右上角"
 
+#: ../src/menu.c:893 ../src/menu.c:1087 ../src/settings.c:483
 msgid "Track"
 msgstr "轨迹"
 
+#: ../src/menu.c:165
 msgid "Track Opened"
 msgstr "轨迹 开始"
 
+#: ../src/menu.c:186
 msgid "Track Saved"
 msgstr "轨迹保 存"
 
+#: ../src/controller.c:534
 msgid "Tracking Disabled"
 msgstr "轨迹 禁用"
 
+#: ../src/controller.c:529
 msgid "Tracking Enabled"
 msgstr "轨迹 启用"
 
+#: ../src/controller.c:616
 msgid "Tracks are now hidden"
 msgstr "隐藏轨迹"
 
+#: ../src/controller.c:611
 msgid "Tracks are now shown"
 msgstr "显示轨迹"
 
+#: ../src/poi.c:210
 msgid "Transportation"
 msgstr "交通运输"
 
-msgid "URL Format"
-msgstr "网址格式"
+#: ../src/tile_source.c:762
+msgid "Type"
+msgstr ""
 
-msgid "Unable to create map database for repository"
-msgstr "无法建立地图数据库"
+#: ../src/tile_source.c:752
+msgid "URL"
+msgstr ""
 
+#: ../src/tile_source.c:836
+msgid "URL is required"
+msgstr ""
+
+#: ../src/settings.c:999
 msgid "Unblank Screen"
 msgstr "开启屏幕"
 
+#: ../src/tile_source.c:740
+msgid "UniqID"
+msgstr ""
+
+#: ../src/settings.c:1027
 msgid "Units"
 msgstr "单位"
 
+#: ../src/util.c:173
 msgid "Unknown error while locating address."
 msgstr "定位地址时出现未知错误."
 
-msgid "Up"
-msgstr "上"
-
+#: ../src/poi.c:2344 ../src/poi.c:2664 ../src/route.c:841
 msgid "Use End of Route"
 msgstr "使用路径终点"
 
+#: ../src/poi.c:2338 ../src/poi.c:2658 ../src/route.c:837
 msgid "Use GPS Location"
 msgstr "使用GPS定位"
 
+#: ../src/menu.c:1093
 msgid "Velocity Vector"
 msgstr "速度矢量"
 
+#: ../src/menu.c:986
 msgid "View"
 msgstr "查看"
 
+#: ../src/maps.c:1200
 msgid "View Center"
 msgstr "查看 居中"
 
-msgid "View Zoom Steps"
-msgstr "查看 聚焦"
-
+#: ../src/cmenu.c:458
 msgid "View/Edit..."
 msgstr "查看/编辑..."
 
+#: ../src/he-about-dialog.c:336
+msgid "Visit website"
+msgstr ""
+
+#: ../src/poi.c:611
 msgid "WARNING: All POIs in that category will also be deleted!"
 msgstr "警告:在这个库的POI也会被删除!"
 
+#: ../src/cmenu.c:390 ../src/cmenu.c:508
 msgid "Waypoint"
 msgstr "导航点"
 
-msgid "West"
-msgstr "西"
-
+#: ../src/main.c:574
 msgid "When Approaching a Waypoint"
 msgstr "当接近一个导航点"
 
+#: ../src/main.c:572
 msgid "When Moving"
 msgstr "当移动"
 
+#: ../src/main.c:573
 msgid "When Moving (Full Screen Only)"
 msgstr "当移动(只限全屏)"
 
+#: ../src/main.c:571
 msgid "When Receiving Any GPS Data"
 msgstr "当收到任何GPS数据"
 
-msgid "You will now see a blank screen.  You can download maps using the \"Manage Maps\" menu item in the \"Maps\" menu.  Or, press OK now to enable Auto-Download."
-msgstr "出现空白屏幕. 可以通过点击在 \"地图\" 菜单里的 \"管理地图\" 来下载地图.或者 点击 OK, 启动自动下载."
-
+#: ../src/maps.c:1135
 msgid "Zoom"
 msgstr "焦距"
 
-msgid "Zoom In"
-msgstr "放大"
-
+#: ../src/menu.c:1063
 msgid "Zoom Level"
 msgstr "缩放级别"
 
+#: ../src/maps.c:1141
 msgid "Zoom Levels to Download: (0 = most detail)"
 msgstr "缩放级别下载: (0 = 最详细)"
 
-msgid "Zoom Out"
+#: ../src/repository.c:690
+#, fuzzy
+msgid "Zoom step"
 msgstr "缩小"
 
-msgid "Zoom to Level"
-msgstr "缩放级别"
+#: ../src/repository.c:1008
+msgid "_Sync"
+msgstr ""
 
+#: ../src/maps.c:861 ../src/maps.c:868
 msgid "about"
 msgstr "关于"
 
+#: ../src/display.c:663
 msgid "in use"
 msgstr "使用中"
 
+#: ../src/main.c:563
 msgid "km"
 msgstr "km"
 
+#: ../src/main.c:567
+#, fuzzy
+msgid "m"
+msgstr "km"
+
+#: ../src/maps.c:772 ../src/maps.c:869
 msgid "maps"
 msgstr "地图"
 
+#: ../src/maps.c:766 ../src/maps.c:862
 msgid "maps "
 msgstr "地图"
 
+#: ../src/display.c:924
 msgid "maps failed to download."
 msgstr "地图无法下载."
 
+#: ../src/main.c:564
 msgid "mi."
 msgstr "mi."
 
+#: ../src/main.c:565 ../src/main.c:569
 msgid "n.m."
 msgstr "n.m."
 
+#: ../src/display.c:806
 msgid "nofix"
 msgstr "不定位"
 
+#: ../src/display.c:204 ../src/display.c:815
 msgid "none"
 msgstr "无"
 
-msgid "up to about"
-msgstr "高约"
+#: ../src/main.c:568
+msgid "y."
+msgstr ""
 
+#~ msgid "Address Located"
+#~ msgstr "地址位于"
+
+#~ msgid "An error occurred while attempting to scan for bluetooth devices."
+#~ msgstr "尝试扫描蓝牙设备时发生错误."
+
+#~ msgid ""
+#~ "An error occurred while retrieving the repositories.  The web service may "
+#~ "be temporarily down."
+#~ msgstr "检索资料库时发生错误. 该网站的服务器可能临时关闭."
+
+#~ msgid "An error occurred while trying to compact the database."
+#~ msgstr "尝试压缩数据库时发生错误."
+
+#~ msgid ""
+#~ "An error occurred while trying to reset the bluetooth radio.\n"
+#~ "\n"
+#~ "Did you make sure to modify\n"
+#~ "the /etc/sudoers file?"
+#~ msgstr ""
+#~ "尝试重置蓝牙信号时发生错误.\n"
+#~ "\n"
+#~ "确定要修改\n"
+#~ " /etc/sudoers 文件?"
+
+#~ msgid "Apply Map Correction"
+#~ msgstr "应地图校正"
+
+#~ msgid "Auto-Center Mode: Lat/Lon"
+#~ msgstr "自动居中:纬度/经度"
+
+#~ msgid "Auto-Center Mode: Lead"
+#~ msgstr "自动居中:引导"
+
+#~ msgid "Auto-Rotate Disabled"
+#~ msgstr "自动旋转 禁用"
+
+#~ msgid "Auto-Rotate Enabled"
+#~ msgstr "自动旋转 启用"
+
+#~ msgid "Avoid Highways"
+#~ msgstr "避开高速公路"
+
+#~ msgid "Bluetooth"
+#~ msgstr "蓝牙"
+
+#~ msgid ""
+#~ "Cannot delete the last repository - there must be at lease one repository."
+#~ msgstr "无法删除最后一个库 - 必须有一个库进行存储."
+
+#~ msgid "Clear Track"
+#~ msgstr "清除轨迹"
+
+#~ msgid "Clockwise"
+#~ msgstr "顺时针"
+
+#~ msgid "Close"
+#~ msgstr "关闭"
+
+#~ msgid "Compact Database"
+#~ msgstr "压缩数据库"
+
+#~ msgid "Compact..."
+#~ msgstr "压缩..."
+
+#~ msgid "Compacting database..."
+#~ msgstr "压缩数据库..."
+
+#~ msgid "Confirm delete of repository"
+#~ msgstr "确认删除库"
+
+#~ msgid "Continue?"
+#~ msgstr "继续?"
+
+#~ msgid "Counter"
+#~ msgstr "计数器"
+
+#~ msgid "Details..."
+#~ msgstr "详情..."
+
+#~ msgid "Double Pixels"
+#~ msgstr "双像素."
+
+#~ msgid "Down"
+#~ msgstr "下载"
+
+#~ msgid "Download Route"
+#~ msgstr "下载路径"
+
+#~ msgid "Download Zoom Steps"
+#~ msgstr "下载变焦阶段"
+
+#~ msgid "Downloadable Zooms:"
+#~ msgstr "下载放大:"
+
+#~ msgid "Downloaded maps will not be cached."
+#~ msgstr "下载的地图没有缓存."
+
+#~ msgid "East"
+#~ msgstr "东"
+
+#~ msgid "Enable GPS"
+#~ msgstr "启用GPS"
+
+#~ msgid "Enable Voice Synthesis (requires flite)"
+#~ msgstr "启用语音 (要求flite)"
+
+#~ msgid "Error connecting to GPS receiver."
+#~ msgstr "无法连接GPS接收器."
+
+#~ msgid "Error connecting to GPSD server."
+#~ msgstr "无法连接GPSD服务器."
+
+#~ msgid "Error opening GPS device."
+#~ msgstr "无法打开GPS设备"
+
+#~ msgid "Error reading GPS data."
+#~ msgstr "无法读取GPS数据."
+
+#~ msgid "Error while writing to file"
+#~ msgstr "写入文件出错"
+
+#~ msgid "Failed to open file for writing"
+#~ msgstr "无法写入文件"
+
+#~ msgid "Failed to open map database for compacting."
+#~ msgstr "无法打开压缩地图数据库."
+
+#~ msgid "Failed to open map database for repository"
+#~ msgstr "无法打开库中的地图数据"
+
+#~ msgid "File Path"
+#~ msgstr "文件路径"
+
+#~ msgid "File is incomplete."
+#~ msgstr "文件不完整."
+
+#~ msgid "Full Screen"
+#~ msgstr "全屏"
+
+#~ msgid "GPSD"
+#~ msgstr "GPSD"
+
+#~ msgid "GPSD Host"
+#~ msgstr "GPSD Host"
+
+#~ msgid ""
+#~ "Generally, deleted maps create an empty space in the database that is "
+#~ "later reused when downloading new maps.  Compacting the database "
+#~ "reorganizes it such that all that blank space is eliminated.  This is the "
+#~ "only way that the size of the database can decrease.\n"
+#~ "This reorganization requires creating a new file and inserting all the "
+#~ "maps in the old database file into the new file. The new file is then "
+#~ "renamed to the same name as the old file and dbf is updated to contain "
+#~ "all the correct information about the new file.  Note that this can "
+#~ "require free space on disk of an amount up to the size of the map "
+#~ "database.\n"
+#~ "This process may take several minutes, especially if your map database is "
+#~ "large.  As a rough estimate, you can expect to wait approximately 2-5 "
+#~ "seconds per megabyte of map data (34-85 minutes per gigabyte).  There is "
+#~ "no progress indicator, although you can watch the new file grow in any "
+#~ "file manager.  Do not attempt to close Maemo Mapper while the compacting "
+#~ "operation is in progress."
+#~ msgstr ""
+#~ "一般来说,删除地图 在数据库创建一个空白空间,当下载新地图时会被重新使用.压缩"
+#~ "整理数据库时,空白空间会被清除.这位唯一缩小数据体积的方法.\n"
+#~ "整理要求创建一个新文件并且插入所有旧的地图数据库文件到新文件中.新文件重命"
+#~ "名为旧文件一样的名称并且更新关于新文件的所有正确的信息.注意可能需要额外的"
+#~ "可用空间用于整理.\n"
+#~ "这一过程需要一些时间,特别是当地图数据库特别大的时候.估计每1MB需要2-5秒(1GB"
+#~ "需要34-85分钟).没有进度提示,虽然可以在文件管理器里看见新文件的增长.压缩整"
+#~ "理时请不要关闭Maemo Mapper."
+
+#~ msgid "Go to Nearest"
+#~ msgstr "跳转到 最近"
+
+#~ msgid "Go to Next"
+#~ msgstr "跳转到 下一个"
+
+#~ msgid "Hardware Keys"
+#~ msgstr "硬件按键"
+
+#~ msgid "Hardware Keys..."
+#~ msgstr "硬件按键..."
+
+#~ msgid "Help..."
+#~ msgstr "帮助..."
+
+#~ msgid "Insert Track Break"
+#~ msgstr "插入 轨迹中断"
+
+#~ msgid "Invalid NMEA input from receiver!"
+#~ msgstr "接收无效的NMEA!"
+
+#~ msgid ""
+#~ "It looks like this is your first time running Maemo Mapper.  Press OK to "
+#~ "view the the help pages. Otherwise, press Cancel to continue."
+#~ msgstr "首次运行 Maemo Mapper. 点击 OK 以查看帮助页面.否则点击 Cancel 继续."
+
+#~ msgid "Left"
+#~ msgstr "左"
+
+#~ msgid "MAC"
+#~ msgstr "MAC"
+
+#~ msgid ""
+#~ "Maemo Mapper will now download and add a list of possibly-duplicate "
+#~ "repositories from the internet.  Continue?"
+#~ msgstr "Maemo Mapper将要从互联网下载并且添加一个可能重复的库.继续吗?"
+
+#~ msgid "Manage Repositories..."
+#~ msgstr "管理库..."
+
+#~ msgid "Map correction applied."
+#~ msgstr "地图校正应用."
+
+#~ msgid "Map correction removed."
+#~ msgstr "地图校正删除."
+
+#~ msgid "Max."
+#~ msgstr "最大."
+
+#~ msgid "Min."
+#~ msgstr "最小."
+
+#~ msgid ""
+#~ "Minimum Downloadable Zoom must be less than Maximum Downloadable Zoom."
+#~ msgstr "最低可下载的焦距必须小于最大可下载的焦距."
+
+#~ msgid "Misc. 2"
+#~ msgstr "杂项. 2"
+
+#~ msgid ""
+#~ "NOTE: You must set a Map URI in the current repository in order to "
+#~ "download maps."
+#~ msgstr "注意: 为了下载地图,必须在当前库里设置地图UPI."
+
+#~ msgid "New Name"
+#~ msgstr "新名称"
+
+#~ msgid "New..."
+#~ msgstr "新的..."
+
+#~ msgid "Next-able"
+#~ msgstr "下一个(能够)."
+
+#~ msgid "North"
+#~ msgstr "北"
+
+#~ msgid ""
+#~ "OpenStreetMap.org provides public, free-to-use maps.  You can also "
+#~ "download a sample set of repositories from  the internet by using the "
+#~ "\"Download...\" button."
+#~ msgstr ""
+#~ "打开StreetMap.org提供公用的免费地图.也可通过互联网点击 \"下载...\" 按键下"
+#~ "载一套样本库."
+
+#~ msgid "Pan"
+#~ msgstr "镜头"
+
+#~ msgid "Pan Down"
+#~ msgstr "镜头缩小"
+
+#~ msgid "Pan East"
+#~ msgstr "镜头向东"
+
+#~ msgid "Pan Left"
+#~ msgstr "镜头左转"
+
+#~ msgid "Pan North"
+#~ msgstr "镜头向北"
+
+#~ msgid "Pan Right"
+#~ msgstr "镜头右转"
+
+#~ msgid "Pan South"
+#~ msgstr "镜头向南"
+
+#~ msgid "Pan Up"
+#~ msgstr "镜头放大"
+
+#~ msgid "Pan West"
+#~ msgstr "镜头向西"
+
+#~ msgid "Please select a bluetooth device from the list."
+#~ msgstr "请从列表中选择一个蓝牙设备."
+
+#~ msgid "Please specify a GPS file pathname."
+#~ msgstr "请指定一个GPS文件路径名."
+
+#~ msgid "Please specify a GPSD hostname."
+#~ msgstr "请指定GPSD主机名."
+
+#~ msgid "Points"
+#~ msgstr "点"
+
+#~ msgid "Port"
+#~ msgstr "端口"
+
+#~ msgid "Rename..."
+#~ msgstr "重命名..."
+
+#~ msgid "Replace all repositories with the default repository?"
+#~ msgstr "初始化所有库到默认库?"
+
+#~ msgid "Reset Bluetooth"
+#~ msgstr "重置蓝牙"
+
+#~ msgid "Reset Viewing Angle"
+#~ msgstr "重置视角"
+
+#~ msgid "Reset all hardware keys to their original defaults?"
+#~ msgstr "初始化所有硬件设置到预设值?"
+
+#~ msgid "Right"
+#~ msgstr "右"
+
+#~ msgid "Rotate Sensit."
+#~ msgstr "旋转灵敏度."
+
+#~ msgid "Rotate View Clockwise"
+#~ msgstr "顺时针旋转查看"
+
+#~ msgid "Rotate View Counter-Clockwise"
+#~ msgstr "逆时针旋转查看"
+
+#~ msgid "Route Downloaded"
+#~ msgstr "路径下载"
+
+#~ msgid "Scan..."
+#~ msgstr "扫描..."
+
+#~ msgid "Scanning for Bluetooth Devices"
+#~ msgstr "扫描蓝牙设备"
+
+#~ msgid "Searching for GPS receiver"
+#~ msgstr "搜素GPS接收器"
+
+#~ msgid "Select Bluetooth Device"
+#~ msgstr "选择蓝牙设备"
+
+#~ msgid "Show Distance from Beginning"
+#~ msgstr "显示距离(从出发点)"
+
+#~ msgid "Show Distance from Last Break"
+#~ msgstr "显示距离(从最近的暂停点)"
+
+#~ msgid "Show Distance from Last Mark"
+#~ msgstr "显示距离(从标记点)"
+
+#~ msgid "Show Distance to End of Route"
+#~ msgstr "显示距离(到结束路径)"
+
+#~ msgid "Show Distance to Next Waypoint"
+#~ msgstr "显示距离(到下一个导航点)"
+
+#~ msgid "Show Information"
+#~ msgstr "显示信息"
+
+#~ msgid "South"
+#~ msgstr "南"
+
+#~ msgid "Successfully compacted database."
+#~ msgstr "成功压缩数据库."
+
+#~ msgid ""
+#~ "The current repository is in a legacy format and will be converted.  You "
+#~ "should delete your old maps if you no longer plan to use them."
+#~ msgstr "当前库是一个旧的格式并且将被转换.如果不想再使用的话,应该删除旧地图."
+
+#~ msgid "The current route is empty."
+#~ msgstr "当前路径是不存在的."
+
+#~ msgid "The current track is empty."
+#~ msgstr "当前轨迹是不存在的."
+
+#~ msgid "The following action is mapped to multiple keys"
+#~ msgstr "下面的操作映射到多个键"
+
+#~ msgid "There are no other next-able repositories."
+#~ msgstr "没有下一个(可用)库."
+
+#~ msgid "There are no waypoints."
+#~ msgstr "没有任何导航点."
+
+#~ msgid "Toggle Auto-Center"
+#~ msgstr "切换 自动居中"
+
+#~ msgid "Toggle Auto-Rotate"
+#~ msgstr "切换 自动旋转"
+
+#~ msgid "Toggle Fullscreen"
+#~ msgstr "切换 自动全屏"
+
+#~ msgid "Toggle GPS"
+#~ msgstr "切换 GPS"
+
+#~ msgid "Toggle GPS Info"
+#~ msgstr "切换 GPS信息"
+
+#~ msgid "Toggle POIs"
+#~ msgstr "切换 POI"
+
+#~ msgid "Toggle Scale"
+#~ msgstr "切换 比例"
+
+#~ msgid "Toggle Speed Limit"
+#~ msgstr "切换 限速"
+
+#~ msgid "Toggle Tracking"
+#~ msgstr "切换 轨迹"
+
+#~ msgid "Toggle Tracks/Routes"
+#~ msgstr "切换 轨迹/路径"
+
+#~ msgid "URL Format"
+#~ msgstr "网址格式"
+
+#~ msgid "Unable to create map database for repository"
+#~ msgstr "无法建立地图数据库"
+
+#~ msgid "Up"
+#~ msgstr "上"
+
+#~ msgid "View Zoom Steps"
+#~ msgstr "查看 聚焦"
+
+#~ msgid "West"
+#~ msgstr "西"
+
+#~ msgid ""
+#~ "You will now see a blank screen.  You can download maps using the "
+#~ "\"Manage Maps\" menu item in the \"Maps\" menu.  Or, press OK now to "
+#~ "enable Auto-Download."
+#~ msgstr ""
+#~ "出现空白屏幕. 可以通过点击在 \"地图\" 菜单里的 \"管理地图\" 来下载地图.或"
+#~ "者 点击 OK, 启动自动下载."
+
+#~ msgid "Zoom In"
+#~ msgstr "放大"
+
+#~ msgid "Zoom to Level"
+#~ msgstr "缩放级别"
+
+#~ msgid "up to about"
+#~ msgstr "高约"
