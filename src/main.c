@@ -51,6 +51,7 @@
 #ifndef LEGACY
 #    include <hildon/hildon-program.h>
 #    include <hildon/hildon-banner.h>
+#    include <hildon/hildon-note.h>
 #else
 #    include <hildon-widgets/hildon-program.h>
 #    include <hildon-widgets/hildon-banner.h>
@@ -339,6 +340,7 @@ key_press (GtkWidget *widget,
            MapController *controller)
 {
     MapPoint center;
+    GtkWidget *note;
     switch (event->keyval) {
     case ' ': /* fullscreen */
         map_controller_action_switch_fullscreen(controller);
@@ -452,6 +454,82 @@ key_press (GtkWidget *widget,
         break;
     case 'W':
         menu_cb_view_goto_nextway(NULL);
+        break;
+    case 'F':
+        menu_cb_view_goto_address(NULL);
+        break;
+    case 'T':
+        map_controller_set_tracking(controller,
+                                    !map_controller_get_tracking(controller));
+        break;
+    case 'Y':
+        menu_cb_track_clear(NULL);
+        break;
+    case 'U':
+        menu_cb_track_insert_break(NULL);
+        break;
+    case 'I':
+        menu_cb_track_save(NULL);
+        break;
+    case 'O':
+        map_controller_get_center(controller, &center);
+        map_controller_set_gps_position(controller, &center);
+        break;
+    case 'R':
+        menu_cb_route_download(NULL);
+        break;
+
+    case 'h':
+    case '?':
+        note = hildon_note_new_information(GTK_WINDOW(_window),
+            "OSD toggles\n"
+            "z-zoom\t\t"
+            "b-View menu\t"
+            "f-zoom out\n"
+
+            "c-compass\t"
+            "i-Point menu\t\t"
+            "s-zoom in\n"
+
+            "g-GPS info\t"
+            "m-Route menu\t"
+            "h-help\n"
+
+            "l-scale\t\t"
+            "n-Track menu\t"
+            "G-GPS on/off\n"
+
+            "p-POI\t\t"
+            "o-Goto menu\t\t"
+            "W-next waypoint\n"
+
+            "r-routes\t\t"
+            "P-goto GPS pos\t"
+            "u-Point action\n"
+
+            "t-tracks\t\t"
+            "a-toggle autorotate\n"
+            "v-velocity\t"
+            "x-toggle autocenter\n"
+
+            "\t\t\t"
+            "F-Find address\t"
+            "T-toggle tracking\n"
+
+            "Y-clear track\t"
+            "U-break track\t"
+            "I-save track\n"
+
+            "\t\t\t"
+            "R-set destination\t"
+            "O-Set as GPS pos\n"
+
+            "\t\t\t"
+            "\t\t\t"
+            "\n"
+            );
+        gtk_dialog_run(GTK_DIALOG(note));
+        gtk_widget_destroy(note);
         break;
     }
     return FALSE;

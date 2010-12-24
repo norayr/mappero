@@ -95,7 +95,7 @@ menu_cb_route_open(GtkMenuItem *item)
     return TRUE;
 }
 
-static gboolean
+gboolean
 menu_cb_route_download(GtkMenuItem *item)
 {
     map_route_download();
@@ -173,7 +173,7 @@ menu_cb_track_open(GtkMenuItem *item)
     return TRUE;
 }
 
-static gboolean
+gboolean
 menu_cb_track_save(GtkMenuItem *item)
 {
     GOutputStream *handle;
@@ -193,7 +193,7 @@ menu_cb_track_save(GtkMenuItem *item)
     return TRUE;
 }
 
-static gboolean
+gboolean
 menu_cb_track_insert_break(GtkMenuItem *item)
 {
     track_insert_break(TRUE);
@@ -201,7 +201,7 @@ menu_cb_track_insert_break(GtkMenuItem *item)
     return TRUE;
 }
 
-static gboolean
+gboolean
 menu_cb_track_insert_mark(GtkMenuItem *item)
 {
     MapGeo lat, lon;
@@ -301,7 +301,7 @@ menu_cb_track_insert_mark(GtkMenuItem *item)
     return TRUE;
 }
 
-static gboolean
+gboolean
 menu_cb_track_clear(GtkMenuItem *item)
 {
     track_clear();
@@ -558,7 +558,7 @@ on_goto_address_response(GtkWidget *dialog, gint response, GtkEntry *txt_addr)
                        (MapRouterGeocodeCb)geocode_cb, p_dialog);
 }
 
-static gboolean
+gboolean
 menu_cb_view_goto_address(GtkMenuItem *item)
 {
     GtkWidget *dialog;

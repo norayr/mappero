@@ -23,6 +23,11 @@
 
 gboolean menu_cb_view_goto_nextway(GtkMenuItem *item);
 gboolean menu_cb_view_goto_nearpoi(GtkMenuItem *item);
+gboolean menu_cb_view_goto_address(GtkMenuItem *item);
+gboolean menu_cb_track_save(GtkMenuItem *item);
+gboolean menu_cb_track_clear(GtkMenuItem *item);
+gboolean menu_cb_track_insert_break(GtkMenuItem *item);
+gboolean menu_cb_route_download(GtkMenuItem *item);
 
 void menu_layers_remove_repos(void);
 void menu_layers_add_repos(void);
