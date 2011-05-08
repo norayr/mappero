@@ -118,7 +118,8 @@ Osm::Osm()
     setFlags(QGraphicsItem::ItemHasNoContents);
     QString base = QString("/usr/share/icons/hicolor/scalable/hildon/");
     for (int i = 0; i < N_BUTTONS; i++) {
-        new OsmButton(base + buttonData[i].icon, buttonData[i].action, this);
+        new OsmButton(base + buttonData[i].icon + ".png", buttonData[i].action,
+                      this);
     }
 }
 
