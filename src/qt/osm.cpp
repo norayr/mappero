@@ -23,9 +23,9 @@
 #include "osm.h"
 
 #include "controller.h"
+#include "debug.h"
 #include "view.h"
 
-#include <QDebug>
 #include <QGraphicsPixmapItem>
 #include <QGraphicsSceneMouseEvent>
 

@@ -22,8 +22,7 @@
 #endif
 #include "controller.h"
 #include "controller.moc.hpp"
-
-#include <QDebug>
+#include "debug.h"
 
 using namespace Mappero;
 
