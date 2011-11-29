@@ -85,6 +85,9 @@ public:
         case FULLSCREEN:
             Controller::instance()->view()->switchFullscreen();
             break;
+        case GO_TO:
+            Controller::instance()->view()->centerOn(100,400);
+            break;
         }
     }
 
