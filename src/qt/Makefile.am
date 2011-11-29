@@ -22,16 +22,11 @@ bin_PROGRAMS = mappero
 mappero_CPPFLAGS = \
 	-I.. \
 	$(QT_CFLAGS) \
-	$(CONIC_CFLAGS) \
-	$(LOCATION_CFLAGS) \
 	-DMAP_PLUGIN_DIR=\"@libdir@/mappero.@MAP_ABI_VERSION@\" \
 	-Wall -Wno-switch
 
 mappero_LDADD = \
-	$(top_builddir)/mappero/libmappero.la \
-	$(QT_LIBS) \
-	$(CONIC_LIBS) \
-	$(LOCATION_LIBS)
+	$(QT_LIBS)
 
 mappero_SOURCES = \
 	controller.cpp \
@@ -55,9 +50,3 @@ CLEANFILES = \
 
 %.moc.hpp: %.h
 	moc $(AM_CPPFLAGS) -i $< -o $@
-
-eraseconf:
-	ssh rover su -c "'gconftool-2 --recursive-unset /apps/maemo/maemo-mapper'" - user
-
-erasemaps:
-	ssh rover su -c "'rm -r /home/user/MyDocs/.maps'" - user

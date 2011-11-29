@@ -29,4 +29,4 @@ EXTRA_DIST = \
         debian/rules \
         debian/maemo-mapper.links
 
-SUBDIRS = mappero mappero-extras plugins src data po
+SUBDIRS = src data po

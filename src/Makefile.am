@@ -17,5 +17,5 @@
 # along with Mappero.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-SUBDIRS = hildon qt
+SUBDIRS = qt
 

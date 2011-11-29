@@ -36,8 +36,10 @@ View::View(QGraphicsScene *scene):
 {
     setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+#ifdef Q_WS_MAEMO5
     setAttribute(Qt::WA_Maemo5AutoOrientation, true);
     setAttribute(Qt::WA_Maemo5NonComposited, true);
+#endif
     setRenderHints(QPainter::Antialiasing);
     setTransformationAnchor(QGraphicsView::NoAnchor);
     setAlignment(Qt::AlignLeft | Qt::AlignTop);
