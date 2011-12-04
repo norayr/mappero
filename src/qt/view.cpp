@@ -21,19 +21,16 @@
 #include "view.h"
 #include "view.moc.hpp"
 
-#include "osm.h"
-
 #include <QDebug>
 #include <QResizeEvent>
 #include <QGLWidget>
-#include <QGraphicsScene>
-#include <QGraphicsView>
 
 using namespace Mappero;
 
-View::View(QGraphicsScene *scene):
-    QGraphicsView(scene)
+View::View():
+    QDeclarativeView()
 {
+    setResizeMode(SizeRootObjectToView);
     setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 #ifdef Q_WS_MAEMO5
@@ -44,17 +41,6 @@ View::View(QGraphicsScene *scene):
     setTransformationAnchor(QGraphicsView::NoAnchor);
     setAlignment(Qt::AlignLeft | Qt::AlignTop);
     setViewport(new QGLWidget);
-
-    /* create the OSM */
-    osm = new Osm();
-    scene->addItem(osm);
-}
-
-void View::resizeEvent(QResizeEvent *event)
-{
-    QGraphicsView::resizeEvent(event);
-    setSceneRect(QRectF(0, 0, event->size().width(), event->size().height()));
-    osm->setSize(event->size());
 }
 
 void View::switchFullscreen()

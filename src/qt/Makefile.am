@@ -33,7 +33,6 @@ mappero_SOURCES = \
 	layer.cpp \
 	main.cpp \
 	map.cpp \
-	osm.cpp \
 	projection.cpp \
 	tiled-layer.cpp \
 	view.cpp

@@ -23,6 +23,10 @@
 #include "view.h"
 
 #include <QApplication>
+#include <QDeclarativeContext>
+#include <QDeclarativeEngine>
+#include <QDir>
+#include <QFileInfo>
 #include <QGraphicsScene>
 
 static void addMap(QGraphicsScene *scene)
@@ -50,15 +54,19 @@ int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
 
-    QGraphicsScene scene;
-
+    /* TODO: set search path depending on installation prefix */
+    QDir::addSearchPath("qml", "../qml");
+    QDir::addSearchPath("icon", "../../data/icons/scalable/");
     Mappero::Controller controller;
-    Mappero::View view(&scene);
+    Mappero::View view;
     controller.setView(&view);
+    QFileInfo fi("qml:mappero.qml");
+    view.rootContext()->setContextProperty("view", &view);
+    view.setSource(QUrl::fromLocalFile(fi.absoluteFilePath()));
     view.setWindowTitle("Mappero");
     view.show();
 
-    addMap(&scene);
+    addMap(view.scene());
     view.centerOn(0, 0);
     //view.centerOn(305629531, 155308849);
 

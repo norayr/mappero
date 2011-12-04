@@ -21,24 +21,19 @@
 #ifndef MAP_VIEW_H
 #define MAP_VIEW_H
 
-#include <QGraphicsView>
+#include <QDeclarativeView>
 
 namespace Mappero {
 class Osm;
 
-class View: public QGraphicsView
+class View: public QDeclarativeView
 {
     Q_OBJECT
 public:
-    View(QGraphicsScene *scene);
-
-    virtual void resizeEvent(QResizeEvent *event);
+    View();
 
 public slots:
     void switchFullscreen();
-
-private:
-    Osm *osm;
 };
 
 };
