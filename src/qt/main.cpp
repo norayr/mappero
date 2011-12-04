@@ -19,7 +19,6 @@
 
 #include "controller.h"
 #include "map.h"
-#include "tiled-layer.h"
 #include "view.h"
 
 #include <QApplication>
@@ -29,30 +28,11 @@
 #include <QFileInfo>
 #include <QGraphicsScene>
 
-static void addMap(QGraphicsScene *scene)
-{
-    Mappero::Map *map = new Mappero::Map;
-
-    const Mappero::TiledLayer::Type *type =
-        Mappero::TiledLayer::Type::get("XYZ_INV");
-    Mappero::TiledLayer *layer =
-        new Mappero::TiledLayer("OpenStreet", "OpenStreetMap I",
-                                "http://tile.openstreetmap.org/%0d/%d/%d.png",
-                                "png", type);
-
-    map->setMainLayer(layer);
-
-    Mappero::GeoPoint center;
-    center.lat = 60.19997;
-    center.lon = 24.94057;
-    map->setCenter(center);
-
-    scene->addItem(map);
-}
-
 int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
+
+    qmlRegisterType<Mappero::Map>("Mappero", 1, 0, "Map");
 
     /* TODO: set search path depending on installation prefix */
     QDir::addSearchPath("qml", "../qml");
@@ -66,9 +46,7 @@ int main(int argc, char *argv[])
     view.setWindowTitle("Mappero");
     view.show();
 
-    addMap(view.scene());
     view.centerOn(0, 0);
-    //view.centerOn(305629531, 155308849);
 
     return app.exec();
 }

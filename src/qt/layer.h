@@ -27,14 +27,19 @@
 namespace Mappero {
 
 struct Projection;
+class Map;
 
 class LayerPrivate;
 class Layer: public QGraphicsItem {
 public:
-    Layer(const Projection *projection);
+    Layer(const QString &id, const Projection *projection);
     virtual ~Layer();
 
+    static Layer *fromId(const QString &id);
+    QString id() const;
+
     const Projection *projection();
+    Map *map() const;
 
     // reimplemented virtual functions:
     QRectF boundingRect() const;

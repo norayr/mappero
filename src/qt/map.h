@@ -24,28 +24,51 @@
 
 #include "types.h"
 
-#include <QGraphicsItem>
+#include <QDeclarativeItem>
 
 namespace Mappero {
 
 class Layer;
 
 class MapPrivate;
-class Map: public QGraphicsItem {
+class Map: public QDeclarativeItem {
+    Q_OBJECT
+    Q_PROPERTY(QPointF center READ centerPoint WRITE setCenter \
+               NOTIFY centerChanged);
+    Q_PROPERTY(qreal zoomLevel READ zoomLevel WRITE setZoomLevel \
+               NOTIFY zoomLevelChanged);
+    Q_PROPERTY(QString mainLayerId READ mainLayerId WRITE setMainLayerId \
+               NOTIFY mainLayerIdChanged);
 public:
     Map();
     ~Map();
 
     void setCenter(const GeoPoint &center);
     GeoPoint center() const;
+
+    /* For QML: same as above, but use QPointF */
+    void setCenter(const QPointF &center);
+    QPointF centerPoint() const;
+
     Point centerUnits() const;
 
+    void setZoomLevel(qreal zoom);
+    qreal zoomLevel() const;
+
+    void setMainLayerId(const QString &layerId);
+    QString mainLayerId() const;
+
     void setMainLayer(Layer *layer);
+    Layer *mainLayer() const;
 
     // reimplemented virtual functions:
-    QRectF boundingRect() const;
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
                QWidget *widget);
+
+Q_SIGNALS:
+    void centerChanged(const GeoPoint &center);
+    void zoomLevelChanged(qreal zoomLevel);
+    void mainLayerIdChanged();
 
 private:
     MapPrivate *d_ptr;

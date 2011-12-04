@@ -40,6 +40,7 @@ mappero_SOURCES = \
 
 nodist_mappero_SOURCES = \
 	controller.moc.hpp \
+	map.moc.hpp \
 	view.moc.hpp
 
 BUILT_SOURCES = \

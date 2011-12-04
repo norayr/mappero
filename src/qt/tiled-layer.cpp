@@ -21,6 +21,7 @@
 #   include "config.h"
 #endif
 #include "debug.h"
+#include "map.h"
 #include "tiled-layer.h"
 
 #include <QFile>
@@ -133,7 +134,7 @@ const Projection *TiledLayer::projectionFromLayerType(const Type *type)
 TiledLayer::TiledLayer(const QString &name, const QString &id,
                        const QString &url, const QString &format,
                        const Type *type):
-    Layer(projectionFromLayerType(type)),
+    Layer(id, projectionFromLayerType(type)),
     d_ptr(new TiledLayerPrivate(name, id, url, format, type))
 {
 }
@@ -182,10 +183,12 @@ void TiledLayer::paint(QPainter *painter,
     painter->drawRoundedRect(-10, -10, 20, 20, 5, 5);
 
     QGraphicsScene *scene = this->scene();
-    if (scene) {
-        QGraphicsView *view = scene->views().first();
-        qDebug() << "origin:" << view->mapToScene(0, 0);
-        view->centerOn(0, 0);
-    }
+    if (!scene) return;
+
+    QGraphicsView *view = scene->views().first();
+    if (!view) return;
+
+    DEBUG() << "center:" << map()->center();
+    DEBUG() << "center (units):" << map()->centerUnits();
 }
 

@@ -22,6 +22,7 @@
 #endif
 #include "debug.h"
 #include "layer.h"
+#include "tiled-layer.h"
 
 
 using namespace Mappero;
@@ -31,20 +32,22 @@ class LayerPrivate
 {
     Q_DECLARE_PUBLIC(Layer)
 
-    LayerPrivate(const Projection *projection):
+    LayerPrivate(const QString &id, const Projection *projection):
+        id(id),
         projection(projection)
     {
     }
 
+    QString id;
     const Projection *projection;
 private:
     mutable Layer *q_ptr;
 };
 };
 
-Layer::Layer(const Projection *projection):
+Layer::Layer(const QString &id, const Projection *projection):
     QGraphicsItem(0),
-    d_ptr(new LayerPrivate(projection))
+    d_ptr(new LayerPrivate(id, projection))
 {
 }
 
@@ -53,10 +56,35 @@ Layer::~Layer()
     delete d_ptr;
 }
 
+Layer *Layer::fromId(const QString &id)
+{
+    /* TODO: load available layers from config file/plugins */
+    if (id == "OpenStreetMap I") {
+        const Mappero::TiledLayer::Type *type =
+            Mappero::TiledLayer::Type::get("XYZ_INV");
+        return new TiledLayer("OpenStreet", "OpenStreetMap I",
+                              "http://tile.openstreetmap.org/%0d/%d/%d.png",
+                              "png", type);
+    } else {
+        return 0;
+    }
+}
+
+QString Layer::id() const
+{
+    Q_D(const Layer);
+    return d->id;
+}
+
 const Projection *Layer::projection()
 {
     Q_D(Layer);
     return d->projection;
+}
+
+Map *Layer::map() const
+{
+    return (Map *)parentObject();
 }
 
 QRectF Layer::boundingRect() const

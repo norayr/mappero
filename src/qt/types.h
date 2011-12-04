@@ -40,6 +40,8 @@ struct Point {
 };
 
 struct GeoPoint {
+    GeoPoint() {}
+    GeoPoint(Geo lat, Geo lon): lat(lat), lon(lon) {}
     Geo lat;
     Geo lon;
 };

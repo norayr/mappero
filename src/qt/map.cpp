@@ -23,6 +23,7 @@
 #include "debug.h"
 #include "layer.h"
 #include "map.h"
+#include "map.moc.hpp"
 #include "projection.h"
 
 #include <QGraphicsScene>
@@ -44,21 +45,43 @@ class MapPrivate
     Layer *mainLayer;
     GeoPoint center;
     Point centerUnits;
+    qreal zoomLevel;
 private:
     mutable Map *q_ptr;
 };
 };
 
 Map::Map():
-    QGraphicsItem(0),
+    QDeclarativeItem(0),
     d_ptr(new MapPrivate(this))
 {
-    setFlag(QGraphicsItem::ItemUsesExtendedStyleOption);
+    setFlags(QGraphicsItem::ItemUsesExtendedStyleOption);
 }
 
 Map::~Map()
 {
     delete d_ptr;
+}
+
+void Map::setMainLayerId(const QString &layerId)
+{
+    Q_D(Map);
+
+    if (d->mainLayer != 0 && d->mainLayer->id() == layerId) return;
+
+    Layer *layer = Layer::fromId(layerId);
+    if (layer == 0) {
+        qWarning() << "Error loading layer: " << layerId;
+        return;
+    }
+
+    setMainLayer(layer);
+}
+
+QString Map::mainLayerId() const
+{
+    Q_D(const Map);
+    return d->mainLayer != 0 ? d->mainLayer->id() : QString();
 }
 
 void Map::setMainLayer(Layer *layer)
@@ -73,6 +96,14 @@ void Map::setMainLayer(Layer *layer)
     if (layer != 0) {
         layer->setParentItem(this);
     }
+
+    Q_EMIT mainLayerIdChanged();
+}
+
+Layer *Map::mainLayer() const
+{
+    Q_D(const Map);
+    return d->mainLayer;
 }
 
 void Map::setCenter(const GeoPoint &center)
@@ -88,6 +119,8 @@ void Map::setCenter(const GeoPoint &center)
         DEBUG() << "Transformed:" << x << y;
         d->centerUnits = Point(x, y);
     }
+
+    Q_EMIT centerChanged(center);
 }
 
 GeoPoint Map::center() const
@@ -96,20 +129,43 @@ GeoPoint Map::center() const
     return d->center;
 }
 
+void Map::setCenter(const QPointF &center)
+{
+    GeoPoint p(center.x(), center.y());
+    setCenter(p);
+}
+
+QPointF Map::centerPoint() const
+{
+    GeoPoint p = center();
+    return QPointF(p.lat, p.lon);
+}
+
 Point Map::centerUnits() const
 {
     Q_D(const Map);
     return d->centerUnits;
 }
 
-QRectF Map::boundingRect() const
+void Map::setZoomLevel(qreal zoom)
 {
-    return QRectF(-1.0e6, -1.0e6, 2.0e6, 2.0e6);
+    Q_D(Map);
+    if (zoom == d->zoomLevel) return;
+
+    d->zoomLevel = zoom;
+    Q_EMIT zoomLevelChanged(zoom);
+}
+
+qreal Map::zoomLevel() const
+{
+    Q_D(const Map);
+    return d->zoomLevel;
 }
 
 void Map::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
                 QWidget *widget)
 {
     DEBUG() << option->exposedRect;
+    DEBUG() << "Implicit size:" << boundingRect();
 }
 
