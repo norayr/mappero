@@ -27,3 +27,9 @@ QDebug operator<<(QDebug dbg, const GeoPoint &p)
     return dbg.space();
 }
 
+QDebug operator<<(QDebug dbg, const Point &p)
+{
+    dbg.nospace() << "(" << p.x << ", " << p.y << ")";
+    return dbg.space();
+}
+

@@ -47,6 +47,7 @@ struct GeoPoint {
 } // namespace
 
 QDebug operator<<(QDebug dbg, const Mappero::GeoPoint &p);
+QDebug operator<<(QDebug dbg, const Mappero::Point &p);
 
 #ifdef USE_DOUBLES_FOR_LATLON
 #define GSIN(x) sin(x)
