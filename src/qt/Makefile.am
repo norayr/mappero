@@ -35,6 +35,7 @@ mappero_SOURCES = \
 	map.cpp \
 	projection.cpp \
 	tiled-layer.cpp \
+	types.cpp \
 	view.cpp
 
 nodist_mappero_SOURCES = \

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010 Alberto Mardegan <mardy@users.sourceforge.net>
+ * Copyright (C) 2011 Alberto Mardegan <mardy@users.sourceforge.net>
  *
  * This file is part of Mappero.
  *
@@ -19,6 +19,8 @@
 
 #ifndef MAP_TYPES_H
 #define MAP_TYPES_H
+
+#include <QDebug>
 
 namespace Mappero {
 
@@ -43,6 +45,8 @@ struct GeoPoint {
 };
 
 } // namespace
+
+QDebug operator<<(QDebug dbg, const Mappero::GeoPoint &p);
 
 #ifdef USE_DOUBLES_FOR_LATLON
 #define GSIN(x) sin(x)
