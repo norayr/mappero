@@ -31,13 +31,13 @@
 
 using namespace Mappero;
 
-static QString xyz_get_url(TiledLayer *layer,
+static QString xyz_get_url(const TiledLayer *layer,
                            int zoom, int tileX, int tileY);
-static QString xyz_inv_get_url(TiledLayer *layer,
+static QString xyz_inv_get_url(const TiledLayer *layer,
                                int zoom, int tileX, int tileY);
-static QString xyz_signed_get_url(TiledLayer *layer,
+static QString xyz_signed_get_url(const TiledLayer *layer,
                                   int zoom, int tileX, int tileY);
-static QString yandex_get_url(TiledLayer *layer,
+static QString yandex_get_url(const TiledLayer *layer,
                               int zoom, int tileX, int tileY);
 
 static const TiledLayer::Type layerTypes[] = {
@@ -88,7 +88,7 @@ private:
 };
 };
 
-static QString xyz_get_url(TiledLayer *layer,
+static QString xyz_get_url(const TiledLayer *layer,
                            int zoom, int tileX, int tileY)
 {
     char buffer[1024];
@@ -97,7 +97,7 @@ static QString xyz_get_url(TiledLayer *layer,
     return QString::fromUtf8(buffer);
 }
 
-static QString xyz_inv_get_url(TiledLayer *layer,
+static QString xyz_inv_get_url(const TiledLayer *layer,
                                int zoom, int tileX, int tileY)
 {
     char buffer[1024];
@@ -106,7 +106,7 @@ static QString xyz_inv_get_url(TiledLayer *layer,
     return QString::fromUtf8(buffer);
 }
 
-static QString xyz_signed_get_url(TiledLayer *layer,
+static QString xyz_signed_get_url(const TiledLayer *layer,
                                   int zoom, int tileX, int tileY)
 {
     char buffer[1024];
@@ -117,7 +117,7 @@ static QString xyz_signed_get_url(TiledLayer *layer,
     return QString::fromUtf8(buffer);
 }
 
-static QString yandex_get_url(TiledLayer *layer,
+static QString yandex_get_url(const TiledLayer *layer,
                               int zoom, int tileX, int tileY)
 {
     char buffer[1024];

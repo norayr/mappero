@@ -34,7 +34,7 @@ class TiledLayer: public Layer
 {
 public:
     struct Type {
-        typedef QString (*MakeUrl)(TiledLayer *layer,
+        typedef QString (*MakeUrl)(const TiledLayer *layer,
                                    int zoom, int tileX, int tileY);
         const char *name;
         MakeUrl makeUrl;
