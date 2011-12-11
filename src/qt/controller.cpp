@@ -23,6 +23,7 @@
 #include "controller.h"
 #include "controller.moc.hpp"
 #include "debug.h"
+#include "tile-download.h"
 
 using namespace Mappero;
 
@@ -34,13 +35,15 @@ class ControllerPrivate
     Q_DECLARE_PUBLIC(Controller)
 
     ControllerPrivate():
-        view(0)
+        view(0),
+        tileDownload(0)
     {
     }
 
     View *view;
 private:
     mutable Controller *q_ptr;
+    mutable TileDownload *tileDownload;
 };
 };
 
@@ -63,7 +66,7 @@ Controller *Controller::instance()
 {
     return controller;
 }
-    
+
 void Controller::setView(View *view)
 {
     Q_D(Controller);
@@ -77,3 +80,13 @@ View *Controller::view() const
     return d->view;
 }
 
+TileDownload *Controller::tileDownload() const
+{
+    Q_D(const Controller);
+
+    if (d->tileDownload == 0) {
+        d->tileDownload = new TileDownload(const_cast<Controller *>(this));
+    }
+
+    return d->tileDownload;
+}

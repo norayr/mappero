@@ -60,6 +60,9 @@ protected:
     bool tileInDB(int zoom, int x, int y) const;
     QPixmap tilePixmap(int zoom, int x, int y) const;
 
+    // reimplemented virtual functions:
+    void mapChanged();
+
 private:
     TiledLayerPrivate *d_ptr;
     Q_DECLARE_PRIVATE(TiledLayer)

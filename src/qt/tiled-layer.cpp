@@ -20,12 +20,15 @@
 #ifdef HAVE_CONFIG_H
 #   include "config.h"
 #endif
+#include "controller.h"
 #include "debug.h"
 #include "map.h"
+#include "tile-download.h"
 #include "tiled-layer.h"
 
 #include <QFile>
-#include <QGraphicsView>
+#include <QGraphicsScene>
+#include <QObject>
 #include <QPainter> // FIXME temp
 #include <QStringBuilder>
 
@@ -60,13 +63,16 @@ const TiledLayer::Type *TiledLayer::Type::get(const char *name)
 }
 
 namespace Mappero {
-class TiledLayerPrivate
+class TiledLayerPrivate: public QObject
 {
+    Q_OBJECT
     Q_DECLARE_PUBLIC(TiledLayer)
 
-    TiledLayerPrivate(const QString &name, const QString &id,
+    TiledLayerPrivate(TiledLayer *tiledLayer,
+                      const QString &name, const QString &id,
                       const QString &url, const QString &format,
                       const TiledLayer::Type *type):
+        q_ptr(tiledLayer),
         name(name),
         id(id),
         url(url),
@@ -75,16 +81,37 @@ class TiledLayerPrivate
     {
         /* FIXME: get it from the configuration */
         baseDir = QString::fromLatin1("/home/user/MyDocs/.maps/");
+
+        tileDownload = Controller::instance()->tileDownload();
+        QObject::connect(tileDownload,
+                         SIGNAL(tileDownloaded(const TileTask &, QByteArray)),
+                         this,
+                         SLOT(onTileDownloaded(const TileTask &, QByteArray)));
     }
 
+    int zoomLevelFromMap(const Map *map) const
+    {
+        return (int)map->zoomLevel();
+    }
+
+    Unit pixel2unit(int pixel) const { return pixel << zoomLevel; }
+    void loadTiles(const QPoint &start, const QPoint stop);
+
+private Q_SLOTS:
+    void onTileDownloaded(const TileTask &task, QByteArray tileData);
+
+private:
+    mutable TiledLayer *q_ptr;
     QString name;
     QString id;
     QString url;
     QString format;
     const TiledLayer::Type *type;
     QString baseDir;
-private:
-    mutable TiledLayer *q_ptr;
+    TileDownload *tileDownload;
+
+    Point center;
+    int zoomLevel;
 };
 };
 
@@ -131,11 +158,36 @@ const Projection *TiledLayer::projectionFromLayerType(const Type *type)
     return Projection::get(type->projectionType);
 }
 
+void TiledLayerPrivate::loadTiles(const QPoint &start, const QPoint stop)
+{
+    Q_Q(TiledLayer);
+
+    // TODO: cache and reuse tiles
+    QGraphicsScene *scene = q->scene();
+    foreach (QGraphicsItem *item, q->childItems()) {
+        scene->removeItem(item);
+        delete item;
+    }
+
+    for (int tx = start.x(); tx <= stop.x(); tx++) {
+        for (int ty = start.y(); ty <= stop.y(); ty++) {
+            TileTask task(tx, ty, zoomLevel, q, 0);
+            tileDownload->requestTile(task);
+        }
+    }
+}
+
+void TiledLayerPrivate::onTileDownloaded(const TileTask &task,
+                                         QByteArray tileData)
+{
+    DEBUG() << "Downloaded tile: " << task;
+}
+
 TiledLayer::TiledLayer(const QString &name, const QString &id,
                        const QString &url, const QString &format,
                        const Type *type):
     Layer(id, projectionFromLayerType(type)),
-    d_ptr(new TiledLayerPrivate(name, id, url, format, type))
+    d_ptr(new TiledLayerPrivate(this, name, id, url, format, type))
 {
 }
 
@@ -187,14 +239,41 @@ void TiledLayer::paint(QPainter *painter,
 {
     DEBUG() << Q_FUNC_INFO;
     painter->drawRoundedRect(-10, -10, 20, 20, 5, 5);
-
-    QGraphicsScene *scene = this->scene();
-    if (!scene) return;
-
-    QGraphicsView *view = scene->views().first();
-    if (!view) return;
-
-    DEBUG() << "center:" << map()->center();
-    DEBUG() << "center (units):" << map()->centerUnits();
 }
 
+void TiledLayer::mapChanged()
+{
+    Q_D(TiledLayer);
+
+    DEBUG() << Q_FUNC_INFO;
+    Map *map = this->map();
+
+    Point center = map->centerUnits();
+    int zoomLevel = d->zoomLevelFromMap(map);
+
+    if (center == d->center && zoomLevel == d->zoomLevel) {
+        // nothing has changed for us
+        DEBUG() << "Ignoring map changes";
+        return;
+    }
+
+    d->center = center;
+    d->zoomLevel = zoomLevel;
+
+    DEBUG() << "center:" << map->center();
+    DEBUG() << "center (units):" << map->centerUnits();
+
+    QSize viewportHalfSize = map->boundingRect().size().toSize() / 2;
+    int halfLength = qMax(viewportHalfSize.width(), viewportHalfSize.height());
+    Unit halfLengthUnit = d->pixel2unit(halfLength);
+
+    int tileDivisor = TILE_SIZE_PIXELS << zoomLevel;
+    QPoint tileStart = QPoint(center.x - halfLengthUnit,
+                              center.y - halfLengthUnit) / tileDivisor;
+    QPoint tileStop = QPoint(center.x + halfLengthUnit + TILE_SIZE_PIXELS - 1,
+                             center.y + halfLengthUnit + TILE_SIZE_PIXELS - 1) /
+        tileDivisor;
+    d->loadTiles(tileStart, tileStop);
+}
+
+#include "tiled-layer.moc.cpp"

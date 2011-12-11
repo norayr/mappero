@@ -34,6 +34,7 @@ mappero_SOURCES = \
 	main.cpp \
 	map.cpp \
 	projection.cpp \
+	tile-download.cpp \
 	tiled-layer.cpp \
 	types.cpp \
 	view.cpp
@@ -41,6 +42,7 @@ mappero_SOURCES = \
 nodist_mappero_SOURCES = \
 	controller.moc.hpp \
 	map.moc.hpp \
+	tile-download.moc.hpp \
 	view.moc.hpp
 
 BUILT_SOURCES = \
@@ -50,4 +52,8 @@ CLEANFILES = \
 	$(BUILT_SOURCES)
 
 %.moc.hpp: %.h
+	moc $(AM_CPPFLAGS) -i $< -o $@
+
+%.o:: %.moc.cpp
+%.moc.cpp: %.cpp
 	moc $(AM_CPPFLAGS) -i $< -o $@

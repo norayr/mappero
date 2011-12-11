@@ -25,6 +25,7 @@
 
 namespace Mappero {
 
+class TileDownload;
 class View;
 
 class ControllerPrivate;
@@ -40,6 +41,8 @@ public:
 
     void setView(View *view);
     View *view() const;
+
+    TileDownload *tileDownload() const;
 
 private:
     ControllerPrivate *d_ptr;
