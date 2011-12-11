@@ -22,32 +22,64 @@
 #endif
 #include "debug.h"
 #include "layer.h"
+#include "map.h"
 #include "tiled-layer.h"
 
+#include <QObject>
 
 using namespace Mappero;
 
 namespace Mappero {
-class LayerPrivate
+class LayerPrivate: public QObject
 {
+    Q_OBJECT
     Q_DECLARE_PUBLIC(Layer)
 
-    LayerPrivate(const QString &id, const Projection *projection):
+    LayerPrivate(Layer *layer, const QString &id, const Projection *projection):
+        QObject(),
+        q_ptr(layer),
         id(id),
-        projection(projection)
+        projection(projection),
+        map(0)
     {
     }
 
-    QString id;
-    const Projection *projection;
+    void setMap(Map *newMap);
+
+private Q_SLOTS:
+    void onMapChanged();
+
 private:
     mutable Layer *q_ptr;
+    QString id;
+    const Projection *projection;
+    Map *map;
 };
 };
 
+void LayerPrivate::setMap(Map *newMap)
+{
+    Q_Q(Layer);
+    if (map != newMap) {
+        map = newMap;
+        q->setParentItem(map);
+        QObject::connect(map, SIGNAL(centerChanged(const GeoPoint&)),
+                         this, SLOT(onMapChanged()), Qt::QueuedConnection);
+        QObject::connect(map, SIGNAL(zoomLevelChanged(qreal)),
+                         this, SLOT(onMapChanged()), Qt::QueuedConnection);
+        onMapChanged();
+    }
+}
+
+void LayerPrivate::onMapChanged()
+{
+    Q_Q(Layer);
+    q->mapChanged();
+}
+
 Layer::Layer(const QString &id, const Projection *projection):
     QGraphicsItem(0),
-    d_ptr(new LayerPrivate(id, projection))
+    d_ptr(new LayerPrivate(this, id, projection))
 {
 }
 
@@ -82,9 +114,16 @@ const Projection *Layer::projection()
     return d->projection;
 }
 
+void Layer::setMap(Map *map)
+{
+    Q_D(Layer);
+    d->setMap(map);
+}
+
 Map *Layer::map() const
 {
-    return (Map *)parentObject();
+    Q_D(const Layer);
+    return d->map;
 }
 
 QRectF Layer::boundingRect() const
@@ -92,3 +131,9 @@ QRectF Layer::boundingRect() const
     return QRectF(-1.0e6, -1.0e6, 2.0e6, 2.0e6);
 }
 
+void Layer::mapChanged()
+{
+    // virtual method
+}
+
+#include "layer.moc.cpp"

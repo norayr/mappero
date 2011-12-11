@@ -39,10 +39,15 @@ public:
     QString id() const;
 
     const Projection *projection();
+
+    void setMap(Map *map);
     Map *map() const;
 
     // reimplemented virtual functions:
     QRectF boundingRect() const;
+
+protected:
+    virtual void mapChanged();
 
 private:
     LayerPrivate *d_ptr;

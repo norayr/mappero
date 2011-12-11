@@ -94,7 +94,7 @@ void Map::setMainLayer(Layer *layer)
     }
     d->mainLayer = layer;
     if (layer != 0) {
-        layer->setParentItem(this);
+        layer->setMap(this);
     }
 
     Q_EMIT mainLayerIdChanged();

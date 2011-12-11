@@ -21,6 +21,7 @@
 #define MAP_TYPES_H
 
 #include <QDebug>
+#include <QMetaType>
 
 namespace Mappero {
 
@@ -48,8 +49,23 @@ struct GeoPoint {
 
 } // namespace
 
+Q_DECLARE_METATYPE(Mappero::GeoPoint)
+
 QDebug operator<<(QDebug dbg, const Mappero::GeoPoint &p);
 QDebug operator<<(QDebug dbg, const Mappero::Point &p);
+
+inline bool operator==(const Mappero::Point &p1,
+                       const Mappero::Point &p2)
+{
+    return p1.x == p2.x && p1.y == p2.y;
+}
+
+inline bool operator!=(const Mappero::Point &p1,
+                       const Mappero::Point &p2)
+{
+    return p1.x != p2.x || p1.y != p2.y;
+}
+
 
 #ifdef USE_DOUBLES_FOR_LATLON
 #define GSIN(x) sin(x)

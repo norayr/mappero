@@ -32,6 +32,7 @@ int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
 
+    qRegisterMetaType<Mappero::GeoPoint>("GeoPoint");
     qmlRegisterType<Mappero::Map>("Mappero", 1, 0, "Map");
 
     /* TODO: set search path depending on installation prefix */
