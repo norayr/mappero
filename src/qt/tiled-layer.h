@@ -47,6 +47,7 @@ public:
     virtual ~TiledLayer();
 
     const QString url() const;
+    QString urlForTile(int zoom, int x, int y) const;
 
     static const Projection *projectionFromLayerType(const Type *type);
 

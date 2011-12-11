@@ -150,6 +150,12 @@ const QString TiledLayer::url() const
     return d->url;
 }
 
+QString TiledLayer::urlForTile(int zoom, int x, int y) const
+{
+    Q_D(const TiledLayer);
+    return d->type->makeUrl(this, zoom, x, y);
+}
+
 QString TiledLayer::tileFileName(int zoom, int x, int y) const
 {
     Q_D(const TiledLayer);
