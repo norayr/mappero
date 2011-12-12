@@ -33,3 +33,9 @@ QDebug operator<<(QDebug dbg, const Point &p)
     return dbg.space();
 }
 
+QDebug operator<<(QDebug dbg, const TileSpec &t)
+{
+    dbg.nospace() << "(" << t.x << ", " << t.y << ")";
+    return dbg.space();
+}
+

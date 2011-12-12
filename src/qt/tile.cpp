@@ -19,35 +19,16 @@
  * along with Mappero.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef MAP_TILE_DOWNLOAD_H
-#define MAP_TILE_DOWNLOAD_H
+#ifdef HAVE_CONFIG_H
+#   include "config.h"
+#endif
+#include "debug.h"
+#include "tile.h"
+#include "tiled-layer.h"
 
-#include "types.h"
+using namespace Mappero;
 
-#include <QMetaType>
-#include <QObject>
-
-namespace Mappero {
-
-class TileDownloadPrivate;
-class TileDownload: public QObject
+Tile::Tile(TiledLayer *parent):
+    QGraphicsPixmapItem(parent)
 {
-    Q_OBJECT
-
-public:
-    TileDownload(QObject *parent = 0);
-    ~TileDownload();
-
-    void requestTile(const TileSpec &spec, int priority);
-
-Q_SIGNALS:
-    void tileDownloaded(const TileSpec &tileSpec, QByteArray tileData);
-
-private:
-    TileDownloadPrivate *d_ptr;
-    Q_DECLARE_PRIVATE(TileDownload)
-};
-
-}; // namespace
-
-#endif /* MAP_TILE_DOWNLOAD_H */
+}

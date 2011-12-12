@@ -68,6 +68,6 @@ private:
     Q_DECLARE_PRIVATE(TiledLayer)
 };
 
-};
+} // namespace
 
 #endif /* MAP_TILED_LAYER_H */

@@ -20,10 +20,11 @@
 #ifndef MAP_TYPES_H
 #define MAP_TYPES_H
 
-#include <QDebug>
 #include <QMetaType>
 
 namespace Mappero {
+
+class TiledLayer;
 
 #ifdef USE_DOUBLES_FOR_LATLON
 typedef double Geo;
@@ -47,12 +48,32 @@ struct GeoPoint {
     Geo lon;
 };
 
+struct TileSpec
+{
+    TileSpec(int x, int y, int zoom, const TiledLayer *layer):
+        x(x), y(y), zoom(zoom), layer(layer) {}
+    int x;
+    int y;
+    int zoom;
+    const TiledLayer *layer;
+};
+
 } // namespace
+
+inline uint qHash(const Mappero::TileSpec &tile)
+{
+    return (tile.x & 0xff) |
+        ((tile.y & 0xff) << 8) |
+        ((tile.zoom & 0xff) << 16);
+}
 
 Q_DECLARE_METATYPE(Mappero::GeoPoint)
 
+#include <QDebug>
+
 QDebug operator<<(QDebug dbg, const Mappero::GeoPoint &p);
 QDebug operator<<(QDebug dbg, const Mappero::Point &p);
+QDebug operator<<(QDebug dbg, const Mappero::TileSpec &t);
 
 inline bool operator==(const Mappero::Point &p1,
                        const Mappero::Point &p2)
@@ -64,6 +85,12 @@ inline bool operator!=(const Mappero::Point &p1,
                        const Mappero::Point &p2)
 {
     return p1.x != p2.x || p1.y != p2.y;
+}
+
+inline bool operator==(const Mappero::TileSpec &t1, const Mappero::TileSpec &t2)
+{
+    return t1.x == t2.x && t1.y == t2.y && t1.zoom == t2.zoom &&
+        t1.layer == t2.layer;
 }
 
 

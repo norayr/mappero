@@ -20,14 +20,17 @@
 #ifdef HAVE_CONFIG_H
 #   include "config.h"
 #endif
+#include "types.h"
 #include "controller.h"
 #include "debug.h"
 #include "map.h"
 #include "tile-download.h"
+#include "tile.h"
 #include "tiled-layer.h"
 
 #include <QFile>
 #include <QGraphicsScene>
+#include <QHash>
 #include <QObject>
 #include <QPainter> // FIXME temp
 #include <QStringBuilder>
@@ -63,6 +66,9 @@ const TiledLayer::Type *TiledLayer::Type::get(const char *name)
 }
 
 namespace Mappero {
+
+typedef QHash<TileSpec, Tile *> TileQueue;
+
 class TiledLayerPrivate: public QObject
 {
     Q_OBJECT
@@ -84,9 +90,9 @@ class TiledLayerPrivate: public QObject
 
         tileDownload = Controller::instance()->tileDownload();
         QObject::connect(tileDownload,
-                         SIGNAL(tileDownloaded(const TileTask &, QByteArray)),
+                         SIGNAL(tileDownloaded(const TileSpec &, QByteArray)),
                          this,
-                         SLOT(onTileDownloaded(const TileTask &, QByteArray)));
+                         SLOT(onTileDownloaded(const TileSpec &, QByteArray)));
     }
 
     int zoomLevelFromMap(const Map *map) const
@@ -98,7 +104,7 @@ class TiledLayerPrivate: public QObject
     void loadTiles(const QPoint &start, const QPoint stop);
 
 private Q_SLOTS:
-    void onTileDownloaded(const TileTask &task, QByteArray tileData);
+    void onTileDownloaded(const TileSpec &tileSpec, QByteArray tileData);
 
 private:
     mutable TiledLayer *q_ptr;
@@ -109,11 +115,12 @@ private:
     const TiledLayer::Type *type;
     QString baseDir;
     TileDownload *tileDownload;
+    TileQueue tileQueue;
 
     Point center;
     int zoomLevel;
 };
-};
+}; // namespace
 
 static QString xyz_get_url(const TiledLayer *layer,
                            int zoom, int tileX, int tileY)
@@ -169,18 +176,43 @@ void TiledLayerPrivate::loadTiles(const QPoint &start, const QPoint stop)
         delete item;
     }
 
-    for (int tx = start.x(); tx <= stop.x(); tx++) {
-        for (int ty = start.y(); ty <= stop.y(); ty++) {
-            TileTask task(tx, ty, zoomLevel, q, 0);
-            tileDownload->requestTile(task);
+    QPoint p = start * (TILE_SIZE_PIXELS << zoomLevel);
+    int &x = p.rx();
+    int &y = p.ry();
+
+    x -= center.x;
+    y -= center.y;
+    p /= (1 << zoomLevel);
+    int y0 = y;
+    for (int tx = start.x(); tx <= stop.x(); tx++, x += TILE_SIZE_PIXELS) {
+        y = y0;
+        for (int ty = start.y(); ty <= stop.y(); ty++, y+= TILE_SIZE_PIXELS) {
+            Tile *tile = new Tile(q);
+            tile->setPos(x, y);
+
+            TileSpec tileSpec(tx, ty, zoomLevel, q);
+            tileQueue.insert(tileSpec, tile);
+            tileDownload->requestTile(tileSpec, 0);
         }
     }
 }
 
-void TiledLayerPrivate::onTileDownloaded(const TileTask &task,
+void TiledLayerPrivate::onTileDownloaded(const TileSpec &tileSpec,
                                          QByteArray tileData)
 {
-    DEBUG() << "Downloaded tile: " << task;
+    DEBUG() << "Downloaded tile: " << tileSpec;
+    if (tileData.isEmpty()) {
+        DEBUG() << "No tile data!";
+        return;
+    }
+
+    TileQueue::iterator i = tileQueue.find(tileSpec);
+    if (i != tileQueue.end()) {
+        Tile *tile = i.value();
+        QPixmap pixmap;
+        pixmap.loadFromData(tileData);
+        tile->setPixmap(pixmap);
+    }
 }
 
 TiledLayer::TiledLayer(const QString &name, const QString &id,

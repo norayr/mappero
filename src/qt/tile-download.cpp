@@ -37,13 +37,18 @@
 
 using namespace Mappero;
 
-QDebug operator<<(QDebug dbg, const TileTask &t)
-{
-    dbg.nospace() << "(" << t.x << ", " << t.y << ")";
-    return dbg.space();
-}
-
 namespace Mappero {
+
+struct TileTask
+{
+    int priority;
+    TileSpec spec;
+
+    TileTask(const TileSpec &spec, int priority):
+        priority(priority),
+        spec(spec) {}
+    ~TileTask() {}
+};
 
 struct TaskData
 {
@@ -72,14 +77,14 @@ inline bool operator<(const TileTask &t1, const TileTask &t2)
 
     /* We don't really care about this, but we need to provide a global sorting
      */
-    diff = t1.x - t2.x;
+    diff = t1.spec.x - t2.spec.x;
     if (diff != 0) return diff < 0;
-    diff = t1.y - t2.y;
+    diff = t1.spec.y - t2.spec.y;
     if (diff != 0) return diff < 0;
-    diff = t1.zoom - t2.zoom;
+    diff = t1.spec.zoom - t2.spec.zoom;
     if (diff != 0) return diff < 0;
 
-    return t1.layer->id() < t2.layer->id();
+    return t1.spec.layer->id() < t2.spec.layer->id();
 }
 
 class Downloader: public QRunnable
@@ -100,6 +105,42 @@ private:
     QObject *listener;
     QNetworkAccessManager *networkAccessManager;
 };
+
+class TileDownloadPrivate: public QObject
+{
+    Q_OBJECT
+    Q_DECLARE_PUBLIC(TileDownload)
+
+    TileDownloadPrivate(TileDownload *tileDownload):
+        QObject(tileDownload),
+        q_ptr(tileDownload)
+    {
+        pool = QThreadPool::globalInstance();
+        qRegisterMetaType<TaskMap::iterator>("TaskMap::iterator");
+    }
+    ~TileDownloadPrivate() {};
+
+public Q_SLOTS:
+    void taskCompleted(TaskMap::iterator t);
+
+private:
+    void requestTile(const TileTask &task);
+
+private:
+    mutable TileDownload *q_ptr;
+    TaskMap tasks;
+    QMutex tasksMutex;
+    QThreadPool *pool;
+};
+}; // namespace
+
+Q_DECLARE_METATYPE(Mappero::TaskMap::iterator)
+
+static inline QDebug operator<<(QDebug dbg, const TileTask &t)
+{
+    dbg.nospace() << t.spec;
+    return dbg.space();
+}
 
 Downloader::Downloader(TaskMap &tasks, QMutex &mutex, QObject *listener):
     tasks(tasks),
@@ -151,7 +192,8 @@ void Downloader::processTask(TaskMap::iterator t)
 
     DEBUG() << "Processing task: " << tile;
 
-    QUrl url(tile.layer->urlForTile(tile.zoom, tile.x, tile.y));
+    QUrl url(tile.spec.layer->urlForTile(tile.spec.zoom,
+                                         tile.spec.x, tile.spec.y));
     QNetworkReply *reply = networkAccessManager->get(QNetworkRequest(url));
 
     /* QNetworkReply does not implement QIODevice::waitForReadyRead(); let's
@@ -176,41 +218,11 @@ void Downloader::processTask(TaskMap::iterator t)
                               Q_ARG(TaskMap::iterator, t));
 }
 
-class TileDownloadPrivate: public QObject
-{
-    Q_OBJECT
-    Q_DECLARE_PUBLIC(TileDownload)
-
-    TileDownloadPrivate(TileDownload *tileDownload):
-        QObject(tileDownload),
-        q_ptr(tileDownload)
-    {
-        pool = QThreadPool::globalInstance();
-        qRegisterMetaType<TaskMap::iterator>("TaskMap::iterator");
-    }
-    ~TileDownloadPrivate() {};
-
-public Q_SLOTS:
-    void taskCompleted(TaskMap::iterator t);
-
-private:
-    void requestTile(const TileTask &task);
-
-private:
-    mutable TileDownload *q_ptr;
-    TaskMap tasks;
-    QMutex tasksMutex;
-    QThreadPool *pool;
-};
-}; // namespace
-
-Q_DECLARE_METATYPE(Mappero::TaskMap::iterator)
-
 void TileDownloadPrivate::taskCompleted(TaskMap::iterator t)
 {
     Q_Q(TileDownload);
 
-    Q_EMIT q->tileDownloaded(t.key(), t.value().tileData);
+    Q_EMIT q->tileDownloaded(t.key().spec, t.value().tileData);
 
     /* Note: we can destroy the TaskData only because we know that the signal
      * connection is immediate; otherwise the receiver might end up accessing
@@ -244,11 +256,11 @@ TileDownload::~TileDownload()
     delete d_ptr;
 }
 
-void TileDownload::requestTile(const TileTask &task)
+void TileDownload::requestTile(const TileSpec &tileSpec, int priority)
 {
     Q_D(TileDownload);
 
-    d->requestTile(task);
+    d->requestTile(TileTask(tileSpec, priority));
 }
 
 #include "tile-download.moc.cpp"
