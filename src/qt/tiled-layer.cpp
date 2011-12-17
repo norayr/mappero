@@ -303,12 +303,15 @@ void TiledLayer::mapChanged()
     int halfLength = qMax(viewportHalfSize.width(), viewportHalfSize.height());
     Unit halfLengthUnit = d->pixel2unit(halfLength);
 
-    int tileDivisor = TILE_SIZE_PIXELS << zoomLevel;
-    QPoint tileStart = QPoint(center.x - halfLengthUnit,
-                              center.y - halfLengthUnit) / tileDivisor;
-    QPoint tileStop = QPoint(center.x + halfLengthUnit + TILE_SIZE_PIXELS - 1,
-                             center.y + halfLengthUnit + TILE_SIZE_PIXELS - 1) /
-        tileDivisor;
+    QPoint tileStart =
+        Point(center.x - halfLengthUnit,
+              center.y - halfLengthUnit).
+        toTile(zoomLevel);
+    QPoint tileStop =
+        Point(center.x + halfLengthUnit + TILE_SIZE_PIXELS - 1,
+              center.y + halfLengthUnit + TILE_SIZE_PIXELS - 1).
+        toTile(zoomLevel);
+
     d->loadTiles(tileStart, tileStop);
 }
 

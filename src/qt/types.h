@@ -21,8 +21,15 @@
 #define MAP_TYPES_H
 
 #include <QMetaType>
+#include <QPoint>
 
 namespace Mappero {
+
+#define TILE_SIZE_PIXELS (256)
+#define TILE_HALFDIAG_PIXELS (181)
+#define TILE_SIZE_P2 (8)
+
+#define WORLD_SIZE_UNITS (2 << (MAX_ZOOM + TILE_SIZE_P2))
 
 class TiledLayer;
 
@@ -39,6 +46,10 @@ struct Point {
     Point(Unit x, Unit y): x(x), y(y) {}
     Unit x;
     Unit y;
+
+    inline QPoint toTile(int zoom) {
+        return QPoint(x >> (TILE_SIZE_P2 + zoom), y >> (TILE_SIZE_P2 + zoom));
+    }
 };
 
 struct GeoPoint {
@@ -125,12 +136,6 @@ inline bool operator==(const Mappero::TileSpec &t1, const Mappero::TileSpec &t2)
  */
 #define MIN_ZOOM (0)
 #define MAX_ZOOM (20)
-
-#define TILE_SIZE_PIXELS (256)
-#define TILE_HALFDIAG_PIXELS (181)
-#define TILE_SIZE_P2 (8)
-
-#define WORLD_SIZE_UNITS (2 << (MAX_ZOOM + TILE_SIZE_P2))
 
 #define deg2rad(deg) ((deg) * (PI / 180.0))
 #define rad2deg(rad) ((rad) * (180.0 / PI))
