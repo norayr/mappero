@@ -34,6 +34,7 @@ mappero_SOURCES = \
 	main.cpp \
 	map.cpp \
 	projection.cpp \
+	tile-cache.cpp \
 	tile-download.cpp \
 	tile.cpp \
 	tiled-layer.cpp \

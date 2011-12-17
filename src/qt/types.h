@@ -61,12 +61,12 @@ struct GeoPoint {
 
 struct TileSpec
 {
-    TileSpec(int x, int y, int zoom, const TiledLayer *layer):
+    TileSpec(int x, int y, int zoom, TiledLayer *layer):
         x(x), y(y), zoom(zoom), layer(layer) {}
     int x;
     int y;
     int zoom;
-    const TiledLayer *layer;
+    TiledLayer *layer;
 };
 
 } // namespace

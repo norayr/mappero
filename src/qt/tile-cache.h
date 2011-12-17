@@ -1,6 +1,7 @@
-/* vi: set et sw=4 ts=8 cino=t0,(0: */
+/* vi: set et sw=4 ts=4 cino=t0,(0: */
+/* -*- Mode: C; indent-tabs-mode: nil; c-basic-offset: 4; tab-width: 4 -*- */
 /*
- * Copyright (C) 2009-2010 Alberto Mardegan <mardy@users.sourceforge.net>
+ * Copyright (C) 2011 Alberto Mardegan <mardy@users.sourceforge.net>
  *
  * This file is part of Mappero.
  *
@@ -18,40 +19,31 @@
  * along with Mappero.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef MAP_CONTROLLER_H
-#define MAP_CONTROLLER_H
+#ifndef MAP_TILE_CACHE_H
+#define MAP_TILE_CACHE_H
 
-#include <QObject>
+#include "types.h"
+
+#include <QMetaType>
 
 namespace Mappero {
 
-class TileCache;
-class TileDownload;
-class View;
+class Tile;
 
-class ControllerPrivate;
-class Controller: public QObject
+class TileCachePrivate;
+class TileCache
 {
-    Q_OBJECT
-
 public:
-    Controller(QObject *parent = 0);
-    ~Controller();
+    TileCache();
+    ~TileCache();
 
-    static Controller *instance();
-
-    void setView(View *view);
-    View *view() const;
-
-    TileDownload *tileDownload() const;
-    TileCache *tileCache() const;
+    Tile *tile(const TileSpec &spec, bool *found);
 
 private:
-    ControllerPrivate *d_ptr;
-    Q_DECLARE_PRIVATE(Controller)
+    TileCachePrivate *d_ptr;
+    Q_DECLARE_PRIVATE(TileCache)
 };
 
-};
+}; // namespace
 
-
-#endif /* MAP_CONTROLLER_H */
+#endif /* MAP_TILE_CACHE_H */

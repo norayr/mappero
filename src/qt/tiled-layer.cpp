@@ -25,12 +25,12 @@
 #include "controller.h"
 #include "debug.h"
 #include "map.h"
+#include "tile-cache.h"
 #include "tile-download.h"
 #include "tile.h"
 #include "tiled-layer.h"
 
 #include <QFile>
-#include <QGraphicsScene>
 #include <QHash>
 #include <QObject>
 #include <QPainter> // FIXME temp
@@ -90,6 +90,7 @@ class TiledLayerPrivate: public QObject
         baseDir = QString::fromLatin1("/home/user/MyDocs/.maps/");
 
         tileDownload = Controller::instance()->tileDownload();
+        tileCache = Controller::instance()->tileCache();
         QObject::connect(tileDownload,
                          SIGNAL(tileDownloaded(const TileSpec &, QByteArray)),
                          this,
@@ -116,6 +117,7 @@ private:
     const TiledLayer::Type *type;
     QString baseDir;
     TileDownload *tileDownload;
+    TileCache *tileCache;
     TileQueue tileQueue;
 
     Point center;
@@ -171,13 +173,6 @@ void TiledLayerPrivate::loadTiles(const QPoint &start, const QPoint stop)
 {
     Q_Q(TiledLayer);
 
-    // TODO: cache and reuse tiles
-    QGraphicsScene *scene = q->scene();
-    foreach (QGraphicsItem *item, q->childItems()) {
-        scene->removeItem(item);
-        delete item;
-    }
-
     QPoint p = start * (TILE_SIZE_PIXELS << zoomLevel);
     int &x = p.rx();
     int &y = p.ry();
@@ -189,12 +184,16 @@ void TiledLayerPrivate::loadTiles(const QPoint &start, const QPoint stop)
     for (int tx = start.x(); tx <= stop.x(); tx++, x += TILE_SIZE_PIXELS) {
         y = y0;
         for (int ty = start.y(); ty <= stop.y(); ty++, y+= TILE_SIZE_PIXELS) {
-            Tile *tile = new Tile(q);
-            tile->setPos(x, y);
-
             TileSpec tileSpec(tx, ty, zoomLevel, q);
-            tileQueue.insert(tileSpec, tile);
-            tileDownload->requestTile(tileSpec, 0);
+            bool found;
+
+            Tile *tile = tileCache->tile(tileSpec, &found);
+            if (!found) {
+                tile->setVisible(false);
+                tileQueue.insert(tileSpec, tile);
+                tileDownload->requestTile(tileSpec, 0);
+            }
+            tile->setPos(x, y);
         }
     }
 }
@@ -214,6 +213,7 @@ void TiledLayerPrivate::onTileDownloaded(const TileSpec &tileSpec,
         QPixmap pixmap;
         pixmap.loadFromData(tileData);
         tile->setPixmap(pixmap);
+        tile->setVisible(true);
     }
 }
 

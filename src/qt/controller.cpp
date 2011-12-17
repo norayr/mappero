@@ -24,6 +24,7 @@
 #include "controller.h"
 #include "controller.moc.hpp"
 #include "debug.h"
+#include "tile-cache.h"
 #include "tile-download.h"
 
 using namespace Mappero;
@@ -37,14 +38,22 @@ class ControllerPrivate
 
     ControllerPrivate():
         view(0),
-        tileDownload(0)
+        tileDownload(0),
+        tileCache(0)
     {
+    }
+
+    ~ControllerPrivate()
+    {
+        delete tileCache;
+        tileCache = 0;
     }
 
     View *view;
 private:
     mutable Controller *q_ptr;
     mutable TileDownload *tileDownload;
+    mutable TileCache *tileCache;
 };
 };
 
@@ -90,4 +99,15 @@ TileDownload *Controller::tileDownload() const
     }
 
     return d->tileDownload;
+}
+
+TileCache *Controller::tileCache() const
+{
+    Q_D(const Controller);
+
+    if (d->tileCache == 0) {
+        d->tileCache = new TileCache();
+    }
+
+    return d->tileCache;
 }
