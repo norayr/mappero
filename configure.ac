@@ -73,16 +73,6 @@ fi
 
 CFLAGS="-std=c99 -Wall -Werror -Wno-switch $CFLAGS"
 
-# Localisation
-localedir=`$PKG_CONFIG osso-af-settings --variable=localedir`
-AC_PROG_INTLTOOL([0.23])
-GETTEXT_PACKAGE=$PACKAGE
-AC_SUBST(GETTEXT_PACKAGE)
-AC_DEFINE_UNQUOTED([GETTEXT_PACKAGE], "${GETTEXT_PACKAGE}", [Name of gettext package])
-ALL_LINGUAS="bg_BG de_DE en_US en_GB es_ES fi_FI it_IT nl_NL sv_SE ru_RU"
-AM_GLIB_GNU_GETTEXT
-
-
 AC_DEFINE_UNQUOTED([LOCALEDIR], "${localedir}", [Runtime locale catalog files path])
 AC_DEFINE_UNQUOTED([PIXMAPDIR], "${pixmapdir}", [Runtime pixmap files path])
 
@@ -93,8 +83,6 @@ AC_OUTPUT(
           src/Makefile \
           src/qt/Makefile \
           data/Makefile \
-          data/sounds/Makefile \
-          po/Makefile.in \
-          po/Makefile
+          data/sounds/Makefile
 )
 
