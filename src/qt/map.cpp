@@ -27,7 +27,11 @@
 #include "map.moc.hpp"
 #include "projection.h"
 
+#include <QEvent>
+#include <QGestureEvent>
 #include <QGraphicsScene>
+#include <QPanGesture>
+#include <QPinchGesture>
 #include <QStyleOptionGraphicsItem>
 
 using namespace Mappero;
@@ -60,6 +64,9 @@ class MapPrivate
     {
     }
 
+    void onPanning(QPanGesture *pan);
+    void onPinching(QPinchGesture *pinch);
+
     LayerGroup *layerGroup;
     Layer *mainLayer;
     GeoPoint center;
@@ -70,11 +77,25 @@ private:
 };
 };
 
+void MapPrivate::onPanning(QPanGesture *pan)
+{
+    DEBUG() << "Panning, delta:" << pan->delta();
+}
+
+void MapPrivate::onPinching(QPinchGesture *pinch)
+{
+    DEBUG() << "Rotating around" << pinch->centerPoint() <<
+        ", angle:" << pinch->rotationAngle();
+}
+
 Map::Map():
     QDeclarativeItem(0),
     d_ptr(new MapPrivate(this))
 {
     setFlags(QGraphicsItem::ItemUsesExtendedStyleOption);
+    grabGesture(Qt::PanGesture);
+    grabGesture(Qt::PinchGesture);
+    setAcceptTouchEvents(true);
 }
 
 Map::~Map()
@@ -195,4 +216,22 @@ void Map::geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry)
     Q_D(Map);
     d->layerGroup->setPos(newGeometry.center());
     Q_EMIT sizeChanged();
+}
+
+bool Map::sceneEvent(QEvent *event)
+{
+    if (event->type() == QEvent::Gesture) {
+        Q_D(Map);
+        QGestureEvent *e = static_cast<QGestureEvent*>(event);
+        QGesture *gesture;
+
+        if ((gesture = e->gesture(Qt::PanGesture)) != 0)
+            d->onPanning(static_cast<QPanGesture*>(gesture));
+
+        if ((gesture = e->gesture(Qt::PinchGesture)) != 0)
+            d->onPinching(static_cast<QPinchGesture*>(gesture));
+
+        return true;
+    }
+    return QDeclarativeItem::sceneEvent(event);
 }

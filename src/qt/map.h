@@ -74,6 +74,7 @@ Q_SIGNALS:
 protected:
     // reimplemented virtual methods
     void geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry);
+    bool sceneEvent(QEvent *event);
 
 private:
     MapPrivate *d_ptr;
