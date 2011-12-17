@@ -8,6 +8,7 @@ Rectangle {
 
     Osm {
         id: osm
+        z: 1
         anchors.fill: parent
     }
 
