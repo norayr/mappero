@@ -59,13 +59,13 @@ private:
 
 void LayerPrivate::setMap(Map *newMap)
 {
-    Q_Q(Layer);
     if (map != newMap) {
         map = newMap;
-        q->setParentItem(map);
         QObject::connect(map, SIGNAL(centerChanged(const GeoPoint&)),
                          this, SLOT(onMapChanged()), Qt::QueuedConnection);
         QObject::connect(map, SIGNAL(zoomLevelChanged(qreal)),
+                         this, SLOT(onMapChanged()), Qt::QueuedConnection);
+        QObject::connect(map, SIGNAL(sizeChanged()),
                          this, SLOT(onMapChanged()), Qt::QueuedConnection);
         onMapChanged();
     }

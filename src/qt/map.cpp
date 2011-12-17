@@ -32,16 +32,34 @@
 using namespace Mappero;
 
 namespace Mappero {
+
+class LayerGroup: public QGraphicsItem
+{
+public:
+    LayerGroup(QGraphicsItem *parent):
+        QGraphicsItem(parent)
+    {
+        setFlags(QGraphicsItem::ItemHasNoContents);
+    }
+    // reimplemented virtual methods
+    QRectF boundingRect() const { return QRectF(-1.0e6, -1.0e6, 2.0e6, 2.0e6); }
+    void paint(QPainter *painter,
+               const QStyleOptionGraphicsItem *option,
+               QWidget *widget) {}
+};
+
 class MapPrivate
 {
     Q_DECLARE_PUBLIC(Map)
 
     MapPrivate(Map *q):
+        layerGroup(new LayerGroup(q)),
         mainLayer(0),
         q_ptr(q)
     {
     }
 
+    LayerGroup *layerGroup;
     Layer *mainLayer;
     GeoPoint center;
     Point centerUnits;
@@ -94,6 +112,7 @@ void Map::setMainLayer(Layer *layer)
     }
     d->mainLayer = layer;
     if (layer != 0) {
+        layer->setParentItem(d->layerGroup);
         layer->setMap(this);
     }
 
@@ -169,3 +188,10 @@ void Map::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
     DEBUG() << "Implicit size:" << boundingRect();
 }
 
+void Map::geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry)
+{
+    DEBUG() << "Geometry:" << newGeometry;
+    Q_D(Map);
+    d->layerGroup->setPos(newGeometry.center());
+    Q_EMIT sizeChanged();
+}

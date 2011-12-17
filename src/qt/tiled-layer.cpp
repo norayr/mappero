@@ -119,6 +119,7 @@ private:
 
     Point center;
     int zoomLevel;
+    QSize viewportHalfSize;
 };
 }; // namespace
 
@@ -282,8 +283,11 @@ void TiledLayer::mapChanged()
 
     Point center = map->centerUnits();
     int zoomLevel = d->zoomLevelFromMap(map);
+    QSize viewportHalfSize = map->boundingRect().size().toSize() / 2;
 
-    if (center == d->center && zoomLevel == d->zoomLevel) {
+    if (center == d->center &&
+        zoomLevel == d->zoomLevel &&
+        viewportHalfSize == d->viewportHalfSize) {
         // nothing has changed for us
         DEBUG() << "Ignoring map changes";
         return;
@@ -291,11 +295,11 @@ void TiledLayer::mapChanged()
 
     d->center = center;
     d->zoomLevel = zoomLevel;
+    d->viewportHalfSize = viewportHalfSize;
 
     DEBUG() << "center:" << map->center();
     DEBUG() << "center (units):" << map->centerUnits();
 
-    QSize viewportHalfSize = map->boundingRect().size().toSize() / 2;
     int halfLength = qMax(viewportHalfSize.width(), viewportHalfSize.height());
     Unit halfLengthUnit = d->pixel2unit(halfLength);
 

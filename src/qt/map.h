@@ -68,7 +68,12 @@ public:
 Q_SIGNALS:
     void centerChanged(const GeoPoint &center);
     void zoomLevelChanged(qreal zoomLevel);
+    void sizeChanged();
     void mainLayerIdChanged();
+
+protected:
+    // reimplemented virtual methods
+    void geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry);
 
 private:
     MapPrivate *d_ptr;
