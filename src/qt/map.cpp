@@ -232,6 +232,8 @@ bool Map::sceneEvent(QEvent *event)
             d->onPinching(static_cast<QPinchGesture*>(gesture));
 
         return true;
+    } else if (event->type() == QEvent::TouchBegin) {
+        return true;
     }
     return QDeclarativeItem::sceneEvent(event);
 }
