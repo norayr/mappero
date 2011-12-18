@@ -51,7 +51,8 @@ AC_SUBST([MAP_LT_AGE])
 MAP_ABI_VERSION=`expr ${MAP_LT_CURRENT} - ${MAP_LT_AGE}`
 AC_SUBST([MAP_ABI_VERSION])
 
-if $PKG_CONFIG --exists libosso ; then
+PKG_CHECK_EXISTS(libosso, [has_libosso=yes], [has_libosso=no])
+if test "x$has_libosso" = "xyes"; then
 	echo "Building for Maemo"
 	QT_EXTRA_MODULES=QtMaemo5
 
