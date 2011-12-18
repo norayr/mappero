@@ -179,6 +179,10 @@ void TiledLayerPrivate::loadTiles(const QPoint &start, const QPoint stop)
     int &x = p.rx();
     int &y = p.ry();
 
+    foreach (QGraphicsItem *item, q->childItems()) {
+        item->setVisible(false);
+    }
+
     x -= center.x;
     y -= center.y;
     p /= (1 << zoomLevel);
@@ -191,9 +195,10 @@ void TiledLayerPrivate::loadTiles(const QPoint &start, const QPoint stop)
 
             Tile *tile = tileCache->tile(tileSpec, &found);
             if (!found) {
-                tile->setVisible(false);
                 tileQueue.insert(tileSpec, tile);
                 tileDownload->requestTile(tileSpec, 0);
+            } else {
+                tile->setVisible(true);
             }
             tile->setPos(x, y);
         }
