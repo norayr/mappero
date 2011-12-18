@@ -44,11 +44,16 @@ typedef int Unit;
 struct Point {
     Point() {}
     Point(Unit x, Unit y): x(x), y(y) {}
+    Point(const QPoint &p): x(p.x()), y(p.y()) {}
     Unit x;
     Unit y;
 
     inline QPoint toTile(int zoom) {
         return QPoint(x >> (TILE_SIZE_P2 + zoom), y >> (TILE_SIZE_P2 + zoom));
+    }
+
+    inline Point translated(const Point &p) {
+        return Point(x + p.x, y + p.y);
     }
 };
 

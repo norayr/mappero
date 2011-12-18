@@ -36,6 +36,7 @@
 #include <QtScroller>
 #include <QtScrollEvent>
 #include <QtScrollPrepareEvent>
+#include <math.h>
 
 using namespace Mappero;
 
@@ -72,6 +73,18 @@ class MapPrivate
 
     void onPanning(QPanGesture *pan);
     void onPinching(QPinchGesture *pinch);
+    Point pixel2unit(const QPointF &pixel) const {
+        return (pixel * pow(2, zoomLevel)).toPoint();
+    }
+
+    GeoPoint unit2geo(const Point &u) {
+        if (mainLayer == 0) return GeoPoint(0, 0);
+
+        const Projection *projection = mainLayer->projection();
+        GeoPoint geo;
+        projection->unitToGeo(u.x, u.y, &geo.lat, &geo.lon);
+        return geo;
+    }
 
     LayerGroup *layerGroup;
     Layer *mainLayer;
@@ -241,7 +254,17 @@ bool Map::event(QEvent *e)
     case QtScrollEvent::Scroll:
         {
             QtScrollEvent *se = static_cast<QtScrollEvent *>(e);
-            d->layerGroup->setPos(-se->contentPos());
+            QtScrollEvent::ScrollState state = se->scrollState();
+            if (state == QtScrollEvent::ScrollUpdated) {
+                d->layerGroup->setPos(-se->contentPos());
+            } else if (state == QtScrollEvent::ScrollFinished) {
+                QPointF viewCenter = boundingRect().center();
+                Point newCenterUnits =
+                    d->centerUnits.translated(d->pixel2unit(se->contentPos() +
+                                                            viewCenter));
+                setCenter(d->unit2geo(newCenterUnits));
+                d->layerGroup->setPos(viewCenter);
+            }
             return true;
         }
     }
