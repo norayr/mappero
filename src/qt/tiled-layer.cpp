@@ -273,7 +273,6 @@ void TiledLayer::paint(QPainter *painter,
                        const QStyleOptionGraphicsItem *option,
                        QWidget *widget)
 {
-    DEBUG() << Q_FUNC_INFO;
     painter->drawRoundedRect(-10, -10, 20, 20, 5, 5);
 }
 

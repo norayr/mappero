@@ -214,8 +214,6 @@ qreal Map::zoomLevel() const
 void Map::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
                 QWidget *widget)
 {
-    DEBUG() << option->exposedRect;
-    DEBUG() << "Implicit size:" << boundingRect();
 }
 
 void Map::geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry)
