@@ -1347,6 +1347,16 @@ void QtScrollerPrivate::createScrollingSegments(qreal v, qreal startPos, qreal p
 
     qScrollerDebug() << "  Real Delta:" << deltaPos;
 
+    // -- check if are in overshoot and end in overshoot
+    if ((startPos < minPos && endPos < minPos) ||
+        (startPos > maxPos && endPos > maxPos)) {
+        qreal stopPos = endPos < minPos ? minPos : maxPos;
+        qreal oDeltaTime = sp->overshootScrollTime;
+
+        pushSegment(ScrollTypeOvershoot, oDeltaTime * qreal(0.7), qreal(1.0), startPos, stopPos - startPos, stopPos, sp->scrollingCurve.type(), orientation);
+        return;
+    }
+
     // -- determine snap points
     qreal nextSnap = nextSnapPos(endPos, 0, orientation);
     qreal lowerSnapPos = nextSnapPos(startPos, -1, orientation);
@@ -1359,16 +1369,6 @@ void QtScrollerPrivate::createScrollingSegments(qreal v, qreal startPos, qreal p
         higherSnapPos = nextSnap;
     if (nextSnap < lowerSnapPos || qIsNaN(lowerSnapPos))
         lowerSnapPos = nextSnap;
-
-    // -- check if are in overshoot and end in overshoot
-    if ((startPos < minPos && endPos < minPos) ||
-        (startPos > maxPos && endPos > maxPos)) {
-        qreal stopPos = endPos < minPos ? minPos : maxPos;
-        qreal oDeltaTime = sp->overshootScrollTime;
-
-        pushSegment(ScrollTypeOvershoot, oDeltaTime * qreal(0.7), qreal(1.0), startPos, stopPos - startPos, stopPos, sp->scrollingCurve.type(), orientation);
-        return;
-    }
 
     if (qAbs(v) < sp->minimumVelocity) {
 
