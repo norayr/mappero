@@ -33,6 +33,9 @@
 #include <QPanGesture>
 #include <QPinchGesture>
 #include <QStyleOptionGraphicsItem>
+#include <QtScroller>
+#include <QtScrollEvent>
+#include <QtScrollPrepareEvent>
 
 using namespace Mappero;
 
@@ -95,7 +98,9 @@ Map::Map():
     setFlags(QGraphicsItem::ItemUsesExtendedStyleOption);
     grabGesture(Qt::PanGesture);
     grabGesture(Qt::PinchGesture);
+    QtScroller::grabGesture(this, QtScroller::LeftMouseButtonGesture);
     setAcceptTouchEvents(true);
+    setAcceptedMouseButtons(Qt::LeftButton | Qt::RightButton);
 }
 
 Map::~Map()
@@ -218,6 +223,30 @@ void Map::geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry)
     Q_EMIT sizeChanged();
 }
 
+bool Map::event(QEvent *e)
+{
+    Q_D(Map);
+
+    switch (e->type()) {
+    case QtScrollPrepareEvent::ScrollPrepare:
+        {
+            QtScrollPrepareEvent *se = static_cast<QtScrollPrepareEvent *>(e);
+            se->setContentPos(-d->layerGroup->pos());
+            se->setContentPosRange(d->layerGroup->boundingRect());
+            se->setViewportSize(boundingRect().size());
+            se->accept();
+            return true;
+        }
+    case QtScrollEvent::Scroll:
+        {
+            QtScrollEvent *se = static_cast<QtScrollEvent *>(e);
+            d->layerGroup->setPos(-se->contentPos());
+            return true;
+        }
+    }
+    return QDeclarativeItem::event(e);
+}
+
 bool Map::sceneEvent(QEvent *event)
 {
     switch (event->type()) {
@@ -236,6 +265,7 @@ bool Map::sceneEvent(QEvent *event)
             return true;
         }
     case QEvent::TouchBegin:
+    case QEvent::GraphicsSceneMousePress:
         return true;
     }
     return QDeclarativeItem::sceneEvent(event);
