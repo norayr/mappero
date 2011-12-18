@@ -22,11 +22,13 @@ bin_PROGRAMS = mappero
 mappero_CPPFLAGS = \
 	-I.. \
 	$(QT_CFLAGS) \
+	-I$(top_srcdir)/src/kineticscroller/include \
 	-DMAP_PLUGIN_DIR=\"@libdir@/mappero.@MAP_ABI_VERSION@\" \
 	-Wall -Wno-switch
 
 mappero_LDADD = \
-	$(QT_LIBS)
+	$(QT_LIBS) \
+	$(top_builddir)/src/kineticscroller/lib/libQtScroller.a
 
 mappero_SOURCES = \
 	controller.cpp \
