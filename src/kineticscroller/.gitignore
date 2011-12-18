@@ -8,3 +8,4 @@ moc_*.cpp
 examples/graphicsview/graphicsview
 examples/plot/plot
 examples/wheel/wheel
+lib
