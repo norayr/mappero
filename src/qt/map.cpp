@@ -63,6 +63,9 @@ class MapPrivate
     MapPrivate(Map *q):
         layerGroup(new LayerGroup(q)),
         mainLayer(0),
+        center(0, 0),
+        centerUnits(0, 0),
+        zoomLevel(-1),
         q_ptr(q)
     {
     }

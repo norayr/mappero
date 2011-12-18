@@ -84,7 +84,9 @@ class TiledLayerPrivate: public QObject
         id(id),
         url(url),
         format(format),
-        type(type)
+        type(type),
+        center(0, 0),
+        zoomLevel(-1)
     {
         /* FIXME: get it from the configuration */
         baseDir = QString::fromLatin1("/home/user/MyDocs/.maps/");
@@ -284,6 +286,7 @@ void TiledLayer::mapChanged()
 
     Point center = map->centerUnits();
     int zoomLevel = d->zoomLevelFromMap(map);
+    if (zoomLevel < 0) return;
     QSize viewportHalfSize = map->boundingRect().size().toSize() / 2;
 
     if (center == d->center &&
