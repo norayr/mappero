@@ -220,19 +220,22 @@ void Map::geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry)
 
 bool Map::sceneEvent(QEvent *event)
 {
-    if (event->type() == QEvent::Gesture) {
-        Q_D(Map);
-        QGestureEvent *e = static_cast<QGestureEvent*>(event);
-        QGesture *gesture;
+    switch (event->type()) {
+    case QEvent::Gesture:
+        {
+            Q_D(Map);
+            QGestureEvent *e = static_cast<QGestureEvent*>(event);
+            QGesture *gesture;
 
-        if ((gesture = e->gesture(Qt::PanGesture)) != 0)
-            d->onPanning(static_cast<QPanGesture*>(gesture));
+            if ((gesture = e->gesture(Qt::PanGesture)) != 0)
+                d->onPanning(static_cast<QPanGesture*>(gesture));
 
-        if ((gesture = e->gesture(Qt::PinchGesture)) != 0)
-            d->onPinching(static_cast<QPinchGesture*>(gesture));
+            if ((gesture = e->gesture(Qt::PinchGesture)) != 0)
+                d->onPinching(static_cast<QPinchGesture*>(gesture));
 
-        return true;
-    } else if (event->type() == QEvent::TouchBegin) {
+            return true;
+        }
+    case QEvent::TouchBegin:
         return true;
     }
     return QDeclarativeItem::sceneEvent(event);
