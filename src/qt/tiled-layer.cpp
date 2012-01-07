@@ -281,7 +281,7 @@ void TiledLayer::paint(QPainter *painter,
     painter->drawRoundedRect(-10, -10, 20, 20, 5, 5);
 }
 
-void TiledLayer::mapChanged()
+void TiledLayer::mapEvent(MapEvent *event)
 {
     Q_D(TiledLayer);
 
@@ -292,14 +292,6 @@ void TiledLayer::mapChanged()
     int zoomLevel = d->zoomLevelFromMap(map);
     if (zoomLevel < 0) return;
     QSize viewportHalfSize = map->boundingRect().size().toSize() / 2;
-
-    if (center == d->center &&
-        zoomLevel == d->zoomLevel &&
-        viewportHalfSize == d->viewportHalfSize) {
-        // nothing has changed for us
-        DEBUG() << "Ignoring map changes";
-        return;
-    }
 
     d->center = center;
     d->zoomLevel = zoomLevel;
@@ -323,4 +315,4 @@ void TiledLayer::mapChanged()
     d->loadTiles(tileStart, tileStop);
 }
 
-#include "tiled-layer.moc.cpp"
+#include "tiled-layer.cpp.moc"

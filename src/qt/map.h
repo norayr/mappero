@@ -29,8 +29,31 @@
 namespace Mappero {
 
 class Layer;
-
+class LayerPrivate;
+class Map;
 class MapPrivate;
+
+class MapEvent {
+public:
+    ~MapEvent() {}
+
+    Map *map() const { return m_map; }
+    bool centerChanged() const { return m_centerChanged; }
+    bool zoomLevelChanged() const { return m_zoomLevelChanged; }
+    bool sizeChanged() const { return m_sizeChanged; }
+
+private:
+    friend class LayerPrivate;
+    friend class Map;
+    friend class MapPrivate;
+    MapEvent(Map *map, bool dirty = false);
+    void clear();
+    Map *m_map;
+    bool m_centerChanged;
+    bool m_zoomLevelChanged;
+    bool m_sizeChanged;
+};
+
 class Map: public QDeclarativeItem {
     Q_OBJECT
     Q_PROPERTY(QPointF center READ centerPoint WRITE setCenter \

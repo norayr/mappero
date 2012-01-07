@@ -28,6 +28,7 @@ namespace Mappero {
 
 struct Projection;
 class Map;
+class MapEvent;
 
 class LayerPrivate;
 class Layer: public QGraphicsItem {
@@ -43,11 +44,10 @@ public:
     void setMap(Map *map);
     Map *map() const;
 
+    virtual void mapEvent(MapEvent *e);
+
     // reimplemented virtual functions:
     QRectF boundingRect() const;
-
-protected:
-    virtual void mapChanged();
 
 private:
     LayerPrivate *d_ptr;

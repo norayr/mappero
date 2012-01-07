@@ -55,13 +55,12 @@ public:
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
                QWidget *widget);
 
+    void mapEvent(MapEvent *event);
+
 protected:
     QString tileFileName(int zoom, int x, int y) const;
     bool tileInDB(int zoom, int x, int y) const;
     QPixmap tilePixmap(int zoom, int x, int y) const;
-
-    // reimplemented virtual functions:
-    void mapChanged();
 
 private:
     TiledLayerPrivate *d_ptr;

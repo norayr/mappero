@@ -23,7 +23,7 @@
 #endif
 #include "debug.h"
 #include "tile-download.h"
-#include "tile-download.moc.hpp"
+#include "tile-download.h.moc"
 #include "tiled-layer.h"
 
 #include <QEventLoop>
@@ -264,4 +264,4 @@ void TileDownload::requestTile(const TileSpec &tileSpec, int priority)
     d->requestTile(TileTask(tileSpec, priority));
 }
 
-#include "tile-download.moc.cpp"
+#include "tile-download.cpp.moc"

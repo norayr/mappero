@@ -22,7 +22,7 @@
 #   include "config.h"
 #endif
 #include "controller.h"
-#include "controller.moc.hpp"
+#include "controller.h.moc"
 #include "debug.h"
 #include "tile-cache.h"
 #include "tile-download.h"

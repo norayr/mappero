@@ -24,7 +24,7 @@
 #include "debug.h"
 #include "layer.h"
 #include "map.h"
-#include "map.moc.hpp"
+#include "map.h.moc"
 #include "projection.h"
 
 #include <QEvent>
@@ -42,6 +42,21 @@ using namespace Mappero;
 
 namespace Mappero {
 
+MapEvent::MapEvent(Map *map, bool dirty):
+    m_map(map),
+    m_centerChanged(dirty),
+    m_zoomLevelChanged(dirty),
+    m_sizeChanged(dirty)
+{
+}
+
+void MapEvent::clear()
+{
+    m_centerChanged = false;
+    m_zoomLevelChanged = false;
+    m_sizeChanged = false;
+}
+
 class LayerGroup: public QGraphicsItem
 {
 public:
@@ -50,6 +65,20 @@ public:
     {
         setFlags(QGraphicsItem::ItemHasNoContents);
     }
+
+    void mapEvent(MapEvent *event) {
+        if (event->centerChanged() ||
+            event->sizeChanged()) {
+            QPointF viewCenter = event->map()->boundingRect().center();
+            setPos(viewCenter);
+        }
+
+        // propagate event to children
+        foreach (QGraphicsItem *item, childItems()) {
+            ((Layer *)item)->mapEvent(event);
+        }
+    }
+
     // reimplemented virtual methods
     QRectF boundingRect() const { return QRectF(-1.0e6, -1.0e6, 2.0e6, 2.0e6); }
     void paint(QPainter *painter,
@@ -57,8 +86,9 @@ public:
                QWidget *widget) {}
 };
 
-class MapPrivate
+class MapPrivate: public QObject
 {
+    Q_OBJECT
     Q_DECLARE_PUBLIC(Map)
 
     MapPrivate(Map *q):
@@ -67,8 +97,15 @@ class MapPrivate
         center(0, 0),
         centerUnits(0, 0),
         zoomLevel(-1),
+        mapEvent(q),
         q_ptr(q)
     {
+        QObject::connect(q, SIGNAL(centerChanged(const GeoPoint&)),
+                         this, SLOT(deliverMapEvent()), Qt::QueuedConnection);
+        QObject::connect(q, SIGNAL(zoomLevelChanged(qreal)),
+                         this, SLOT(deliverMapEvent()), Qt::QueuedConnection);
+        QObject::connect(q, SIGNAL(sizeChanged()),
+                         this, SLOT(deliverMapEvent()), Qt::QueuedConnection);
     }
 
     void onPanning(QPanGesture *pan);
@@ -86,12 +123,16 @@ class MapPrivate
         return geo;
     }
 
+private Q_SLOTS:
+    void deliverMapEvent();
+
+private:
     LayerGroup *layerGroup;
     Layer *mainLayer;
     GeoPoint center;
     Point centerUnits;
     qreal zoomLevel;
-private:
+    MapEvent mapEvent;
     mutable Map *q_ptr;
 };
 };
@@ -105,6 +146,16 @@ void MapPrivate::onPinching(QPinchGesture *pinch)
 {
     DEBUG() << "Rotating around" << pinch->centerPoint() <<
         ", angle:" << pinch->rotationAngle();
+}
+
+void MapPrivate::deliverMapEvent()
+{
+    if (mapEvent.centerChanged() ||
+        mapEvent.zoomLevelChanged() ||
+        mapEvent.sizeChanged()) {
+        layerGroup->mapEvent(&mapEvent);
+        mapEvent.clear();
+    }
 }
 
 Map::Map():
@@ -182,6 +233,7 @@ void Map::setCenter(const GeoPoint &center)
         d->centerUnits = Point(x, y);
     }
 
+    d->mapEvent.m_centerChanged = true;
     Q_EMIT centerChanged(center);
 }
 
@@ -215,6 +267,7 @@ void Map::setZoomLevel(qreal zoom)
     if (zoom == d->zoomLevel) return;
 
     d->zoomLevel = zoom;
+    d->mapEvent.m_zoomLevelChanged = true;
     Q_EMIT zoomLevelChanged(zoom);
 }
 
@@ -233,7 +286,7 @@ void Map::geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry)
 {
     DEBUG() << "Geometry:" << newGeometry;
     Q_D(Map);
-    d->layerGroup->setPos(newGeometry.center());
+    d->mapEvent.m_sizeChanged = true;
     Q_EMIT sizeChanged();
 }
 
@@ -263,7 +316,6 @@ bool Map::event(QEvent *e)
                     d->centerUnits.translated(d->pixel2unit(se->contentPos() +
                                                             viewCenter));
                 setCenter(d->unit2geo(newCenterUnits));
-                d->layerGroup->setPos(viewCenter);
             }
             return true;
         }
@@ -294,3 +346,5 @@ bool Map::sceneEvent(QEvent *event)
     }
     return QDeclarativeItem::sceneEvent(event);
 }
+
+#include "map.cpp.moc"

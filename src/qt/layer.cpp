@@ -47,9 +47,6 @@ class LayerPrivate: public QObject
 
     void setMap(Map *newMap);
 
-private Q_SLOTS:
-    void onMapChanged();
-
 private:
     mutable Layer *q_ptr;
     QString id;
@@ -60,22 +57,12 @@ private:
 
 void LayerPrivate::setMap(Map *newMap)
 {
+    Q_Q(Layer);
     if (map != newMap) {
         map = newMap;
-        QObject::connect(map, SIGNAL(centerChanged(const GeoPoint&)),
-                         this, SLOT(onMapChanged()), Qt::QueuedConnection);
-        QObject::connect(map, SIGNAL(zoomLevelChanged(qreal)),
-                         this, SLOT(onMapChanged()), Qt::QueuedConnection);
-        QObject::connect(map, SIGNAL(sizeChanged()),
-                         this, SLOT(onMapChanged()), Qt::QueuedConnection);
-        onMapChanged();
+        MapEvent event(map, true);
+        q->mapEvent(&event);
     }
-}
-
-void LayerPrivate::onMapChanged()
-{
-    Q_Q(Layer);
-    q->mapChanged();
 }
 
 Layer::Layer(const QString &id, const Projection *projection):
@@ -132,9 +119,9 @@ QRectF Layer::boundingRect() const
     return QRectF(-1.0e6, -1.0e6, 2.0e6, 2.0e6);
 }
 
-void Layer::mapChanged()
+void Layer::mapEvent(MapEvent *e)
 {
     // virtual method
 }
 
-#include "layer.moc.cpp"
+#include "layer.cpp.moc"
