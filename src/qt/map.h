@@ -60,6 +60,9 @@ class Map: public QDeclarativeItem {
                NOTIFY centerChanged);
     Q_PROPERTY(qreal zoomLevel READ zoomLevel WRITE setZoomLevel \
                NOTIFY zoomLevelChanged);
+    Q_PROPERTY(qreal animatedZoomLevel \
+               READ animatedZoomLevel WRITE setAnimatedZoomLevel \
+               NOTIFY animatedZoomLevelChanged);
     Q_PROPERTY(QString mainLayerId READ mainLayerId WRITE setMainLayerId \
                NOTIFY mainLayerIdChanged);
 public:
@@ -78,6 +81,9 @@ public:
     void setZoomLevel(qreal zoom);
     qreal zoomLevel() const;
 
+    void setAnimatedZoomLevel(qreal zoom);
+    qreal animatedZoomLevel() const;
+
     void setMainLayerId(const QString &layerId);
     QString mainLayerId() const;
 
@@ -91,6 +97,7 @@ public:
 Q_SIGNALS:
     void centerChanged(const GeoPoint &center);
     void zoomLevelChanged(qreal zoomLevel);
+    void animatedZoomLevelChanged(qreal zoomLevel);
     void sizeChanged();
     void mainLayerIdChanged();
 

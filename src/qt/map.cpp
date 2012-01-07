@@ -72,6 +72,9 @@ public:
             QPointF viewCenter = event->map()->boundingRect().center();
             setPos(viewCenter);
         }
+        if (event->zoomLevelChanged()) {
+            setScale(1.0);
+        }
 
         // propagate event to children
         foreach (QGraphicsItem *item, childItems()) {
@@ -97,6 +100,7 @@ class MapPrivate: public QObject
         center(0, 0),
         centerUnits(0, 0),
         zoomLevel(-1),
+        animatedZoomLevel(-1),
         mapEvent(q),
         q_ptr(q)
     {
@@ -132,6 +136,7 @@ private:
     GeoPoint center;
     Point centerUnits;
     qreal zoomLevel;
+    qreal animatedZoomLevel;
     MapEvent mapEvent;
     mutable Map *q_ptr;
 };
@@ -267,6 +272,7 @@ void Map::setZoomLevel(qreal zoom)
     if (zoom == d->zoomLevel) return;
 
     d->zoomLevel = zoom;
+    d->animatedZoomLevel = zoom;
     d->mapEvent.m_zoomLevelChanged = true;
     Q_EMIT zoomLevelChanged(zoom);
 }
@@ -275,6 +281,22 @@ qreal Map::zoomLevel() const
 {
     Q_D(const Map);
     return d->zoomLevel;
+}
+
+void Map::setAnimatedZoomLevel(qreal zoom)
+{
+    Q_D(Map);
+    if (zoom == d->animatedZoomLevel) return;
+
+    d->animatedZoomLevel = zoom;
+    d->layerGroup->setScale(exp2(d->zoomLevel - zoom));
+    Q_EMIT animatedZoomLevelChanged(zoom);
+}
+
+qreal Map::animatedZoomLevel() const
+{
+    Q_D(const Map);
+    return d->animatedZoomLevel;
 }
 
 void Map::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,

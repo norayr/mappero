@@ -19,5 +19,19 @@ Rectangle {
         mainLayerId: "OpenStreetMap I"
         center: Qt.point(60.19997, 24.94057)
         zoomLevel: 8
+
+        Behavior on animatedZoomLevel {
+            SequentialAnimation {
+                SmoothedAnimation {
+                    target: map
+                    property: "animatedZoomLevel"
+                    duration: 500
+                    velocity: 0.5
+                }
+                ScriptAction {
+                    script: map.zoomLevel = map.animatedZoomLevel
+                }
+            }
+        }
     }
 }
