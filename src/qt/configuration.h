@@ -1,6 +1,6 @@
 /* vi: set et sw=4 ts=8 cino=t0,(0: */
 /*
- * Copyright (C) 2009-2010 Alberto Mardegan <mardy@users.sourceforge.net>
+ * Copyright (C) 2012 Alberto Mardegan <mardy@users.sourceforge.net>
  *
  * This file is part of Mappero.
  *
@@ -18,42 +18,28 @@
  * along with Mappero.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef MAP_CONTROLLER_H
-#define MAP_CONTROLLER_H
+#ifndef MAP_CONFIGURATION_H
+#define MAP_CONFIGURATION_H
 
 #include <QObject>
+#include <QSettings>
 
 namespace Mappero {
 
-class Configuration;
-class TileCache;
-class TileDownload;
-class View;
-
-class ControllerPrivate;
-class Controller: public QObject
+class ConfigurationPrivate;
+class Configuration: public QSettings
 {
     Q_OBJECT
 
 public:
-    Controller(QObject *parent = 0);
-    ~Controller();
-
-    static Controller *instance();
-
-    void setView(View *view);
-    View *view() const;
-
-    TileDownload *tileDownload() const;
-    TileCache *tileCache() const;
-    Configuration *configuration() const;
+    Configuration(QObject *parent = 0);
+    ~Configuration();
 
 private:
-    ControllerPrivate *d_ptr;
-    Q_DECLARE_PRIVATE(Controller)
+    ConfigurationPrivate *d_ptr;
+    Q_DECLARE_PRIVATE(Configuration)
 };
 
 };
 
-
-#endif /* MAP_CONTROLLER_H */
+#endif /* MAP_CONFIGURATION_H */

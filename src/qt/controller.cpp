@@ -21,6 +21,7 @@
 #ifdef HAVE_CONFIG_H
 #   include "config.h"
 #endif
+#include "configuration.h"
 #include "controller.h"
 #include "controller.h.moc"
 #include "debug.h"
@@ -39,7 +40,8 @@ class ControllerPrivate
     ControllerPrivate():
         view(0),
         tileDownload(0),
-        tileCache(0)
+        tileCache(0),
+        configuration(0)
     {
     }
 
@@ -54,6 +56,7 @@ private:
     mutable Controller *q_ptr;
     mutable TileDownload *tileDownload;
     mutable TileCache *tileCache;
+    mutable Configuration *configuration;
 };
 };
 
@@ -110,4 +113,15 @@ TileCache *Controller::tileCache() const
     }
 
     return d->tileCache;
+}
+
+Configuration *Controller::configuration() const
+{
+    Q_D(const Controller);
+
+    if (d->configuration == 0) {
+        d->configuration = new Configuration(const_cast<Controller *>(this));
+    }
+
+    return d->configuration;
 }

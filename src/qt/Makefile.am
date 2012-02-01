@@ -31,6 +31,7 @@ mappero_LDADD = \
 	$(top_builddir)/src/kineticscroller/lib/libQtScroller.a
 
 mappero_SOURCES = \
+	configuration.cpp \
 	controller.cpp \
 	layer.cpp \
 	main.cpp \
@@ -44,6 +45,7 @@ mappero_SOURCES = \
 	view.cpp
 
 nodist_mappero_SOURCES = \
+	configuration.h.moc \
 	controller.h.moc \
 	layer.cpp.moc \
 	map.cpp.moc \

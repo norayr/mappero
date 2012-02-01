@@ -1,6 +1,6 @@
 /* vi: set et sw=4 ts=8 cino=t0,(0: */
 /*
- * Copyright (C) 2009-2010 Alberto Mardegan <mardy@users.sourceforge.net>
+ * Copyright (C) 2012 Alberto Mardegan <mardy@users.sourceforge.net>
  *
  * This file is part of Mappero.
  *
@@ -18,42 +18,42 @@
  * along with Mappero.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef MAP_CONTROLLER_H
-#define MAP_CONTROLLER_H
+#ifdef HAVE_CONFIG_H
+#   include "config.h"
+#endif
+#include "configuration.h"
+#include "configuration.h.moc"
+#include "debug.h"
 
-#include <QObject>
+using namespace Mappero;
 
 namespace Mappero {
-
-class Configuration;
-class TileCache;
-class TileDownload;
-class View;
-
-class ControllerPrivate;
-class Controller: public QObject
+class ConfigurationPrivate
 {
-    Q_OBJECT
+    Q_DECLARE_PUBLIC(Configuration)
 
-public:
-    Controller(QObject *parent = 0);
-    ~Controller();
+    ConfigurationPrivate(Configuration *configuration):
+        q_ptr(configuration)
+    {
+    }
 
-    static Controller *instance();
-
-    void setView(View *view);
-    View *view() const;
-
-    TileDownload *tileDownload() const;
-    TileCache *tileCache() const;
-    Configuration *configuration() const;
+    ~ConfigurationPrivate()
+    {
+    }
 
 private:
-    ControllerPrivate *d_ptr;
-    Q_DECLARE_PRIVATE(Controller)
+    mutable Configuration *q_ptr;
+};
 };
 
-};
+Configuration::Configuration(QObject *parent):
+    QSettings(parent),
+    d_ptr(new ConfigurationPrivate(this))
+{
+}
 
+Configuration::~Configuration()
+{
+    delete d_ptr;
+}
 
-#endif /* MAP_CONTROLLER_H */

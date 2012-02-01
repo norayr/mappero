@@ -32,6 +32,9 @@ int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
 
+    app.setOrganizationName("mardy.it");
+    app.setApplicationName("mappero");
+
     qRegisterMetaType<Mappero::GeoPoint>("GeoPoint");
     qmlRegisterType<Mappero::Map>("Mappero", 1, 0, "Map");
 
