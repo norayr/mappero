@@ -32,12 +32,12 @@ Item {
 
         OsmButton {
             source: "icon:maemo-mapper-zoom-in.png"
-            onClicked: map.animatedZoomLevel--
+            onClicked: map.requestedZoomLevel--
         }
 
         OsmButton {
             source: "icon:maemo-mapper-zoom-out.png"
-            onClicked: map.animatedZoomLevel++
+            onClicked: map.requestedZoomLevel++
         }
 
         Item {

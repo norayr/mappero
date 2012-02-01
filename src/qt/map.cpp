@@ -101,6 +101,7 @@ class MapPrivate: public QObject
         centerUnits(0, 0),
         zoomLevel(-1),
         animatedZoomLevel(-1),
+        requestedZoomLevel(-1),
         mapEvent(q),
         q_ptr(q)
     {
@@ -137,6 +138,7 @@ private:
     Point centerUnits;
     qreal zoomLevel;
     qreal animatedZoomLevel;
+    qreal requestedZoomLevel;
     MapEvent mapEvent;
     mutable Map *q_ptr;
 };
@@ -291,12 +293,32 @@ void Map::setAnimatedZoomLevel(qreal zoom)
     d->animatedZoomLevel = zoom;
     d->layerGroup->setScale(exp2(d->zoomLevel - zoom));
     Q_EMIT animatedZoomLevelChanged(zoom);
+
+    /* if we reached the requested zoom level, change the effective zoom level
+     */
+    if (zoom == d->requestedZoomLevel)
+        setZoomLevel(zoom);
 }
 
 qreal Map::animatedZoomLevel() const
 {
     Q_D(const Map);
     return d->animatedZoomLevel;
+}
+
+void Map::setRequestedZoomLevel(qreal zoom)
+{
+    Q_D(Map);
+    if (zoom == d->requestedZoomLevel) return;
+
+    d->requestedZoomLevel = zoom;
+    Q_EMIT requestedZoomLevelChanged(zoom);
+}
+
+qreal Map::requestedZoomLevel() const
+{
+    Q_D(const Map);
+    return d->requestedZoomLevel;
 }
 
 void Map::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
