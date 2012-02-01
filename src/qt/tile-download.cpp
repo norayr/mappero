@@ -26,7 +26,10 @@
 #include "tile-download.h.moc"
 #include "tiled-layer.h"
 
+#include <QDir>
 #include <QEventLoop>
+#include <QFile>
+#include <QFileInfo>
 #include <QMap>
 #include <QMutex>
 #include <QNetworkAccessManager>
@@ -99,6 +102,7 @@ public:
 
 private:
     void processTask(TaskMap::iterator t);
+    QByteArray downloadTile(const TileTask &tile);
 
 private:
     TaskMap &tasks;
@@ -193,6 +197,35 @@ void Downloader::processTask(TaskMap::iterator t)
 
     DEBUG() << "Processing task: " << tile;
 
+    TaskData &data = t.value();
+
+    QFile tileFile(tile.spec.layer->tileFileName(tile.spec.zoom,
+                                                 tile.spec.x,
+                                                 tile.spec.y));
+    if (tileFile.exists() &&
+        tileFile.open(QIODevice::ReadOnly)) {
+        data.tileData = tileFile.readAll();
+    } else {
+        data.tileData = downloadTile(tile);
+        /* save the tile */
+        if (!data.tileData.isEmpty()) {
+            QFileInfo info(tileFile.fileName());
+            info.dir().mkpath(QLatin1String("."));
+            if (tileFile.open(QIODevice::WriteOnly)) {
+                tileFile.write(data.tileData);
+            } else {
+                qWarning() << "Couldn't save tile" << tileFile.fileName();
+            }
+        }
+    }
+
+    t.value().status = TaskData::Completed;
+    QMetaObject::invokeMethod(listener, "taskCompleted", Qt::AutoConnection,
+                              Q_ARG(TaskMap::iterator, t));
+}
+
+QByteArray Downloader::downloadTile(const TileTask &tile)
+{
     QUrl url(tile.spec.layer->urlForTile(tile.spec.zoom,
                                          tile.spec.x, tile.spec.y));
     QNetworkReply *reply = networkAccessManager->get(QNetworkRequest(url));
@@ -204,19 +237,16 @@ void Downloader::processTask(TaskMap::iterator t)
                      &loop, SLOT(quit()));
     loop.exec();
 
-    TaskData &data = t.value();
+    QByteArray tileData;
     QNetworkReply::NetworkError error = reply->error();
     if (error != QNetworkReply::NoError) {
         DEBUG() << "Got error" << error;
-        data.tileData.clear();
     } else {
-        data.tileData += reply->readAll();
+        tileData = reply->readAll();
     }
     delete reply;
 
-    t.value().status = TaskData::Completed;
-    QMetaObject::invokeMethod(listener, "taskCompleted", Qt::AutoConnection,
-                              Q_ARG(TaskMap::iterator, t));
+    return tileData;
 }
 
 void TileDownloadPrivate::taskCompleted(TaskMap::iterator t)

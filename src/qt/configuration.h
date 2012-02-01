@@ -35,6 +35,8 @@ public:
     Configuration(QObject *parent = 0);
     ~Configuration();
 
+    QString mapCacheDir() const;
+
 private:
     ConfigurationPrivate *d_ptr;
     Q_DECLARE_PRIVATE(Configuration)

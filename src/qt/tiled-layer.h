@@ -48,6 +48,7 @@ public:
 
     const QString url() const;
     QString urlForTile(int zoom, int x, int y) const;
+    QString tileFileName(int zoom, int x, int y) const;
 
     static const Projection *projectionFromLayerType(const Type *type);
 
@@ -58,7 +59,6 @@ public:
     void mapEvent(MapEvent *event);
 
 protected:
-    QString tileFileName(int zoom, int x, int y) const;
     bool tileInDB(int zoom, int x, int y) const;
     QPixmap tilePixmap(int zoom, int x, int y) const;
 

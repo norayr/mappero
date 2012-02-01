@@ -25,7 +25,12 @@
 #include "configuration.h.moc"
 #include "debug.h"
 
+#include <QDesktopServices>
+#include <QFileInfo>
+
 using namespace Mappero;
+
+static const QLatin1String keyMapCacheDir("MapCacheDir");
 
 namespace Mappero {
 class ConfigurationPrivate
@@ -55,5 +60,19 @@ Configuration::Configuration(QObject *parent):
 Configuration::~Configuration()
 {
     delete d_ptr;
+}
+
+QString Configuration::mapCacheDir() const
+{
+    if (contains(keyMapCacheDir))
+        return value(keyMapCacheDir).toString();
+
+    /* In Maemo, we use /home/user/MyDocs/.maps */
+    QFileInfo maemoDir(QLatin1String("/home/user/MyDocs/"));
+    if (maemoDir.isDir() && maemoDir.isWritable())
+        return QLatin1String("/home/user/MyDocs/.maps/");
+
+    return QDesktopServices::storageLocation(QDesktopServices::CacheLocation) +
+        QLatin1String("/Maps/");
 }
 

@@ -22,6 +22,7 @@
 #   include "config.h"
 #endif
 #include "types.h"
+#include "configuration.h"
 #include "controller.h"
 #include "debug.h"
 #include "map.h"
@@ -88,11 +89,11 @@ class TiledLayerPrivate: public QObject
         center(0, 0),
         zoomLevel(-1)
     {
-        /* FIXME: get it from the configuration */
-        baseDir = QString::fromLatin1("/home/user/MyDocs/.maps/");
+        Controller *controller = Controller::instance();
 
-        tileDownload = Controller::instance()->tileDownload();
-        tileCache = Controller::instance()->tileCache();
+        baseDir = controller->configuration()->mapCacheDir();
+        tileDownload = controller->tileDownload();
+        tileCache = controller->tileCache();
         QObject::connect(tileDownload,
                          SIGNAL(tileDownloaded(const TileSpec &, QByteArray)),
                          this,
