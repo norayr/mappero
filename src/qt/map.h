@@ -113,6 +113,7 @@ protected:
     void geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry);
     bool event(QEvent *e);
     bool sceneEvent(QEvent *event);
+    void wheelEvent(QGraphicsSceneWheelEvent *e);
 
 private:
     MapPrivate *d_ptr;

@@ -30,6 +30,7 @@
 #include <QEvent>
 #include <QGestureEvent>
 #include <QGraphicsScene>
+#include <QGraphicsSceneWheelEvent>
 #include <QPanGesture>
 #include <QPinchGesture>
 #include <QStyleOptionGraphicsItem>
@@ -389,6 +390,12 @@ bool Map::sceneEvent(QEvent *event)
         return true;
     }
     return QDeclarativeItem::sceneEvent(event);
+}
+
+void Map::wheelEvent(QGraphicsSceneWheelEvent *e)
+{
+    Q_D(Map);
+    setRequestedZoomLevel(d->requestedZoomLevel - e->delta() / 120);
 }
 
 #include "map.cpp.moc"
