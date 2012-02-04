@@ -70,3 +70,7 @@ LIBS += \
     -L../qtscroller/lib/ \
     -lQtScroller
 
+contains(MEEGO_EDITION,harmattan) {
+    target.path = /opt/qt/bin
+    INSTALLS += target
+}
