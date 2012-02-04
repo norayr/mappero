@@ -70,6 +70,10 @@ LIBS += \
     -L../qtscroller/lib/ \
     -lQtScroller
 
+RESOURCES += \
+    ../qml/qml.qrc \
+    ../../data/icons/scalable/icons.qrc
+
 contains(MEEGO_EDITION,harmattan) {
     target.path = /opt/qt/bin
     INSTALLS += target

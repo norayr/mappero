@@ -38,15 +38,13 @@ int main(int argc, char *argv[])
     qRegisterMetaType<Mappero::GeoPoint>("GeoPoint");
     qmlRegisterType<Mappero::Map>("Mappero", 1, 0, "Map");
 
-    /* TODO: set search path depending on installation prefix */
-    QDir::addSearchPath("qml", "../qml");
-    QDir::addSearchPath("icon", "../../data/icons/scalable/");
+    QDir::addSearchPath("icon", ":");
+
     Mappero::Controller controller;
     Mappero::View view;
     controller.setView(&view);
-    QFileInfo fi("qml:mappero.qml");
     view.rootContext()->setContextProperty("view", &view);
-    view.setSource(QUrl::fromLocalFile(fi.absoluteFilePath()));
+    view.setSource(QUrl("qrc:/mappero.qml"));
     view.setWindowTitle("Mappero");
     view.show();
 
