@@ -77,8 +77,8 @@ CFLAGS="-std=c99 -Wall -Werror -Wno-switch $CFLAGS"
 AC_DEFINE_UNQUOTED([LOCALEDIR], "${localedir}", [Runtime locale catalog files path])
 AC_DEFINE_UNQUOTED([PIXMAPDIR], "${pixmapdir}", [Runtime pixmap files path])
 
-AC_CONFIG_COMMANDS([src/kineticscroller/Makefile],
-                   [(cd src/kineticscroller && qmake "CONFIG+=no-webkit" qtscroller.pro ;)])
+AC_CONFIG_COMMANDS([src/qtscroller/Makefile],
+                   [(cd src/qtscroller && qmake "CONFIG+=no-webkit" qtscroller.pro ;)])
 
 # Produce output files
 AC_OUTPUT(

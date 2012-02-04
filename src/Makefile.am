@@ -18,6 +18,6 @@
 #
 
 SUBDIRS = \
-	kineticscroller \
+	qtscroller \
 	qt
 
