@@ -121,6 +121,7 @@ QRectF Layer::boundingRect() const
 
 void Layer::mapEvent(MapEvent *e)
 {
+    Q_UNUSED(e);
     // virtual method
 }
 

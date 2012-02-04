@@ -57,7 +57,7 @@ static const TiledLayer::Type layerTypes[] = {
     { "QUAD_ZERO", quad_zero_get_url, Projection::GOOGLE },
     */
     { "YANDEX", yandex_get_url, Projection::YANDEX },
-    { name: NULL, }
+    { NULL, NULL, Projection::LAST }
 };
 
 const TiledLayer::Type *TiledLayer::Type::get(const char *name)
@@ -279,11 +279,14 @@ void TiledLayer::paint(QPainter *painter,
                        const QStyleOptionGraphicsItem *option,
                        QWidget *widget)
 {
-    painter->drawRoundedRect(-10, -10, 20, 20, 5, 5);
+    Q_UNUSED(painter);
+    Q_UNUSED(option);
+    Q_UNUSED(widget);
 }
 
 void TiledLayer::mapEvent(MapEvent *event)
 {
+    Q_UNUSED(event);
     Q_D(TiledLayer);
 
     DEBUG() << Q_FUNC_INFO;

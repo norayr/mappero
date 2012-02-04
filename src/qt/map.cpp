@@ -85,9 +85,9 @@ public:
 
     // reimplemented virtual methods
     QRectF boundingRect() const { return QRectF(-1.0e6, -1.0e6, 2.0e6, 2.0e6); }
-    void paint(QPainter *painter,
-               const QStyleOptionGraphicsItem *option,
-               QWidget *widget) {}
+    void paint(QPainter *,
+               const QStyleOptionGraphicsItem *,
+               QWidget *) {}
 };
 
 class MapPrivate: public QObject
@@ -325,10 +325,14 @@ qreal Map::requestedZoomLevel() const
 void Map::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
                 QWidget *widget)
 {
+    Q_UNUSED(painter);
+    Q_UNUSED(option);
+    Q_UNUSED(widget);
 }
 
 void Map::geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry)
 {
+    Q_UNUSED(oldGeometry);
     DEBUG() << "Geometry:" << newGeometry;
     Q_D(Map);
     d->mapEvent.m_sizeChanged = true;
@@ -364,6 +368,8 @@ bool Map::event(QEvent *e)
             }
             return true;
         }
+    default:
+        break;
     }
     return QDeclarativeItem::event(e);
 }
@@ -388,6 +394,8 @@ bool Map::sceneEvent(QEvent *event)
     case QEvent::TouchBegin:
     case QEvent::GraphicsSceneMousePress:
         return true;
+    default:
+        break;
     }
     return QDeclarativeItem::sceneEvent(event);
 }
