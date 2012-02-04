@@ -5,8 +5,9 @@ INCLUDEPATH += ../include
 TARGET = QtScroller
 DESTDIR = ../lib
 
-!no-webkit:QT += webkit
-no-webkit:DEFINES += QTSCROLLER_NO_WEBKIT
+#!no-webkit:QT += webkit
+#no-webkit:DEFINES += QTSCROLLER_NO_WEBKIT
+DEFINES += QTSCROLLER_NO_WEBKIT
 
 # Input
 HEADERS += qtflickgesture_p.h \

@@ -2,7 +2,7 @@ TEMPLATE      = subdirs
 SUBDIRS       = graphicsview \
                 wheel
 
-!no-webkit:SUBDIRS += plot
+#!no-webkit:SUBDIRS += plot
 
 # install
 sources.files = *.pro
