@@ -13,6 +13,7 @@ intltool-extract.in
 intltool-merge.in
 intltool-update.in
 ltmain.sh
+mappero.pro.user
 missing
 mkinstalldirs
 po/Makefile.in.in
