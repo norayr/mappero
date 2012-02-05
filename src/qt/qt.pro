@@ -64,12 +64,6 @@ new_moc.input = NEW_HEADERS
 new_moc.variable_out =
 QMAKE_EXTRA_COMPILERS += new_moc
 
-INCLUDEPATH += \
-    ../qtscroller/include
-LIBS += \
-    -L../qtscroller/lib/ \
-    -lQtScroller
-
 RESOURCES += \
     ../qml/qml.qrc \
     ../../data/icons/scalable/icons.qrc

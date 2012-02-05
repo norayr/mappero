@@ -58,6 +58,7 @@ class Map: public QDeclarativeItem {
     Q_OBJECT
     Q_PROPERTY(QPointF center READ centerPoint WRITE setCenter \
                NOTIFY centerChanged);
+    Q_PROPERTY(QPointF pan READ pan WRITE setPan);
     Q_PROPERTY(qreal zoomLevel READ zoomLevel \
                NOTIFY zoomLevelChanged);
     Q_PROPERTY(qreal animatedZoomLevel \
@@ -78,6 +79,9 @@ public:
     /* For QML: same as above, but use QPointF */
     void setCenter(const QPointF &center);
     QPointF centerPoint() const;
+
+    void setPan(const QPointF &pan);
+    QPointF pan() const;
 
     Point centerUnits() const;
 
@@ -108,10 +112,12 @@ Q_SIGNALS:
     void sizeChanged();
     void mainLayerIdChanged();
 
+public Q_SLOTS:
+    void panFinished();
+
 protected:
     // reimplemented virtual methods
     void geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry);
-    bool event(QEvent *e);
     bool sceneEvent(QEvent *event);
     void wheelEvent(QGraphicsSceneWheelEvent *e);
 

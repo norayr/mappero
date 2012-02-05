@@ -34,9 +34,6 @@
 #include <QPanGesture>
 #include <QPinchGesture>
 #include <QStyleOptionGraphicsItem>
-#include <QtScroller>
-#include <QtScrollEvent>
-#include <QtScrollPrepareEvent>
 #include <math.h>
 
 using namespace Mappero;
@@ -137,6 +134,7 @@ private:
     Layer *mainLayer;
     GeoPoint center;
     Point centerUnits;
+    QPointF pan;
     qreal zoomLevel;
     qreal animatedZoomLevel;
     qreal requestedZoomLevel;
@@ -173,7 +171,6 @@ Map::Map():
     setFlags(QGraphicsItem::ItemUsesExtendedStyleOption);
     grabGesture(Qt::PanGesture);
     grabGesture(Qt::PinchGesture);
-    QtScroller::grabGesture(this, QtScroller::LeftMouseButtonGesture);
     setAcceptTouchEvents(true);
     setAcceptedMouseButtons(Qt::LeftButton | Qt::RightButton);
 }
@@ -269,6 +266,27 @@ Point Map::centerUnits() const
     return d->centerUnits;
 }
 
+void Map::setPan(const QPointF &pan)
+{
+    Q_D(Map);
+    d->pan = pan;
+    d->layerGroup->setPos(boundingRect().center() - pan);
+}
+
+QPointF Map::pan() const
+{
+    Q_D(const Map);
+    return d->pan;
+}
+
+void Map::panFinished()
+{
+    Q_D(Map);
+    QPointF viewCenter = boundingRect().center();
+    Point newCenterUnits = d->centerUnits.translated(d->pixel2unit(d->pan));
+    setCenter(d->unit2geo(newCenterUnits));
+}
+
 void Map::setZoomLevel(qreal zoom)
 {
     Q_D(Map);
@@ -337,41 +355,6 @@ void Map::geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry)
     Q_D(Map);
     d->mapEvent.m_sizeChanged = true;
     Q_EMIT sizeChanged();
-}
-
-bool Map::event(QEvent *e)
-{
-    Q_D(Map);
-
-    switch (e->type()) {
-    case QtScrollPrepareEvent::ScrollPrepare:
-        {
-            QtScrollPrepareEvent *se = static_cast<QtScrollPrepareEvent *>(e);
-            se->setContentPos(-d->layerGroup->pos());
-            se->setContentPosRange(d->layerGroup->boundingRect());
-            se->setViewportSize(boundingRect().size());
-            se->accept();
-            return true;
-        }
-    case QtScrollEvent::Scroll:
-        {
-            QtScrollEvent *se = static_cast<QtScrollEvent *>(e);
-            QtScrollEvent::ScrollState state = se->scrollState();
-            if (state == QtScrollEvent::ScrollUpdated) {
-                d->layerGroup->setPos(-se->contentPos());
-            } else if (state == QtScrollEvent::ScrollFinished) {
-                QPointF viewCenter = boundingRect().center();
-                Point newCenterUnits =
-                    d->centerUnits.translated(d->pixel2unit(se->contentPos() +
-                                                            viewCenter));
-                setCenter(d->unit2geo(newCenterUnits));
-            }
-            return true;
-        }
-    default:
-        break;
-    }
-    return QDeclarativeItem::event(e);
 }
 
 bool Map::sceneEvent(QEvent *event)
