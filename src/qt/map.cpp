@@ -91,25 +91,7 @@ class MapPrivate: public QObject
     Q_OBJECT
     Q_DECLARE_PUBLIC(Map)
 
-    MapPrivate(Map *q):
-        layerGroup(new LayerGroup(q)),
-        mainLayer(0),
-        center(0, 0),
-        centerUnits(0, 0),
-        zoomLevel(-1),
-        animatedZoomLevel(-1),
-        requestedZoomLevel(-1),
-        followGps(true),
-        mapEvent(q),
-        q_ptr(q)
-    {
-        QObject::connect(q, SIGNAL(centerChanged(const GeoPoint&)),
-                         this, SLOT(deliverMapEvent()), Qt::QueuedConnection);
-        QObject::connect(q, SIGNAL(zoomLevelChanged(qreal)),
-                         this, SLOT(deliverMapEvent()), Qt::QueuedConnection);
-        QObject::connect(q, SIGNAL(sizeChanged()),
-                         this, SLOT(deliverMapEvent()), Qt::QueuedConnection);
-    }
+    MapPrivate(Map *q);
 
     void onPanning(QPanGesture *pan);
     void onPinching(QPinchGesture *pinch);
@@ -151,6 +133,26 @@ private:
     mutable Map *q_ptr;
 };
 };
+
+MapPrivate::MapPrivate(Map *q):
+    layerGroup(new LayerGroup(q)),
+    mainLayer(0),
+    center(0, 0),
+    centerUnits(0, 0),
+    zoomLevel(-1),
+    animatedZoomLevel(-1),
+    requestedZoomLevel(-1),
+    followGps(true),
+    mapEvent(q),
+    q_ptr(q)
+{
+    QObject::connect(q, SIGNAL(centerChanged(const GeoPoint&)),
+                     this, SLOT(deliverMapEvent()), Qt::QueuedConnection);
+    QObject::connect(q, SIGNAL(zoomLevelChanged(qreal)),
+                     this, SLOT(deliverMapEvent()), Qt::QueuedConnection);
+    QObject::connect(q, SIGNAL(sizeChanged()),
+                     this, SLOT(deliverMapEvent()), Qt::QueuedConnection);
+}
 
 void MapPrivate::onPanning(QPanGesture *pan)
 {
