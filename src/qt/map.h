@@ -58,6 +58,7 @@ class Map: public QDeclarativeItem {
     Q_OBJECT
     Q_PROPERTY(QPointF center READ centerPoint WRITE setCenter \
                NOTIFY centerChanged);
+    Q_PROPERTY(QObject *flickable READ flickable WRITE setFlickable);
     Q_PROPERTY(QPointF pan READ pan WRITE setPan);
     Q_PROPERTY(qreal zoomLevel READ zoomLevel \
                NOTIFY zoomLevelChanged);
@@ -82,6 +83,9 @@ public:
 
     void setPan(const QPointF &pan);
     QPointF pan() const;
+
+    void setFlickable(QObject *flickable);
+    QObject *flickable() const;
 
     Point centerUnits() const;
 

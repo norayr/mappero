@@ -17,6 +17,7 @@ Rectangle {
         anchors.fill: parent
         pan: Qt.point(flickable.contentX - flickable.neutralX,
                       flickable.contentY - flickable.neutralY)
+        flickable: flickable
 
         mainLayerId: "OpenStreetMap I"
         center: Qt.point(60.19997, 24.94057)

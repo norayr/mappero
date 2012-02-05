@@ -129,12 +129,16 @@ class MapPrivate: public QObject
 private Q_SLOTS:
     void deliverMapEvent();
 
+protected:
+    bool eventFilter(QObject *watched, QEvent *e);
+
 private:
     LayerGroup *layerGroup;
     Layer *mainLayer;
     GeoPoint center;
     Point centerUnits;
     QPointF pan;
+    QObject *flickable;
     qreal zoomLevel;
     qreal animatedZoomLevel;
     qreal requestedZoomLevel;
@@ -162,6 +166,16 @@ void MapPrivate::deliverMapEvent()
         layerGroup->mapEvent(&mapEvent);
         mapEvent.clear();
     }
+}
+
+bool MapPrivate::eventFilter(QObject *watched, QEvent *e)
+{
+    if (watched == flickable &&
+        e->type() == QEvent::GraphicsSceneWheel) {
+        e->ignore();
+        return true;
+    }
+    return QObject::eventFilter(watched, e);
 }
 
 Map::Map():
@@ -285,6 +299,21 @@ void Map::panFinished()
     QPointF viewCenter = boundingRect().center();
     Point newCenterUnits = d->centerUnits.translated(d->pixel2unit(d->pan));
     setCenter(d->unit2geo(newCenterUnits));
+}
+
+void Map::setFlickable(QObject *flickable)
+{
+    Q_D(Map);
+    d->flickable = flickable;
+    if (flickable != 0) {
+        flickable->installEventFilter(d);
+    }
+}
+
+QObject *Map::flickable() const
+{
+    Q_D(const Map);
+    return d->flickable;
 }
 
 void Map::setZoomLevel(qreal zoom)
