@@ -58,8 +58,8 @@ NEW_HEADERS += \
 	tiled-layer.cpp \
 	view.h
 
-new_moc.output  = ${QMAKE_FILE_NAME}.moc
-new_moc.commands = moc ${QMAKE_FILE_NAME} -o ${QMAKE_FILE_OUT}
+new_moc.output = ${QMAKE_FILE_NAME}.moc
+new_moc.commands = $$[QT_INSTALL_BINS]/moc ${QMAKE_FILE_NAME} -o ${QMAKE_FILE_OUT}
 new_moc.input = NEW_HEADERS
 new_moc.variable_out =
 QMAKE_EXTRA_COMPILERS += new_moc
