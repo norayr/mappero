@@ -99,6 +99,7 @@ class MapPrivate: public QObject
         zoomLevel(-1),
         animatedZoomLevel(-1),
         requestedZoomLevel(-1),
+        followGps(true),
         mapEvent(q),
         q_ptr(q)
     {
@@ -145,6 +146,7 @@ private:
     qreal zoomLevel;
     qreal animatedZoomLevel;
     qreal requestedZoomLevel;
+    bool followGps;
     MapEvent mapEvent;
     mutable Map *q_ptr;
 };
@@ -389,6 +391,21 @@ qreal Map::requestedZoomLevel() const
 {
     Q_D(const Map);
     return d->requestedZoomLevel;
+}
+
+void Map::setFollowGps(bool followGps)
+{
+    Q_D(Map);
+    if (followGps == d->followGps) return;
+
+    d->followGps = followGps;
+    Q_EMIT followGpsChanged(followGps);
+}
+
+bool Map::followGps() const
+{
+    Q_D(const Map);
+    return d->followGps;
 }
 
 void Map::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,

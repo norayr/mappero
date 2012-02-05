@@ -69,6 +69,8 @@ class Map: public QDeclarativeItem {
                NOTIFY requestedZoomLevelChanged);
     Q_PROPERTY(QString mainLayerId READ mainLayerId WRITE setMainLayerId \
                NOTIFY mainLayerIdChanged);
+    Q_PROPERTY(bool followGps READ followGps WRITE setFollowGps \
+               NOTIFY followGpsChanged);
 public:
     Map();
     ~Map();
@@ -100,6 +102,9 @@ public:
     void setMainLayer(Layer *layer);
     Layer *mainLayer() const;
 
+    void setFollowGps(bool followGps);
+    bool followGps() const;
+
     // reimplemented virtual functions:
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
                QWidget *widget);
@@ -111,6 +116,7 @@ Q_SIGNALS:
     void requestedZoomLevelChanged(qreal zoomLevel);
     void sizeChanged();
     void mainLayerIdChanged();
+    void followGpsChanged(bool followGps);
 
 protected:
     // reimplemented virtual methods
