@@ -1,3 +1,4 @@
 mappero
+moc_*.cpp
 qrc_*.cpp
 *.moc

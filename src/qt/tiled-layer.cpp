@@ -319,4 +319,4 @@ void TiledLayer::mapEvent(MapEvent *event)
     d->loadTiles(tileStart, tileStop);
 }
 
-#include "tiled-layer.cpp.moc"
+#include "tiled-layer.moc"

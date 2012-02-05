@@ -22,7 +22,6 @@
 #   include "config.h"
 #endif
 #include "configuration.h"
-#include "configuration.h.moc"
 #include "debug.h"
 
 #include <QDesktopServices>

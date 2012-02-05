@@ -19,7 +19,6 @@
  */
 
 #include "view.h"
-#include "view.h.moc"
 
 #include <QDebug>
 #include <QResizeEvent>

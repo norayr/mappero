@@ -23,7 +23,6 @@
 #endif
 #include "configuration.h"
 #include "controller.h"
-#include "controller.h.moc"
 #include "debug.h"
 #include "tile-cache.h"
 #include "tile-download.h"

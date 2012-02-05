@@ -125,4 +125,4 @@ void Layer::mapEvent(MapEvent *e)
     // virtual method
 }
 
-#include "layer.cpp.moc"
+#include "layer.moc"

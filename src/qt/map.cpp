@@ -24,7 +24,6 @@
 #include "debug.h"
 #include "layer.h"
 #include "map.h"
-#include "map.h.moc"
 #include "projection.h"
 
 #include <QEvent>
@@ -449,4 +448,4 @@ void Map::wheelEvent(QGraphicsSceneWheelEvent *e)
     setRequestedZoomLevel(d->requestedZoomLevel - e->delta() / 120);
 }
 
-#include "map.cpp.moc"
+#include "map.moc"
