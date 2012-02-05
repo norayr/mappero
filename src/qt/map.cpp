@@ -126,8 +126,12 @@ class MapPrivate: public QObject
         return geo;
     }
 
+    void setupFlickable();
+
 private Q_SLOTS:
     void deliverMapEvent();
+    void onFlickablePan();
+    void onFlickablePanFinished();
 
 protected:
     bool eventFilter(QObject *watched, QEvent *e);
@@ -168,6 +172,21 @@ void MapPrivate::deliverMapEvent()
     }
 }
 
+void MapPrivate::onFlickablePan()
+{
+    Q_Q(Map);
+    pan = flickable->property("position").toPointF();
+    layerGroup->setPos(q->boundingRect().center() - pan);
+}
+
+void MapPrivate::onFlickablePanFinished()
+{
+    Q_Q(Map);
+    QPointF viewCenter = q->boundingRect().center();
+    Point newCenterUnits = centerUnits.translated(pixel2unit(pan));
+    q->setCenter(unit2geo(newCenterUnits));
+}
+
 bool MapPrivate::eventFilter(QObject *watched, QEvent *e)
 {
     if (watched == flickable &&
@@ -176,6 +195,15 @@ bool MapPrivate::eventFilter(QObject *watched, QEvent *e)
         return true;
     }
     return QObject::eventFilter(watched, e);
+}
+
+void MapPrivate::setupFlickable()
+{
+    flickable->installEventFilter(this);
+    QObject::connect(flickable, SIGNAL(positionChanged()),
+                     this, SLOT(onFlickablePan()));
+    QObject::connect(flickable, SIGNAL(panFinished()),
+                     this, SLOT(onFlickablePanFinished()));
 }
 
 Map::Map():
@@ -280,34 +308,12 @@ Point Map::centerUnits() const
     return d->centerUnits;
 }
 
-void Map::setPan(const QPointF &pan)
-{
-    Q_D(Map);
-    d->pan = pan;
-    d->layerGroup->setPos(boundingRect().center() - pan);
-}
-
-QPointF Map::pan() const
-{
-    Q_D(const Map);
-    return d->pan;
-}
-
-void Map::panFinished()
-{
-    Q_D(Map);
-    QPointF viewCenter = boundingRect().center();
-    Point newCenterUnits = d->centerUnits.translated(d->pixel2unit(d->pan));
-    setCenter(d->unit2geo(newCenterUnits));
-}
-
 void Map::setFlickable(QObject *flickable)
 {
     Q_D(Map);
     d->flickable = flickable;
-    if (flickable != 0) {
-        flickable->installEventFilter(d);
-    }
+    if (flickable != 0)
+        d->setupFlickable();
 }
 
 QObject *Map::flickable() const

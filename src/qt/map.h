@@ -59,7 +59,6 @@ class Map: public QDeclarativeItem {
     Q_PROPERTY(QPointF center READ centerPoint WRITE setCenter \
                NOTIFY centerChanged);
     Q_PROPERTY(QObject *flickable READ flickable WRITE setFlickable);
-    Q_PROPERTY(QPointF pan READ pan WRITE setPan);
     Q_PROPERTY(qreal zoomLevel READ zoomLevel \
                NOTIFY zoomLevelChanged);
     Q_PROPERTY(qreal animatedZoomLevel \
@@ -80,9 +79,6 @@ public:
     /* For QML: same as above, but use QPointF */
     void setCenter(const QPointF &center);
     QPointF centerPoint() const;
-
-    void setPan(const QPointF &pan);
-    QPointF pan() const;
 
     void setFlickable(QObject *flickable);
     QObject *flickable() const;
@@ -115,9 +111,6 @@ Q_SIGNALS:
     void requestedZoomLevelChanged(qreal zoomLevel);
     void sizeChanged();
     void mainLayerIdChanged();
-
-public Q_SLOTS:
-    void panFinished();
 
 protected:
     // reimplemented virtual methods
