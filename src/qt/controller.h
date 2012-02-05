@@ -26,6 +26,7 @@
 namespace Mappero {
 
 class Configuration;
+class Gps;
 class TileCache;
 class TileDownload;
 class View;
@@ -47,6 +48,7 @@ public:
     TileDownload *tileDownload() const;
     TileCache *tileCache() const;
     Configuration *configuration() const;
+    Gps *gps() const;
 
 private:
     ControllerPrivate *d_ptr;

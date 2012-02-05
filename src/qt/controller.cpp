@@ -24,6 +24,7 @@
 #include "configuration.h"
 #include "controller.h"
 #include "debug.h"
+#include "gps.h"
 #include "tile-cache.h"
 #include "tile-download.h"
 
@@ -40,7 +41,8 @@ class ControllerPrivate
         view(0),
         tileDownload(0),
         tileCache(0),
-        configuration(0)
+        configuration(0),
+        gps(0)
     {
     }
 
@@ -56,6 +58,7 @@ private:
     mutable TileDownload *tileDownload;
     mutable TileCache *tileCache;
     mutable Configuration *configuration;
+    mutable Gps *gps;
 };
 };
 
@@ -123,4 +126,15 @@ Configuration *Controller::configuration() const
     }
 
     return d->configuration;
+}
+
+Gps *Controller::gps() const
+{
+    Q_D(const Controller);
+
+    if (d->gps == 0) {
+        d->gps = new Gps(const_cast<Controller *>(this));
+    }
+
+    return d->gps;
 }

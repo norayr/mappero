@@ -20,10 +20,15 @@ symbian:TARGET.UID3 = 0xE1BBB51C
 # Allow network access on Symbian
 symbian:TARGET.CAPABILITY += NetworkServices
 
-# If your application uses the Qt Mobility libraries, uncomment the following
-# lines and add the respective components to the MOBILITY variable.
-# CONFIG += mobility
-# MOBILITY +=
+load(mobilityconfig)
+contains(MOBILITY_CONFIG, location) {
+    message(QtMobility location is available)
+    CONFIG += mobility
+    MOBILITY += location
+    DEFINES += HAS_QTM_LOCATION
+} else {
+    message(QtMobility location unavailable)
+}
 
 # Speed up launching on MeeGo/Harmattan when using applauncherd daemon
 CONFIG += qdeclarative-boostable
@@ -36,6 +41,7 @@ QT += \
 SOURCES += \
 	configuration.cpp \
 	controller.cpp \
+	gps.cpp \
 	layer.cpp \
 	main.cpp \
 	map.cpp \
@@ -50,6 +56,7 @@ SOURCES += \
 HEADERS += \
 	configuration.h \
 	controller.h \
+	gps.h \
 	map.h \
 	tile-download.h \
 	view.h
