@@ -158,8 +158,20 @@ void MapPrivate::onPanning(QPanGesture *pan)
 
 void MapPrivate::onPinching(QPinchGesture *pinch)
 {
+    Q_Q(Map);
     DEBUG() << "Rotating around" << pinch->centerPoint() <<
         ", angle:" << pinch->rotationAngle();
+
+    if (pinch->totalChangeFlags() & QPinchGesture::ScaleFactorChanged) {
+        DEBUG() << "Scale" << pinch->scaleFactor() <<
+            ", total:" << pinch->totalScaleFactor();
+        qreal zoom = zoomLevel - log(pinch->totalScaleFactor());
+        if (pinch->state() == Qt::GestureFinished) {
+            q->setRequestedZoomLevel(zoom);
+        } else {
+            q->setAnimatedZoomLevel(zoom);
+        }
+    }
 }
 
 void MapPrivate::deliverMapEvent()
@@ -365,6 +377,11 @@ void Map::setRequestedZoomLevel(qreal zoom)
     Q_D(Map);
     if (zoom == d->requestedZoomLevel) return;
 
+    /* approximate the zoom level to the nearest integer.
+     * TODO add a protected method so that subclasses can decide whether this
+     * should happen.
+     */
+    zoom = round(zoom);
     d->requestedZoomLevel = zoom;
     Q_EMIT requestedZoomLevelChanged(zoom);
 }
@@ -399,6 +416,14 @@ bool Map::sceneEvent(QEvent *event)
         {
             Q_D(Map);
             QGestureEvent *e = static_cast<QGestureEvent*>(event);
+            bool active = false;
+            foreach (QGesture *gesture, e->activeGestures()) {
+                Qt::GestureState state = gesture->state();
+                if (state == Qt::GestureStarted ||
+                    state == Qt::GestureUpdated)
+                    active = true;
+            }
+            d->flickable->setProperty("interactive", !active);
             QGesture *gesture;
 
             if ((gesture = e->gesture(Qt::PanGesture)) != 0)
