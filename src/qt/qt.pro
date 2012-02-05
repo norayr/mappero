@@ -45,6 +45,7 @@ SOURCES += \
 	layer.cpp \
 	main.cpp \
 	map.cpp \
+	map-object.cpp \
 	projection.cpp \
 	tile-cache.cpp \
 	tile-download.cpp \
@@ -58,6 +59,7 @@ HEADERS += \
 	controller.h \
 	gps.h \
 	map.h \
+	map-object.h \
 	tile-download.h \
 	view.h
 

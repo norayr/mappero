@@ -40,33 +40,19 @@ class LayerPrivate: public QObject
         QObject(),
         q_ptr(layer),
         id(id),
-        projection(projection),
-        map(0)
+        projection(projection)
     {
     }
-
-    void setMap(Map *newMap);
 
 private:
     mutable Layer *q_ptr;
     QString id;
     const Projection *projection;
-    Map *map;
 };
 };
-
-void LayerPrivate::setMap(Map *newMap)
-{
-    Q_Q(Layer);
-    if (map != newMap) {
-        map = newMap;
-        MapEvent event(map, true);
-        q->mapEvent(&event);
-    }
-}
 
 Layer::Layer(const QString &id, const Projection *projection):
-    QGraphicsItem(0),
+    MapObject(),
     d_ptr(new LayerPrivate(this, id, projection))
 {
 }
@@ -100,18 +86,6 @@ const Projection *Layer::projection()
 {
     Q_D(Layer);
     return d->projection;
-}
-
-void Layer::setMap(Map *map)
-{
-    Q_D(Layer);
-    d->setMap(map);
-}
-
-Map *Layer::map() const
-{
-    Q_D(const Layer);
-    return d->map;
 }
 
 QRectF Layer::boundingRect() const

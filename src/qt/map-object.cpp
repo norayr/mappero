@@ -1,7 +1,7 @@
 /* vi: set et sw=4 ts=4 cino=t0,(0: */
 /* -*- Mode: C; indent-tabs-mode: nil; c-basic-offset: 4; tab-width: 4 -*- */
 /*
- * Copyright (C) 2009-2010 Alberto Mardegan <mardy@users.sourceforge.net>
+ * Copyright (C) 2012 Alberto Mardegan <mardy@users.sourceforge.net>
  *
  * This file is part of Mappero.
  *
@@ -19,36 +19,40 @@
  * along with Mappero.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef MAP_LAYER_H
-#define MAP_LAYER_H
-
+#include "debug.h"
+#include "map.h"
 #include "map-object.h"
+
+using namespace Mappero;
 
 namespace Mappero {
 
-struct Projection;
+MapEvent::MapEvent(Map *map, bool dirty):
+    m_map(map),
+    m_centerChanged(dirty),
+    m_zoomLevelChanged(dirty),
+    m_sizeChanged(dirty)
+{
+}
 
-class LayerPrivate;
-class Layer: public MapObject {
-public:
-    Layer(const QString &id, const Projection *projection);
-    virtual ~Layer();
+void MapEvent::clear()
+{
+    m_centerChanged = false;
+    m_zoomLevelChanged = false;
+    m_sizeChanged = false;
+}
 
-    static Layer *fromId(const QString &id);
-    QString id() const;
+}; // namespace
 
-    const Projection *projection();
+void MapObject::setMap(Map *map)
+{
+    if (map != m_map) {
+        m_map = map;
+        map->addObject(this);
 
-    virtual void mapEvent(MapEvent *e);
+        // Inform the object that a map has been set
+        MapEvent event(map, true);
+        mapEvent(&event);
+    }
+}
 
-    // reimplemented virtual functions:
-    QRectF boundingRect() const;
-
-private:
-    LayerPrivate *d_ptr;
-    Q_DECLARE_PRIVATE(Layer)
-};
-
-};
-
-#endif /* MAP_LAYER_H */

@@ -24,6 +24,7 @@
 #include "debug.h"
 #include "layer.h"
 #include "map.h"
+#include "map-object.h"
 #include "projection.h"
 
 #include <QEvent>
@@ -39,26 +40,11 @@ using namespace Mappero;
 
 namespace Mappero {
 
-MapEvent::MapEvent(Map *map, bool dirty):
-    m_map(map),
-    m_centerChanged(dirty),
-    m_zoomLevelChanged(dirty),
-    m_sizeChanged(dirty)
-{
-}
-
-void MapEvent::clear()
-{
-    m_centerChanged = false;
-    m_zoomLevelChanged = false;
-    m_sizeChanged = false;
-}
-
-class LayerGroup: public QGraphicsItem
+class LayerGroup: public MapObject
 {
 public:
-    LayerGroup(QGraphicsItem *parent):
-        QGraphicsItem(parent)
+    LayerGroup():
+        MapObject()
     {
         setFlags(QGraphicsItem::ItemHasNoContents);
     }
@@ -71,11 +57,6 @@ public:
         }
         if (event->zoomLevelChanged()) {
             setScale(1.0);
-        }
-
-        // propagate event to children
-        foreach (QGraphicsItem *item, childItems()) {
-            ((Layer *)item)->mapEvent(event);
         }
     }
 
@@ -119,6 +100,7 @@ protected:
     bool eventFilter(QObject *watched, QEvent *e);
 
 private:
+    QList<MapObject*> mapObjects;
     LayerGroup *layerGroup;
     Layer *mainLayer;
     GeoPoint center;
@@ -135,7 +117,7 @@ private:
 };
 
 MapPrivate::MapPrivate(Map *q):
-    layerGroup(new LayerGroup(q)),
+    layerGroup(new LayerGroup),
     mainLayer(0),
     center(0, 0),
     centerUnits(0, 0),
@@ -146,6 +128,8 @@ MapPrivate::MapPrivate(Map *q):
     mapEvent(q),
     q_ptr(q)
 {
+    layerGroup->setParentItem(q);
+
     QObject::connect(q, SIGNAL(centerChanged(const GeoPoint&)),
                      this, SLOT(deliverMapEvent()), Qt::QueuedConnection);
     QObject::connect(q, SIGNAL(zoomLevelChanged(qreal)),
@@ -182,7 +166,10 @@ void MapPrivate::deliverMapEvent()
     if (mapEvent.centerChanged() ||
         mapEvent.zoomLevelChanged() ||
         mapEvent.sizeChanged()) {
-        layerGroup->mapEvent(&mapEvent);
+
+        foreach (MapObject *object, mapObjects) {
+            object->mapEvent(&mapEvent);
+        }
         mapEvent.clear();
     }
 }
@@ -225,6 +212,9 @@ Map::Map():
     QDeclarativeItem(0),
     d_ptr(new MapPrivate(this))
 {
+    Q_D(Map);
+    d->layerGroup->setMap(this);
+
     setFlags(QGraphicsItem::ItemUsesExtendedStyleOption);
     grabGesture(Qt::PanGesture);
     grabGesture(Qt::PinchGesture);
@@ -279,6 +269,12 @@ Layer *Map::mainLayer() const
 {
     Q_D(const Map);
     return d->mainLayer;
+}
+
+void Map::addObject(MapObject *mapObject)
+{
+    Q_D(Map);
+    d->mapObjects.append(mapObject);
 }
 
 void Map::setCenter(const GeoPoint &center)
