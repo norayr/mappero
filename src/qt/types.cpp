@@ -19,7 +19,11 @@
 
 #include "types.h"
 
+#include <math.h>
+
 using namespace Mappero;
+
+#define EQUATORIAL_CIRCUMFERENCE 40075017
 
 QDebug operator<<(QDebug dbg, const GeoPoint &p)
 {
@@ -39,3 +43,8 @@ QDebug operator<<(QDebug dbg, const TileSpec &t)
     return dbg.space();
 }
 
+Unit Mappero::metre2unit(qreal metres, Geo latitude)
+{
+    return metres * WORLD_SIZE_UNITS /
+        (EQUATORIAL_CIRCUMFERENCE * GCOS(deg2rad(latitude)));
+}

@@ -29,8 +29,6 @@ namespace Mappero {
 #define TILE_HALFDIAG_PIXELS (181)
 #define TILE_SIZE_P2 (8)
 
-#define WORLD_SIZE_UNITS (2 << (MAX_ZOOM + TILE_SIZE_P2))
-
 class TiledLayer;
 
 #ifdef USE_DOUBLES_FOR_LATLON
@@ -73,6 +71,8 @@ struct TileSpec
     int zoom;
     TiledLayer *layer;
 };
+
+Unit metre2unit(qreal metres, Geo latitude);
 
 } // namespace
 
@@ -141,6 +141,8 @@ inline bool operator==(const Mappero::TileSpec &t1, const Mappero::TileSpec &t2)
  */
 #define MIN_ZOOM (0)
 #define MAX_ZOOM (20)
+
+#define WORLD_SIZE_UNITS (2 << (MAX_ZOOM + TILE_SIZE_P2))
 
 #define deg2rad(deg) ((deg) * (PI / 180.0))
 #define rad2deg(rad) ((rad) * (180.0 / PI))
