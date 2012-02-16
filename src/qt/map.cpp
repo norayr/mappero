@@ -84,9 +84,7 @@ class MapPrivate: public QObject
         if (mainLayer == 0) return GeoPoint(0, 0);
 
         const Projection *projection = mainLayer->projection();
-        GeoPoint geo;
-        projection->unitToGeo(u.x, u.y, &geo.lat, &geo.lon);
-        return geo;
+        return projection->unitToGeo(u);
     }
 
     void setupFlickable();
@@ -284,11 +282,8 @@ void Map::setCenter(const GeoPoint &center)
     d->center = center;
     if (d->mainLayer != 0) {
         const Projection *projection = d->mainLayer->projection();
-        Unit x, y;
-        projection->geoToUnit(center.lat, center.lon, &x, &y);
-
-        DEBUG() << "Transformed:" << x << y;
-        d->centerUnits = Point(x, y);
+        d->centerUnits = projection->geoToUnit(center);
+        DEBUG() << "Transformed:" << d->centerUnits;
     }
 
     d->mapEvent.m_centerChanged = true;

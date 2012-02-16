@@ -27,8 +27,8 @@
 namespace Mappero {
 
 struct Projection {
-    typedef void (*GeoToUnit)(Geo lat, Geo lon, Unit *x, Unit *y);
-    typedef void (*UnitToGeo)(Unit x, Unit y, Geo *lat, Geo *lon);
+    typedef Point (*GeoToUnit)(const GeoPoint &geo);
+    typedef GeoPoint (*UnitToGeo)(const Point &unit);
     enum Type {
         GOOGLE,
         YANDEX,

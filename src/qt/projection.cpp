@@ -27,11 +27,11 @@
 
 using namespace Mappero;
 
-static void geo2unit_google(Geo lat, Geo lon, Unit *x, Unit *y);
-static void unit2geo_google(Unit x, Unit y, Geo *lat, Geo *lon);
+static Point geo2unit_google(const GeoPoint &geo);
+static GeoPoint unit2geo_google(const Point &unit);
 
-static void geo2unit_yandex(Geo lat, Geo lon, Unit *x, Unit *y);
-static void unit2geo_yandex(Unit x, Unit y, Geo *lat, Geo *lon);
+static Point geo2unit_yandex(const GeoPoint &geo);
+static GeoPoint unit2geo_yandex(const Point &unit);
 
 // Keep this elements in sync with the Projection::Type enum!
 static const Projection projections[] = {
@@ -48,22 +48,26 @@ const Projection *Projection::get(Type type)
 #define MERCATOR_SPAN (-6.28318377773622)
 #define MERCATOR_TOP (3.14159188886811)
 
-static void geo2unit_google(Geo lat, Geo lon, Unit *x, Unit *y)
+static Point geo2unit_google(const GeoPoint &geo)
 {
     Geo tmp;
+    Unit x, y;
 
-    *x = (lon + 180.0) * (WORLD_SIZE_UNITS / 360.0) + 0.5;
-    tmp = GSIN(deg2rad(lat));
-    *y = 0.5 + (WORLD_SIZE_UNITS / MERCATOR_SPAN) *
+    x = (geo.lon + 180.0) * (WORLD_SIZE_UNITS / 360.0) + 0.5;
+    tmp = GSIN(deg2rad(geo.lat));
+    y = 0.5 + (WORLD_SIZE_UNITS / MERCATOR_SPAN) *
         (GLOG((1.0 + tmp) / (1.0 - tmp)) * 0.5 - MERCATOR_TOP);
+    return Point(x, y);
 }
 
-void unit2geo_google(Unit unitx, Unit unity, Geo *lat, Geo *lon)
+static GeoPoint unit2geo_google(const Point &unit)
 {
+    GeoPoint geo;
     Geo tmp;
-    *lon = (unitx * (360.0 / WORLD_SIZE_UNITS)) - 180.0;
-    tmp = (unity * (MERCATOR_SPAN / WORLD_SIZE_UNITS)) + MERCATOR_TOP;
-    *lat = (360.0 * (GATAN(GEXP(tmp)))) * (1.0 / PI) - 90.0;
+    geo.lon = (unit.x() * (360.0 / WORLD_SIZE_UNITS)) - 180.0;
+    tmp = (unit.y() * (MERCATOR_SPAN / WORLD_SIZE_UNITS)) + MERCATOR_TOP;
+    geo.lat = (360.0 * (GATAN(GEXP(tmp)))) * (1.0 / PI) - 90.0;
+    return geo;
 }
 
 #define YANDEX_Rn (6378137.0)
@@ -75,27 +79,31 @@ void unit2geo_google(Unit unitx, Unit unity, Geo *lat, Geo *lon)
 #define YANDEX_CB (0.00000001764564338702)
 #define YANDEX_DB (0.00000000005328478445)
 
-void geo2unit_yandex(Geo lat, Geo lon, Unit *unitx, Unit *unity)
+static Point geo2unit_yandex(const GeoPoint &geo)
 {
     Geo tmp, pow_tmp;
+    Point unit;
 
-    tmp = GTAN(M_PI_4 + deg2rad(lat) / 2.0);
-    pow_tmp = GPOW(GTAN(M_PI_4 + GASIN(YANDEX_E * GSIN(deg2rad(lat))) / 2.0),
+    tmp = GTAN(M_PI_4 + deg2rad(geo.lat) / 2.0);
+    pow_tmp = GPOW(GTAN(M_PI_4 + GASIN(YANDEX_E * GSIN(deg2rad(geo.lat))) /
+                        2.0),
                    YANDEX_E);
-    *unitx = (YANDEX_Rn * deg2rad(lon) + YANDEX_A) * YANDEX_F;
-    *unity = (YANDEX_A - (YANDEX_Rn * GLOG(tmp / pow_tmp))) * YANDEX_F;
+    unit.setX((YANDEX_Rn * deg2rad(geo.lon) + YANDEX_A) * YANDEX_F);
+    unit.setY((YANDEX_A - (YANDEX_Rn * GLOG(tmp / pow_tmp))) * YANDEX_F);
+    return unit;
 }
 
-void unit2geo_yandex(Unit unitx, Unit unity, Geo *lat, Geo *lon)
+static GeoPoint unit2geo_yandex(const Point &unit)
 {
-    Geo xphi, x, y;
+    Geo xphi, x, y, lat, lon;
 
-    x = (unitx / YANDEX_F) - YANDEX_A;
-    y = YANDEX_A - (unity / YANDEX_F);
+    x = (unit.x() / YANDEX_F) - YANDEX_A;
+    y = YANDEX_A - (unit.y() / YANDEX_F);
     xphi = M_PI_2 - 2.0 * GATAN(1.0 / GEXP(y / YANDEX_Rn));
-    *lat = xphi + YANDEX_AB * GSIN(2.0 * xphi) + YANDEX_BB * GSIN(4.0 * xphi) +
+    lat = xphi + YANDEX_AB * GSIN(2.0 * xphi) + YANDEX_BB * GSIN(4.0 * xphi) +
         YANDEX_CB * GSIN(6.0 * xphi) + YANDEX_DB * GSIN(8.0 * xphi);
-    *lon = x / YANDEX_Rn;
-    *lat = rad2deg(abs(*lat) > M_PI_2 ? M_PI_2 : *lat);
-    *lon = rad2deg(abs(*lon) > M_PI_2 ? M_PI_2 : *lon);
+    lon = x / YANDEX_Rn;
+    lat = rad2deg(abs(lat) > M_PI_2 ? M_PI_2 : lat);
+    lon = rad2deg(abs(lon) > M_PI_2 ? M_PI_2 : lon);
+    return GeoPoint(lat, lon);
 }

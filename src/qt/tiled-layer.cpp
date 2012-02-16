@@ -184,8 +184,8 @@ void TiledLayerPrivate::loadTiles(const QPoint &start, const QPoint stop)
         item->setVisible(false);
     }
 
-    x -= center.x;
-    y -= center.y;
+    x -= center.x();
+    y -= center.y();
     p /= (1 << zoomLevel);
     int y0 = y;
     for (int tx = start.x(); tx <= stop.x(); tx++, x += TILE_SIZE_PIXELS) {
@@ -308,12 +308,12 @@ void TiledLayer::mapEvent(MapEvent *event)
     Unit halfLengthUnit = d->pixel2unit(halfLength);
 
     QPoint tileStart =
-        Point(center.x - halfLengthUnit,
-              center.y - halfLengthUnit).
+        Point(center.x() - halfLengthUnit,
+              center.y() - halfLengthUnit).
         toTile(zoomLevel);
     QPoint tileStop =
-        Point(center.x + halfLengthUnit + TILE_SIZE_PIXELS - 1,
-              center.y + halfLengthUnit + TILE_SIZE_PIXELS - 1).
+        Point(center.x() + halfLengthUnit + TILE_SIZE_PIXELS - 1,
+              center.y() + halfLengthUnit + TILE_SIZE_PIXELS - 1).
         toTile(zoomLevel);
 
     d->loadTiles(tileStart, tileStop);

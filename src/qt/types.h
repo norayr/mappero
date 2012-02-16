@@ -39,19 +39,18 @@ typedef float Geo;
 
 typedef int Unit;
 
-struct Point {
-    Point() {}
-    Point(Unit x, Unit y): x(x), y(y) {}
-    Point(const QPoint &p): x(p.x()), y(p.y()) {}
-    Unit x;
-    Unit y;
+struct Point: public QPoint {
+    Point(): QPoint() {}
+    Point(Unit x, Unit y): QPoint(x, y) {}
+    Point(const QPoint &p): QPoint(p) {}
 
     inline QPoint toTile(int zoom) {
-        return QPoint(x >> (TILE_SIZE_P2 + zoom), y >> (TILE_SIZE_P2 + zoom));
+        return QPoint(x() >> (TILE_SIZE_P2 + zoom),
+                      y() >> (TILE_SIZE_P2 + zoom));
     }
 
-    inline Point translated(const Point &p) {
-        return Point(x + p.x, y + p.y);
+    inline Point translated(const QPoint &p) {
+        return Point(x() + p.x(), y() + p.y());
     }
 };
 
@@ -90,18 +89,6 @@ Q_DECLARE_METATYPE(Mappero::GeoPoint)
 QDebug operator<<(QDebug dbg, const Mappero::GeoPoint &p);
 QDebug operator<<(QDebug dbg, const Mappero::Point &p);
 QDebug operator<<(QDebug dbg, const Mappero::TileSpec &t);
-
-inline bool operator==(const Mappero::Point &p1,
-                       const Mappero::Point &p2)
-{
-    return p1.x == p2.x && p1.y == p2.y;
-}
-
-inline bool operator!=(const Mappero::Point &p1,
-                       const Mappero::Point &p2)
-{
-    return p1.x != p2.x || p1.y != p2.y;
-}
 
 inline bool operator==(const Mappero::TileSpec &t1, const Mappero::TileSpec &t2)
 {
