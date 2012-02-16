@@ -30,6 +30,7 @@ namespace Mappero {
 
 class Layer;
 class MapObject;
+class Projection;
 
 class MapPrivate;
 class Map: public QDeclarativeItem {
@@ -64,6 +65,8 @@ public:
     QObject *flickable() const;
 
     Point centerUnits() const;
+
+    const Projection *projection() const;
 
     void setZoomLevel(qreal zoom);
     qreal zoomLevel() const;

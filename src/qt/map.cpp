@@ -319,6 +319,12 @@ Point Map::centerUnits() const
     return d->centerUnits;
 }
 
+const Projection *Map::projection() const
+{
+    Q_D(const Map);
+    return (d->mainLayer != 0) ? d->mainLayer->projection() : 0;
+}
+
 void Map::setFlickable(QObject *flickable)
 {
     Q_D(Map);
