@@ -22,6 +22,8 @@
 #ifndef MAP_GPS_H
 #define MAP_GPS_H
 
+#include "types.h"
+
 #include <QDateTime>
 #include <QDebug>
 #include <QFlags>
@@ -46,6 +48,7 @@ public:
     const QDateTime &time() const { return m_time; }
     qreal latitude() const { return m_latitude; }
     qreal longitude() const { return m_longitude; }
+    GeoPoint geo() const { return GeoPoint(m_latitude, m_longitude); }
     qreal altitude() const { return m_altitude; }
     qreal direction() const { return m_direction; }
     qreal speed() const { return m_speed; }
