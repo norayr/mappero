@@ -22,6 +22,7 @@
 
 #include <QMetaType>
 #include <QPoint>
+#include <math.h>
 
 namespace Mappero {
 
@@ -47,6 +48,14 @@ struct Point: public QPoint {
     inline QPoint toTile(int zoom) {
         return QPoint(x() >> (TILE_SIZE_P2 + zoom),
                       y() >> (TILE_SIZE_P2 + zoom));
+    }
+
+    inline QPoint toPixel(int zoom) {
+        return QPoint(x() >> zoom, y() >> zoom);
+    }
+
+    inline QPoint toPixel(qreal zoom) {
+        return QPoint(x() / exp2(zoom), y() / exp2(zoom));
     }
 
     inline Point translated(const QPoint &p) {
