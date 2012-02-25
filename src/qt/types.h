@@ -65,10 +65,21 @@ struct Point: public QPoint {
 
 struct GeoPoint {
     GeoPoint() {}
+    GeoPoint(const QPointF &p): lat(p.x()), lon(p.y()) {}
     GeoPoint(Geo lat, Geo lon): lat(lat), lon(lon) {}
     Geo lat;
     Geo lon;
+
+    QPointF toPointF() const { return QPointF(lat, lon); }
+    friend inline bool operator==(const GeoPoint &, const GeoPoint &);
+    friend inline bool operator!=(const GeoPoint &, const GeoPoint &);
 };
+
+inline bool operator==(const GeoPoint &p1, const GeoPoint &p2)
+{ return p1.lat == p2.lat && p1.lon == p2.lon; }
+
+inline bool operator!=(const GeoPoint &p1, const GeoPoint &p2)
+{ return p1.lat != p2.lat || p1.lon != p2.lon; }
 
 struct TileSpec
 {
