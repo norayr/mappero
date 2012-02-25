@@ -217,8 +217,8 @@ void Gps::start()
 
 void Gps::stop()
 {
-#ifdef HAS_QTM_LOCATION
     Q_D(Gps);
+#ifdef HAS_QTM_LOCATION
     if (d->source != 0)
         d->source->stopUpdates();
     d->isActive = false;
