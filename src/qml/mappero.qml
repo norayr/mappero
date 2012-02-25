@@ -21,6 +21,8 @@ Rectangle {
         center: Qt.point(60.19997, 24.94057)
         requestedZoomLevel: 8
         animatedZoomLevel: requestedZoomLevel
+        animatedCenterUnits: requestedCenterUnits
+        followGps: true
 
         Behavior on animatedZoomLevel {
             SmoothedAnimation {
@@ -28,6 +30,13 @@ Rectangle {
                 property: "animatedZoomLevel"
                 duration: 500
                 velocity: 0.5
+            }
+        }
+
+        Behavior on animatedCenterUnits {
+            PropertyAnimation {
+                easing.type: Easing.InOutCubic
+                duration: 500
             }
         }
     }

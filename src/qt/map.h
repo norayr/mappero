@@ -36,8 +36,16 @@ class Projection;
 class MapPrivate;
 class Map: public QDeclarativeItem {
     Q_OBJECT
-    Q_PROPERTY(QPointF center READ centerPoint WRITE setCenter \
+    Q_PROPERTY(QPointF center READ center WRITE setCenter \
                NOTIFY centerChanged);
+    Q_PROPERTY(QPointF animatedCenterUnits READ animatedCenterUnits \
+               WRITE setAnimatedCenterUnits \
+               NOTIFY animatedCenterUnitsChanged);
+    Q_PROPERTY(QPointF requestedCenter READ requestedCenter \
+               WRITE setRequestedCenter \
+               NOTIFY requestedCenterChanged);
+    Q_PROPERTY(QPointF requestedCenterUnits READ requestedCenterUnits \
+               NOTIFY requestedCenterChanged);
     Q_PROPERTY(QObject *flickable READ flickable WRITE setFlickable);
     Q_PROPERTY(qreal zoomLevel READ zoomLevel \
                NOTIFY zoomLevelChanged);
@@ -55,12 +63,15 @@ public:
     Map();
     ~Map();
 
-    void setCenter(const GeoPoint &center);
-    GeoPoint center() const;
-
-    /* For QML: same as above, but use QPointF */
     void setCenter(const QPointF &center);
-    QPointF centerPoint() const;
+    QPointF center() const;
+
+    void setRequestedCenter(const QPointF &center);
+    QPointF requestedCenter() const;
+    QPointF requestedCenterUnits() const;
+
+    void setAnimatedCenterUnits(const QPointF &center);
+    QPointF animatedCenterUnits() const;
 
     void setFlickable(QObject *flickable);
     QObject *flickable() const;
@@ -92,7 +103,9 @@ public:
                QWidget *widget);
 
 Q_SIGNALS:
-    void centerChanged(const GeoPoint &center);
+    void centerChanged(const QPointF &center);
+    void animatedCenterUnitsChanged(const QPointF &center);
+    void requestedCenterChanged(const QPointF &center);
     void zoomLevelChanged(qreal zoomLevel);
     void animatedZoomLevelChanged(qreal zoomLevel);
     void requestedZoomLevelChanged(qreal zoomLevel);

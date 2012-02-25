@@ -104,7 +104,10 @@ private:
     QList<MapObject*> mapObjects;
     LayerGroup *layerGroup;
     Layer *mainLayer;
-    GeoPoint center;
+    QPointF center;
+    QPointF animatedCenterUnits;
+    QPointF requestedCenter;
+    QPointF requestedCenterUnits;
     Point centerUnits;
     QPointF pan;
     QObject *flickable;
@@ -122,6 +125,9 @@ MapPrivate::MapPrivate(Map *q):
     layerGroup(new LayerGroup),
     mainLayer(0),
     center(0, 0),
+    animatedCenterUnits(0, 0),
+    requestedCenter(0, 0),
+    requestedCenterUnits(0, 0),
     centerUnits(0, 0),
     zoomLevel(-1),
     animatedZoomLevel(-1),
@@ -133,7 +139,7 @@ MapPrivate::MapPrivate(Map *q):
 {
     layerGroup->setParentItem(q);
 
-    QObject::connect(q, SIGNAL(centerChanged(const GeoPoint&)),
+    QObject::connect(q, SIGNAL(centerChanged(const QPointF&)),
                      this, SLOT(deliverMapEvent()), Qt::QueuedConnection);
     QObject::connect(q, SIGNAL(zoomLevelChanged(qreal)),
                      this, SLOT(deliverMapEvent()), Qt::QueuedConnection);
@@ -189,7 +195,7 @@ void MapPrivate::onFlickablePanFinished()
     Q_Q(Map);
     QPointF viewCenter = q->boundingRect().center();
     Point newCenterUnits = centerUnits.translated(pixel2unit(pan));
-    q->setCenter(unit2geo(newCenterUnits));
+    q->setCenter(unit2geo(newCenterUnits).toPointF());
 }
 
 bool MapPrivate::eventFilter(QObject *watched, QEvent *e)
@@ -290,14 +296,17 @@ void Map::addObject(MapObject *mapObject)
     d->mapObjects.append(mapObject);
 }
 
-void Map::setCenter(const GeoPoint &center)
+void Map::setCenter(const QPointF &center)
 {
     Q_D(Map);
 
     d->center = center;
+    d->requestedCenter = center;
     if (d->mainLayer != 0) {
         const Projection *projection = d->mainLayer->projection();
-        d->centerUnits = projection->geoToUnit(center);
+        d->centerUnits = projection->geoToUnit(GeoPoint(center));
+        d->animatedCenterUnits = d->centerUnits;
+        d->requestedCenterUnits = d->centerUnits;
         DEBUG() << "Transformed:" << d->centerUnits;
     }
 
@@ -305,22 +314,61 @@ void Map::setCenter(const GeoPoint &center)
     Q_EMIT centerChanged(center);
 }
 
-GeoPoint Map::center() const
+QPointF Map::center() const
 {
     Q_D(const Map);
     return d->center;
 }
 
-void Map::setCenter(const QPointF &center)
+void Map::setAnimatedCenterUnits(const QPointF &center)
 {
-    GeoPoint p(center.x(), center.y());
-    setCenter(p);
+    Q_D(Map);
+
+    DEBUG() << center;
+    if (center != d->animatedCenterUnits) {
+        Point diffUnits = d->centerUnits - center.toPoint();
+        QPointF viewCenter = boundingRect().center();
+        d->layerGroup->setPos(diffUnits.toPixel(d->animatedZoomLevel) + viewCenter);
+
+        d->animatedCenterUnits = center;
+        Q_EMIT animatedCenterUnitsChanged(center);
+    }
+
+    if (center == d->requestedCenterUnits)
+        setCenter(d->requestedCenter);
 }
 
-QPointF Map::centerPoint() const
+QPointF Map::animatedCenterUnits() const
 {
-    GeoPoint p = center();
-    return QPointF(p.lat, p.lon);
+    Q_D(const Map);
+    return d->animatedCenterUnits;
+}
+
+void Map::setRequestedCenter(const QPointF &center)
+{
+    Q_D(Map);
+
+    DEBUG() << center;
+    if (center != d->requestedCenter) {
+        d->requestedCenter = center;
+        if (d->mainLayer != 0) {
+            const Projection *projection = d->mainLayer->projection();
+            d->requestedCenterUnits = projection->geoToUnit(GeoPoint(center));
+        }
+        Q_EMIT requestedCenterChanged(center);
+    }
+}
+
+QPointF Map::requestedCenter() const
+{
+    Q_D(const Map);
+    return d->requestedCenter;
+}
+
+QPointF Map::requestedCenterUnits() const
+{
+    Q_D(const Map);
+    return d->requestedCenterUnits;
 }
 
 Point Map::centerUnits() const
@@ -486,7 +534,7 @@ void Map::gpsPositionUpdated(const GpsPosition &pos) {
 
     d->mark->setPosition(pos);
     if (d->followGps) {
-        setCenter(pos.geo());
+        setRequestedCenter(pos.geo().toPointF());
     }
 }
 
