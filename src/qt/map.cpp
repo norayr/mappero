@@ -21,10 +21,13 @@
 #ifdef HAVE_CONFIG_H
 #   include "config.h"
 #endif
+#include "controller.h"
 #include "debug.h"
+#include "gps.h"
 #include "layer.h"
 #include "map.h"
 #include "map-object.h"
+#include "mark.h"
 #include "projection.h"
 
 #include <QEvent>
@@ -110,6 +113,7 @@ private:
     qreal requestedZoomLevel;
     bool followGps;
     MapEvent mapEvent;
+    Mark *mark;
     mutable Map *q_ptr;
 };
 };
@@ -124,6 +128,7 @@ MapPrivate::MapPrivate(Map *q):
     requestedZoomLevel(-1),
     followGps(true),
     mapEvent(q),
+    mark(0),
     q_ptr(q)
 {
     layerGroup->setParentItem(q);
@@ -213,11 +218,21 @@ Map::Map():
     Q_D(Map);
     d->layerGroup->setMap(this);
 
+    d->mark = new Mark(this);
+    d->mark->setParentItem(d->layerGroup);
+    d->mark->setZValue(1);
+
     setFlags(QGraphicsItem::ItemUsesExtendedStyleOption);
     grabGesture(Qt::PanGesture);
     grabGesture(Qt::PinchGesture);
     setAcceptTouchEvents(true);
     setAcceptedMouseButtons(Qt::LeftButton | Qt::RightButton);
+
+    Gps *gps = Controller::instance()->gps();
+    QObject::connect(gps,
+                     SIGNAL(positionUpdated(const GpsPosition &)),
+                     this,
+                     SLOT(gpsPositionUpdated(const GpsPosition &)));
 }
 
 Map::~Map()
@@ -462,6 +477,17 @@ void Map::wheelEvent(QGraphicsSceneWheelEvent *e)
 {
     Q_D(Map);
     setRequestedZoomLevel(d->requestedZoomLevel - e->delta() / 120);
+}
+
+void Map::gpsPositionUpdated(const GpsPosition &pos) {
+    Q_D(Map);
+
+    DEBUG() << "Gps pos:" << pos;
+
+    d->mark->setPosition(pos);
+    if (d->followGps) {
+        setCenter(pos.geo());
+    }
 }
 
 #include "map.moc"

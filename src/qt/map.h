@@ -28,6 +28,7 @@
 
 namespace Mappero {
 
+class GpsPosition;
 class Layer;
 class MapObject;
 class Projection;
@@ -98,6 +99,9 @@ Q_SIGNALS:
     void sizeChanged();
     void mainLayerIdChanged();
     void followGpsChanged(bool followGps);
+
+protected Q_SLOTS:
+    virtual void gpsPositionUpdated(const GpsPosition &gpsPosition);
 
 protected:
     // reimplemented virtual methods

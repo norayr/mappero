@@ -18,6 +18,7 @@
  */
 
 #include "controller.h"
+#include "gps.h"
 #include "map.h"
 #include "view.h"
 
@@ -44,6 +45,7 @@ int main(int argc, char *argv[])
     Mappero::View view;
     controller.setView(&view);
     view.rootContext()->setContextProperty("view", &view);
+    view.rootContext()->setContextProperty("gps", controller.gps());
     view.setSource(QUrl("qrc:/mappero.qml"));
     view.setWindowTitle("Mappero");
     view.show();

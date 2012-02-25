@@ -78,4 +78,29 @@ Item {
         onHeightChanged: layoutChildren()
         onIsPortraitChanged: layoutChildren()
     }
+
+    Row {
+        id: bottom
+        anchors.horizontalCenter: parent.horizontalCenter
+        anchors.bottom: parent.bottom
+        anchors.bottomMargin: screenMargin
+        anchors.leftMargin: screenMargin + buttonSize
+        anchors.rightMargin: screenMargin + buttonSize
+        height: buttonSize
+        spacing: screenMargin
+
+        OsmButton {
+            source: gps.active ?
+                "icon:maemo-mapper-gps-disable.png" :
+                "icon:maemo-mapper-gps-enable.png"
+            onClicked: {
+                if (gps.active) gps.stop()
+                else gps.start()
+            }
+        }
+
+        OsmButton {
+            source: "icon:maemo-mapper-settings.png"
+        }
+    }
 }
