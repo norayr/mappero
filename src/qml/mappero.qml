@@ -15,51 +15,16 @@ Rectangle {
     Map {
         id: map
         anchors.fill: parent
-        flickable: flickable
+        flickable: mapFlickable
 
         mainLayerId: "OpenStreetMap I"
         center: Qt.point(60.19997, 24.94057)
         requestedZoomLevel: 8
-        animatedZoomLevel: requestedZoomLevel
-        animatedCenterUnits: requestedCenterUnits
         followGps: true
-
-        Behavior on animatedZoomLevel {
-            SmoothedAnimation {
-                target: map
-                property: "animatedZoomLevel"
-                duration: 500
-                velocity: 0.5
-            }
-        }
-
-        Behavior on animatedCenterUnits {
-            PropertyAnimation {
-                easing.type: Easing.InOutCubic
-                duration: 500
-            }
-        }
     }
 
-    Flickable {
-        id: flickable
+    MapFlickable {
+        id: mapFlickable
         anchors.fill: parent
-        flickableDirection: Flickable.HorizontalAndVerticalFlick
-        property double neutralX: 400000
-        property double neutralY: 400000
-        property variant position: Qt.point(contentX - neutralX,
-                                            contentY - neutralY)
-        contentWidth: neutralX * 2
-        contentHeight: neutralY * 2
-        contentX: neutralX
-        contentY: neutralY
-
-        signal panFinished
-
-        onMovementEnded: {
-            panFinished()
-            contentX = neutralX
-            contentY = neutralY
-        }
     }
 }

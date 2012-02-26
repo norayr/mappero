@@ -1,6 +1,8 @@
 <!DOCTYPE RCC><RCC version="1.0">
 <qresource>
   <file>mappero.qml</file>
+  <file>MapFlickable.qml</file>
+  <file>Map.qml</file>
   <file>OsmButton.qml</file>
   <file>Osm.qml</file>
 </qresource>

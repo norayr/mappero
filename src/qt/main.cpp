@@ -37,7 +37,7 @@ int main(int argc, char *argv[])
     app.setApplicationName("mappero");
 
     qRegisterMetaType<Mappero::GeoPoint>("GeoPoint");
-    qmlRegisterType<Mappero::Map>("Mappero", 1, 0, "Map");
+    qmlRegisterType<Mappero::Map>("Mappero", 1, 0, "MapItem");
 
     QDir::addSearchPath("icon", ":");
 
