@@ -218,6 +218,7 @@ void TiledLayerPrivate::onTileDownloaded(const TileSpec &tileSpec,
     TileQueue::iterator i = tileQueue.find(tileSpec);
     if (i != tileQueue.end()) {
         Tile *tile = i.value();
+        tileQueue.erase(i);
         QPixmap pixmap;
         pixmap.loadFromData(tileData);
         tile->setPixmap(pixmap);
