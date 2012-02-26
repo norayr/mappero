@@ -65,6 +65,11 @@ HEADERS += \
 	tile-download.h \
 	view.h
 
+contains(MEEGO_EDITION,harmattan) {
+    # Harmattan UI overrides
+    RESOURCES += ../qml/harmattan.qrc
+}
+
 RESOURCES += \
     ../qml/qml.qrc \
     ../../data/icons/scalable/icons.qrc
