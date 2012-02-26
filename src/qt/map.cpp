@@ -110,6 +110,7 @@ private:
     QPointF requestedCenterUnits;
     Point centerUnits;
     QPointF pan;
+    bool ignoreNextPan;
     QObject *flickable;
     qreal zoomLevel;
     qreal animatedZoomLevel;
@@ -129,6 +130,7 @@ MapPrivate::MapPrivate(Map *q):
     requestedCenter(0, 0),
     requestedCenterUnits(0, 0),
     centerUnits(0, 0),
+    ignoreNextPan(false),
     zoomLevel(-1),
     animatedZoomLevel(-1),
     requestedZoomLevel(-1),
@@ -186,7 +188,12 @@ void MapPrivate::deliverMapEvent()
 void MapPrivate::onFlickablePan()
 {
     Q_Q(Map);
+    if (ignoreNextPan) {
+        ignoreNextPan = false;
+        return;
+    }
     pan = flickable->property("position").toPointF();
+    if (pan == QPointF(0, 0)) return;
     layerGroup->setPos(q->boundingRect().center() - pan);
 }
 
@@ -196,6 +203,7 @@ void MapPrivate::onFlickablePanFinished()
     QPointF viewCenter = q->boundingRect().center();
     Point newCenterUnits = centerUnits.translated(pixel2unit(pan));
     q->setCenter(unit2geo(newCenterUnits).toPointF());
+    ignoreNextPan = true;
 }
 
 bool MapPrivate::eventFilter(QObject *watched, QEvent *e)
