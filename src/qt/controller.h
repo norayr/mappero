@@ -27,6 +27,7 @@ namespace Mappero {
 
 class Configuration;
 class Gps;
+class Projection;
 class TileCache;
 class TileDownload;
 class View;
@@ -44,6 +45,9 @@ public:
 
     void setView(View *view);
     View *view() const;
+
+    void setProjection(const Projection *projection);
+    const Projection *projection() const;
 
     TileDownload *tileDownload() const;
     TileCache *tileCache() const;

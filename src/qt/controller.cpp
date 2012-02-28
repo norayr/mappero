@@ -25,6 +25,7 @@
 #include "controller.h"
 #include "debug.h"
 #include "gps.h"
+#include "projection.h"
 #include "tile-cache.h"
 #include "tile-download.h"
 
@@ -38,6 +39,7 @@ class ControllerPrivate
     Q_DECLARE_PUBLIC(Controller)
 
     ControllerPrivate():
+        projection(Projection::get(Projection::GOOGLE)),
         view(0),
         tileDownload(0),
         tileCache(0),
@@ -52,6 +54,7 @@ class ControllerPrivate
         tileCache = 0;
     }
 
+    const Projection *projection;
     View *view;
 private:
     mutable Controller *q_ptr;
@@ -93,6 +96,18 @@ View *Controller::view() const
 {
     Q_D(const Controller);
     return d->view;
+}
+
+void Controller::setProjection(const Projection *projection)
+{
+    Q_D(Controller);
+    d->projection = projection;
+}
+
+const Projection *Controller::projection() const
+{
+    Q_D(const Controller);
+    return d->projection;
 }
 
 TileDownload *Controller::tileDownload() const

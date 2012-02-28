@@ -287,6 +287,7 @@ void Map::setMainLayer(Layer *layer)
     if (layer != 0) {
         layer->setParentItem(d->layerGroup);
         layer->setMap(this);
+        Controller::instance()->setProjection(d->mainLayer->projection());
     }
 
     Q_EMIT mainLayerIdChanged();
