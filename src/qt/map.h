@@ -31,6 +31,7 @@ namespace Mappero {
 class GpsPosition;
 class Layer;
 class MapObject;
+class Path;
 class Projection;
 
 class MapPrivate;
@@ -94,6 +95,8 @@ public:
 
     void setMainLayer(Layer *layer);
     Layer *mainLayer() const;
+
+    void setRoute(const Path &route);
 
     void setFollowGps(bool followGps);
     bool followGps() const;

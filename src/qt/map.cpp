@@ -28,6 +28,8 @@
 #include "map.h"
 #include "map-object.h"
 #include "mark.h"
+#include "path-item.h"
+#include "path.h"
 #include "projection.h"
 
 #include <QEvent>
@@ -118,6 +120,7 @@ private:
     bool followGps;
     MapEvent mapEvent;
     Mark *mark;
+    PathItem *pathItem;
     mutable Map *q_ptr;
 };
 };
@@ -137,6 +140,7 @@ MapPrivate::MapPrivate(Map *q):
     followGps(true),
     mapEvent(q),
     mark(0),
+    pathItem(0),
     q_ptr(q)
 {
     layerGroup->setParentItem(q);
@@ -234,7 +238,11 @@ Map::Map():
 
     d->mark = new Mark(this);
     d->mark->setParentItem(d->layerGroup);
-    d->mark->setZValue(1);
+    d->mark->setZValue(2);
+
+    d->pathItem = new PathItem(this);
+    d->pathItem->setParentItem(d->layerGroup);
+    d->pathItem->setZValue(1);
 
     setFlags(QGraphicsItem::ItemUsesExtendedStyleOption);
     grabGesture(Qt::PanGesture);
@@ -291,6 +299,12 @@ void Map::setMainLayer(Layer *layer)
     }
 
     Q_EMIT mainLayerIdChanged();
+}
+
+void Map::setRoute(const Path &route)
+{
+    Q_D(Map);
+    d->pathItem->setRoute(route);
 }
 
 Layer *Map::mainLayer() const

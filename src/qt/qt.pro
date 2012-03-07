@@ -47,6 +47,7 @@ SOURCES += \
 	map.cpp \
 	map-object.cpp \
 	mark.cpp \
+	path-item.cpp \
 	path.cpp \
 	projection.cpp \
 	tile-cache.cpp \
@@ -63,6 +64,7 @@ HEADERS += \
 	map.h \
 	map-object.h \
 	mark.h \
+	path-item.h \
 	path.h \
 	tile-download.h \
 	view.h
