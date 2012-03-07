@@ -45,20 +45,20 @@ struct Point: public QPoint {
     Point(Unit x, Unit y): QPoint(x, y) {}
     Point(const QPoint &p): QPoint(p) {}
 
-    inline QPoint toTile(int zoom) {
+    inline QPoint toTile(int zoom) const {
         return QPoint(x() >> (TILE_SIZE_P2 + zoom),
                       y() >> (TILE_SIZE_P2 + zoom));
     }
 
-    inline QPoint toPixel(int zoom) {
+    inline QPoint toPixel(int zoom) const {
         return QPoint(x() >> zoom, y() >> zoom);
     }
 
-    inline QPoint toPixel(qreal zoom) {
+    inline QPoint toPixel(qreal zoom) const {
         return QPoint(x() / exp2(zoom), y() / exp2(zoom));
     }
 
-    inline Point translated(const QPoint &p) {
+    inline Point translated(const QPoint &p) const {
         return Point(x() + p.x(), y() + p.y());
     }
 };
