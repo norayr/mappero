@@ -65,6 +65,8 @@ struct PathWayPoint
     QString desc;
 };
 
+class PathTest;
+
 class Path
 {
 public:
@@ -77,6 +79,7 @@ public:
     QPainterPath toPainterPath(int zoomLevel) const;
 
 private:
+    friend class PathTest;
     bool loadGpx(QXmlStreamReader &xml);
 
     QVector<PathPoint> points;

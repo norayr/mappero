@@ -1,5 +1,5 @@
 TEMPLATE = subdirs
-SUBDIRS = src
+SUBDIRS = src tests
 
 OTHER_FILES += \
     qtc_packaging/debian_harmattan/rules \
