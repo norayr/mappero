@@ -32,11 +32,14 @@ class QXmlStreamReader;
 
 namespace Mappero {
 
+class Projection;
+
 struct PathPoint
 {
     inline PathPoint();
-    inline PathPoint(const Point &p);
+    inline PathPoint(const GeoPoint &p);
 
+    GeoPoint geo;
     Point unit;
     time_t time;
     qint8 zoom; /* zoom level at which this point becomes visible */
@@ -77,6 +80,8 @@ public:
     bool load(QIODevice *device);
 
     QPainterPath toPainterPath(int zoomLevel) const;
+
+    static void setProjection(const Projection *projection);
 
 private:
     friend class PathTest;

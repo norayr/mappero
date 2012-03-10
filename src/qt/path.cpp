@@ -18,7 +18,6 @@
  * along with Mappero.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "controller.h"
 #include "debug.h"
 #include "path.h"
 #include "projection.h"
@@ -30,7 +29,17 @@
 
 using namespace Mappero;
 
+static const Projection *global_projection = 0;
+
+static inline void ensure_projection()
+{
+    if (global_projection == 0) {
+        global_projection = Projection::get(Projection::GOOGLE);
+    }
+}
+
 PathPoint::PathPoint():
+    geo(0, 0),
     unit(0, 0),
     time(0),
     zoom(SCHAR_MAX),
@@ -39,13 +48,15 @@ PathPoint::PathPoint():
 {
 }
 
-PathPoint::PathPoint(const Point &p):
-    unit(p),
+PathPoint::PathPoint(const GeoPoint &p):
+    geo(p),
     time(0),
     zoom(SCHAR_MAX),
     altitude(0),
     distance(0.0)
 {
+    ensure_projection();
+    unit = global_projection->geoToUnit(p);
 }
 
 Path::Path()
@@ -90,10 +101,14 @@ QPainterPath Path::toPainterPath(int zoomLevel) const
     return pp;
 }
 
+void Path::setProjection(const Projection *projection)
+{
+    global_projection = projection;
+    // maybe TODO: keep track of the existing paths, and update all of them
+}
+
 bool Path::loadGpx(QXmlStreamReader &xml)
 {
-    const Projection *projection = Controller::instance()->projection();
-
     while (!xml.atEnd()) {
         xml.readNext();
 
@@ -103,10 +118,8 @@ bool Path::loadGpx(QXmlStreamReader &xml)
             QStringRef lon = attributes.value("lon");
             if (lat.isEmpty() || lon.isEmpty()) continue;
 
-            GeoPoint geo(lat.toString().toDouble(),
-                         lon.toString().toDouble());
-
-            PathPoint p(projection->geoToUnit(geo));
+            PathPoint p(GeoPoint(lat.toString().toDouble(),
+                                 lon.toString().toDouble()));
 
             while (xml.readNextStartElement()) {
                 if (xml.name() == "ele") {
