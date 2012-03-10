@@ -37,7 +37,7 @@ void PathTest::loadGpx()
     Path path;
 
     path.load(":/Lauttasaari.gpx");
-    QCOMPARE(path.points.count(), 524);
+    QCOMPARE(path.d->points.count(), 524);
 }
 
 QTEST_MAIN(PathTest)

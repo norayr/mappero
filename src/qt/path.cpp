@@ -59,7 +59,8 @@ PathPoint::PathPoint(const GeoPoint &p):
     unit = global_projection->geoToUnit(p);
 }
 
-Path::Path()
+Path::Path():
+    d(new PathData)
 {
 }
 
@@ -91,10 +92,10 @@ bool Path::load(QIODevice *device)
 
 QPainterPath Path::toPainterPath(int zoomLevel) const
 {
-    if (points.isEmpty()) return QPainterPath();
+    if (d->points.isEmpty()) return QPainterPath();
 
-    QPainterPath pp(points[0].unit.toPixel(zoomLevel));
-    foreach (const PathPoint &point, points) {
+    QPainterPath pp(d->points[0].unit.toPixel(zoomLevel));
+    foreach (const PathPoint &point, d->points) {
         // TODO: skip points based on their zoom value
         pp.lineTo(point.unit.toPixel(zoomLevel));
     }
@@ -131,7 +132,7 @@ bool Path::loadGpx(QXmlStreamReader &xml)
                     p.time = time.toTime_t();
                 }
             }
-            points.append(p);
+            d->points.append(p);
         }
     }
     return false;

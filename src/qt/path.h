@@ -25,6 +25,7 @@
 #include "types.h"
 
 #include <QPainterPath>
+#include <QSharedDataPointer>
 #include <QVector>
 
 class QIODevice;
@@ -36,7 +37,7 @@ class Projection;
 
 struct PathPoint
 {
-    inline PathPoint();
+    PathPoint();
     inline PathPoint(const GeoPoint &p);
 
     GeoPoint geo;
@@ -70,6 +71,17 @@ struct PathWayPoint
 
 class PathTest;
 
+class PathData: public QSharedData
+{
+public:
+    PathData() {}
+    inline PathData(const PathData &other);
+    ~PathData() {}
+
+    QVector<PathPoint> points;
+    QVector<PathWayPoint> wayPoints;
+};
+
 class Path
 {
 public:
@@ -87,9 +99,11 @@ private:
     friend class PathTest;
     bool loadGpx(QXmlStreamReader &xml);
 
-    QVector<PathPoint> points;
-    QVector<PathWayPoint> wayPoints;
+    QSharedDataPointer<PathData> d;
 };
+
+inline PathData::PathData(const PathData &other):
+    QSharedData(other), points(other.points), wayPoints(other.wayPoints) {}
 
 }; // namespace
 
