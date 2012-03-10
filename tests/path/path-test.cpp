@@ -20,19 +20,16 @@
 
 #include "path-test.h"
 
-#include "controller.h"
 #include "path.h"
 
 using namespace Mappero;
 
 void PathTest::initTestCase()
 {
-    m_controller = new Controller();
 }
 
 void PathTest::cleanupTestCase()
 {
-    delete m_controller;
 }
 
 void PathTest::loadGpx()

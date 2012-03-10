@@ -25,7 +25,6 @@
 #include <QTest>
 
 namespace Mappero {
-class Controller;
 
 class PathTest: public QObject
 {
@@ -36,9 +35,6 @@ private Q_SLOTS:
     void cleanupTestCase();
 
     void loadGpx();
-
-private:
-    Mappero::Controller *m_controller;
 };
 
 }; // namespace
