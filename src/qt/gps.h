@@ -82,6 +82,8 @@ public:
     Gps(QObject *parent = 0);
     ~Gps();
 
+    static Gps *instance();
+
     void setSourceName(const QString &sourceName);
     QString sourceName() const;
 

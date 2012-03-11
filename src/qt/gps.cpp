@@ -34,6 +34,8 @@ QTM_USE_NAMESPACE
 
 using namespace Mappero;
 
+static Gps *m_instance = 0;
+
 namespace Mappero {
 
 class GpsPrivate: public QObject
@@ -145,11 +147,22 @@ Gps::Gps(QObject *parent):
     QObject(parent),
     d_ptr(new GpsPrivate(this))
 {
+    Q_ASSERT(m_instance == 0);
+    m_instance = this;
 }
 
 Gps::~Gps()
 {
+    m_instance = 0;
     delete d_ptr;
+}
+
+Gps *Gps::instance()
+{
+    if (m_instance == 0) {
+        m_instance = new Gps();
+    }
+    return m_instance;
 }
 
 void Gps::setSourceName(const QString &sourceName)

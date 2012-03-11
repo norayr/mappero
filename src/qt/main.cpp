@@ -45,7 +45,7 @@ int main(int argc, char *argv[])
     Mappero::View view;
     controller.setView(&view);
     view.rootContext()->setContextProperty("view", &view);
-    view.rootContext()->setContextProperty("gps", controller.gps());
+    view.rootContext()->setContextProperty("gps", Mappero::Gps::instance());
     view.setSource(QUrl("qrc:/mappero.qml"));
     view.setWindowTitle("Mappero");
     view.show();
