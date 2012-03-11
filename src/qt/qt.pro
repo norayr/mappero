@@ -39,35 +39,35 @@ QT += \
     opengl
 
 SOURCES += \
-	configuration.cpp \
-	controller.cpp \
-	gps.cpp \
-	layer.cpp \
-	main.cpp \
-	map.cpp \
-	map-object.cpp \
-	mark.cpp \
-	path-item.cpp \
-	path.cpp \
-	projection.cpp \
-	tile-cache.cpp \
-	tile-download.cpp \
-	tile.cpp \
-	tiled-layer.cpp \
-	types.cpp \
-	view.cpp
+    configuration.cpp \
+    controller.cpp \
+    gps.cpp \
+    layer.cpp \
+    main.cpp \
+    map.cpp \
+    map-object.cpp \
+    mark.cpp \
+    path-item.cpp \
+    path.cpp \
+    projection.cpp \
+    tile-cache.cpp \
+    tile-download.cpp \
+    tile.cpp \
+    tiled-layer.cpp \
+    types.cpp \
+    view.cpp
 
 HEADERS += \
-	configuration.h \
-	controller.h \
-	gps.h \
-	map.h \
-	map-object.h \
-	mark.h \
-	path-item.h \
-	path.h \
-	tile-download.h \
-	view.h
+    configuration.h \
+    controller.h \
+    gps.h \
+    map.h \
+    map-object.h \
+    mark.h \
+    path-item.h \
+    path.h \
+    tile-download.h \
+    view.h
 
 contains(MEEGO_EDITION,harmattan) {
     # Harmattan UI overrides

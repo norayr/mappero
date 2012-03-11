@@ -12,15 +12,15 @@ INCLUDEPATH += \
     $${SRC}
 
 SOURCES += \
-	$${SRC}/path.cpp \
-	$${SRC}/projection.cpp \
-	$${SRC}/types.cpp \
+    $${SRC}/path.cpp \
+    $${SRC}/projection.cpp \
+    $${SRC}/types.cpp \
     path-test.cpp
 
 HEADERS += \
-	$${SRC}/path.h \
-	$${SRC}/projection.h \
-	$${SRC}/types.h \
+    $${SRC}/path.h \
+    $${SRC}/projection.h \
+    $${SRC}/types.h \
     path-test.h
 
 RESOURCES += \
