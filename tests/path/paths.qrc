@@ -2,5 +2,7 @@
 <qresource>
   <file>Lauttasaari.gpx</file>
   <file>Route.gpx</file>
+  <file>Route.kml</file>
+  <file>HelsinkiTikkurila.kml</file>
 </qresource>
 </RCC>

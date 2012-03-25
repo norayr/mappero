@@ -19,25 +19,34 @@
  * along with Mappero.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef MAP_PATH_TEST_H
-#define MAP_PATH_TEST_H
+#ifndef MAP_KML_H
+#define MAP_KML_H
 
-#include <QTest>
+#include "path.h"
+
+class QXmlStreamReader;
 
 namespace Mappero {
 
-class PathTest: public QObject
+class Kml
 {
-    Q_OBJECT
+public:
+    Kml(QXmlStreamReader &xml);
+    ~Kml();
 
-private Q_SLOTS:
-    void initTestCase();
-    void cleanupTestCase();
+    bool appendToPath(Path *path);
 
-    void loadGpx();
-    void loadKml();
+private:
+    void parseCoordinates();
+    void parseLineString();
+    void parsePoint();
+    void parseGeometryCollection();
+
+private:
+    QXmlStreamReader &xml;
+    QVector<PathPoint> points;
 };
 
 }; // namespace
 
-#endif /* MAP_PATH_TEST_H */
+#endif /* MAP_KML_H */

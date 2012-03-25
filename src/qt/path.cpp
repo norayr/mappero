@@ -19,12 +19,14 @@
  */
 
 #include "debug.h"
+#include "kml.h"
 #include "path.h"
 #include "projection.h"
 
 #include <QDateTime>
 #include <QFile>
 #include <QIODevice>
+#include <QStringList>
 #include <QXmlStreamReader>
 
 using namespace Mappero;
@@ -93,14 +95,21 @@ bool Path::load(QIODevice *device)
 {
     QXmlStreamReader xml(device);
 
-    while (!xml.atEnd()) {
-        xml.readNext();
-
-        if (xml.isStartElement() && xml.name() == "gpx") {
+    while (xml.readNextStartElement()) {
+        if (xml.name() == "gpx") {
             return d->loadGpx(xml);
+        } else if (xml.name() == "kml") {
+            Kml kml(xml);
+            return kml.appendToPath(this);
         }
     }
     return false;
+}
+
+void Path::clear()
+{
+    d->points.clear();
+    d->wayPoints.clear();
 }
 
 QPainterPath Path::toPainterPath(int zoomLevel) const
@@ -154,14 +163,14 @@ bool PathData::loadGpx(QXmlStreamReader &xml)
 
             /* is it a waypoint? */
             if (!desc.isEmpty()) {
-                makeLastWayPoint(desc);
+                makeWayPoint(desc, points.count() - 1);
             }
         }
     }
     return false;
 }
 
-void PathData::makeLastWayPoint(const QString &desc)
+void PathData::makeWayPoint(const QString &desc, int pointIndex)
 {
-    wayPoints.append(PathWayPoint(desc, points.count() - 1));
+    wayPoints.append(PathWayPoint(desc, pointIndex));
 }

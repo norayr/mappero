@@ -22,6 +22,8 @@
 
 #include "path.h"
 
+#define UTF8(s) QString::fromUtf8(s)
+
 using namespace Mappero;
 
 void PathTest::initTestCase()
@@ -43,6 +45,30 @@ void PathTest::loadGpx()
     route.load(":/Route.gpx");
     QCOMPARE(route.d->points.count(), 1509);
     QCOMPARE(route.d->wayPoints.count(), 15);
+}
+
+void PathTest::loadKml()
+{
+    Path route;
+    route.load(":/Route.kml");
+    QCOMPARE(route.d->points.count(), 2105);
+    QCOMPARE(route.d->wayPoints.count(), 2);
+    QCOMPARE(route.d->wayPoints[0].desc, UTF8("Vilhonkatu 13, Helsinki"));
+    QCOMPARE(route.d->wayPoints[1].desc,
+             UTF8("Helsinki-vantaan Lentoasema 2, Vantaa"));
+
+    route.clear();
+
+    route.load(":/HelsinkiTikkurila.kml");
+    QCOMPARE(route.d->points.count(), 276);
+    QCOMPARE(route.d->wayPoints.count(), 22);
+    QCOMPARE(route.d->wayPoints[0].desc,
+             UTF8("Head northeast on Brunnsgatan/Kaivokatu toward "
+                  "Mannerheimintie/Mannerheimvägen/E12"));
+    QCOMPARE(route.d->wayPoints[1].desc,
+             UTF8("Continue onto Kaisaniemenkatu/Kajsaniemigatan"));
+    QCOMPARE(route.d->wayPoints[21].desc,
+             UTF8("Arrive at: Tikkurila, Vantaa, Finland"));
 }
 
 QTEST_MAIN(PathTest)

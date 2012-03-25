@@ -38,7 +38,9 @@ class Projection;
 struct PathPoint
 {
     PathPoint();
-    inline PathPoint(const GeoPoint &p);
+    PathPoint(const GeoPoint &p);
+
+    inline bool operator==(const PathPoint &other) { return geo == other.geo; }
 
     GeoPoint geo;
     Point unit;
@@ -72,6 +74,7 @@ struct PathWayPoint
     QString desc;
 };
 
+class Kml;
 class PathTest;
 
 class PathData: public QSharedData
@@ -81,10 +84,12 @@ public:
     inline PathData(const PathData &other);
     ~PathData() {}
 
+    void makeWayPoint(const QString &desc, int pointIndex);
+
 private:
+    friend class Kml;
     friend class Path;
     bool loadGpx(QXmlStreamReader &xml);
-    void makeLastWayPoint(const QString &desc);
 
 public:
     QVector<PathPoint> points;
@@ -100,12 +105,15 @@ public:
     bool load(const QString &fileName);
     bool load(QIODevice *device);
 
+    void clear();
+
     QPainterPath toPainterPath(int zoomLevel) const;
 
     static void setProjection(const Projection *projection);
 
 private:
     friend class PathTest;
+    friend class Kml;
 
     QSharedDataPointer<PathData> d;
 };

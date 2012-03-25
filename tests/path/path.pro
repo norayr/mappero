@@ -12,6 +12,7 @@ INCLUDEPATH += \
     $${SRC}
 
 SOURCES += \
+    $${SRC}/kml.cpp \
     $${SRC}/path.cpp \
     $${SRC}/projection.cpp \
     $${SRC}/types.cpp \
