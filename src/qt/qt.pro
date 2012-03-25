@@ -20,7 +20,7 @@ symbian:TARGET.UID3 = 0xE1BBB51C
 # Allow network access on Symbian
 symbian:TARGET.CAPABILITY += NetworkServices
 
-load(mobilityconfig)
+load(mobility)
 contains(MOBILITY_CONFIG, location) {
     message(QtMobility location is available)
     CONFIG += mobility
@@ -79,6 +79,11 @@ RESOURCES += \
     ../../data/icons/scalable/icons.qrc
 
 contains(MEEGO_EDITION,harmattan) {
+    target.path = /opt/qt/bin
+    INSTALLS += target
+}
+
+maemo5 {
     target.path = /opt/qt/bin
     INSTALLS += target
 }
