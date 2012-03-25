@@ -59,6 +59,19 @@ PathPoint::PathPoint(const GeoPoint &p):
     unit = global_projection->geoToUnit(p);
 }
 
+PathWayPoint::PathWayPoint():
+    pointIndex(-1),
+    dir(DIRECTION_UNKNOWN)
+{
+}
+
+PathWayPoint::PathWayPoint(const QString &desc, int pointIndex):
+    pointIndex(pointIndex),
+    dir(DIRECTION_UNKNOWN),
+    desc(desc)
+{
+}
+
 Path::Path():
     d(new PathData)
 {
@@ -84,7 +97,7 @@ bool Path::load(QIODevice *device)
         xml.readNext();
 
         if (xml.isStartElement() && xml.name() == "gpx") {
-            return loadGpx(xml);
+            return d->loadGpx(xml);
         }
     }
     return false;
@@ -108,7 +121,7 @@ void Path::setProjection(const Projection *projection)
     // maybe TODO: keep track of the existing paths, and update all of them
 }
 
-bool Path::loadGpx(QXmlStreamReader &xml)
+bool PathData::loadGpx(QXmlStreamReader &xml)
 {
     while (!xml.atEnd()) {
         xml.readNext();
@@ -121,6 +134,7 @@ bool Path::loadGpx(QXmlStreamReader &xml)
 
             PathPoint p(GeoPoint(lat.toString().toDouble(),
                                  lon.toString().toDouble()));
+            QString desc;
 
             while (xml.readNextStartElement()) {
                 if (xml.name() == "ele") {
@@ -130,10 +144,24 @@ bool Path::loadGpx(QXmlStreamReader &xml)
                         QDateTime::fromString(xml.readElementText(),
                                               Qt::ISODate);
                     p.time = time.toTime_t();
+                } else if (xml.name() == "cmt") {
+                    desc = xml.readElementText();
+                } else {
+                    DEBUG() << "Unrecognized element:" << xml.name();
                 }
             }
-            d->points.append(p);
+            points.append(p);
+
+            /* is it a waypoint? */
+            if (!desc.isEmpty()) {
+                makeLastWayPoint(desc);
+            }
         }
     }
     return false;
+}
+
+void PathData::makeLastWayPoint(const QString &desc)
+{
+    wayPoints.append(PathWayPoint(desc, points.count() - 1));
 }

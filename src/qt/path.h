@@ -50,6 +50,9 @@ struct PathPoint
 
 struct PathWayPoint
 {
+    PathWayPoint();
+    inline PathWayPoint(const QString &desc, int pointIndex);
+
     /* Navigation directions */
     enum Direction {
         DIRECTION_UNKNOWN = 0,
@@ -78,6 +81,12 @@ public:
     inline PathData(const PathData &other);
     ~PathData() {}
 
+private:
+    friend class Path;
+    bool loadGpx(QXmlStreamReader &xml);
+    void makeLastWayPoint(const QString &desc);
+
+public:
     QVector<PathPoint> points;
     QVector<PathWayPoint> wayPoints;
 };
@@ -97,7 +106,6 @@ public:
 
 private:
     friend class PathTest;
-    bool loadGpx(QXmlStreamReader &xml);
 
     QSharedDataPointer<PathData> d;
 };
