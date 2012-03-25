@@ -250,7 +250,7 @@ Map::Map():
     setAcceptTouchEvents(true);
     setAcceptedMouseButtons(Qt::LeftButton | Qt::RightButton);
 
-    Gps *gps = Controller::instance()->gps();
+    Gps *gps = Gps::instance();
     QObject::connect(gps,
                      SIGNAL(positionUpdated(const GpsPosition &)),
                      this,
