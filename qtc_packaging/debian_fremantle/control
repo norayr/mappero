@@ -8,7 +8,8 @@ Homepage: <insert the upstream URL, if relevant>
 
 Package: mappero
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}
+Depends: ${shlibs:Depends}, ${misc:Depends},
+         qtquickcompat
 Description: <insert up to 60 chars description>
  <insert long description, indented with spaces>
 XB-Maemo-Display-Name: mappero
