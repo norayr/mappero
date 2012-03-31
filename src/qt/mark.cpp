@@ -84,7 +84,6 @@ void Mark::setPosition(const GpsPosition &position)
 {
     Q_D(Mark);
 
-    DEBUG() << "Changing marker position";
     d->accuracy = position.accuracy();
     d->latitude = position.latitude();
     Map *map = this->map();

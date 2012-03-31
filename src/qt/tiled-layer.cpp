@@ -209,7 +209,6 @@ void TiledLayerPrivate::loadTiles(const QPoint &start, const QPoint stop)
 void TiledLayerPrivate::onTileDownloaded(const TileSpec &tileSpec,
                                          QByteArray tileData)
 {
-    DEBUG() << "Downloaded tile: " << tileSpec;
     if (tileData.isEmpty()) {
         DEBUG() << "No tile data!";
         return;

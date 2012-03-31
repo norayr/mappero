@@ -371,8 +371,8 @@ void Map::setRequestedCenter(const QPointF &center)
 {
     Q_D(Map);
 
-    DEBUG() << center;
     if (center != d->requestedCenter) {
+        DEBUG() << center;
         d->requestedCenter = center;
         if (d->mainLayer != 0) {
             const Projection *projection = d->mainLayer->projection();
@@ -552,8 +552,6 @@ void Map::wheelEvent(QGraphicsSceneWheelEvent *e)
 
 void Map::gpsPositionUpdated(const GpsPosition &pos) {
     Q_D(Map);
-
-    DEBUG() << "Gps pos:" << pos;
 
     d->mark->setPosition(pos);
     if (d->followGps) {

@@ -82,7 +82,6 @@ QRectF PathItem::boundingRect() const
 void PathItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
                      QWidget *widget)
 {
-    DEBUG();
     Q_D(const PathItem);
 
     Q_UNUSED(option);
