@@ -6,6 +6,11 @@ Rectangle {
     width: 800
     height: 480
 
+    Tracker {
+        id: tracker
+        tracking: true
+    }
+
     Osm {
         id: osm
         z: 1
@@ -17,6 +22,7 @@ Rectangle {
         anchors.fill: parent
         flickable: mapFlickable
 
+        tracker: tracker
         mainLayerId: "OpenStreetMap I"
         center: Qt.point(60.19997, 24.94057)
         requestedZoomLevel: 8
