@@ -18,9 +18,9 @@
  * along with Mappero.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "debug.h"
 #include "view.h"
 
-#include <QDebug>
 #include <QResizeEvent>
 #include <QGLWidget>
 
@@ -40,6 +40,11 @@ View::View():
     setTransformationAnchor(QGraphicsView::NoAnchor);
     setAlignment(Qt::AlignLeft | Qt::AlignTop);
     setViewport(new QGLWidget);
+    setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
+    setAttribute(Qt::WA_OpaquePaintEvent);
+    setAttribute(Qt::WA_NoSystemBackground);
+    viewport()->setAttribute(Qt::WA_OpaquePaintEvent);
+    viewport()->setAttribute(Qt::WA_NoSystemBackground);
 }
 
 void View::switchFullscreen()
