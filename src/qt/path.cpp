@@ -106,10 +106,36 @@ bool Path::load(QIODevice *device)
     return false;
 }
 
+bool Path::isEmpty() const
+{
+    return d->points.isEmpty();
+}
+
+const PathPoint &Path::lastPoint() const
+{
+    return d->points.last();
+}
+
 void Path::clear()
 {
     d->points.clear();
     d->wayPoints.clear();
+}
+
+void Path::addPoint(const GeoPoint &geo, int altitude, time_t time,
+                    Geo distance)
+{
+    DEBUG() << geo;
+    PathPoint p(geo);
+    p.altitude = altitude;
+    p.time = time;
+    if (!isEmpty()) {
+        if (distance < 0) {
+            distance = geo.distanceTo(lastPoint().geo);
+        }
+        p.distance = distance;
+    }
+    d->points.append(p);
 }
 
 QPainterPath Path::toPainterPath(int zoomLevel) const

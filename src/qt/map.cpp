@@ -493,6 +493,18 @@ bool Map::followGps() const
     return d->followGps;
 }
 
+void Map::setTracker(Tracker *tracker)
+{
+    Q_D(Map);
+    d->pathItem->setTracker(tracker);
+}
+
+Tracker *Map::tracker() const
+{
+    Q_D(const Map);
+    return d->pathItem->tracker();
+}
+
 void Map::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
                 QWidget *widget)
 {

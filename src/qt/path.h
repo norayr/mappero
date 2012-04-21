@@ -105,7 +105,13 @@ public:
     bool load(const QString &fileName);
     bool load(QIODevice *device);
 
+    bool isEmpty() const;
+    const PathPoint &lastPoint() const;
+
     void clear();
+
+    void addPoint(const GeoPoint &geo, int altitude, time_t time = 0,
+                  Geo distance = 0);
 
     QPainterPath toPainterPath(int zoomLevel) const;
 

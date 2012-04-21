@@ -24,6 +24,28 @@
 using namespace Mappero;
 
 #define EQUATORIAL_CIRCUMFERENCE 40075017
+#define EARTH_RADIUS 6378137.01
+
+Geo GeoPoint::distanceTo(const GeoPoint &other) const
+{
+    Geo lat1, lon1, lat2, lon2;
+    Geo dlat, dlon, slat, slon, a;
+
+    /* Convert to radians. */
+    lat1 = deg2rad(lat);
+    lon1 = deg2rad(lon);
+    lat2 = deg2rad(other.lat);
+    lon2 = deg2rad(other.lon);
+
+    dlat = lat2 - lat1;
+    dlon = lon2 - lon1;
+
+    slat = GSIN(dlat / 2.0);
+    slon = GSIN(dlon / 2.0);
+    a = (slat * slat) + (GCOS(lat1) * GCOS(lat2) * slon * slon);
+
+    return ((2.0 * GATAN2(GSQTR(a), GSQTR(1.0 - a))) * EARTH_RADIUS);
+}
 
 QDebug operator<<(QDebug dbg, const GeoPoint &p)
 {

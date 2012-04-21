@@ -22,6 +22,7 @@
 #include "map.h"
 #include "path-item.h"
 #include "path.h"
+#include "tracker.h"
 
 #include <QPainter>
 #include <QPen>
@@ -30,26 +31,43 @@ using namespace Mappero;
 
 namespace Mappero {
 
-class PathItemPrivate
+class PathItemPrivate: public QObject
 {
+    Q_OBJECT
     Q_DECLARE_PUBLIC(PathItem)
 
     PathItemPrivate(PathItem *mark):
+        QObject(0),
         q_ptr(mark),
+        tracker(0),
         route(0),
-        routePen(Qt::green, 4)
+        routePen(Qt::green, 4),
+        trackPen(Qt::red, 4)
     {
     }
     ~PathItemPrivate() {};
 
+public Q_SLOTS:
+    void onTrackChanged();
+
 private:
     mutable PathItem *q_ptr;
+    Tracker *tracker;
     QRectF boundingRect;
     QPainterPath routePath;
+    QPainterPath trackPath;
     const Path *route;
     QPen routePen;
+    QPen trackPen;
 };
 }; // namespace
+
+void PathItemPrivate::onTrackChanged()
+{
+    Q_Q(PathItem);
+    trackPath = tracker->track().toPainterPath(q->map()->zoomLevel());
+    q->update();
+}
 
 PathItem::PathItem(Map *map):
     MapObject(),
@@ -62,6 +80,20 @@ PathItem::PathItem(Map *map):
 PathItem::~PathItem()
 {
     delete d_ptr;
+}
+
+void PathItem::setTracker(Tracker *tracker)
+{
+    Q_D(PathItem);
+    d->tracker = tracker;
+    QObject::connect(d->tracker, SIGNAL(trackChanged()),
+                     d, SLOT(onTrackChanged()));
+}
+
+Tracker *PathItem::tracker() const
+{
+    Q_D(const PathItem);
+    return d->tracker;
 }
 
 void PathItem::setRoute(const Path &route)
@@ -97,6 +129,9 @@ void PathItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
     painter->setTransform(transformation);
     painter->setPen(d->routePen);
     painter->drawPath(d->routePath);
+
+    painter->setPen(d->trackPen);
+    painter->drawPath(d->trackPath);
 }
 
 void PathItem::mapEvent(MapEvent *event)
@@ -109,6 +144,10 @@ void PathItem::mapEvent(MapEvent *event)
         if (d->route) {
             d->routePath = d->route->toPainterPath(map()->zoomLevel());
         }
+        if (d->tracker) {
+            d->trackPath =
+                d->tracker->track().toPainterPath(map()->zoomLevel());
+        }
         update();
     }
 
@@ -118,3 +157,5 @@ void PathItem::mapEvent(MapEvent *event)
         d->boundingRect = QRectF(-radius, -radius, radius * 2, radius * 2);
     }
 }
+
+#include "path-item.moc"

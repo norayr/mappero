@@ -71,6 +71,7 @@ struct GeoPoint {
     Geo lon;
 
     QPointF toPointF() const { return QPointF(lat, lon); }
+    Geo distanceTo(const GeoPoint &other) const;
     friend inline bool operator==(const GeoPoint &, const GeoPoint &);
     friend inline bool operator!=(const GeoPoint &, const GeoPoint &);
 };

@@ -55,6 +55,7 @@ SOURCES += \
     tile-download.cpp \
     tile.cpp \
     tiled-layer.cpp \
+    tracker.cpp \
     types.cpp \
     view.cpp
 
@@ -68,6 +69,7 @@ HEADERS += \
     path-item.h \
     path.h \
     tile-download.h \
+    tracker.h \
     view.h
 
 contains(MEEGO_EDITION,harmattan) {

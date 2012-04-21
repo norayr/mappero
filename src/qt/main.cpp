@@ -20,6 +20,7 @@
 #include "controller.h"
 #include "gps.h"
 #include "map.h"
+#include "tracker.h"
 #include "view.h"
 
 #include <QApplication>
@@ -38,6 +39,7 @@ int main(int argc, char *argv[])
 
     qRegisterMetaType<Mappero::GeoPoint>("GeoPoint");
     qmlRegisterType<Mappero::Map>("Mappero", 1, 0, "MapItem");
+    qmlRegisterType<Mappero::Tracker>("Mappero", 1, 0, "Tracker");
 
     QDir::addSearchPath("icon", ":");
 

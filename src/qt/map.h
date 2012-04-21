@@ -33,6 +33,7 @@ class Layer;
 class MapObject;
 class Path;
 class Projection;
+class Tracker;
 
 class MapPrivate;
 class Map: public QDeclarativeItem {
@@ -60,6 +61,8 @@ class Map: public QDeclarativeItem {
                NOTIFY mainLayerIdChanged);
     Q_PROPERTY(bool followGps READ followGps WRITE setFollowGps \
                NOTIFY followGpsChanged);
+    Q_PROPERTY(Mappero::Tracker *tracker READ tracker WRITE setTracker);
+
 public:
     Map();
     ~Map();
@@ -100,6 +103,9 @@ public:
 
     void setFollowGps(bool followGps);
     bool followGps() const;
+
+    void setTracker(Tracker *tracker);
+    Tracker *tracker() const;
 
     // reimplemented virtual functions:
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
