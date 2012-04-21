@@ -20,8 +20,8 @@ symbian:TARGET.UID3 = 0xE1BBB51C
 # Allow network access on Symbian
 symbian:TARGET.CAPABILITY += NetworkServices
 
-load(mobility)
-contains(MOBILITY_CONFIG, location) {
+load(mobilityconfig)
+contains(MOBILITY_CONFIG, location) | maemo5 {
     message(QtMobility location is available)
     CONFIG += mobility
     MOBILITY += location

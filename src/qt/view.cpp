@@ -32,7 +32,7 @@ View::View():
     setResizeMode(SizeRootObjectToView);
     setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-#ifdef Q_WS_MAEMO5
+#ifdef Q_WS_MAEMO_5
     setAttribute(Qt::WA_Maemo5AutoOrientation, true);
     setAttribute(Qt::WA_Maemo5NonComposited, true);
 #endif

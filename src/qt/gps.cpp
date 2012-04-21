@@ -46,6 +46,9 @@ class GpsPrivate: public QObject
     GpsPrivate(Gps *gps):
         QObject(gps),
         q_ptr(gps),
+#ifdef HAS_QTM_LOCATION
+        source(0),
+#endif
         updateInterval(0),
         isActive(false)
     {}
@@ -92,11 +95,15 @@ void GpsPrivate::setupSource()
 {
     if (source != 0) return;
 
+#if QTM_VERSION >= QTM_VERSION_CHECK(1, 2, 0)
     DEBUG() << "available sources:" <<
         QGeoPositionInfoSource::availableSources();
     source = sourceName.isEmpty() ?
         QGeoPositionInfoSource::createDefaultSource(this) :
         QGeoPositionInfoSource::createSource(sourceName, this);
+#else
+    source = QGeoPositionInfoSource::createDefaultSource(this);
+#endif
     if (source == 0) {
         qWarning() << "Couldn't create GPS source" << sourceName;
         return;
