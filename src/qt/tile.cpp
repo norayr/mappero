@@ -31,4 +31,5 @@ using namespace Mappero;
 Tile::Tile(TiledLayer *parent):
     QGraphicsPixmapItem(parent)
 {
+    setTransformationMode(Qt::SmoothTransformation);
 }
