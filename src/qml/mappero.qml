@@ -11,12 +11,6 @@ Rectangle {
         tracking: true
     }
 
-    Osm {
-        id: osm
-        z: 1
-        anchors.fill: parent
-    }
-
     Map {
         id: map
         anchors.fill: parent
@@ -31,6 +25,11 @@ Rectangle {
 
     MapFlickable {
         id: mapFlickable
+        anchors.fill: parent
+    }
+
+    Osm {
+        id: osm
         anchors.fill: parent
     }
 }
