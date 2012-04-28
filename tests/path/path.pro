@@ -30,3 +30,8 @@ RESOURCES += \
 check.commands = ./path-test
 check.depends = path-test
 QMAKE_EXTRA_TARGETS += check
+
+contains(MEEGO_EDITION,harmattan) {
+    target.path = /opt/path/bin
+    INSTALLS += target
+}
