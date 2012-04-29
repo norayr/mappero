@@ -15,28 +15,28 @@ Item {
         property bool isPortrait: parent.isPortrait
 
         OsmButton {
-            source: "icon:maemo-mapper-point.png"
+            source: ":maemo-mapper-point.png"
         }
 
         OsmButton {
-            source: "icon:maemo-mapper-path.png"
+            source: ":maemo-mapper-path.png"
         }
 
         OsmButton {
-            source: "icon:maemo-mapper-route.png"
+            source: ":maemo-mapper-route.png"
         }
 
         OsmButton {
-            source: "icon:maemo-mapper-go-to.png"
+            source: ":maemo-mapper-go-to.png"
         }
 
         OsmButton {
-            source: "icon:maemo-mapper-zoom-in.png"
+            source: ":maemo-mapper-zoom-in.png"
             onClicked: map.requestedZoomLevel--
         }
 
         OsmButton {
-            source: "icon:maemo-mapper-zoom-out.png"
+            source: ":maemo-mapper-zoom-out.png"
             onClicked: map.requestedZoomLevel++
         }
 
@@ -46,7 +46,7 @@ Item {
         }
 
         OsmButton {
-            source: "icon:maemo-mapper-fullscreen.png"
+            source: ":maemo-mapper-fullscreen.png"
             onClicked: view.switchFullscreen()
         }
 
@@ -91,8 +91,8 @@ Item {
 
         OsmButton {
             source: gps.active ?
-                "icon:maemo-mapper-gps-disable.png" :
-                "icon:maemo-mapper-gps-enable.png"
+                ":maemo-mapper-gps-disable.png" :
+                ":maemo-mapper-gps-enable.png"
             onClicked: {
                 if (gps.active) gps.stop()
                 else gps.start()
@@ -100,7 +100,7 @@ Item {
         }
 
         OsmButton {
-            source: "icon:maemo-mapper-settings.png"
+            source: ":maemo-mapper-settings.png"
         }
     }
 }

@@ -41,8 +41,6 @@ int main(int argc, char *argv[])
     qmlRegisterType<Mappero::Map>("Mappero", 1, 0, "MapItem");
     qmlRegisterType<Mappero::Tracker>("Mappero", 1, 0, "Tracker");
 
-    QDir::addSearchPath("icon", ":");
-
     Mappero::Controller controller;
     Mappero::View view;
     controller.setView(&view);
