@@ -109,3 +109,12 @@ Tile *TileCache::tile(const TileSpec &tileSpec, bool *found)
 
     return d->tile(tileSpec, found);
 }
+
+Tile *TileCache::find(const TileSpec &tileSpec) const
+{
+    Q_D(const TileCache);
+
+    TileData tileData(tileSpec);
+    int idx = d->tiles.indexOf(tileData);
+    return idx >= 0 ? d->tiles[idx].tile : 0;
+}

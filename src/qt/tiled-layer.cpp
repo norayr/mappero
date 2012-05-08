@@ -69,8 +69,6 @@ const TiledLayer::Type *TiledLayer::Type::get(const char *name)
 
 namespace Mappero {
 
-typedef QHash<TileSpec, Tile *> TileQueue;
-
 class TiledLayerPrivate: public QObject
 {
     Q_OBJECT
@@ -121,7 +119,6 @@ private:
     QString baseDir;
     TileDownload *tileDownload;
     TileCache *tileCache;
-    TileQueue tileQueue;
 
     Point center;
     int zoomLevel;
@@ -196,7 +193,6 @@ void TiledLayerPrivate::loadTiles(const QPoint &start, const QPoint stop)
 
             Tile *tile = tileCache->tile(tileSpec, &found);
             if (!found) {
-                tileQueue.insert(tileSpec, tile);
                 tileDownload->requestTile(tileSpec, 0);
             } else {
                 tile->setVisible(true);
@@ -214,10 +210,8 @@ void TiledLayerPrivate::onTileDownloaded(const TileSpec &tileSpec,
         return;
     }
 
-    TileQueue::iterator i = tileQueue.find(tileSpec);
-    if (i != tileQueue.end()) {
-        Tile *tile = i.value();
-        tileQueue.erase(i);
+    Tile *tile = tileCache->find(tileSpec);
+    if (tile != 0) {
         QPixmap pixmap;
         pixmap.loadFromData(tileData);
         tile->setPixmap(pixmap);
