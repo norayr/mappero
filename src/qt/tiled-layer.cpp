@@ -221,7 +221,9 @@ void TiledLayerPrivate::onTileDownloaded(const TileSpec &tileSpec,
         QPixmap pixmap;
         pixmap.loadFromData(tileData);
         tile->setPixmap(pixmap);
-        tile->setVisible(true);
+        /* Don't re-show tiles which don't belong here */
+        if (tileSpec.zoom == zoomLevel)
+            tile->setVisible(true);
     }
 }
 
