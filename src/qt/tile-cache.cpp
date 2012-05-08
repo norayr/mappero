@@ -83,6 +83,7 @@ Tile *TileCachePrivate::tile(const TileSpec &tileSpec, bool *found)
             tileData.tile = new Tile(tileData.spec.layer);
         } else {
             tileData.tile = tiles.head().tile;
+            tileData.tile->setPixmap(QPixmap());
             tileData.tile->setParentItem(tileData.spec.layer);
             tiles.dequeue();
         }
