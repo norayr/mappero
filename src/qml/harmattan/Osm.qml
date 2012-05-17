@@ -1,8 +1,6 @@
 import QtQuick 1.0
 
 Item {
-    width: 800
-    height: 480
     property int buttonSize: 72
     property int screenMargin: 8
     property bool isPortrait: height > width
