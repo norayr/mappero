@@ -10,6 +10,9 @@ PageStackWindow {
         id: mainPage
 
         MainPage {
+            // HACK: For some reason, the __isPage property defined by Page is
+            // not visible here.
+            property bool __isPage: true
         }
     }
 }
