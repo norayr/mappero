@@ -38,6 +38,7 @@ public:
     ~TileCache();
 
     Tile *tile(const TileSpec &spec, bool *found);
+    Tile *find(const TileSpec &tileSpec) const;
 
 private:
     TileCachePrivate *d_ptr;

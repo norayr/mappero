@@ -83,6 +83,7 @@ Tile *TileCachePrivate::tile(const TileSpec &tileSpec, bool *found)
             tileData.tile = new Tile(tileData.spec.layer);
         } else {
             tileData.tile = tiles.head().tile;
+            tileData.tile->setPixmap(QPixmap());
             tileData.tile->setParentItem(tileData.spec.layer);
             tiles.dequeue();
         }
@@ -107,4 +108,13 @@ Tile *TileCache::tile(const TileSpec &tileSpec, bool *found)
     Q_D(TileCache);
 
     return d->tile(tileSpec, found);
+}
+
+Tile *TileCache::find(const TileSpec &tileSpec) const
+{
+    Q_D(const TileCache);
+
+    TileData tileData(tileSpec);
+    int idx = d->tiles.indexOf(tileData);
+    return idx >= 0 ? d->tiles[idx].tile : 0;
 }
