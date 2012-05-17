@@ -1,5 +1,6 @@
 <!DOCTYPE RCC><RCC version="1.0">
 <qresource>
+  <file alias="mappero.qml">harmattan/mappero.qml</file>
   <file alias="Osm.qml">harmattan/Osm.qml</file>
 </qresource>
 </RCC>
