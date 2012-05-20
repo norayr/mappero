@@ -6,5 +6,6 @@
   <file>Map.qml</file>
   <file>OsmButton.qml</file>
   <file>Osm.qml</file>
+  <file>Pane.qml</file>
 </qresource>
 </RCC>
