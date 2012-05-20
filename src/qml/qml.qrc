@@ -7,5 +7,6 @@
   <file>OsmButton.qml</file>
   <file>Osm.qml</file>
   <file>Pane.qml</file>
+  <file>UIConstants.js</file>
 </qresource>
 </RCC>
