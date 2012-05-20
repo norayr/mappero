@@ -4,6 +4,7 @@
   <file>MainPage.qml</file>
   <file>MapFlickable.qml</file>
   <file>Map.qml</file>
+  <file>MenuButton.qml</file>
   <file>OsmButton.qml</file>
   <file>Osm.qml</file>
   <file>Pane.qml</file>
