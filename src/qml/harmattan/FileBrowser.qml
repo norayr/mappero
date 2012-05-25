@@ -13,6 +13,8 @@ Item {
 
     property Style platformStyle: FileBrowserStyle {}
 
+    property string __iconStyle: platformStyle.inverted ? "-white" : ""
+
     Item {
         id: toolBar
         anchors.top: parent.top
@@ -22,9 +24,10 @@ Item {
         Button {
             id: backButton
             anchors.left: parent.left
-            width: 100
+            width: 160
             platformStyle: ButtonStyle {inverted: root.platformStyle.inverted }
-            iconSource: "image://theme/icon-m-startup-back"
+            text: qsTr("Up")
+            iconSource: "image://theme/icon-m-toolbar-previous" + __iconStyle
             onClicked: folderModel.folder = folderModel.parentFolder
             opacity: folderModel.folder != folderModel.parentFolder ? 1.0 : 0.5
         }
@@ -64,7 +67,7 @@ Item {
                     anchors.verticalCenter: parent.verticalCenter
                     height: parent.height
                     width: height
-                    source: "image://theme/icon-m-toolbar-directory-white" 
+                    source: "image://theme/icon-m-toolbar-directory" + __iconStyle
                     visible: folderModel.isFolder(index)
                 }
                 Text {

@@ -14,9 +14,11 @@ SelectionDialog {
     property string fileName: ""
     //property alias filePaths: fileBrowser.filePaths
 
-    height: screen.displayHeight
-    width: screen.displayWidth - (platformStyle.leftMargin +
-                                  platformStyle.rightMargin)
+    property bool __isPortrait: screen.currentOrientation == Screen.Portrait ||
+        screen.currentOrientation == Screen.PortraitInverted
+    height: __isPortrait ? screen.displayWidth : screen.displayHeight
+    width: __isPortrait ? screen.displayHeight : screen.displayWidth -
+        (platformStyle.leftMargin + platformStyle.rightMargin)
 
     content: Item {
         height: root.height - 100
