@@ -1,11 +1,10 @@
 import QtQuick 1.0
+import "UIConstants.js" as UI
 
 Item {
-    property int buttonSize: 72
-    property int screenMargin: 8
+    property int buttonSize: UI.OsmButtonSize
+    property int screenMargin: UI.OsmScreenMargin
     property bool isPortrait: height > width
-
-    Component.onCompleted: view.showFullScreen()
 
     Item {
         id: columns

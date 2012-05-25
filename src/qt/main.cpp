@@ -48,7 +48,11 @@ int main(int argc, char *argv[])
     view.rootContext()->setContextProperty("gps", Mappero::Gps::instance());
     view.setSource(QUrl("qrc:/mappero.qml"));
     view.setWindowTitle("Mappero");
+#if defined MEEGO || defined MAEMO5
+    view.showFullScreen();
+#else
     view.show();
+#endif
 
     view.centerOn(0, 0);
 
