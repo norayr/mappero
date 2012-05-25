@@ -46,7 +46,7 @@ Item {
 
         function getRoot() {
             var root = source.parent
-            while (root.parent)
+            while (root.parent && !root.hasOwnProperty("__isPage"))
             {
                 root = root.parent
             }
