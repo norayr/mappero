@@ -8,12 +8,23 @@ Item {
     property bool selectFolder: false
     property bool selectMultiple: false
     property string filePath: ""
-    property alias folder: folderModel.folder
-    property alias nameFilters: folderModel.nameFilters
+    property string folder
+    property variant nameFilters
 
     property Style platformStyle: FileBrowserStyle {}
 
     property string __iconStyle: platformStyle.inverted ? "-white" : ""
+    property bool __folderSet: false
+    property bool __folderChanged: false
+
+    onFolderChanged: {
+        if (__folderChanged) {
+            __folderChanged = false;
+        } else {
+            __folderSet = true
+            folderModel.folder = local2url(folder)
+        }
+    }
 
     Item {
         id: toolBar
@@ -37,15 +48,43 @@ Item {
             anchors.leftMargin: 6
             anchors.right: parent.right
             height: backButton.height
-            text: folderModel.folder
+            text: url2local(folderModel.folder)
             elide: Text.ElideLeft
             verticalAlignment: Text.AlignVCenter
         }
     }
 
     FolderListModel {
-        property string selectedFile: ""
         id: folderModel
+        folder: local2url(root.folder)
+        nameFilters: splitFilters(root.nameFilters)
+        property string selectedFile: ""
+
+        onFolderChanged: {
+            if (__folderSet) {
+                __folderSet = false;
+            } else {
+                __folderChanged = true
+                root.folder = url2local(folder)
+            }
+        }
+
+        function splitFilters(filters) {
+            if (!filters) { return [] }
+            var length = filters.length
+            var allPatterns = []
+            for (var i = 0; i < length; i++) {
+                var filter = filters[i]
+                var filePatterns = filter.match(/\(([^)]*)\)/)
+                if (filePatterns) {
+                    filePatterns = filePatterns[1]
+                } else {
+                    filePatterns = filter
+                }
+                allPatterns = allPatterns.concat(filePatterns.split(" "))
+            }
+            return allPatterns
+        }
     }
 
     ListView {
@@ -85,7 +124,7 @@ Item {
                         if (folderModel.isFolder(index)) {
                             folderModel.folder = filePath
                         } else {
-                            root.filePath = filePath
+                            root.filePath = url2local(filePath)
                         }
                     }
                 }
@@ -95,4 +134,22 @@ Item {
         model: folderModel
         delegate: fileDelegate
     }
+
+    function local2url(localPath) {
+        if (localPath.substring(0, 7) !== "file://") {
+            return "file://" + localPath
+        } else {
+            return localPath
+        }
+    }
+
+    function url2local(url) {
+        var s = url.toString()
+        if (s.substring(0, 7) === "file://") {
+            return s.substring(7)
+        } else {
+            return s
+        }
+    }
+
 }
