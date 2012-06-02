@@ -19,6 +19,13 @@ Item {
 
         OsmButton {
             source: ":maemo-mapper-path.png"
+            Loader {
+                id: trackPane
+            }
+            onClicked: {
+                trackPane.source = "OsmTrackItem.qml"
+                trackPane.item.open()
+            }
         }
 
         OsmButton {

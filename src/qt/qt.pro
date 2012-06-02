@@ -76,10 +76,13 @@ contains(MEEGO_EDITION,harmattan) {
     # Harmattan UI overrides
     RESOURCES += ../qml/harmattan.qrc
     DEFINES += MEEGO
-}
-
-maemo5 {
-    DEFINES += MAEMO5
+} else {
+    maemo5 {
+        DEFINES += MAEMO5
+    } else {
+        # Desktop
+        RESOURCES += ../qml/desktop.qrc
+    }
 }
 
 RESOURCES += \
