@@ -2,8 +2,6 @@ import QtQuick 1.0
 import "UIConstants.js" as UI
 
 Item {
-    width: 800
-    height: 480
     property int buttonSize: UI.OsmButtonSize
     property int screenMargin: UI.OsmScreenMargin
     property bool isPortrait: height > width
