@@ -30,6 +30,7 @@
 
 class QIODevice;
 class QXmlStreamReader;
+class QXmlStreamWriter;
 
 namespace Mappero {
 
@@ -90,6 +91,7 @@ private:
     friend class Kml;
     friend class Path;
     bool loadGpx(QXmlStreamReader &xml);
+    bool saveGpx(QXmlStreamWriter &xml) const;
 
 public:
     QVector<PathPoint> points;
@@ -104,6 +106,9 @@ public:
 
     bool load(const QString &fileName);
     bool load(QIODevice *device);
+
+    bool save(const QString &fileName) const;
+    bool save(QIODevice *device) const;
 
     bool isEmpty() const;
     const PathPoint &lastPoint() const;

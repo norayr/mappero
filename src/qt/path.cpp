@@ -28,6 +28,7 @@
 #include <QIODevice>
 #include <QStringList>
 #include <QXmlStreamReader>
+#include <QXmlStreamWriter>
 
 using namespace Mappero;
 
@@ -104,6 +105,22 @@ bool Path::load(QIODevice *device)
         }
     }
     return false;
+}
+
+bool Path::save(const QString &fileName) const
+{
+    QFile file(fileName);
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate))
+        return false;
+    return save(&file);
+}
+
+bool Path::save(QIODevice *device) const
+{
+    QXmlStreamWriter xml(device);
+
+    /* Only GPX for the time being */
+    return d->saveGpx(xml);
 }
 
 bool Path::isEmpty() const
@@ -194,6 +211,48 @@ bool PathData::loadGpx(QXmlStreamReader &xml)
         }
     }
     return false;
+}
+
+bool PathData::saveGpx(QXmlStreamWriter &xml) const
+{
+    xml.setAutoFormatting(true);
+    xml.setAutoFormattingIndent(2);
+    xml.writeStartDocument();
+
+    /* GPX element */
+    xml.writeStartElement("gpx");
+    xml.writeAttribute("version", "1.0");
+    xml.writeAttribute("creator", "mappero");
+    xml.writeAttribute("xmlns", "http://www.topografix.com/GPX/1/0");
+
+    /* track element */
+    xml.writeStartElement("trk");
+
+    /* TODO handle track segments */
+    xml.writeStartElement("trkseg");
+
+    /* this is outside of the loop, in order to reuse it */
+    QDateTime time;
+
+    foreach (const PathPoint &point, points) {
+        xml.writeStartElement("trktp");
+        xml.writeAttribute("lat", QString::number(point.geo.lat, 'f'));
+        xml.writeAttribute("lon", QString::number(point.geo.lon, 'f'));
+
+        if (point.altitude != 0) {
+            xml.writeTextElement("ele",
+                                 QString::number(point.altitude));
+        }
+
+        if (point.time != 0) {
+            time.setTime_t(point.time);
+            xml.writeTextElement("time", time.toString(Qt::ISODate));
+        }
+        xml.writeEndElement();
+    }
+    xml.writeEndDocument();
+
+    return true;
 }
 
 void PathData::makeWayPoint(const QString &desc, int pointIndex)

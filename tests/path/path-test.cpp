@@ -71,4 +71,14 @@ void PathTest::loadKml()
              UTF8("Arrive at: Tikkurila, Vantaa, Finland"));
 }
 
+void PathTest::saveGpx()
+{
+    Path path;
+
+    path.load(":/Lauttasaari.gpx");
+    QCOMPARE(path.d->points.count(), 524);
+
+    path.save("/tmp/Lauttasaari.gpx");
+}
+
 QTEST_MAIN(PathTest)

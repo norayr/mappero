@@ -36,6 +36,8 @@ private Q_SLOTS:
 
     void loadGpx();
     void loadKml();
+
+    void saveGpx();
 };
 
 }; // namespace
