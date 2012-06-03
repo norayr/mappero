@@ -173,7 +173,7 @@ bool PathData::loadGpx(QXmlStreamReader &xml)
 
             while (xml.readNextStartElement()) {
                 if (xml.name() == "ele") {
-                    p.altitude = xml.readElementText().toInt();
+                    p.altitude = xml.readElementText().toFloat();
                 } else if (xml.name() == "time") {
                     QDateTime time =
                         QDateTime::fromString(xml.readElementText(),
