@@ -5,6 +5,7 @@ import com.nokia.meego 1.0
 PageStackWindow {
     initialPage: mainPage
     showToolBar: false
+    visible: platformWindow.visible
 
     Page {
         id: mainPage

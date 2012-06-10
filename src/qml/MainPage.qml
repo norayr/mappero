@@ -18,7 +18,7 @@ Item {
         mainLayerId: "OpenStreetMap I"
         center: Qt.point(60.19997, 24.94057)
         requestedZoomLevel: 8
-        followGps: true
+        followGps: visible
     }
 
     MapFlickable {
