@@ -4,7 +4,7 @@ import com.nokia.meego 1.0
 Item {
     id: root
 
-    property string titleText: ""
+    property string title: ""
     property Item visualParent
     property bool selectFolder: false
     property bool selectExisting: true
@@ -21,7 +21,7 @@ Item {
         id: loader
 
         onLoaded: {
-            item.titleText = titleText
+            item.titleText = title
             item.selectFolder = selectFolder
             item.selectExisting = selectExisting
             item.folder = folder
