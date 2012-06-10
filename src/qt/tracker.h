@@ -50,6 +50,10 @@ public:
     void setTrack(const Path &track);
     Path track() const;
 
+public Q_SLOTS:
+    void loadFile(const QString &fileName);
+    void saveFile(const QString &fileName) const;
+
 Q_SIGNALS:
     void trackingChanged();
     void trackChanged();

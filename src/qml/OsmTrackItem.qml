@@ -35,6 +35,7 @@ Pane {
         onAccepted: {
             pane.close()
             console.log("Dialog accepted: " + filePath)
+            tracker.saveFile(filePath);
         }
     }
 
@@ -50,6 +51,7 @@ Pane {
         onAccepted: {
             pane.close()
             console.log("Dialog accepted: " + filePath)
+            tracker.loadFile(filePath);
         }
     }
 }

@@ -154,4 +154,16 @@ Path Tracker::track() const
     return d->track;
 }
 
+void Tracker::loadFile(const QString &fileName)
+{
+    Path path;
+    path.load(fileName);
+    setTrack(path);
+}
+
+void Tracker::saveFile(const QString &fileName) const
+{
+    track().save(fileName);
+}
+
 #include "tracker.moc"
