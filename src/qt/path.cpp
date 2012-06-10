@@ -210,7 +210,7 @@ bool PathData::loadGpx(QXmlStreamReader &xml)
             }
         }
     }
-    return false;
+    return true;
 }
 
 bool PathData::saveGpx(QXmlStreamWriter &xml) const
@@ -236,7 +236,7 @@ bool PathData::saveGpx(QXmlStreamWriter &xml) const
     time.setTimeSpec(Qt::UTC);
 
     foreach (const PathPoint &point, points) {
-        xml.writeStartElement("trktp");
+        xml.writeStartElement("trkpt");
         xml.writeAttribute("lat", QString::number(point.geo.lat, 'f'));
         xml.writeAttribute("lon", QString::number(point.geo.lon, 'f'));
 

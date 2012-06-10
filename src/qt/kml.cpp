@@ -154,5 +154,5 @@ bool Kml::appendToPath(Path *path)
     }
 
     makeWayPoints(pathData, waypoints);
-    return false;
+    return true;
 }
