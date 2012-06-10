@@ -131,6 +131,7 @@ void GpsPrivate::onPositionUpdated(const QGeoPositionInfo &update)
         update.hasAttribute(QGeoPositionInfo::VerticalAccuracy) ?
         update.attribute(QGeoPositionInfo::VerticalAccuracy) : 1000;
 
+    pos.m_time = update.timestamp().toUTC();
     if (update.hasAttribute(QGeoPositionInfo::Direction)) {
         pos.m_validFields |= GpsPosition::Direction;
         pos.m_direction = update.attribute(QGeoPositionInfo::Direction);

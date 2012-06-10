@@ -233,6 +233,7 @@ bool PathData::saveGpx(QXmlStreamWriter &xml) const
 
     /* this is outside of the loop, in order to reuse it */
     QDateTime time;
+    time.setTimeSpec(Qt::UTC);
 
     foreach (const PathPoint &point, points) {
         xml.writeStartElement("trktp");
