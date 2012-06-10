@@ -15,3 +15,13 @@ OTHER_FILES += \
     qtc_packaging/debian_fremantle/control \
     qtc_packaging/debian_fremantle/compat \
     qtc_packaging/debian_fremantle/changelog
+
+contains(MEEGO_EDITION,harmattan) {
+    desktopfile.files = data/mappero.desktop
+    desktopfile.path = /usr/share/applications
+    INSTALLS += desktopfile
+
+    icon.files = data/mappero.png
+    icon.path = /usr/share/icons/hicolor/80x80/apps
+    INSTALLS += icon
+}
