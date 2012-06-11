@@ -153,6 +153,7 @@ void Path::addPoint(const GeoPoint &geo, int altitude, time_t time,
         p.distance = distance;
     }
     d->points.append(p);
+    d->optimize();
 }
 
 QPainterPath Path::toPainterPath(int zoomLevel) const
@@ -161,7 +162,9 @@ QPainterPath Path::toPainterPath(int zoomLevel) const
 
     QPainterPath pp(d->points[0].unit.toPixel(zoomLevel));
     foreach (const PathPoint &point, d->points) {
-        // TODO: skip points based on their zoom value
+        // skip points based on their zoom value
+        if (point.zoom <= zoomLevel) continue;
+
         pp.lineTo(point.unit.toPixel(zoomLevel));
     }
     return pp;
@@ -210,6 +213,7 @@ bool PathData::loadGpx(QXmlStreamReader &xml)
             }
         }
     }
+    optimize();
     return true;
 }
 
@@ -259,4 +263,64 @@ bool PathData::saveGpx(QXmlStreamWriter &xml) const
 void PathData::makeWayPoint(const QString &desc, int pointIndex)
 {
     wayPoints.append(PathWayPoint(desc, pointIndex));
+}
+
+void PathData::optimize()
+{
+    int tolerance = 8;
+
+    /* for every point, set the zoom level at which the point must be rendered
+     */
+
+    if (points.isEmpty()) return;
+
+    QVector<PathPoint>::iterator curr = points.begin() + pointsOptimized;
+    if (pointsOptimized == 0)
+    {
+        curr->zoom = SCHAR_MAX;
+        pointsOptimized = 1;
+        curr++;
+    }
+
+    QVector<PathPoint>::iterator prev;
+
+    for (; curr != points.end(); curr++)
+    {
+        int dx, dy, dmax, zoom;
+
+        prev = curr - 1;
+
+        dx = curr->unit.x() - prev->unit.x();
+        dy = curr->unit.y() - prev->unit.y();
+        dmax = qMax(qAbs(dx), qAbs(dy));
+
+        for (zoom = 0; dmax > tolerance << zoom; zoom++);
+
+        /* We got the zoom level for this point, supposing that the previous
+         * one is always drawn.
+         * But we need go back in the path to find the last point which is
+         * _surely_ drawn when this point is; that is, we look for the last
+         * point having a zoom value bigger than that of the current point. */
+
+        while (zoom >= prev->zoom)
+        {
+            QVector<PathPoint>::iterator prevBefore;
+            /* going back is safe (we don't risk going past the head) because
+             * the first point will always have zoom set to 127 */
+            for (prevBefore = prev; prev->zoom <= zoom; prev--);
+
+            if (prev == prevBefore) break;
+
+            /* now, find the distance between these two points */
+            dx = curr->unit.x() - prevBefore->unit.x();
+            dy = curr->unit.y() - prevBefore->unit.y();
+            dmax = qMax(qAbs(dx), qAbs(dy));
+
+            for (; dmax > tolerance << zoom; zoom++);
+        }
+
+        curr->zoom = zoom;
+    }
+
+    pointsOptimized = points.count();
 }

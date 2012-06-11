@@ -81,7 +81,7 @@ class PathTest;
 class PathData: public QSharedData
 {
 public:
-    PathData() {}
+    PathData(): pointsOptimized(0) {}
     inline PathData(const PathData &other);
     ~PathData() {}
 
@@ -93,9 +93,12 @@ private:
     bool loadGpx(QXmlStreamReader &xml);
     bool saveGpx(QXmlStreamWriter &xml) const;
 
+    void optimize();
+
 public:
     QVector<PathPoint> points;
     QVector<PathWayPoint> wayPoints;
+    int pointsOptimized;
 };
 
 class Path
@@ -130,7 +133,8 @@ private:
 };
 
 inline PathData::PathData(const PathData &other):
-    QSharedData(other), points(other.points), wayPoints(other.wayPoints) {}
+    QSharedData(other), points(other.points), wayPoints(other.wayPoints),
+    pointsOptimized(other.pointsOptimized) {}
 
 }; // namespace
 
