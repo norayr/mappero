@@ -26,12 +26,19 @@
 
 namespace Mappero {
 
+struct TileContents;
 class TiledLayer;
 
 class Tile: public QGraphicsPixmapItem
 {
 public:
     Tile(TiledLayer *parent);
+
+    void setTileContents(const TileContents &tileContents);
+    bool needsNetwork() const { return _needsNetwork; }
+
+private:
+    bool _needsNetwork;
 };
 
 }; // namespace

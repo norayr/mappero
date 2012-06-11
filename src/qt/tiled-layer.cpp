@@ -84,6 +84,7 @@ class TiledLayerPrivate: public QObject
         url(url),
         format(format),
         type(type),
+        fetchMissingTiles(false),
         center(0, 0),
         zoomLevel(-1)
     {
@@ -93,9 +94,14 @@ class TiledLayerPrivate: public QObject
         tileDownload = controller->tileDownload();
         tileCache = controller->tileCache();
         QObject::connect(tileDownload,
-                         SIGNAL(tileDownloaded(const TileSpec &, QByteArray)),
+                         SIGNAL(tileDownloaded(const TileSpec &,TileContents)),
                          this,
-                         SLOT(onTileDownloaded(const TileSpec &, QByteArray)));
+                         SLOT(onTileDownloaded(const TileSpec &,TileContents)));
+
+        QObject::connect(tileDownload,
+                         SIGNAL(onlineStateChanged(bool)),
+                         this,
+                         SLOT(onOnlineStateChanged(bool)));
     }
 
     int zoomLevelFromMap(const Map *map) const
@@ -107,7 +113,8 @@ class TiledLayerPrivate: public QObject
     void loadTiles(const QPoint &start, const QPoint stop);
 
 private Q_SLOTS:
-    void onTileDownloaded(const TileSpec &tileSpec, QByteArray tileData);
+    void onTileDownloaded(const TileSpec &tileSpec, TileContents tileContents);
+    void onOnlineStateChanged(bool isOnline);
 
 private:
     mutable TiledLayer *q_ptr;
@@ -119,6 +126,7 @@ private:
     QString baseDir;
     TileDownload *tileDownload;
     TileCache *tileCache;
+    bool fetchMissingTiles;
 
     Point center;
     int zoomLevel;
@@ -192,7 +200,7 @@ void TiledLayerPrivate::loadTiles(const QPoint &start, const QPoint stop)
             bool found;
 
             Tile *tile = tileCache->tile(tileSpec, &found);
-            if (!found) {
+            if (!found || (fetchMissingTiles && tile->needsNetwork())) {
                 tileDownload->requestTile(tileSpec, 0);
             } else {
                 tile->setVisible(true);
@@ -200,25 +208,37 @@ void TiledLayerPrivate::loadTiles(const QPoint &start, const QPoint stop)
             tile->setPos(x, y);
         }
     }
+
+    fetchMissingTiles = false;
 }
 
 void TiledLayerPrivate::onTileDownloaded(const TileSpec &tileSpec,
-                                         QByteArray tileData)
+                                         TileContents tileContents)
 {
-    if (tileData.isEmpty()) {
+    if (tileContents.image.isEmpty()) {
         DEBUG() << "No tile data!";
         return;
     }
 
     Tile *tile = tileCache->find(tileSpec);
     if (tile != 0) {
-        QPixmap pixmap;
-        pixmap.loadFromData(tileData);
-        tile->setPixmap(pixmap);
+        tile->setTileContents(tileContents);
         /* Don't re-show tiles which don't belong here */
         if (tileSpec.zoom == zoomLevel)
             tile->setVisible(true);
     }
+}
+
+void TiledLayerPrivate::onOnlineStateChanged(bool isOnline)
+{
+    if (!isOnline) return;
+
+    DEBUG() << "Network is available";
+
+    Q_Q(TiledLayer);
+    /* refresh the view, to fetch any missing tiles */
+    fetchMissingTiles = true;
+    q->mapEvent(0);
 }
 
 TiledLayer::TiledLayer(const QString &name, const QString &id,

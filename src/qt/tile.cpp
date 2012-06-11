@@ -23,13 +23,24 @@
 #   include "config.h"
 #endif
 #include "debug.h"
+#include "tile-download.h"
 #include "tile.h"
 #include "tiled-layer.h"
 
 using namespace Mappero;
 
 Tile::Tile(TiledLayer *parent):
-    QGraphicsPixmapItem(parent)
+    QGraphicsPixmapItem(parent),
+    _needsNetwork(true)
 {
     setTransformationMode(Qt::SmoothTransformation);
+}
+
+void Tile::setTileContents(const TileContents &tileContents)
+{
+    QPixmap pixmap;
+    pixmap.loadFromData(tileContents.image);
+    setPixmap(pixmap);
+
+    _needsNetwork = tileContents.needsNetwork;
 }

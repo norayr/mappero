@@ -32,8 +32,10 @@
 #include <QMap>
 #include <QMutex>
 #include <QNetworkAccessManager>
+#include <QNetworkConfigurationManager>
 #include <QNetworkReply>
 #include <QNetworkRequest>
+#include <QNetworkSession>
 #include <QRunnable>
 #include <QThreadPool>
 #include <QUrl>
@@ -62,11 +64,11 @@ struct TaskData
     };
 
     Status status;
-    QByteArray tileData;
+    TileContents tileContents;
 
     TaskData():
         status(Queued),
-        tileData()
+        tileContents()
     {}
 };
 
@@ -93,7 +95,9 @@ inline bool operator<(const TileTask &t1, const TileTask &t2)
 class Downloader: public QRunnable
 {
 public:
-    Downloader(TaskMap &tasks, QMutex &mutex, QObject *listener);
+    Downloader(TaskMap &tasks, QMutex &mutex,
+               QNetworkConfigurationManager *ncm,
+               QObject *listener);
     ~Downloader();
 
     // reimplemented virtual method
@@ -106,6 +110,7 @@ private:
 private:
     TaskMap &tasks;
     QMutex &mutex;
+    QNetworkConfigurationManager *ncm;
     QObject *listener;
     QNetworkAccessManager *networkAccessManager;
 };
@@ -117,10 +122,16 @@ class TileDownloadPrivate: public QObject
 
     TileDownloadPrivate(TileDownload *tileDownload):
         QObject(tileDownload),
-        q_ptr(tileDownload)
+        q_ptr(tileDownload),
+        networkRequested(false)
     {
         pool = QThreadPool::globalInstance();
         qRegisterMetaType<TaskMap::iterator>("TaskMap::iterator");
+
+        QObject::connect(&ncm,
+                         SIGNAL(onlineStateChanged(bool)),
+                         q_ptr,
+                         SIGNAL(onlineStateChanged(bool)));
     }
     ~TileDownloadPrivate() {};
 
@@ -132,9 +143,11 @@ private:
 
 private:
     mutable TileDownload *q_ptr;
+    bool networkRequested;
     TaskMap tasks;
     QMutex tasksMutex;
     QThreadPool *pool;
+    QNetworkConfigurationManager ncm;
 };
 }; // namespace
 
@@ -146,9 +159,12 @@ static inline QDebug operator<<(QDebug dbg, const TileTask &t)
     return dbg.space();
 }
 
-Downloader::Downloader(TaskMap &tasks, QMutex &mutex, QObject *listener):
+Downloader::Downloader(TaskMap &tasks, QMutex &mutex,
+                       QNetworkConfigurationManager *ncm,
+                       QObject *listener):
     tasks(tasks),
     mutex(mutex),
+    ncm(ncm),
     listener(listener)
 {
 }
@@ -203,18 +219,23 @@ void Downloader::processTask(TaskMap::iterator t)
                                                  tile.spec.y));
     if (tileFile.exists() &&
         tileFile.open(QIODevice::ReadOnly)) {
-        data.tileData = tileFile.readAll();
+        data.tileContents.image = tileFile.readAll();
     } else {
-        data.tileData = downloadTile(tile);
-        /* save the tile */
-        if (!data.tileData.isEmpty()) {
-            QFileInfo info(tileFile.fileName());
-            info.dir().mkpath(QLatin1String("."));
-            if (tileFile.open(QIODevice::WriteOnly)) {
-                tileFile.write(data.tileData);
-            } else {
-                qWarning() << "Couldn't save tile" << tileFile.fileName();
+        if (ncm->isOnline()) {
+            data.tileContents.image = downloadTile(tile);
+            /* save the tile */
+            if (!data.tileContents.image.isEmpty()) {
+                QFileInfo info(tileFile.fileName());
+                info.dir().mkpath(QLatin1String("."));
+                if (tileFile.open(QIODevice::WriteOnly)) {
+                    tileFile.write(data.tileContents.image);
+                } else {
+                    qWarning() << "Couldn't save tile" << tileFile.fileName();
+                }
             }
+        } else {
+            /* TODO: upscale/downscale tiles as needed */
+            data.tileContents.needsNetwork = true;
         }
     }
 
@@ -252,7 +273,9 @@ void TileDownloadPrivate::taskCompleted(TaskMap::iterator t)
 {
     Q_Q(TileDownload);
 
-    Q_EMIT q->tileDownloaded(t.key().spec, t.value().tileData);
+    TaskData &data = t.value();
+
+    Q_EMIT q->tileDownloaded(t.key().spec, data.tileContents);
 
     /* Note: we can destroy the TaskData only because we know that the signal
      * connection is immediate; otherwise the receiver might end up accessing
@@ -260,6 +283,13 @@ void TileDownloadPrivate::taskCompleted(TaskMap::iterator t)
     tasksMutex.lock();
     tasks.erase(t);
     tasksMutex.unlock();
+
+    if (data.tileContents.needsNetwork && !networkRequested) {
+        networkRequested = true;
+        QNetworkConfiguration cfg = ncm.defaultConfiguration();
+        QNetworkSession *session = new QNetworkSession(cfg, this);
+        session->open();
+    }
 }
 
 void TileDownloadPrivate::requestTile(const TileTask &task)
@@ -270,7 +300,7 @@ void TileDownloadPrivate::requestTile(const TileTask &task)
     tasksMutex.unlock();
 
     if (pool->activeThreadCount() < pool->maxThreadCount()) {
-        Downloader *downloader = new Downloader(tasks, tasksMutex, this);
+        Downloader *downloader = new Downloader(tasks, tasksMutex, &ncm, this);
         pool->start(downloader);
     }
 }

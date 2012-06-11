@@ -29,6 +29,15 @@
 
 namespace Mappero {
 
+struct TileContents {
+    TileContents(): image(QByteArray()), needsNetwork(false) {}
+
+    QByteArray image;
+    /* true if the tile image data could be improved by fetching it from the
+     * network */
+    bool needsNetwork;
+};
+
 class TileDownloadPrivate;
 class TileDownload: public QObject
 {
@@ -41,7 +50,8 @@ public:
     void requestTile(const TileSpec &spec, int priority);
 
 Q_SIGNALS:
-    void tileDownloaded(const TileSpec &tileSpec, QByteArray tileData);
+    void tileDownloaded(const TileSpec &tileSpec, TileContents tileContents);
+    void onlineStateChanged(bool isOnline);
 
 private:
     TileDownloadPrivate *d_ptr;
