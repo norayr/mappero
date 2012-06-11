@@ -44,6 +44,8 @@ class PathItemPrivate: public QObject
         routePen(Qt::green, 4),
         trackPen(Qt::red, 4)
     {
+        routePen.setCosmetic(true);
+        trackPen.setCosmetic(true);
     }
     ~PathItemPrivate() {};
 
