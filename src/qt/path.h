@@ -39,9 +39,10 @@ class Projection;
 struct PathPoint
 {
     PathPoint();
-    PathPoint(const GeoPoint &p);
+    PathPoint(const GeoPoint &p, int altitude = 0);
 
-    inline bool operator==(const PathPoint &other) { return geo == other.geo; }
+    bool isValid() { return geo.isValid() && altitude != 0; }
+    inline bool operator==(const PathPoint &other) const { return geo == other.geo; }
 
     GeoPoint geo;
     Point unit;

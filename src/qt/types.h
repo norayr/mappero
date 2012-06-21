@@ -41,9 +41,11 @@ typedef float Geo;
 typedef int Unit;
 
 struct Point: public QPoint {
-    Point(): QPoint() {}
+    Point(): QPoint(0, INT_MIN) {}
     Point(Unit x, Unit y): QPoint(x, y) {}
     Point(const QPoint &p): QPoint(p) {}
+
+    bool isValid() const { return y() != INT_MIN; }
 
     inline QPoint toTile(int zoom) const {
         return QPoint(x() >> (TILE_SIZE_P2 + zoom),
@@ -64,7 +66,7 @@ struct Point: public QPoint {
 };
 
 struct GeoPoint {
-    GeoPoint() {}
+    GeoPoint(): lat(NAN), lon(0) {}
     GeoPoint(const QPointF &p): lat(p.x()), lon(p.y()) {}
     GeoPoint(Geo lat, Geo lon): lat(lat), lon(lon) {}
     Geo lat;
@@ -72,6 +74,7 @@ struct GeoPoint {
 
     QPointF toPointF() const { return QPointF(lat, lon); }
     Geo distanceTo(const GeoPoint &other) const;
+    bool isValid() { return lat != NAN; }
     friend inline bool operator==(const GeoPoint &, const GeoPoint &);
     friend inline bool operator!=(const GeoPoint &, const GeoPoint &);
 };

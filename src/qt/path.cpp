@@ -51,11 +51,11 @@ PathPoint::PathPoint():
 {
 }
 
-PathPoint::PathPoint(const GeoPoint &p):
+PathPoint::PathPoint(const GeoPoint &p, int altitude):
     geo(p),
     time(0),
     zoom(SCHAR_MAX),
-    altitude(0),
+    altitude(altitude),
     distance(0.0)
 {
     ensure_projection();
