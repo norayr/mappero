@@ -204,7 +204,6 @@ void MapPrivate::onFlickablePan()
 void MapPrivate::onFlickablePanFinished()
 {
     Q_Q(Map);
-    QPointF viewCenter = q->boundingRect().center();
     Point newCenterUnits = centerUnits.translated(pixel2unit(pan));
     q->setCenter(unit2geo(newCenterUnits).toPointF());
     ignoreNextPan = true;
