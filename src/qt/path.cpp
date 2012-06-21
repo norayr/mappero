@@ -41,6 +41,38 @@ static inline void ensure_projection()
     }
 }
 
+inline GeoPoint operator-(const GeoPoint &p1, const GeoPoint &p2)
+{ return GeoPoint(p1.lat - p2.lat, p1.lon - p2.lon); }
+
+inline GeoPoint operator+(const GeoPoint &p1, const GeoPoint &p2)
+{ return GeoPoint(p1.lat + p2.lat, p1.lon + p2.lon); }
+
+inline GeoPoint operator*(const GeoPoint &p, double x)
+{ return GeoPoint(p.lat * x, p.lon * x); }
+
+struct PathVector
+{
+    PathVector(GeoPoint geo, qint16 altitude):
+        geo(geo), altitude(altitude) {}
+
+    PathVector operator*(double x) const {
+        return PathVector(geo * x, altitude * x);
+    }
+
+    GeoPoint geo;
+    qint16 altitude;
+};
+
+inline PathVector operator-(const PathPoint &a, const PathPoint &b)
+{
+    return PathVector(a.geo - b.geo, a.altitude - b.altitude);
+}
+
+inline PathPoint operator+(const PathPoint &p, const PathVector &v)
+{
+    return PathPoint(p.geo + v.geo, p.altitude + v.altitude);
+}
+
 PathPoint::PathPoint():
     geo(0, 0),
     unit(0, 0),
@@ -131,6 +163,11 @@ bool Path::isEmpty() const
 const PathPoint &Path::lastPoint() const
 {
     return d->points.last();
+}
+
+PathPoint Path::positionAt(time_t time) const
+{
+    return d->positionAt(time);
 }
 
 void Path::clear()
@@ -263,6 +300,29 @@ bool PathData::saveGpx(QXmlStreamWriter &xml) const
 void PathData::makeWayPoint(const QString &desc, int pointIndex)
 {
     wayPoints.append(PathWayPoint(desc, pointIndex));
+}
+
+PathPoint PathData::positionAt(time_t time) const
+{
+    if (points.isEmpty() ||
+        time < points.first().time ||
+        time > points.last().time) {
+        return PathPoint();
+    }
+
+    /* Find the two closest elements in the path. */
+    QVector<PathPoint>::const_iterator a, b;
+    for (b = points.begin(); b != points.end(); b++)
+        if (b->time > time) break;
+
+    a = b - 1;
+    /* if an element was not found or if times are the same, then we can return
+     * the last one */
+    if (b == points.end() || a->time == b->time) return *a;
+
+    /* interpolate between a and b */
+    double t = (double(time) - a->time) / (b->time - a->time);
+    return *a + (*b - *a) * t;
 }
 
 void PathData::optimize()

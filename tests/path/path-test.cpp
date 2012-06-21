@@ -21,6 +21,7 @@
 #include "path-test.h"
 
 #include "path.h"
+#include <QDebug>
 
 #define UTF8(s) QString::fromUtf8(s)
 
@@ -79,6 +80,24 @@ void PathTest::saveGpx()
     QCOMPARE(path.d->points.count(), 524);
 
     path.save("/tmp/Lauttasaari.gpx");
+}
+
+void PathTest::positionAt()
+{
+    Path path;
+
+    path.load(":/Lauttasaari.gpx");
+
+    PathPoint &first = path.d->points[0];
+    QCOMPARE(path.positionAt(first.time), first);
+
+    PathPoint &last = path.d->points[0];
+    QCOMPARE(path.positionAt(last.time), last);
+
+    time_t time =
+        QDateTime::fromString("2011-08-25T18:33:02", Qt::ISODate).toTime_t();
+    PathPoint p = path.positionAt(time);
+    QCOMPARE(p.geo, GeoPoint(60.164066, 24.865551));
 }
 
 QTEST_MAIN(PathTest)

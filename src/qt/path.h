@@ -87,6 +87,7 @@ public:
     ~PathData() {}
 
     void makeWayPoint(const QString &desc, int pointIndex);
+    PathPoint positionAt(time_t time) const;
 
 private:
     friend class Kml;
@@ -116,6 +117,8 @@ public:
 
     bool isEmpty() const;
     const PathPoint &lastPoint() const;
+
+    PathPoint positionAt(time_t time) const;
 
     void clear();
 
