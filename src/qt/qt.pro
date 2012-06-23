@@ -5,6 +5,8 @@ DEPLOYMENTFOLDERS = folder_01
 
 TARGET = mappero
 
+CONFIG += link_pkgconfig
+
 # Additional import path used to resolve QML modules in Creator's code model
 QML_IMPORT_PATH =
 
@@ -83,6 +85,18 @@ contains(MEEGO_EDITION,harmattan) {
         # Desktop
         RESOURCES += ../qml/desktop.qrc
     }
+}
+
+system(pkg-config --exists exiv2) {
+    message("libexiv2 is available")
+    DEFINES += GEOTAGGING_ENABLED
+    PKGCONFIG += exiv2
+    SOURCES += \
+        taggable.cpp
+    HEADERS += \
+        taggable.h
+} else {
+    message("libexiv2 not found, geotagging disabled")
 }
 
 RESOURCES += \
