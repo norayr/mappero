@@ -20,6 +20,10 @@
 #include "controller.h"
 #include "gps.h"
 #include "map.h"
+#ifdef GEOTAGGING_ENABLED
+#include "taggable.h"
+#include "taggable-area.h"
+#endif
 #include "tracker.h"
 #include "view.h"
 
@@ -46,6 +50,20 @@ int main(int argc, char *argv[])
     controller.setView(&view);
     view.rootContext()->setContextProperty("view", &view);
     view.rootContext()->setContextProperty("gps", Mappero::Gps::instance());
+
+    QString firstPage = "MainPage.qml";
+    if (app.arguments().contains("--geotag")) {
+        firstPage = "GeoTagPage.qml";
+    }
+    view.rootContext()->setContextProperty("firstPage", firstPage);
+
+#ifdef GEOTAGGING_ENABLED
+    qmlRegisterType<Mappero::TaggableArea>("Mappero", 1, 0, "TaggableArea");
+    QDeclarativeEngine *engine = view.rootContext()->engine();
+    engine->addImageProvider(Mappero::Taggable::ImageProvider::name(),
+                             Mappero::Taggable::ImageProvider::instance());
+#endif
+
     view.setSource(QUrl("qrc:/mappero.qml"));
     view.setWindowTitle("Mappero");
 #if defined MEEGO || defined MAEMO5

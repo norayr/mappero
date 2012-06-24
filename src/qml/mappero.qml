@@ -5,5 +5,8 @@ Rectangle {
     width: 800
     height: 480
 
-    MainPage {}
+    Loader {
+        anchors.fill: parent
+        source: firstPage
+    }
 }

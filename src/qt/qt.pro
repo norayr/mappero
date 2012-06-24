@@ -92,8 +92,10 @@ system(pkg-config --exists exiv2) {
     DEFINES += GEOTAGGING_ENABLED
     PKGCONFIG += exiv2
     SOURCES += \
+        taggable-area.cpp \
         taggable.cpp
     HEADERS += \
+        taggable-area.h \
         taggable.h
 } else {
     message("libexiv2 not found, geotagging disabled")

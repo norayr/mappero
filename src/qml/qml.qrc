@@ -1,5 +1,6 @@
 <!DOCTYPE RCC><RCC version="1.0">
 <qresource>
+  <file>GeoTagPage.qml</file>
   <file>mappero.qml</file>
   <file>MainPage.qml</file>
   <file>MapFlickable.qml</file>
@@ -9,6 +10,7 @@
   <file>OsmTrackItem.qml</file>
   <file>Osm.qml</file>
   <file>Pane.qml</file>
+  <file>TaggableDelegate.qml</file>
   <file>UIConstants.js</file>
 </qresource>
 </RCC>
