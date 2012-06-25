@@ -42,7 +42,7 @@ int main(int argc, char *argv[])
     app.setApplicationName("mappero");
 
     qRegisterMetaType<Mappero::GeoPoint>("GeoPoint");
-    qmlRegisterType<Mappero::Map>("Mappero", 1, 0, "MapItem");
+    qmlRegisterType<Mappero::Map>("Mappero", 1, 0, "MapView");
     qmlRegisterType<Mappero::Tracker>("Mappero", 1, 0, "Tracker");
 
     Mappero::Controller controller;

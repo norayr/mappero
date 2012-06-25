@@ -1,9 +1,7 @@
 import QtQuick 1.0
 import Mappero 1.0
 
-MapItem {
-    id: mapItem
-
+MapView {
     animatedZoomLevel: requestedZoomLevel
     animatedCenterUnits: requestedCenterUnits
 
