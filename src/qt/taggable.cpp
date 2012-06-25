@@ -41,20 +41,28 @@ class TaggablePrivate
     ~TaggablePrivate();
 
     void loadExifInfo();
+    void readGeoData(const Exiv2::ExifData &exifData);
     QPixmap preview(QSize *size, const QSize &requestedSize) const;
+    static QString exifString(const Exiv2::Value &value) {
+        return QString::fromAscii(value.toString().c_str());
+    }
+    static Geo exifGeoCoord(const Exiv2::Value &value, bool positive);
 
 private:
     mutable Taggable *q_ptr;
     QString fileName;
     time_t time;
     Exiv2::Image::AutoPtr image;
+    GeoPoint geoPoint;
+    bool needsSave;
 };
 }; // namespace
 
 TaggablePrivate::TaggablePrivate(Taggable *taggable):
     q_ptr(taggable),
     time(0),
-    image(0)
+    image(0),
+    needsSave(false)
 {
 }
 
@@ -66,6 +74,7 @@ void TaggablePrivate::loadExifInfo()
 {
     // reset the cached data
     time = 0;
+    geoPoint = GeoPoint();
 
     // load the EXIF data
     image = Exiv2::ImageFactory::open(fileName.toStdString());
@@ -84,6 +93,8 @@ void TaggablePrivate::loadExifInfo()
         time = QDateTime::fromString(timeString,
                                      "yyyy:MM:dd HH:mm:ss").toTime_t();
     }
+
+    readGeoData(exifData);
         /*
         Exiv2::ExifData::const_iterator end = exifData.end();
         for (Exiv2::ExifData::const_iterator i = exifData.begin();
@@ -97,6 +108,49 @@ void TaggablePrivate::loadExifInfo()
                 "value" << QString::fromStdString(i->value().toString());
         }
         */
+}
+
+void TaggablePrivate::readGeoData(const Exiv2::ExifData &exifData)
+{
+    QString latRef;
+    Exiv2::ExifData::const_iterator i =
+        exifData.findKey(Exiv2::ExifKey("Exif.GPSInfo.GPSLatitudeRef"));
+    if (i != exifData.end()) {
+        latRef = exifString(i->value());
+    }
+    if (latRef.isEmpty() || (latRef[0] != 'N' && latRef[0] != 'S')) return;
+
+    QString lonRef;
+    i = exifData.findKey(Exiv2::ExifKey("Exif.GPSInfo.GPSLongitudeRef"));
+    if (i != exifData.end()) {
+        lonRef = exifString(i->value());
+    }
+    if (lonRef.isEmpty() || (lonRef[0] != 'E' && lonRef[0] != 'W')) return;
+
+    Geo lat, lon;
+
+    i = exifData.findKey(Exiv2::ExifKey("Exif.GPSInfo.GPSLatitude"));
+    if (i == exifData.end()) return;
+    lat = exifGeoCoord(i->value(), latRef[0] == 'N');
+
+    i = exifData.findKey(Exiv2::ExifKey("Exif.GPSInfo.GPSLongitude"));
+    if (i == exifData.end()) return;
+    lon = exifGeoCoord(i->value(), lonRef[0] == 'E');
+
+    geoPoint = GeoPoint(lat, lon);
+}
+
+Geo TaggablePrivate::exifGeoCoord(const Exiv2::Value &value, bool positive)
+{
+    Geo geo;
+
+    int count = value.count();
+    if (count <= 0) return 0;
+
+    geo = value.toFloat(0);
+    if (count > 1) geo += value.toFloat(1) / 60.0;
+    if (count > 2) geo += value.toFloat(2) / 3600.0;
+    return positive ? geo : -geo;
 }
 
 QPixmap TaggablePrivate::preview(QSize *size,
@@ -166,6 +220,36 @@ QString Taggable::fileName() const
     return d->fileName;
 }
 
+void Taggable::setLocation(const GeoPoint &location)
+{
+    Q_D(Taggable);
+
+    if (location == d->geoPoint) return;
+
+    d->geoPoint = location;
+    d->needsSave = true;
+    Q_EMIT locationChanged();
+    Q_EMIT needsSaveChanged();
+}
+
+GeoPoint Taggable::location() const
+{
+    Q_D(const Taggable);
+    return d->geoPoint;
+}
+
+bool Taggable::hasLocation() const
+{
+    Q_D(const Taggable);
+    return d->geoPoint.isValid();
+}
+
+bool Taggable::needsSave() const
+{
+    Q_D(const Taggable);
+    return d->needsSave;
+}
+
 time_t Taggable::time() const
 {
     Q_D(const Taggable);
@@ -182,7 +266,7 @@ QPixmap Taggable::pixmap(QSize *size, const QSize &requestedSize) const
     /* If a thumbnail is not available, use the image itself */
     QPixmap pixmap(d->fileName);
     if (size != 0) *size = pixmap.size();
-    if (requestedSize.isValid()) {
+    if (!requestedSize.isEmpty()) {
         pixmap = pixmap.scaled(requestedSize,
                                Qt::KeepAspectRatioByExpanding,
                                Qt::SmoothTransformation);

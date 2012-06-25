@@ -21,6 +21,8 @@
 #ifndef MAP_TAGGABLE_H
 #define MAP_TAGGABLE_H
 
+#include "types.h"
+
 #include <QDeclarativeImageProvider>
 #include <QMap>
 #include <QMetaType>
@@ -41,7 +43,10 @@ class Taggable: public QObject
     Q_PROPERTY(QUrl pixmapUrl READ pixmapUrl CONSTANT);
     Q_PROPERTY(QString fileName READ fileName WRITE setFileName \
                NOTIFY fileNameChanged);
-    Q_PROPERTY(time_t time READ time CONSTANT);
+    Q_PROPERTY(GeoPoint location READ location WRITE setLocation \
+               NOTIFY locationChanged);
+    Q_PROPERTY(bool hasLocation READ hasLocation NOTIFY locationChanged);
+    Q_PROPERTY(bool needsSave READ needsSave NOTIFY needsSaveChanged);
 
 public:
     Taggable(QObject *parent = 0);
@@ -52,12 +57,20 @@ public:
     void setFileName(const QString &fileName);
     QString fileName() const;
 
+    void setLocation(const GeoPoint &location);
+    GeoPoint location() const;
+    bool hasLocation() const;
+
+    bool needsSave() const;
+
     time_t time() const;
 
     QPixmap pixmap(QSize *size, const QSize &requestedSize) const;
 
 Q_SIGNALS:
     void fileNameChanged();
+    void locationChanged();
+    void needsSaveChanged();
 
 public:
     class ImageProvider: public QDeclarativeImageProvider

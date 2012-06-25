@@ -1,4 +1,5 @@
 import QtQuick 1.0
+import "UIConstants.js" as UI
 
 Rectangle {
     property alias source: thumbnail.source
@@ -14,8 +15,8 @@ Rectangle {
         clip: true
         fillMode: Image.PreserveAspectCrop
         source: taggable.pixmapUrl
-        sourceSize.width: height
-        sourceSize.height: height
+        sourceSize.width: UI.TaggableSourceWidth
+        sourceSize.height: UI.TaggableSourceHeight
 
         Item {
             anchors.left: parent.left

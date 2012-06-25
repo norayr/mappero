@@ -1,5 +1,6 @@
 import QtQuick 1.0
 import Mappero 1.0
+import "UIConstants.js" as UI
 
 Item {
     anchors.fill: parent
@@ -31,7 +32,7 @@ Item {
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.bottom: parent.bottom
-        height: 120
+        height: UI.TagPaneHeight
         color: "white"
 
         TaggableArea {
