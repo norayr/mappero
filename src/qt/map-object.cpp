@@ -46,8 +46,15 @@ void MapEvent::clear()
 
 void MapObject::setMap(Map *map)
 {
-    if (map != m_map) {
-        m_map = map;
+    if (map == m_map) return;
+
+    if (m_map != 0) {
+        m_map->removeObject(this);
+    }
+
+    m_map = map;
+
+    if (map != 0) {
         map->addObject(this);
 
         // Inform the object that a map has been set

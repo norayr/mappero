@@ -30,6 +30,7 @@ namespace Mappero {
 
 class GpsPosition;
 class Layer;
+class MapItem;
 class MapObject;
 class Path;
 class Projection;
@@ -62,6 +63,8 @@ class Map: public QDeclarativeItem {
     Q_PROPERTY(bool followGps READ followGps WRITE setFollowGps \
                NOTIFY followGpsChanged);
     Q_PROPERTY(Mappero::Tracker *tracker READ tracker WRITE setTracker);
+    Q_PROPERTY(QDeclarativeListProperty<Mappero::MapItem> items READ items);
+    Q_CLASSINFO("DefaultProperty", "items");
 
 public:
     Map();
@@ -107,6 +110,8 @@ public:
     void setTracker(Tracker *tracker);
     Tracker *tracker() const;
 
+    QDeclarativeListProperty<MapItem> items();
+
     // reimplemented virtual functions:
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
                QWidget *widget);
@@ -134,6 +139,7 @@ protected:
 private:
     friend class MapObject;
     void addObject(MapObject *mapObject);
+    void removeObject(MapObject *mapObject);
 
     MapPrivate *d_ptr;
     Q_DECLARE_PRIVATE(Map)

@@ -45,6 +45,8 @@ using namespace Mappero;
 
 namespace Mappero {
 
+typedef QDeclarativeListProperty<MapItem> MapItemList;
+
 class LayerGroup: public MapObject
 {
 public:
@@ -94,6 +96,27 @@ class MapPrivate: public QObject
 
     void setupFlickable();
 
+    static void itemAppend(MapItemList *p, MapItem *o) {
+        MapPrivate *d = reinterpret_cast<MapPrivate*>(p->data);
+        d->items.append(o);
+        o->setMap(d->q_ptr);
+    }
+    static int itemCount(MapItemList *p) {
+        MapPrivate *d = reinterpret_cast<MapPrivate*>(p->data);
+        return d->items.count();
+    }
+    static MapItem *itemAt(MapItemList *p, int idx) {
+        MapPrivate *d = reinterpret_cast<MapPrivate*>(p->data);
+        return d->items.at(idx);
+    }
+    static void itemClear(MapItemList *p) {
+        MapPrivate *d = reinterpret_cast<MapPrivate*>(p->data);
+        foreach (MapItem *o, d->items) {
+            o->setMap(0);
+        }
+        d->items.clear();
+    }
+
 private Q_SLOTS:
     void deliverMapEvent();
     void onFlickablePan();
@@ -104,6 +127,7 @@ protected:
 
 private:
     QList<MapObject*> mapObjects;
+    QList<MapItem*> items;
     LayerGroup *layerGroup;
     Layer *mainLayer;
     QPointF center;
@@ -318,6 +342,12 @@ void Map::addObject(MapObject *mapObject)
     d->mapObjects.append(mapObject);
 }
 
+void Map::removeObject(MapObject *mapObject)
+{
+    Q_D(Map);
+    d->mapObjects.removeOne(mapObject);
+}
+
 void Map::setCenter(const QPointF &center)
 {
     Q_D(Map);
@@ -502,6 +532,15 @@ Tracker *Map::tracker() const
 {
     Q_D(const Map);
     return d->pathItem->tracker();
+}
+
+QDeclarativeListProperty<MapItem> Map::items()
+{
+    return QDeclarativeListProperty<MapItem>(this, d_ptr,
+                                             MapPrivate::itemAppend,
+                                             MapPrivate::itemCount,
+                                             MapPrivate::itemAt,
+                                             MapPrivate::itemClear);
 }
 
 void Map::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,

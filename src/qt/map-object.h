@@ -22,6 +22,7 @@
 #ifndef MAP_MAP_OBJECT_H
 #define MAP_MAP_OBJECT_H
 
+#include <QDeclarativeItem>
 #include <QGraphicsItem>
 
 namespace Mappero {
@@ -52,7 +53,7 @@ private:
 class MapObject: public QGraphicsItem {
 public:
     MapObject(): QGraphicsItem(), m_map(0) {}
-    ~MapObject() {};
+    virtual ~MapObject() {};
 
     void setMap(Map *map);
     Map *map() const { return m_map; }
@@ -61,6 +62,14 @@ public:
 
 private:
     Map *m_map;
+};
+
+class MapItem: public QDeclarativeItem, public MapObject {
+    Q_OBJECT
+public:
+    MapItem(QDeclarativeItem *parent = 0):
+        QDeclarativeItem(parent), MapObject() {}
+    ~MapItem() {};
 };
 
 };

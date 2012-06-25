@@ -44,6 +44,8 @@ int main(int argc, char *argv[])
     qRegisterMetaType<Mappero::GeoPoint>("GeoPoint");
     qmlRegisterType<Mappero::Map>("Mappero", 1, 0, "MapView");
     qmlRegisterType<Mappero::Tracker>("Mappero", 1, 0, "Tracker");
+    qmlRegisterUncreatableType<Mappero::MapItem>("Mappero", 1, 0, "MapItem",
+                                                 "C++ creation only");
 
     Mappero::Controller controller;
     Mappero::View view;
