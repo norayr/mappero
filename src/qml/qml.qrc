@@ -1,6 +1,7 @@
 <!DOCTYPE RCC><RCC version="1.0">
 <qresource>
   <file>GeoTagPage.qml</file>
+  <file>ImagePoi.qml</file>
   <file>mappero.qml</file>
   <file>MainPage.qml</file>
   <file>MapFlickable.qml</file>

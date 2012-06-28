@@ -17,8 +17,21 @@ Item {
             flickable: mapFlickable
 
             mainLayerId: "OpenStreetMap I"
-            center: Qt.point(60.19997, 24.94057)
+            center: Qt.point(59.935, 30.3286)
             requestedZoomLevel: 8
+
+            PoiView {
+                anchors.fill: parent
+                model: dropArea.model
+                delegate: ImagePoi {
+                    x: location.x
+                    y: location.y
+                    width: 60
+                    height: 60
+                    source: taggable.pixmapUrl
+                    topText: model.fileName
+                }
+            }
         }
 
         MapFlickable {
