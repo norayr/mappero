@@ -41,6 +41,7 @@ public:
         TaggableRole = Qt::UserRole + 1,
         FileNameRole,
         TimeRole,
+        GeoPointRole,
     };
 
     TaggableModel(QObject *parent = 0);
@@ -73,6 +74,7 @@ TaggableModel::TaggableModel(QObject *parent):
     roles[TaggableRole] = "taggable";
     roles[FileNameRole] = "fileName";
     roles[TimeRole] = "time";
+    roles[GeoPointRole] = "geoPoint";
     setRoleNames(roles);
 }
 
@@ -104,6 +106,9 @@ QVariant TaggableModel::data(const QModelIndex &index, int role) const
         }
     case TimeRole:
         return QDateTime::fromTime_t(taggable->time());
+    case GeoPointRole:
+        return taggable->hasLocation() ?
+            QVariant::fromValue(taggable->location()) : QVariant();
     default:
         return QVariant();
     }
