@@ -74,7 +74,7 @@ struct GeoPoint {
 
     QPointF toPointF() const { return QPointF(lat, lon); }
     Geo distanceTo(const GeoPoint &other) const;
-    bool isValid() const { return lat != NAN; }
+    bool isValid() const { return lat == lat; /* NaN != NaN */ }
     friend inline bool operator==(const GeoPoint &, const GeoPoint &);
     friend inline bool operator!=(const GeoPoint &, const GeoPoint &);
 };
