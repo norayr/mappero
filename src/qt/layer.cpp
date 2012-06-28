@@ -52,7 +52,7 @@ private:
 };
 
 Layer::Layer(const QString &id, const Projection *projection):
-    MapObject(),
+    MapGraphicsItem(),
     d_ptr(new LayerPrivate(this, id, projection))
 {
 }

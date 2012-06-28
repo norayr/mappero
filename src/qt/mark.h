@@ -29,7 +29,7 @@ namespace Mappero {
 class GpsPosition;
 
 class MarkPrivate;
-class Mark: public MapObject
+class Mark: public MapGraphicsItem
 {
 public:
     Mark(Map *map);

@@ -47,11 +47,11 @@ namespace Mappero {
 
 typedef QDeclarativeListProperty<MapItem> MapItemList;
 
-class LayerGroup: public MapObject
+class LayerGroup: public MapGraphicsItem
 {
 public:
     LayerGroup():
-        MapObject()
+        MapGraphicsItem()
     {
         setFlags(QGraphicsItem::ItemHasNoContents);
     }
@@ -100,6 +100,7 @@ class MapPrivate: public QObject
         MapPrivate *d = reinterpret_cast<MapPrivate*>(p->data);
         d->items.append(o);
         o->setMap(d->q_ptr);
+        static_cast<QGraphicsItem*>(o)->setParentItem(d->layerGroup);
     }
     static int itemCount(MapItemList *p) {
         MapPrivate *d = reinterpret_cast<MapPrivate*>(p->data);
@@ -113,6 +114,7 @@ class MapPrivate: public QObject
         MapPrivate *d = reinterpret_cast<MapPrivate*>(p->data);
         foreach (MapItem *o, d->items) {
             o->setMap(0);
+            static_cast<QGraphicsItem*>(o)->setParentItem(0);
         }
         d->items.clear();
     }

@@ -30,7 +30,7 @@ class Path;
 class Tracker;
 
 class PathItemPrivate;
-class PathItem: public MapObject
+class PathItem: public MapGraphicsItem
 {
 public:
     PathItem(Map *map);

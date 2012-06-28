@@ -50,9 +50,9 @@ private:
     bool m_sizeChanged;
 };
 
-class MapObject: public QGraphicsItem {
+class MapObject {
 public:
-    MapObject(): QGraphicsItem(), m_map(0) {}
+    MapObject(): m_map(0) {}
     virtual ~MapObject() {};
 
     void setMap(Map *map);
@@ -62,6 +62,13 @@ public:
 
 private:
     Map *m_map;
+};
+
+class MapGraphicsItem: public QGraphicsItem, public MapObject {
+public:
+    MapGraphicsItem(QGraphicsItem *parent = 0):
+        QGraphicsItem(parent), MapObject() {}
+    ~MapGraphicsItem() {}
 };
 
 class MapItem: public QDeclarativeItem, public MapObject {

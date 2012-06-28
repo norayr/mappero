@@ -72,7 +72,7 @@ void PathItemPrivate::onTrackChanged()
 }
 
 PathItem::PathItem(Map *map):
-    MapObject(),
+    MapGraphicsItem(),
     d_ptr(new PathItemPrivate(this))
 {
     setCacheMode(QGraphicsItem::ItemCoordinateCache);

@@ -29,7 +29,7 @@ namespace Mappero {
 struct Projection;
 
 class LayerPrivate;
-class Layer: public MapObject {
+class Layer: public MapGraphicsItem {
 public:
     Layer(const QString &id, const Projection *projection);
     virtual ~Layer();

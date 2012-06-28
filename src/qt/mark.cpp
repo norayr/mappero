@@ -69,7 +69,7 @@ private:
 }; // namespace
 
 Mark::Mark(Map *map):
-    MapObject(),
+    MapGraphicsItem(),
     d_ptr(new MarkPrivate(this))
 {
     setMap(map);
