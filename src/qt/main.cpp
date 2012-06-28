@@ -20,6 +20,7 @@
 #include "controller.h"
 #include "gps.h"
 #include "map.h"
+#include "poi-view.h"
 #ifdef GEOTAGGING_ENABLED
 #include "taggable.h"
 #include "taggable-area.h"
@@ -27,6 +28,7 @@
 #include "tracker.h"
 #include "view.h"
 
+#include <QAbstractListModel>
 #include <QApplication>
 #include <QDeclarativeContext>
 #include <QDeclarativeEngine>
@@ -44,8 +46,10 @@ int main(int argc, char *argv[])
     qRegisterMetaType<Mappero::GeoPoint>("GeoPoint");
     qmlRegisterType<Mappero::Map>("Mappero", 1, 0, "MapView");
     qmlRegisterType<Mappero::Tracker>("Mappero", 1, 0, "Tracker");
+    qmlRegisterType<Mappero::PoiView>("Mappero", 1, 0, "PoiView");
     qmlRegisterUncreatableType<Mappero::MapItem>("Mappero", 1, 0, "MapItem",
                                                  "C++ creation only");
+    qmlRegisterType<QAbstractListModel>();
 
     Mappero::Controller controller;
     Mappero::View view;
