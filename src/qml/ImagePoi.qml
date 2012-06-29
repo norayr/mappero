@@ -1,12 +1,10 @@
 import QtQuick 1.0
+import Mappero 1.0
 import "UIConstants.js" as UI
 
-Rectangle {
-    property variant location
+PoiItem {
     property alias source: thumbnail.source
     property alias topText: nameText.text
-
-    color: "white"
 
     Image {
         id: thumbnail

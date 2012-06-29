@@ -24,8 +24,6 @@ Item {
                 anchors.fill: parent
                 model: dropArea.model
                 delegate: ImagePoi {
-                    x: location.x
-                    y: location.y
                     width: 60
                     height: 60
                     source: taggable.pixmapUrl

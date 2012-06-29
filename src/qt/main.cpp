@@ -20,6 +20,7 @@
 #include "controller.h"
 #include "gps.h"
 #include "map.h"
+#include "poi-item.h"
 #include "poi-view.h"
 #ifdef GEOTAGGING_ENABLED
 #include "taggable.h"
@@ -46,6 +47,7 @@ int main(int argc, char *argv[])
     qRegisterMetaType<Mappero::GeoPoint>("GeoPoint");
     qmlRegisterType<Mappero::Map>("Mappero", 1, 0, "MapView");
     qmlRegisterType<Mappero::Tracker>("Mappero", 1, 0, "Tracker");
+    qmlRegisterType<Mappero::PoiItem>("Mappero", 1, 0, "PoiItem");
     qmlRegisterType<Mappero::PoiView>("Mappero", 1, 0, "PoiView");
     qmlRegisterUncreatableType<Mappero::MapItem>("Mappero", 1, 0, "MapItem",
                                                  "C++ creation only");

@@ -52,6 +52,7 @@ SOURCES += \
     mark.cpp \
     path-item.cpp \
     path.cpp \
+    poi-item.cpp \
     poi-view.cpp \
     projection.cpp \
     tile-cache.cpp \
@@ -71,6 +72,7 @@ HEADERS += \
     mark.h \
     path-item.h \
     path.h \
+    poi-item.h \
     poi-view.h \
     tile-download.h \
     tracker.h \
