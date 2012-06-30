@@ -38,6 +38,38 @@ typedef double Geo;
 typedef float Geo;
 #endif
 
+#ifdef USE_DOUBLES_FOR_LATLON
+#define GSIN(x) sin(x)
+#define GCOS(x) cos(x)
+#define GASIN(x) asin(x)
+#define GTAN(x) tan(x)
+#define GATAN(x) atan(x)
+#define GATAN2(x, y) atan2(x, y)
+#define GEXP(x) exp(x)
+#define GLOG(x) log(x)
+#define GPOW(x, y) pow(x, y)
+#define GSQTR(x) sqrt(x)
+#define GFLOOR(x) floor(x)
+#define GROUND(x) round(x)
+#define GCEIL(x) ceil(x)
+#define GTRUNC(x) trunc(x)
+#else
+#define GSIN(x) sinf(x)
+#define GCOS(x) cosf(x)
+#define GASIN(x) asinf(x)
+#define GTAN(x) tanf(x)
+#define GATAN(x) atanf(x)
+#define GATAN2(x, y) atan2f(x, y)
+#define GEXP(x) expf(x)
+#define GLOG(x) logf(x)
+#define GPOW(x, y) powf(x, y)
+#define GSQTR(x) sqrtf(x)
+#define GFLOOR(x) floorf(x)
+#define GROUND(x) roundf(x)
+#define GCEIL(x) ceilf(x)
+#define GTRUNC(x) truncf(x)
+#endif
+
 typedef int Unit;
 
 struct Point: public QPoint {
@@ -57,7 +89,7 @@ struct Point: public QPoint {
     }
 
     inline QPoint toPixel(qreal zoom) const {
-        return QPoint(x() / exp2(zoom), y() / exp2(zoom));
+        return QPoint(GROUND(x() / exp2(zoom)), GROUND(y() / exp2(zoom)));
     }
 
     inline Point translated(const QPoint &p) const {
@@ -120,30 +152,6 @@ inline bool operator==(const Mappero::TileSpec &t1, const Mappero::TileSpec &t2)
         t1.layer == t2.layer;
 }
 
-
-#ifdef USE_DOUBLES_FOR_LATLON
-#define GSIN(x) sin(x)
-#define GCOS(x) cos(x)
-#define GASIN(x) asin(x)
-#define GTAN(x) tan(x)
-#define GATAN(x) atan(x)
-#define GATAN2(x, y) atan2(x, y)
-#define GEXP(x) exp(x)
-#define GLOG(x) log(x)
-#define GPOW(x, y) pow(x, y)
-#define GSQTR(x) sqrt(x)
-#else
-#define GSIN(x) sinf(x)
-#define GCOS(x) cosf(x)
-#define GASIN(x) asinf(x)
-#define GTAN(x) tanf(x)
-#define GATAN(x) atanf(x)
-#define GATAN2(x, y) atan2f(x, y)
-#define GEXP(x) expf(x)
-#define GLOG(x) logf(x)
-#define GPOW(x, y) powf(x, y)
-#define GSQTR(x) sqrtf(x)
-#endif
 
 #define PI   ((Mappero::Geo)3.14159265358979323846)
 
