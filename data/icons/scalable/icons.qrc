@@ -12,5 +12,6 @@
   <file>maemo-mapper-wait.png</file>
   <file>maemo-mapper-zoom-in.png</file>
   <file>maemo-mapper-zoom-out.png</file>
+  <file>poi-frame.svg</file>
 </qresource>
 </RCC>

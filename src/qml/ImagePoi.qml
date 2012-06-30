@@ -6,31 +6,43 @@ PoiItem {
     property alias source: thumbnail.source
     property alias topText: nameText.text
 
-    Image {
-        id: thumbnail
+    BorderImage {
         anchors.fill: parent
-        anchors.margins: 1
-        clip: true
-        fillMode: Image.PreserveAspectCrop
-        source: taggable.pixmapUrl
-        sourceSize.width: UI.TaggableSourceWidth
-        sourceSize.height: UI.TaggableSourceHeight
+        border.bottom: 16
+        border.left: 4
+        border.right: 4
+        border.top: 4
 
-        Item {
-            anchors.left: parent.left
-            anchors.right: parent.right
-            anchors.top: parent.top
-            height: 12
-            Rectangle {
-                anchors.fill: parent
-                color: "#000"
-                opacity: 0.6
-            }
-            Text {
-                id: nameText
-                anchors.horizontalCenter: parent.horizontalCenter
-                color: "#fff"
-                font.pixelSize: 10
+        source: ":poi-frame.svg"
+        Image {
+            id: thumbnail
+            anchors.fill: parent
+            anchors.topMargin: 4
+            anchors.leftMargin: 4
+            anchors.rightMargin: 4
+            anchors.bottomMargin: 16
+            clip: true
+            fillMode: Image.PreserveAspectCrop
+            source: taggable.pixmapUrl
+            sourceSize.width: UI.TaggableSourceWidth
+            sourceSize.height: UI.TaggableSourceHeight
+
+            Item {
+                anchors.left: parent.left
+                anchors.right: parent.right
+                anchors.top: parent.top
+                height: 12
+                Rectangle {
+                    anchors.fill: parent
+                    color: "#000"
+                    opacity: 0.6
+                }
+                Text {
+                    id: nameText
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    color: "#fff"
+                    font.pixelSize: 10
+                }
             }
         }
     }
