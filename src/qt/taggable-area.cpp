@@ -18,6 +18,7 @@
  * along with Mappero.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "controller.h"
 #include "debug.h"
 #include "taggable-area.h"
 #include "taggable.h"
@@ -51,8 +52,14 @@ public:
                   int role = Qt::DisplayRole) const;
     int rowCount(const QModelIndex &parent = QModelIndex()) const;
 
+private Q_SLOTS:
+    void onTaggableChanged();
+    void checkChanges();
+
 private:
     QList<Taggable *> taggables;
+    bool checkChangesQueued;
+    qint64 lastChangesTime;
 };
 
 class TaggableAreaPrivate
@@ -68,7 +75,9 @@ private:
 }; // namespace
 
 TaggableModel::TaggableModel(QObject *parent):
-    QAbstractListModel(parent)
+    QAbstractListModel(parent),
+    checkChangesQueued(false),
+    lastChangesTime(Controller::clock())
 {
     QHash<int, QByteArray> roles;
     roles[TaggableRole] = "taggable";
@@ -85,6 +94,8 @@ void TaggableModel::addUrls(const QList<QUrl> &urlList)
     beginInsertRows(QModelIndex(), first, last);
     foreach (const QUrl &url, urlList) {
         Taggable *taggable = new Taggable(this);
+        QObject::connect(taggable, SIGNAL(locationChanged()),
+                         this, SLOT(onTaggableChanged()));
         taggable->setFileName(url.toLocalFile());
         taggables.append(taggable);
     }
@@ -118,6 +129,36 @@ int TaggableModel::rowCount(const QModelIndex &parent) const
 {
     Q_UNUSED(parent);
     return taggables.count();
+}
+
+void TaggableModel::onTaggableChanged()
+{
+    if (checkChangesQueued) return;
+
+    QMetaObject::invokeMethod(this, "checkChanges", Qt::QueuedConnection);
+    checkChangesQueued = true;
+}
+
+void TaggableModel::checkChanges()
+{
+    int count = taggables.count();
+    int indexMin = -1;
+    int indexMax = -1;
+    for (int i = 0; i < count; i++) {
+        Taggable *taggable = taggables.at(i);
+        if (taggable->lastChange() > lastChangesTime) {
+            if (indexMin == -1) indexMin = i;
+            indexMax = i;
+        }
+    }
+
+    if (indexMin != -1) {
+        DEBUG() << "min" << indexMin << "max" << indexMax;
+        Q_EMIT dataChanged(index(indexMin, 0), index(indexMax, 0));
+    }
+
+    checkChangesQueued = false;
+    lastChangesTime = Controller::clock();
 }
 
 TaggableAreaPrivate::TaggableAreaPrivate(TaggableArea *taggableArea):

@@ -18,6 +18,7 @@
  * along with Mappero.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "controller.h"
 #include "debug.h"
 #include "taggable.h"
 
@@ -47,6 +48,7 @@ class TaggablePrivate
         return QString::fromAscii(value.toString().c_str());
     }
     static Geo exifGeoCoord(const Exiv2::Value &value, bool positive);
+    void setNeedsSave(bool needsSave);
 
 private:
     mutable Taggable *q_ptr;
@@ -55,6 +57,7 @@ private:
     Exiv2::Image::AutoPtr image;
     GeoPoint geoPoint;
     bool needsSave;
+    qint64 lastChange;
 };
 }; // namespace
 
@@ -62,7 +65,8 @@ TaggablePrivate::TaggablePrivate(Taggable *taggable):
     q_ptr(taggable),
     time(0),
     image(0),
-    needsSave(false)
+    needsSave(false),
+    lastChange(0)
 {
 }
 
@@ -179,6 +183,18 @@ QPixmap TaggablePrivate::preview(QSize *size,
     return preview;
 }
 
+void TaggablePrivate::setNeedsSave(bool needsSave)
+{
+    Q_Q(Taggable);
+    if (needsSave) {
+        lastChange = Controller::clock();
+    }
+
+    if (needsSave == this->needsSave) return;
+    this->needsSave = needsSave;
+    Q_EMIT q->needsSaveChanged();
+}
+
 Taggable::Taggable(QObject *parent):
     QObject(parent),
     d_ptr(new TaggablePrivate(this))
@@ -227,9 +243,9 @@ void Taggable::setLocation(const GeoPoint &location)
     if (location == d->geoPoint) return;
 
     d->geoPoint = location;
-    d->needsSave = true;
     Q_EMIT locationChanged();
-    Q_EMIT needsSaveChanged();
+
+    d->setNeedsSave(true);
 }
 
 GeoPoint Taggable::location() const
@@ -248,6 +264,12 @@ bool Taggable::needsSave() const
 {
     Q_D(const Taggable);
     return d->needsSave;
+}
+
+qint64 Taggable::lastChange() const
+{
+    Q_D(const Taggable);
+    return d->lastChange;
 }
 
 time_t Taggable::time() const

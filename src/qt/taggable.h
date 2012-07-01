@@ -62,6 +62,7 @@ public:
     bool hasLocation() const;
 
     bool needsSave() const;
+    qint64 lastChange() const;
 
     time_t time() const;
 
