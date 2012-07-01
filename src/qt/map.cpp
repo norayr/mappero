@@ -81,6 +81,7 @@ class MapPrivate: public QObject
 
     MapPrivate(Map *q);
 
+    void setRequestedCenter(const Point &centerUnits);
     void onPanning(QPanGesture *pan);
     void onPinching(QPinchGesture *pinch);
     Point pixel2unit(const QPointF &pixel) const {
@@ -177,6 +178,15 @@ MapPrivate::MapPrivate(Map *q):
                      this, SLOT(deliverMapEvent()), Qt::QueuedConnection);
     QObject::connect(q, SIGNAL(sizeChanged()),
                      this, SLOT(deliverMapEvent()), Qt::QueuedConnection);
+}
+
+void MapPrivate::setRequestedCenter(const Point &centerUnits)
+{
+    Q_Q(Map);
+    if (mainLayer != 0) {
+        const Projection *projection = mainLayer->projection();
+        q->setRequestedCenter(projection->unitToGeo(centerUnits).toPointF());
+    }
 }
 
 void MapPrivate::onPanning(QPanGesture *pan)
@@ -543,6 +553,40 @@ QDeclarativeListProperty<MapItem> Map::items()
                                              MapPrivate::itemCount,
                                              MapPrivate::itemAt,
                                              MapPrivate::itemClear);
+}
+
+void Map::lookAt(const QRectF &area, int offsetX, int offsetY, int margin)
+{
+    if (area.width() < 0 || area.height() < 0) return;
+
+    /* compute the best zoom level for framing the area */
+    Q_D(Map);
+    if (d->mainLayer == 0) return;
+
+    const Projection *projection = d->mainLayer->projection();
+    Point southEast = projection->geoToUnit(GeoPoint(area.bottomLeft()));
+    Point northWest = projection->geoToUnit(GeoPoint(area.topRight()));
+
+    Point size = southEast - northWest;
+
+    int fitWidth = width() - 2 * margin;
+    int fitHeight = height() - 2 * margin;
+    int zoom;
+    for (zoom = d->mainLayer->minZoom();
+         zoom < d->mainLayer->maxZoom(); zoom++) {
+        QPoint pixelSize = size.toPixel(zoom);
+        if (pixelSize.x() <= fitWidth && pixelSize.y() <= fitHeight) {
+            break;
+        }
+    }
+    /* don't zoom too much in */
+    if (zoom < 4) zoom = 4;
+
+    Point centerUnits =
+        QRect(northWest, southEast).center() -
+        Point::fromPixel(QPoint(offsetX, offsetY), zoom);
+    d->setRequestedCenter(centerUnits);
+    setRequestedZoomLevel(zoom);
 }
 
 void Map::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,

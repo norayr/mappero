@@ -112,6 +112,9 @@ public:
 
     QDeclarativeListProperty<MapItem> items();
 
+    Q_INVOKABLE void lookAt(const QRectF &area,
+                            int offsetX, int offsetY, int margin = 0);
+
     // reimplemented virtual functions:
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
                QWidget *widget);
