@@ -28,9 +28,12 @@
 #include "tile-cache.h"
 #include "tile-download.h"
 
+#include <QElapsedTimer>
+
 using namespace Mappero;
 
 static Controller *controller = 0;
+static QElapsedTimer elapsedTimer;
 
 namespace Mappero {
 class ControllerPrivate
@@ -69,6 +72,7 @@ Controller::Controller(QObject *parent):
     Q_ASSERT(controller == 0);
 
     controller = this;
+    elapsedTimer.start();
 }
 
 Controller::~Controller()
@@ -138,4 +142,9 @@ Configuration *Controller::configuration() const
     }
 
     return d->configuration;
+}
+
+qint64 Controller::clock()
+{
+    return elapsedTimer.elapsed();
 }

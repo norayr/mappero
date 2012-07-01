@@ -52,6 +52,8 @@ public:
     TileCache *tileCache() const;
     Configuration *configuration() const;
 
+    static qint64 clock();
+
 private:
     ControllerPrivate *d_ptr;
     Q_DECLARE_PRIVATE(Controller)
