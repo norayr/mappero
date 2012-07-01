@@ -21,6 +21,7 @@ Item {
             requestedZoomLevel: 8
 
             PoiView {
+                id: poiView
                 anchors.fill: parent
                 model: dropArea.model
                 delegate: ImagePoi {
@@ -65,5 +66,10 @@ Item {
                 bottomText: Qt.formatDateTime(model.time, "d/M/yyyy hh:mm")
             }
         }
+    }
+
+    Connections {
+        target: dropArea.model
+        onRowsInserted: map.lookAt(poiView.itemArea, 0, 80, 40)
     }
 }
