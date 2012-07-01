@@ -47,7 +47,8 @@ public:
     void setModel(QAbstractListModel *newModel);
     void updateItems(int start, int end);
     void updateItemsPosition();
-    QObject *createItem(VisualModelItem *modelItem, const QPoint &position);
+    QDeclarativeItem *createItem(VisualModelItem *modelItem,
+                                 const QPoint &position);
 
     QVariant modelValue(int index, int role) {
         return model->data(model->index(index, 0), role);
@@ -89,8 +90,7 @@ public:
         _item->setProperty("location", position);
     }
 
-    void setItem(QObject *item) { _item = item; }
-    QObject *item() const { return _item; }
+    QDeclarativeItem *item() const { return _item; }
 
     void setIndex(int index) { _index = index; }
 
@@ -103,7 +103,7 @@ private:
 private:
     PoiViewPrivate *poiViewPriv;
     int _index;
-    QObject *_item;
+    QDeclarativeItem *_item;
     GeoPoint _geo;
 };
 
@@ -228,8 +228,8 @@ void PoiViewPrivate::updateItemsPosition()
     }
 }
 
-QObject *PoiViewPrivate::createItem(VisualModelItem *modelItem,
-                                    const QPoint &position)
+QDeclarativeItem *PoiViewPrivate::createItem(VisualModelItem *modelItem,
+                                             const QPoint &position)
 {
     Q_Q(PoiView);
 
@@ -244,7 +244,7 @@ QObject *PoiViewPrivate::createItem(VisualModelItem *modelItem,
     item->setParentItem(q);
 
     delegate->completeCreate();
-    return object;
+    return item;
 }
 
 void PoiViewPrivate::onRowsInserted(const QModelIndex &, int first, int last)
