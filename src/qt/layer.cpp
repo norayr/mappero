@@ -40,7 +40,9 @@ class LayerPrivate: public QObject
         QObject(),
         q_ptr(layer),
         id(id),
-        projection(projection)
+        projection(projection),
+        minZoom(MIN_ZOOM),
+        maxZoom(MAX_ZOOM)
     {
     }
 
@@ -48,6 +50,8 @@ private:
     mutable Layer *q_ptr;
     QString id;
     const Projection *projection;
+    int minZoom;
+    int maxZoom;
 };
 };
 
@@ -88,6 +92,18 @@ const Projection *Layer::projection()
     return d->projection;
 }
 
+int Layer::minZoom() const
+{
+    Q_D(const Layer);
+    return d->minZoom;
+}
+
+int Layer::maxZoom() const
+{
+    Q_D(const Layer);
+    return d->maxZoom;
+}
+
 QRectF Layer::boundingRect() const
 {
     return QRectF(-1.0e6, -1.0e6, 2.0e6, 2.0e6);
@@ -97,6 +113,13 @@ void Layer::mapEvent(MapEvent *e)
 {
     Q_UNUSED(e);
     // virtual method
+}
+
+void Layer::setZoomRange(int minZoom, int maxZoom)
+{
+    Q_D(Layer);
+    d->minZoom = minZoom;
+    d->maxZoom = maxZoom;
 }
 
 #include "layer.moc"

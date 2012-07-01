@@ -39,10 +39,16 @@ public:
 
     const Projection *projection();
 
+    int minZoom() const;
+    int maxZoom() const;
+
     virtual void mapEvent(MapEvent *e);
 
     // reimplemented virtual functions:
     QRectF boundingRect() const;
+
+protected:
+    void setZoomRange(int minZoom, int maxZoom);
 
 private:
     LayerPrivate *d_ptr;
