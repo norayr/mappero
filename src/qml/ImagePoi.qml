@@ -3,8 +3,12 @@ import Mappero 1.0
 import "UIConstants.js" as UI
 
 PoiItem {
+    id: poiItem
     property alias source: thumbnail.source
     property alias topText: nameText.text
+    transformOrigin: Item.Bottom
+
+    signal dragFinished
 
     BorderImage {
         anchors.fill: parent
@@ -45,5 +49,12 @@ PoiItem {
                 }
             }
         }
+    }
+
+    MouseArea {
+        anchors.fill: parent
+        drag.target: poiItem
+        drag.filterChildren: true
+        drag.onActiveChanged: if (!drag.active) poiItem.dragFinished()
     }
 }

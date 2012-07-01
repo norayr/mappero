@@ -22,11 +22,11 @@
 #include "map.h"
 #include "poi-view.h"
 #include "projection.h"
-#include "types.h"
 
 #include <QAbstractListModel>
 #include <QDeclarativeComponent>
 #include <QDeclarativeContext>
+#include <QDeclarativeProperty>
 #include <QDeclarativePropertyMap>
 #include <QVector>
 
@@ -47,14 +47,15 @@ public:
     void setModel(QAbstractListModel *newModel);
     void updateItems(int start, int end);
     void updateItemsPosition();
-    QDeclarativeItem *createItem(VisualModelItem *modelItem,
-                                 const QPoint &position);
+    QDeclarativeItem *createItem(VisualModelItem *modelItem);
 
     QVariant modelValue(int index, int role) {
         return model->data(model->index(index, 0), role);
     }
 
     QHash<int,QByteArray> roleNames() const { return model->roleNames(); }
+
+    QPoint geoToPos(const GeoPoint &geo) const;
 
 private Q_SLOTS:
     void onRowsInserted(const QModelIndex &parent, int start, int end);
@@ -83,22 +84,43 @@ public:
         _item(0)
     {
         refreshRoles();
-        _item = poiViewPriv->createItem(this, position);
+        insert("index", index);
+        _item = poiViewPriv->createItem(this);
+        setItemPosition(position);
+
+        QDeclarativeProperty originProp(_item, "transformOriginPoint");
+        originProp.connectNotifySignal(this,
+                                       VisualModelItem::staticMetaObject.
+                                       indexOfSlot("onOriginChanged()"));
     }
 
     void updatePosition(const QPoint &position) {
-        _item->setProperty("location", position);
+        _item->setPos(position + origin());
     }
 
     QDeclarativeItem *item() const { return _item; }
 
-    void setIndex(int index) { _index = index; }
+    void setIndex(int index) { _index = index; insert("index", index); }
 
     void setGeoPoint(const GeoPoint &geo) { _geo = geo; }
     GeoPoint geoPoint() const { return _geo; }
 
+    QPointF origin() const {
+        if (_item == 0) return QPointF();
+        QVariant origin = _item->property("transformOriginPoint");
+        return origin.isValid() ? origin.toPointF() : QPointF();
+    }
+
 private:
     void refreshRoles();
+    void setItemPosition(const QPointF &position);
+
+private Q_SLOTS:
+    void onOriginChanged() {
+        DEBUG() << "origin changed";
+        QPoint position = poiViewPriv->geoToPos(_geo);
+        setItemPosition(position);
+    }
 
 private:
     PoiViewPrivate *poiViewPriv;
@@ -119,6 +141,13 @@ void VisualModelItem::refreshRoles()
          i++) {
         insert(i.value(), poiViewPriv->modelValue(_index, i.key()));
     }
+}
+
+void VisualModelItem::setItemPosition(const QPointF &position)
+{
+    QPointF origin = this->origin();
+    _item->setTransform(QTransform::fromTranslate(-origin.x(), -origin.y()));
+    _item->setPos(position + origin);
 }
 
 PoiViewPrivate::PoiViewPrivate(PoiView *poiView):
@@ -228,8 +257,7 @@ void PoiViewPrivate::updateItemsPosition()
     }
 }
 
-QDeclarativeItem *PoiViewPrivate::createItem(VisualModelItem *modelItem,
-                                             const QPoint &position)
+QDeclarativeItem *PoiViewPrivate::createItem(VisualModelItem *modelItem)
 {
     Q_Q(PoiView);
 
@@ -237,14 +265,24 @@ QDeclarativeItem *PoiViewPrivate::createItem(VisualModelItem *modelItem,
         new QDeclarativeContext(delegate->creationContext(), modelItem);
     context->setContextObject(modelItem);
     context->setContextProperty("model", modelItem);
+    context->setContextProperty("view", q);
     QObject *object = delegate->beginCreate(context);
-    object->setProperty("location", position);
 
     QDeclarativeItem *item = qobject_cast<QDeclarativeItem*>(object);
     item->setParentItem(q);
 
     delegate->completeCreate();
     return item;
+}
+
+QPoint PoiViewPrivate::geoToPos(const GeoPoint &geo) const
+{
+    Q_Q(const PoiView);
+    Map *map = q->map();
+    const Projection *projection = map->projection();
+    qreal zoom = map->zoomLevel();
+    Point position = projection->geoToUnit(geo) - map->centerUnits();
+    return position.toPixel(zoom);
 }
 
 void PoiViewPrivate::onRowsInserted(const QModelIndex &, int first, int last)
@@ -343,6 +381,23 @@ QRectF PoiView::itemArea() const
     if (latMax < latMin) latMax = latMin;
     if (lonMax < lonMin) lonMax = lonMin;
     return QRectF(latMin, lonMin, latMax - latMin, lonMax - lonMin);
+}
+
+GeoPoint PoiView::itemPos(int index) const
+{
+    Q_D(const PoiView);
+    if (index >= d->items.count()) return GeoPoint();
+
+    VisualModelItem *visualItem = d->items.at(index);
+    if (visualItem == 0) return GeoPoint();
+
+    /* get the geoposition from the item position */
+    Point mapCenter = map()->centerUnits();
+    qreal zoom = map()->zoomLevel();
+    const Projection *projection = map()->projection();
+
+    QPointF p = visualItem->item()->pos() - visualItem->origin();
+    return projection->unitToGeo(Point::fromPixel(p, zoom) + mapCenter);
 }
 
 void PoiView::paint(QPainter *, const QStyleOptionGraphicsItem *, QWidget *)

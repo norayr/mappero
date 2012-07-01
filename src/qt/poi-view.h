@@ -22,6 +22,7 @@
 #define MAP_POI_VIEW_H
 
 #include "map-object.h"
+#include "types.h"
 
 class QAbstractListModel;
 class QDeclarativeComponent;
@@ -49,6 +50,8 @@ public:
     QDeclarativeComponent *delegate() const;
 
     QRectF itemArea() const;
+
+    Q_INVOKABLE GeoPoint itemPos(int index) const;
 
     // reimplemented virtual methods
     void mapEvent(MapEvent *e);

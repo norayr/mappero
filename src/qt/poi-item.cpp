@@ -26,39 +26,11 @@ using namespace Mappero;
 #define DEFAULT_WIDTH 200
 #define DEFAULT_HEIGHT 200
 
-namespace Mappero {
-
-class PoiItemPrivate
-{
-    Q_DECLARE_PUBLIC(PoiItem)
-
-public:
-    PoiItemPrivate(PoiItem *poiItem);
-
-    static QPoint originFromSize(const QSize &size) {
-        return QPoint(size.width() / 2, size.height());
-    }
-
-private:
-    QPoint location;
-    QPoint origin;
-    mutable PoiItem *q_ptr;
-};
-
-}; // namespace
-
-PoiItemPrivate::PoiItemPrivate(PoiItem *poiItem):
-    location(QPoint()),
-    origin(originFromSize(QSize(DEFAULT_WIDTH, DEFAULT_HEIGHT))),
-    q_ptr(poiItem)
-{
-}
-
 PoiItem::PoiItem(QDeclarativeItem *parent):
-    QDeclarativeItem(parent),
-    d_ptr(new PoiItemPrivate(this))
+    QDeclarativeItem(parent)
 {
-    setFlag(QGraphicsItem::ItemIgnoresTransformations);
+    setFlags(QGraphicsItem::ItemIgnoresTransformations |
+             QGraphicsItem::ItemSendsGeometryChanges);
 
     setImplicitWidth(DEFAULT_WIDTH);
     setImplicitHeight(DEFAULT_HEIGHT);
@@ -66,38 +38,13 @@ PoiItem::PoiItem(QDeclarativeItem *parent):
 
 PoiItem::~PoiItem()
 {
-    delete d_ptr;
 }
 
-void PoiItem::setLocation(const QPoint &location)
+QVariant PoiItem::itemChange(GraphicsItemChange change,
+                             const QVariant &value)
 {
-    Q_D(PoiItem);
-
-    if (location == d->location) return;
-
-    d->location = location;
-    setPos(d->location + d->origin);
-    Q_EMIT locationChanged();
+    if (change == QGraphicsItem::ItemTransformOriginPointHasChanged) {
+        Q_EMIT transformOriginPointChaned();
+    }
+    return QGraphicsItem::itemChange(change, value);
 }
-
-QPoint PoiItem::location() const
-{
-    Q_D(const PoiItem);
-    return d->location;
-}
-
-void PoiItem::geometryChanged(const QRectF &newGeometry,
-                               const QRectF &oldGeometry)
-{
-    QDeclarativeItem::geometryChanged(newGeometry, oldGeometry);
-
-    QSize newSize = newGeometry.size().toSize();
-    QSize oldSize = oldGeometry.size().toSize();
-    if (newSize == oldSize) return;
-
-    Q_D(PoiItem);
-    d->origin = d->originFromSize(newSize);
-    setTransform(QTransform::fromTranslate(-d->origin.x(), -d->origin.y()));
-    setPos(d->location + d->origin);
-}
-

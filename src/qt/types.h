@@ -99,6 +99,10 @@ struct Point: public QPoint {
     static Point fromPixel(const QPoint p, int zoom) {
         return Point(p.x() << zoom, p.y() << zoom);
     }
+
+    static Point fromPixel(const QPointF p, qreal zoom) {
+        return Point(p.x() * exp2(zoom), p.y() * exp2(zoom));
+    }
 };
 
 struct GeoPoint {

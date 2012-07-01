@@ -35,6 +35,10 @@ Item {
                     height: 80
                     source: taggable.pixmapUrl
                     topText: model.fileName
+
+                    onDragFinished: {
+                        taggable.location = view.itemPos(index)
+                    }
                 }
             }
         }

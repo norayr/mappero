@@ -22,7 +22,7 @@
 #define MAP_POI_ITEM_H
 
 #include <QDeclarativeItem>
-#include <QPoint>
+#include <QPointF>
 
 namespace Mappero {
 
@@ -30,26 +30,20 @@ class PoiItemPrivate;
 class PoiItem: public QDeclarativeItem
 {
     Q_OBJECT
-    Q_PROPERTY(QPoint location READ location WRITE setLocation \
-               NOTIFY locationChanged);
+    Q_PROPERTY(QPointF transformOriginPoint \
+               READ transformOriginPoint \
+               WRITE setTransformOriginPoint \
+               NOTIFY transformOriginPointChaned);
 
 public:
     PoiItem(QDeclarativeItem *parent = 0);
     virtual ~PoiItem();
 
-    void setLocation(const QPoint &location);
-    QPoint location() const;
-
 Q_SIGNALS:
-    void locationChanged();
+    void transformOriginPointChaned();
 
 protected:
-    void geometryChanged(const QRectF &newGeometry,
-                         const QRectF &oldGeometry);
-
-private:
-    PoiItemPrivate *d_ptr;
-    Q_DECLARE_PRIVATE(PoiItem)
+    QVariant itemChange(GraphicsItemChange change, const QVariant &value);
 };
 
 }; // namespace
