@@ -11,6 +11,12 @@ Item {
         anchors.right: parent.right
         anchors.top: parent.top
         anchors.bottom: tagPane.top
+
+        MapFlickable {
+            id: mapFlickable
+            anchors.fill: parent
+        }
+
         Map {
             id: map
             anchors.fill: parent
@@ -31,11 +37,6 @@ Item {
                     topText: model.fileName
                 }
             }
-        }
-
-        MapFlickable {
-            id: mapFlickable
-            anchors.fill: parent
         }
     }
 

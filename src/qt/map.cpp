@@ -283,7 +283,6 @@ Map::Map():
     grabGesture(Qt::PanGesture);
     grabGesture(Qt::PinchGesture);
     setAcceptTouchEvents(true);
-    setAcceptedMouseButtons(Qt::LeftButton | Qt::RightButton);
 
     Gps *gps = Gps::instance();
     QObject::connect(gps,
