@@ -388,7 +388,6 @@ void Map::setAnimatedCenterUnits(const QPointF &center)
 {
     Q_D(Map);
 
-    DEBUG() << center;
     if (center != d->animatedCenterUnits) {
         Point diffUnits = d->centerUnits - center.toPoint();
         QPointF viewCenter = boundingRect().center();
