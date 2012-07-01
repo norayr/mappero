@@ -321,6 +321,30 @@ QDeclarativeComponent *PoiView::delegate() const
     return d->delegate;
 }
 
+QRectF PoiView::itemArea() const
+{
+    Q_D(const PoiView);
+    /* TODO cache the rect, emit the changed signal */
+    Geo latMin = 100, latMax = -100, lonMin = 200, lonMax = -200;
+    foreach (VisualModelItem *item, d->items) {
+        if (item == 0) continue;
+
+        GeoPoint geo = item->geoPoint();
+        if (geo.lat < latMin)
+            latMin = geo.lat;
+        else if (geo.lat > latMax)
+            latMax = geo.lat;
+        if (geo.lon < lonMin)
+            lonMin = geo.lon;
+        else if (geo.lon > lonMax)
+            lonMax = geo.lon;
+    }
+    if (latMin == 100) return QRectF(0, 0, -1, -1);
+    if (latMax < latMin) latMax = latMin;
+    if (lonMax < lonMin) lonMax = lonMin;
+    return QRectF(latMin, lonMin, latMax - latMin, lonMax - lonMin);
+}
+
 void PoiView::paint(QPainter *, const QStyleOptionGraphicsItem *, QWidget *)
 {
 }

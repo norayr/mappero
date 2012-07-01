@@ -36,6 +36,7 @@ class PoiView: public MapItem
                NOTIFY modelChanged);
     Q_PROPERTY(QDeclarativeComponent *delegate READ delegate \
                WRITE setDelegate NOTIFY delegateChanged);
+    Q_PROPERTY(QRectF itemArea READ itemArea NOTIFY itemAreaChanged);
 
 public:
     PoiView(QDeclarativeItem *parent = 0);
@@ -47,6 +48,8 @@ public:
     void setDelegate(QDeclarativeComponent *delegate);
     QDeclarativeComponent *delegate() const;
 
+    QRectF itemArea() const;
+
     // reimplemented virtual methods
     void mapEvent(MapEvent *e);
     void paint(QPainter *, const QStyleOptionGraphicsItem *, QWidget *);
@@ -56,6 +59,7 @@ public:
 Q_SIGNALS:
     void modelChanged();
     void delegateChanged();
+    void itemAreaChanged();
 
 private:
     PoiViewPrivate *d_ptr;
