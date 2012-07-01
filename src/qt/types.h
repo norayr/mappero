@@ -95,6 +95,10 @@ struct Point: public QPoint {
     inline Point translated(const QPoint &p) const {
         return Point(x() + p.x(), y() + p.y());
     }
+
+    static Point fromPixel(const QPoint p, int zoom) {
+        return Point(p.x() << zoom, p.y() << zoom);
+    }
 };
 
 struct GeoPoint {
