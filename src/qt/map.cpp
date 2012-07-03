@@ -133,9 +133,9 @@ private:
     QList<MapItem*> items;
     LayerGroup *layerGroup;
     Layer *mainLayer;
-    QPointF center;
+    GeoPoint center;
     QPointF animatedCenterUnits;
-    QPointF requestedCenter;
+    GeoPoint requestedCenter;
     QPointF requestedCenterUnits;
     Point centerUnits;
     QPointF pan;
@@ -172,7 +172,7 @@ MapPrivate::MapPrivate(Map *q):
 {
     layerGroup->setParentItem(q);
 
-    QObject::connect(q, SIGNAL(centerChanged(const QPointF&)),
+    QObject::connect(q, SIGNAL(centerChanged(const GeoPoint&)),
                      this, SLOT(deliverMapEvent()), Qt::QueuedConnection);
     QObject::connect(q, SIGNAL(zoomLevelChanged(qreal)),
                      this, SLOT(deliverMapEvent()), Qt::QueuedConnection);
@@ -359,7 +359,7 @@ void Map::removeObject(MapObject *mapObject)
     d->mapObjects.removeOne(mapObject);
 }
 
-void Map::setCenter(const QPointF &center)
+void Map::setCenter(const GeoPoint &center)
 {
     Q_D(Map);
 
@@ -377,7 +377,7 @@ void Map::setCenter(const QPointF &center)
     Q_EMIT centerChanged(center);
 }
 
-QPointF Map::center() const
+GeoPoint Map::center() const
 {
     Q_D(const Map);
     return d->center;
@@ -406,7 +406,7 @@ QPointF Map::animatedCenterUnits() const
     return d->animatedCenterUnits;
 }
 
-void Map::setRequestedCenter(const QPointF &center)
+void Map::setRequestedCenter(const GeoPoint &center)
 {
     Q_D(Map);
 
@@ -421,7 +421,7 @@ void Map::setRequestedCenter(const QPointF &center)
     }
 }
 
-QPointF Map::requestedCenter() const
+GeoPoint Map::requestedCenter() const
 {
     Q_D(const Map);
     return d->requestedCenter;

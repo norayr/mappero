@@ -23,7 +23,7 @@ Item {
             flickable: mapFlickable
 
             mainLayerId: "OpenStreetMap I"
-            center: Qt.point(59.935, 30.3286)
+            center: Mappero.geo(59.935, 30.3286)
             requestedZoomLevel: 8
 
             PoiView {

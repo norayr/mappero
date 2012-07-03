@@ -39,12 +39,12 @@ class Tracker;
 class MapPrivate;
 class Map: public QDeclarativeItem {
     Q_OBJECT
-    Q_PROPERTY(QPointF center READ center WRITE setCenter \
+    Q_PROPERTY(GeoPoint center READ center WRITE setCenter \
                NOTIFY centerChanged);
     Q_PROPERTY(QPointF animatedCenterUnits READ animatedCenterUnits \
                WRITE setAnimatedCenterUnits \
                NOTIFY animatedCenterUnitsChanged);
-    Q_PROPERTY(QPointF requestedCenter READ requestedCenter \
+    Q_PROPERTY(GeoPoint requestedCenter READ requestedCenter \
                WRITE setRequestedCenter \
                NOTIFY requestedCenterChanged);
     Q_PROPERTY(QPointF requestedCenterUnits READ requestedCenterUnits \
@@ -70,11 +70,11 @@ public:
     Map();
     ~Map();
 
-    void setCenter(const QPointF &center);
-    QPointF center() const;
+    void setCenter(const GeoPoint &center);
+    GeoPoint center() const;
 
-    void setRequestedCenter(const QPointF &center);
-    QPointF requestedCenter() const;
+    void setRequestedCenter(const GeoPoint &center);
+    GeoPoint requestedCenter() const;
     QPointF requestedCenterUnits() const;
 
     void setAnimatedCenterUnits(const QPointF &center);
@@ -120,9 +120,9 @@ public:
                QWidget *widget);
 
 Q_SIGNALS:
-    void centerChanged(const QPointF &center);
+    void centerChanged(const GeoPoint &center);
     void animatedCenterUnitsChanged(const QPointF &center);
-    void requestedCenterChanged(const QPointF &center);
+    void requestedCenterChanged(const GeoPoint &center);
     void zoomLevelChanged(qreal zoomLevel);
     void animatedZoomLevelChanged(qreal zoomLevel);
     void requestedZoomLevelChanged(qreal zoomLevel);

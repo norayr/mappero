@@ -21,6 +21,8 @@
 #ifndef MAP_CONTROLLER_H
 #define MAP_CONTROLLER_H
 
+#include "types.h"
+
 #include <QObject>
 
 namespace Mappero {
@@ -53,6 +55,9 @@ public:
     Configuration *configuration() const;
 
     static qint64 clock();
+
+public Q_SLOTS:
+    GeoPoint geo(qreal lat, qreal lon) { return GeoPoint(lat, lon); }
 
 private:
     ControllerPrivate *d_ptr;

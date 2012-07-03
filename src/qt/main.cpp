@@ -58,6 +58,7 @@ int main(int argc, char *argv[])
     controller.setView(&view);
     view.rootContext()->setContextProperty("view", &view);
     view.rootContext()->setContextProperty("gps", Mappero::Gps::instance());
+    view.rootContext()->setContextProperty("Mappero", &controller);
 
     QString firstPage = "MainPage.qml";
     if (app.arguments().contains("--geotag")) {
