@@ -69,6 +69,11 @@ Item {
                 source: taggable.pixmapUrl
                 topText: model.fileName
                 bottomText: Qt.formatDateTime(model.time, "d/M/yyyy hh:mm")
+
+                MouseArea {
+                    anchors.fill: parent
+                    onClicked: map.requestedCenter = taggable.location
+                }
             }
         }
     }
