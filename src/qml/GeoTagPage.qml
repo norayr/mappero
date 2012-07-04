@@ -73,7 +73,11 @@ Item {
 
                 MouseArea {
                     anchors.fill: parent
-                    onClicked: map.requestedCenter = taggable.location
+                    onClicked: {
+                        if (taggable.hasLocation) {
+                            map.requestedCenter = taggable.location
+                        }
+                    }
                 }
             }
         }
