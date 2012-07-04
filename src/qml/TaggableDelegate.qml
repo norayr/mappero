@@ -5,6 +5,7 @@ Rectangle {
     property alias source: thumbnail.source
     property alias bottomText: timeText.text
     property alias topText: nameText.text
+    property alias hasLocation: locationMarker.visible
 
     color: "white"
 
@@ -50,6 +51,15 @@ Rectangle {
                 anchors.horizontalCenter: parent.horizontalCenter
                 color: "#fff"
             }
+        }
+
+        Image {
+            id: locationMarker
+            anchors.right: parent.right
+            anchors.top: parent.top
+            width: 32
+            height: 32
+            source: ":taggable-has-pos.svg"
         }
     }
 }
