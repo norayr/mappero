@@ -312,8 +312,8 @@ void PathData::optimize()
             if (prev == prevBefore) break;
 
             /* now, find the distance between these two points */
-            dx = curr->unit.x() - prevBefore->unit.x();
-            dy = curr->unit.y() - prevBefore->unit.y();
+            dx = curr->unit.x() - prev->unit.x();
+            dy = curr->unit.y() - prev->unit.y();
             dmax = qMax(qAbs(dx), qAbs(dy));
 
             for (; dmax > tolerance << zoom; zoom++);
