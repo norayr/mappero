@@ -105,6 +105,10 @@ system(pkg-config --exists exiv2) {
     message("libexiv2 not found, geotagging disabled")
 }
 
+win32 {
+    LIBS += -static-libgcc "-static-libstdc++"
+}
+
 RESOURCES += \
     ../qml/qml.qrc \
     ../../data/icons/scalable/icons.qrc
