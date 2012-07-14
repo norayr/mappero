@@ -18,6 +18,7 @@
  * along with Mappero.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "controller.h"
 #include "geotag-test.h"
 
 #include "taggable.h"
@@ -29,6 +30,8 @@
 #define ARW_FILE UTF8("a700.arw")
 
 using namespace Mappero;
+
+qint64 Controller::clock() { return 0; }
 
 void GeotagTest::initTestCase()
 {
