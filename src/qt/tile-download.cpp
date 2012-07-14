@@ -221,7 +221,11 @@ void Downloader::processTask(TaskMap::iterator t)
         tileFile.open(QIODevice::ReadOnly)) {
         data.tileContents.image = tileFile.readAll();
     } else {
+#ifndef Q_OS_WIN32
         if (ncm->isOnline()) {
+#else
+        if (1) {
+#endif
             data.tileContents.image = downloadTile(tile);
             /* save the tile */
             if (!data.tileContents.image.isEmpty()) {
