@@ -39,12 +39,16 @@ View::View():
     setRenderHints(QPainter::Antialiasing);
     setTransformationAnchor(QGraphicsView::NoAnchor);
     setAlignment(Qt::AlignLeft | Qt::AlignTop);
+#ifndef Q_OS_WIN32
     setViewport(new QGLWidget);
     setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
+#endif
+#ifdef Q_WS_MAEMO_5
     setAttribute(Qt::WA_OpaquePaintEvent);
     setAttribute(Qt::WA_NoSystemBackground);
     viewport()->setAttribute(Qt::WA_OpaquePaintEvent);
     viewport()->setAttribute(Qt::WA_NoSystemBackground);
+#endif
 }
 
 void View::switchFullscreen()
