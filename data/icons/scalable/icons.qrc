@@ -13,6 +13,8 @@
   <file>maemo-mapper-zoom-in.png</file>
   <file>maemo-mapper-zoom-out.png</file>
   <file>poi-frame.svg</file>
+  <file>taggable-handle-in.svg</file>
+  <file>taggable-handle.svg</file>
   <file>taggable-has-pos.svg</file>
 </qresource>
 </RCC>

@@ -70,12 +70,15 @@ Item {
                 topText: model.fileName
                 bottomText: Qt.formatDateTime(model.time, "d/M/yyyy hh:mm")
                 hasLocation: taggable.hasLocation
+                dropItem: map
 
                 onClicked: {
                     if (taggable.hasLocation) {
                         map.requestedCenter = taggable.location
                     }
                 }
+
+                onDropped: console.log("dropped: " + pos.x + ", y: " + pos.y)
             }
         }
     }
