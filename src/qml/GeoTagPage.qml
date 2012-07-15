@@ -71,12 +71,9 @@ Item {
                 bottomText: Qt.formatDateTime(model.time, "d/M/yyyy hh:mm")
                 hasLocation: taggable.hasLocation
 
-                MouseArea {
-                    anchors.fill: parent
-                    onClicked: {
-                        if (taggable.hasLocation) {
-                            map.requestedCenter = taggable.location
-                        }
+                onClicked: {
+                    if (taggable.hasLocation) {
+                        map.requestedCenter = taggable.location
                     }
                 }
             }

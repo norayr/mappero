@@ -7,6 +7,8 @@ Rectangle {
     property alias topText: nameText.text
     property alias hasLocation: locationMarker.visible
 
+    signal clicked
+
     color: "white"
 
     Image {
@@ -61,5 +63,10 @@ Rectangle {
             height: 32
             source: ":taggable-has-pos.svg"
         }
+    }
+
+    MouseArea {
+        anchors.fill: parent
+        onClicked: parent.clicked()
     }
 }
