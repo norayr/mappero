@@ -52,6 +52,10 @@ public:
                   int role = Qt::DisplayRole) const;
     int rowCount(const QModelIndex &parent = QModelIndex()) const;
 
+    Q_INVOKABLE QVariant get(int row) const {
+        return QVariant::fromValue(taggables[row]);
+    }
+
 private Q_SLOTS:
     void onTaggableChanged();
     void checkChanges();

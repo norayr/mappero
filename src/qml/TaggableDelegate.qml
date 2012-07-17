@@ -9,7 +9,7 @@ Rectangle {
     property alias hasLocation: locationMarker.visible
     property Item dropItem
 
-    signal clicked
+    signal clicked(variant mouse)
     signal dropped(variant pos)
 
     color: "white"
@@ -62,7 +62,7 @@ Rectangle {
     MouseArea {
         id: mouseArea
         anchors.fill: parent
-        onClicked: parent.clicked()
+        onClicked: parent.clicked(mouse)
         hoverEnabled: true
     }
 
