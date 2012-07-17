@@ -12,6 +12,7 @@
   <file>Osm.qml</file>
   <file>Pane.qml</file>
   <file>TaggableDelegate.qml</file>
+  <file>TaggableView.qml</file>
   <file>UIConstants.js</file>
 </qresource>
 </RCC>
