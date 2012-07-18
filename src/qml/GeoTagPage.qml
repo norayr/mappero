@@ -42,6 +42,16 @@ Item {
                 }
             }
         }
+
+        ToolBar {
+            anchors.bottom: parent.bottom
+            anchors.bottomMargin: UI.ToolSpacing
+            anchors.horizontalCenter: parent.horizontalCenter
+            selectedItems: taggableView.selectedItems
+
+            onSelectedItemsChanged: console.log("Items: " + selectedItems)
+            onGeoSetterDropped: console.log("Dropped on " + pos.x + "," + pos.y)
+        }
     }
 
     Rectangle {
