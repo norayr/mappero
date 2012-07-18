@@ -7,10 +7,11 @@ Rectangle {
     property alias bottomText: timeText.text
     property alias topText: nameText.text
     property alias hasLocation: locationMarker.visible
+    property bool selected: false
 
     signal clicked(variant mouse)
 
-    color: "white"
+    color: selected ? "blue" : "white"
 
     Image {
         id: thumbnail
