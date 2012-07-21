@@ -50,6 +50,8 @@ class TaggablePrivate
 
     void loadExifInfo();
     void readGeoData(const Exiv2::ExifData &exifData);
+    void save();
+
 #ifdef XDG_THUMBNAILS
     QPixmap cachedThumbnail(QSize *size, const QSize &requestedSize) const;
 #endif
@@ -153,6 +155,55 @@ void TaggablePrivate::readGeoData(const Exiv2::ExifData &exifData)
     lon = exifGeoCoord(i->value(), lonRef[0] == 'E');
 
     geoPoint = GeoPoint(lat, lon);
+}
+
+static Exiv2::RationalValue geoToExif(Geo geo)
+{
+    Geo coord = qAbs(geo);
+
+    int degrees = GFLOOR(coord);
+    coord -= degrees;
+    int icoord = coord * 60 * 3600;
+
+    int minutes = icoord / 3600;
+    int seconds = icoord % 3600;
+
+    Exiv2::RationalValue value;
+    value.value_.push_back(std::make_pair(degrees, 1));
+    value.value_.push_back(std::make_pair(minutes, 1));
+    value.value_.push_back(std::make_pair(seconds, 60));
+    return value;
+}
+
+static void deleteLocationInfo(Exiv2::ExifData &exifData)
+{
+    Exiv2::ExifData::iterator i;
+
+    i = exifData.findKey(Exiv2::ExifKey("Exif.GPSInfo.GPSLatitudeRef"));
+    if (i != exifData.end()) exifData.erase(i);
+    i = exifData.findKey(Exiv2::ExifKey("Exif.GPSInfo.GPSLongitudeRef"));
+    if (i != exifData.end()) exifData.erase(i);
+    i = exifData.findKey(Exiv2::ExifKey("Exif.GPSInfo.GPSLatitude"));
+    if (i != exifData.end()) exifData.erase(i);
+    i = exifData.findKey(Exiv2::ExifKey("Exif.GPSInfo.GPSLongitude"));
+    if (i != exifData.end()) exifData.erase(i);
+}
+
+void TaggablePrivate::save()
+{
+    Exiv2::ExifData &exifData = image->exifData();
+
+    if (geoPoint.isValid()) {
+        exifData["Exif.GPSInfo.GPSLatitudeRef"] = geoPoint.lat >= 0 ? "N" : "S";
+        exifData["Exif.GPSInfo.GPSLatitude"] = geoToExif(geoPoint.lat);
+        exifData["Exif.GPSInfo.GPSLongitudeRef"] = geoPoint.lon >= 0 ? "E" : "W";
+        exifData["Exif.GPSInfo.GPSLongitude"] = geoToExif(geoPoint.lon);
+    } else {
+        deleteLocationInfo(exifData);
+    }
+    image->writeMetadata();
+
+    setNeedsSave(false);
 }
 
 Geo TaggablePrivate::exifGeoCoord(const Exiv2::Value &value, bool positive)
@@ -405,6 +456,13 @@ void Taggable::reload()
     if (oldLocation != d->geoPoint) {
         Q_EMIT locationChanged();
     }
+}
+
+void Taggable::save()
+{
+    Q_D(Taggable);
+
+    d->save();
 }
 
 Taggable::ImageProvider::ImageProvider():

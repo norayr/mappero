@@ -72,6 +72,7 @@ public Q_SLOTS:
     void clearLocation() { setLocation(GeoPoint()); }
     void open() const;
     void reload();
+    void save();
 
 Q_SIGNALS:
     void fileNameChanged();
