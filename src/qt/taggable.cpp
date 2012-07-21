@@ -81,7 +81,7 @@ void TaggablePrivate::loadExifInfo()
     geoPoint = GeoPoint();
 
     // load the EXIF data
-    image = Exiv2::ImageFactory::open(fileName.toStdString());
+    image = Exiv2::ImageFactory::open(fileName.toUtf8().constData());
     image->readMetadata();
     Exiv2::ExifData &exifData = image->exifData();
     if (exifData.empty()) {
