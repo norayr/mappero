@@ -4,12 +4,15 @@ Item {
     id: root
 
     property variant selectedItems: []
+    property url source
+
+    signal activate(variant taggable)
 
     enabled: selectedItems.length > 0
 
     Image {
         anchors.fill: parent
-        source: enabled ? ":tag-remove.svg" : ":tag-remove-off.svg"
+        source: enabled ? root.source : root.source + "-off"
     }
 
     MouseArea {
@@ -18,7 +21,7 @@ Item {
             var l = selectedItems.length
             for (var i = 0; i < l; i++) {
                 var taggable = selectedItems[i]
-                taggable.clearLocation()
+                root.activate(taggable)
             }
         }
     }

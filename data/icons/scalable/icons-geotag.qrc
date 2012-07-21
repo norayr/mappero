@@ -1,13 +1,13 @@
 <!DOCTYPE RCC><RCC version="1.0">
 <qresource>
-  <file>tag-remove-off.svg</file>
-  <file>tag-remove.svg</file>
+  <file alias="tag-remove-off">tag-remove-off.svg</file>
+  <file alias="tag-remove">tag-remove.svg</file>
   <file>taggable-handle-in.svg</file>
   <file>taggable-handle-off.svg</file>
   <file>taggable-handle.svg</file>
   <file>taggable-has-pos.svg</file>
   <file>taggable-modified.svg</file>
-  <file>taggable-reload-off.svg</file>
-  <file>taggable-reload.svg</file>
+  <file alias="taggable-reload-off">taggable-reload-off.svg</file>
+  <file alias="taggable-reload">taggable-reload.svg</file>
 </qresource>
 </RCC>

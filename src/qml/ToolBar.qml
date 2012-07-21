@@ -19,15 +19,21 @@ Row {
         onDropped: root.geoSetterDropped(pos)
     }
 
-    UndoButton {
+    ItemAction {
         width: UI.TaggableToolsSize
         height: UI.TaggableToolsSize
         selectedItems: root.selectedItems
+
+        source: ":taggable-reload"
+        onActivate: taggable.reload()
     }
 
-    TagRemoveButton {
+    ItemAction {
         width: UI.TaggableToolsSize
         height: UI.TaggableToolsSize
         selectedItems: root.selectedItems
+
+        source: ":tag-remove"
+        onActivate: taggable.clearLocation()
     }
 }
