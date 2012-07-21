@@ -69,6 +69,7 @@ Rectangle {
     Row {
         anchors.top: parent.top
         anchors.right: parent.right
+        anchors.margins: 2
         layoutDirection: Qt.RightToLeft
         spacing: 2
 
