@@ -101,6 +101,9 @@ system(pkg-config --exists exiv2) {
     HEADERS += \
         taggable-area.h \
         taggable.h
+    RESOURCES += \
+        ../qml/geotag.qrc \
+        ../../data/icons/scalable/icons-geotag.qrc
 } else {
     message("libexiv2 not found, geotagging disabled")
 }
