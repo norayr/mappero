@@ -89,6 +89,7 @@ void TaggablePrivate::loadExifInfo()
     // reset the cached data
     time = 0;
     geoPoint = GeoPoint();
+    lastChange = Controller::clock();
 
     // load the EXIF data
     image = Exiv2::ImageFactory::open(fileName.toUtf8().constData());
@@ -386,6 +387,24 @@ void Taggable::open() const
 {
     Q_D(const Taggable);
     QDesktopServices::openUrl(QUrl::fromLocalFile(d->fileName));
+}
+
+void Taggable::reload()
+{
+    Q_D(Taggable);
+
+    GeoPoint oldLocation = d->geoPoint;
+    bool oldNeedsSave = d->needsSave;
+
+    d->loadExifInfo();
+    d->needsSave = false;
+
+    if (oldNeedsSave) {
+        Q_EMIT needsSaveChanged();
+    }
+    if (oldLocation != d->geoPoint) {
+        Q_EMIT locationChanged();
+    }
 }
 
 Taggable::ImageProvider::ImageProvider():

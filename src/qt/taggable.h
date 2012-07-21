@@ -69,7 +69,9 @@ public:
     QPixmap pixmap(QSize *size, const QSize &requestedSize) const;
 
 public Q_SLOTS:
+    void clearLocation() { setLocation(GeoPoint()); }
     void open() const;
+    void reload();
 
 Q_SIGNALS:
     void fileNameChanged();
