@@ -18,4 +18,16 @@ Row {
 
         onDropped: root.geoSetterDropped(pos)
     }
+
+    UndoButton {
+        width: UI.TaggableToolsSize
+        height: UI.TaggableToolsSize
+        selectedItems: root.selectedItems
+    }
+
+    TagRemoveButton {
+        width: UI.TaggableToolsSize
+        height: UI.TaggableToolsSize
+        selectedItems: root.selectedItems
+    }
 }

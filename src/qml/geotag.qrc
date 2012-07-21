@@ -2,8 +2,10 @@
 <qresource>
   <file>GeoSetter.qml</file>
   <file>GeoTagPage.qml</file>
+  <file>TagRemoveButton.qml</file>
   <file>TaggableDelegate.qml</file>
   <file>TaggableView.qml</file>
   <file>ToolBar.qml</file>
+  <file>UndoButton.qml</file>
 </qresource>
 </RCC>
