@@ -61,8 +61,10 @@ Rectangle {
     MouseArea {
         id: mouseArea
         anchors.fill: parent
-        onClicked: parent.clicked(mouse)
         hoverEnabled: true
+
+        onClicked: parent.clicked(mouse)
+        onDoubleClicked: taggable.open()
     }
 
     Row {

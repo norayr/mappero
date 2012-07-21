@@ -24,6 +24,7 @@
 
 #include <QCryptographicHash>
 #include <QDateTime>
+#include <QDesktopServices>
 #include <QDir>
 #include <QPixmap>
 #include <exiv2/image.hpp>
@@ -381,6 +382,12 @@ QPixmap Taggable::pixmap(QSize *size, const QSize &requestedSize) const
     return pixmap;
 }
 
+void Taggable::open() const
+{
+    Q_D(const Taggable);
+    QDesktopServices::openUrl(QUrl::fromLocalFile(d->fileName));
+}
+
 Taggable::ImageProvider::ImageProvider():
     QDeclarativeImageProvider(QDeclarativeImageProvider::Pixmap)
 {
@@ -421,4 +428,3 @@ QPixmap Taggable::ImageProvider::requestPixmap(const QString &id,
 
     return taggables.value(id)->pixmap(size, requestedSize);
 }
-
