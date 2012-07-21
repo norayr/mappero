@@ -14,7 +14,6 @@ ListView {
         source: taggable.pixmapUrl
         topText: model.fileName
         bottomText: Qt.formatDateTime(model.time, "d/M/yyyy hh:mm")
-        hasLocation: taggable.hasLocation
         selected: ListView.view.isSelected(index)
 
         onClicked: {

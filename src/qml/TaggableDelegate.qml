@@ -6,7 +6,6 @@ Rectangle {
     property alias source: thumbnail.source
     property alias bottomText: timeText.text
     property alias topText: nameText.text
-    property alias hasLocation: locationMarker.visible
     property bool selected: false
 
     signal clicked(variant mouse)
@@ -74,10 +73,10 @@ Rectangle {
         spacing: 2
 
         Image {
-            id: locationMarker
             width: UI.TaggableEmblemSize
             height: UI.TaggableEmblemSize
             source: ":taggable-has-pos.svg"
+            visible: taggable.hasLocation
         }
     }
 }
