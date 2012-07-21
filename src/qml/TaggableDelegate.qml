@@ -79,5 +79,12 @@ Rectangle {
             source: ":taggable-has-pos.svg"
             visible: taggable.hasLocation
         }
+
+        Image {
+            width: UI.TaggableEmblemSize
+            height: UI.TaggableEmblemSize
+            source: ":taggable-modified.svg"
+            visible: taggable.needsSave
+        }
     }
 }
