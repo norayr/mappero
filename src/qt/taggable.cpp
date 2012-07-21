@@ -178,9 +178,52 @@ QPixmap TaggablePrivate::preview(QSize *size,
     if (size != 0) *size = previewSize;
 
     Exiv2::PreviewImage exivPreview = loader.getPreviewImage(*best);
-    QPixmap preview;
+    QImage preview;
     preview.loadFromData(exivPreview.pData(), exivPreview.size());
-    return preview;
+
+    /* Handle image orientation */
+    Exiv2::ExifData &exifData = image->exifData();
+    QString orientationString =
+        exifData["Exif.Thumbnail.Orientation"].toString().c_str();
+    if (orientationString.isEmpty()) {
+        orientationString =
+            exifData["Exif.Image.Orientation"].toString().c_str();
+    }
+    int orientation = orientationString.toInt();
+    if (orientation < 1 || orientation > 8) orientation = 1;
+    int rotation, mirror;
+
+    switch (orientation) {
+    case 1: rotation = 0; mirror = 0; break;
+    case 2: rotation = 0; mirror = 1; break;
+    case 3: rotation = 2; mirror = 0; break;
+    case 4: rotation = 2; mirror = 1; break;
+    case 5: rotation = 1; mirror = 1; break;
+    case 6: rotation = 1; mirror = 0; break;
+    case 7: rotation = 3; mirror = 1; break;
+    case 8: rotation = 3; mirror = 0; break;
+    }
+
+    QTransform transformation;
+    if (!requestedSize.isEmpty()) {
+        QSize newSize = preview.size();
+        newSize.scale(requestedSize, Qt::KeepAspectRatioByExpanding);
+        newSize.rwidth() = qMax(newSize.width(), 1);
+        newSize.rheight() = qMax(newSize.height(), 1);
+        transformation.scale((qreal)newSize.width() / preview.width(),
+                             (qreal)newSize.height() / preview.height());
+    }
+
+    if (rotation != 0) {
+        transformation.rotate(rotation * 90);
+    }
+
+    if (mirror != 0) {
+        transformation.scale(-1, 1);
+    }
+
+    preview = preview.transformed(transformation, Qt::SmoothTransformation);
+    return QPixmap::fromImage(preview);
 }
 
 void TaggablePrivate::setNeedsSave(bool needsSave)
