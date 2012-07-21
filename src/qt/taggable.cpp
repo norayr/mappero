@@ -22,7 +22,9 @@
 #include "debug.h"
 #include "taggable.h"
 
+#include <QCryptographicHash>
 #include <QDateTime>
+#include <QDir>
 #include <QPixmap>
 #include <exiv2/image.hpp>
 #include <exiv2/preview.hpp>
@@ -31,6 +33,10 @@ using namespace Mappero;
 
 static Taggable::ImageProvider *imageProvider = 0;
 static int uniqueId = 1;
+#ifdef XDG_THUMBNAILS
+static bool thumbnailsDirChecked = false;
+static QString thumbnailsDir;
+#endif
 
 namespace Mappero {
 
@@ -43,6 +49,9 @@ class TaggablePrivate
 
     void loadExifInfo();
     void readGeoData(const Exiv2::ExifData &exifData);
+#ifdef XDG_THUMBNAILS
+    QPixmap cachedThumbnail(QSize *size, const QSize &requestedSize) const;
+#endif
     QPixmap preview(QSize *size, const QSize &requestedSize) const;
     static QString exifString(const Exiv2::Value &value) {
         return QString::fromAscii(value.toString().c_str());
@@ -156,6 +165,34 @@ Geo TaggablePrivate::exifGeoCoord(const Exiv2::Value &value, bool positive)
     if (count > 2) geo += value.toFloat(2) / 3600.0;
     return positive ? geo : -geo;
 }
+
+#ifdef XDG_THUMBNAILS
+static inline bool hasXdgThumbnails()
+{
+    if (!thumbnailsDirChecked) {
+        thumbnailsDirChecked = true;
+        QString newStandard(QDir::homePath() + "/.cache/thumbnails/large/");
+        QString oldStandard(QDir::homePath() + "/.thumbnails/large/");
+        if (QDir(newStandard).isReadable()) {
+            thumbnailsDir = newStandard;
+        } else if (QDir(oldStandard).isReadable()) {
+            thumbnailsDir = oldStandard;
+        }
+    }
+    return !thumbnailsDir.isEmpty();
+}
+
+QPixmap TaggablePrivate::cachedThumbnail(QSize *size, const QSize &) const
+{
+    if (!hasXdgThumbnails()) return QPixmap();
+    QByteArray ba;
+    QUrl uri = QUrl::fromLocalFile(fileName);
+    ba = QCryptographicHash::hash(uri.toEncoded(), QCryptographicHash::Md5);
+    QPixmap thumbnail(thumbnailsDir + QString::fromAscii(ba.toHex()));
+    if (size != 0) *size = thumbnail.size();
+    return thumbnail;
+}
+#endif
 
 QPixmap TaggablePrivate::preview(QSize *size,
                                  const QSize &requestedSize) const
@@ -324,6 +361,11 @@ time_t Taggable::time() const
 QPixmap Taggable::pixmap(QSize *size, const QSize &requestedSize) const
 {
     Q_D(const Taggable);
+
+#ifdef XDG_THUMBNAILS
+    QPixmap thumbnail = d->cachedThumbnail(size, requestedSize);
+    if (!thumbnail.isNull()) return thumbnail;
+#endif
 
     QPixmap preview = d->preview(size, requestedSize);
     if (!preview.isNull()) return preview;

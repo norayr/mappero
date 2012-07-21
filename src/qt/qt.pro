@@ -109,6 +109,10 @@ win32 {
     LIBS += -static-libgcc "-static-libstdc++"
 }
 
+unix {
+    DEFINES += XDG_THUMBNAILS
+}
+
 RESOURCES += \
     ../qml/qml.qrc \
     ../../data/icons/scalable/icons.qrc
