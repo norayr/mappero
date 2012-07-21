@@ -94,6 +94,11 @@ public:
                                        indexOfSlot("onOriginChanged()"));
     }
 
+    ~VisualModelItem() {
+        delete _item;
+        _item = 0;
+    }
+
     void updatePosition(const QPoint &position) {
         _item->setPos(position + origin());
     }
