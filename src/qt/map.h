@@ -115,6 +115,9 @@ public:
     Q_INVOKABLE void lookAt(const QRectF &area,
                             int offsetX, int offsetY, int margin = 0);
 
+    Q_INVOKABLE GeoPoint pixelsToGeo(const QPointF &pixel) const;
+    Q_INVOKABLE GeoPoint pixelsToGeo(qreal x, qreal y) const;
+
     // reimplemented virtual functions:
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
                QWidget *widget);

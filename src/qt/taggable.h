@@ -43,7 +43,7 @@ class Taggable: public QObject
     Q_PROPERTY(QUrl pixmapUrl READ pixmapUrl CONSTANT);
     Q_PROPERTY(QString fileName READ fileName WRITE setFileName \
                NOTIFY fileNameChanged);
-    Q_PROPERTY(GeoPoint location READ location WRITE setLocation \
+    Q_PROPERTY(Mappero::GeoPoint location READ location WRITE setLocation \
                NOTIFY locationChanged);
     Q_PROPERTY(bool hasLocation READ hasLocation NOTIFY locationChanged);
     Q_PROPERTY(bool needsSave READ needsSave NOTIFY needsSaveChanged);

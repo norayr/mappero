@@ -88,7 +88,7 @@ class MapPrivate: public QObject
         return (pixel * pow(2, zoomLevel)).toPoint();
     }
 
-    GeoPoint unit2geo(const Point &u) {
+    GeoPoint unit2geo(const Point &u) const {
         if (mainLayer == 0) return GeoPoint(0, 0);
 
         const Projection *projection = mainLayer->projection();
@@ -585,6 +585,19 @@ void Map::lookAt(const QRectF &area, int offsetX, int offsetY, int margin)
         Point::fromPixel(QPoint(offsetX, offsetY), zoom);
     d->setRequestedCenter(centerUnits);
     setRequestedZoomLevel(zoom);
+}
+
+GeoPoint Map::pixelsToGeo(const QPointF &pixel) const
+{
+    Q_D(const Map);
+    QPointF pixelsFromCenter = pixel - QPointF(width() / 2, height() / 2);
+    Point units = d->centerUnits.translated(d->pixel2unit(pixelsFromCenter));
+    return d->unit2geo(units);
+}
+
+GeoPoint Map::pixelsToGeo(qreal x, qreal y) const
+{
+    return pixelsToGeo(QPointF(x, y));
 }
 
 void Map::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,

@@ -49,8 +49,14 @@ Item {
             anchors.horizontalCenter: parent.horizontalCenter
             selectedItems: taggableView.selectedItems
 
-            onSelectedItemsChanged: console.log("Items: " + selectedItems)
-            onGeoSetterDropped: console.log("Dropped on " + pos.x + "," + pos.y)
+            onGeoSetterDropped: {
+                var p = map.pixelsToGeo(pos.x, pos.y)
+                var l = selectedItems.length
+                for (var i = 0; i < l; i++) {
+                    var taggable = selectedItems[i]
+                    taggable.location = map.pixelsToGeo(pos.x, pos.y)
+                }
+            }
         }
     }
 
