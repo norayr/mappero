@@ -1,5 +1,4 @@
 import QtQuick 1.0
-import "UIConstants.js" as UI
 
 Item {
     id: root
@@ -9,8 +8,6 @@ Item {
     signal dropped(variant pos)
 
     enabled: selectedItems.length > 0
-    width: UI.TaggableEmblemSize
-    height: UI.TaggableEmblemSize
 
     Item {
         id: handle

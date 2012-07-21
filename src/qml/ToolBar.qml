@@ -12,6 +12,8 @@ Row {
 
     GeoSetter {
         id: geoSetter
+        width: UI.TaggableToolsSize
+        height: UI.TaggableToolsSize
         selectedItems: root.selectedItems
 
         onDropped: root.geoSetterDropped(pos)

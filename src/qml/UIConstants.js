@@ -6,4 +6,5 @@ var TagPaneHeight = 120
 var TaggableEmblemSize = 24
 var TaggableSourceWidth = TagPaneHeight - 4
 var TaggableSourceHeight = TaggableSourceWidth
+var TaggableToolsSize = 32
 var ToolSpacing = 8
