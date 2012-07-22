@@ -23,8 +23,9 @@
 #include "poi-item.h"
 #include "poi-view.h"
 #ifdef GEOTAGGING_ENABLED
-#include "taggable.h"
 #include "taggable-area.h"
+#include "taggable-selection.h"
+#include "taggable.h"
 #endif
 #include "tracker.h"
 #include "view.h"
@@ -67,7 +68,9 @@ int main(int argc, char *argv[])
     view.rootContext()->setContextProperty("firstPage", firstPage);
 
 #ifdef GEOTAGGING_ENABLED
+    qmlRegisterType<Mappero::Taggable>();
     qmlRegisterType<Mappero::TaggableArea>("Mappero", 1, 0, "TaggableArea");
+    qmlRegisterType<Mappero::TaggableSelection>();
     QDeclarativeEngine *engine = view.rootContext()->engine();
     engine->addImageProvider(Mappero::Taggable::ImageProvider::name(),
                              Mappero::Taggable::ImageProvider::instance());

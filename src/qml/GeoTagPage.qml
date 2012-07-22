@@ -47,13 +47,13 @@ Item {
             anchors.bottom: parent.bottom
             anchors.bottomMargin: UI.ToolSpacing
             anchors.horizontalCenter: parent.horizontalCenter
-            selectedItems: taggableView.selectedItems
+            selection: dropArea.model.selection
 
             onGeoSetterDropped: {
                 var p = map.pixelsToGeo(pos.x, pos.y)
-                var l = selectedItems.length
+                var l = selection.items.length
                 for (var i = 0; i < l; i++) {
-                    var taggable = selectedItems[i]
+                    var taggable = selection.items[i]
                     taggable.location = map.pixelsToGeo(pos.x, pos.y)
                 }
             }

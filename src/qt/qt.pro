@@ -97,9 +97,11 @@ system(pkg-config --exists exiv2) {
     PKGCONFIG += exiv2
     SOURCES += \
         taggable-area.cpp \
+        taggable-selection.cpp \
         taggable.cpp
     HEADERS += \
         taggable-area.h \
+        taggable-selection.h \
         taggable.h
     RESOURCES += \
         ../qml/geotag.qrc \

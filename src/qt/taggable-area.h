@@ -21,11 +21,50 @@
 #ifndef MAP_TAGGABLE_AREA_H
 #define MAP_TAGGABLE_AREA_H
 
+#include <QAbstractListModel>
 #include <QDeclarativeItem>
+#include <QUrl>
 
 namespace Mappero {
 
-class TaggableModel;
+class Taggable;
+class TaggableSelection;
+
+class TaggableModel: public QAbstractListModel
+{
+    Q_OBJECT
+    Q_PROPERTY(Mappero::TaggableSelection *selection READ selection CONSTANT);
+
+public:
+    enum TaggableModelRoles {
+        TaggableRole = Qt::UserRole + 1,
+        FileNameRole,
+        TimeRole,
+        GeoPointRole,
+    };
+
+    TaggableModel(QObject *parent = 0);
+    void addUrls(const QList<QUrl> &urlList);
+
+    QVariant data(const QModelIndex &index,
+                  int role = Qt::DisplayRole) const;
+    int rowCount(const QModelIndex &parent = QModelIndex()) const;
+
+    TaggableSelection *selection() const { return _selection; }
+
+    Taggable *taggable(int row) const { return taggables[row]; }
+
+private Q_SLOTS:
+    void onTaggableChanged();
+    void checkChanges();
+
+private:
+    TaggableSelection *_selection;
+    QList<Taggable *> taggables;
+    bool checkChangesQueued;
+    qint64 lastChangesTime;
+};
+
 
 class TaggableAreaPrivate;
 class TaggableArea: public QDeclarativeItem

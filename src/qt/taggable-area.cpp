@@ -21,9 +21,9 @@
 #include "controller.h"
 #include "debug.h"
 #include "taggable-area.h"
+#include "taggable-selection.h"
 #include "taggable.h"
 
-#include <QAbstractListModel>
 #include <QDateTime>
 #include <QFileInfo>
 #include <QGraphicsSceneDragDropEvent>
@@ -32,39 +32,6 @@
 using namespace Mappero;
 
 namespace Mappero {
-
-class TaggableModel: public QAbstractListModel
-{
-    Q_OBJECT
-
-public:
-    enum TaggableModelRoles {
-        TaggableRole = Qt::UserRole + 1,
-        FileNameRole,
-        TimeRole,
-        GeoPointRole,
-    };
-
-    TaggableModel(QObject *parent = 0);
-    void addUrls(const QList<QUrl> &urlList);
-
-    QVariant data(const QModelIndex &index,
-                  int role = Qt::DisplayRole) const;
-    int rowCount(const QModelIndex &parent = QModelIndex()) const;
-
-    Q_INVOKABLE QVariant get(int row) const {
-        return QVariant::fromValue(taggables[row]);
-    }
-
-private Q_SLOTS:
-    void onTaggableChanged();
-    void checkChanges();
-
-private:
-    QList<Taggable *> taggables;
-    bool checkChangesQueued;
-    qint64 lastChangesTime;
-};
 
 class TaggableAreaPrivate
 {
@@ -80,6 +47,7 @@ private:
 
 TaggableModel::TaggableModel(QObject *parent):
     QAbstractListModel(parent),
+    _selection(new TaggableSelection(this)),
     checkChangesQueued(false),
     lastChangesTime(Controller::clock())
 {
@@ -201,5 +169,3 @@ void TaggableArea::dropEvent(QGraphicsSceneDragDropEvent *e)
         d->model->addUrls(mimeData->urls());
     }
 }
-
-#include "taggable-area.moc"
