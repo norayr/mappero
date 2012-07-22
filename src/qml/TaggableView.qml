@@ -5,6 +5,8 @@ ListView {
     property variant selectedItems:  model.selection.items
 
     orientation: ListView.Horizontal
+    cacheBuffer: 40
+    highlightMoveDuration: 500
     spacing: 2
     delegate: TaggableDelegate {
         id: delegate
