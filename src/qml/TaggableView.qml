@@ -13,6 +13,7 @@ ListView {
         source: taggable.pixmapUrl
         topText: model.fileName
         bottomText: Qt.formatDateTime(model.time, "d/M/yyyy hh:mm")
+        selected: ListView.view.model.selection.isSelected(index)
 
         onClicked: {
             if (mouse.modifiers & Qt.ShiftModifier) {
