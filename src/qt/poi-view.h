@@ -38,6 +38,8 @@ class PoiView: public MapItem
     Q_PROPERTY(QDeclarativeComponent *delegate READ delegate \
                WRITE setDelegate NOTIFY delegateChanged);
     Q_PROPERTY(QRectF itemArea READ itemArea NOTIFY itemAreaChanged);
+    Q_PROPERTY(int currentIndex READ currentIndex WRITE setCurrentIndex \
+               NOTIFY currentIndexChanged);
 
 public:
     PoiView(QDeclarativeItem *parent = 0);
@@ -51,6 +53,9 @@ public:
 
     QRectF itemArea() const;
 
+    void setCurrentIndex(int index);
+    int currentIndex() const;
+
     Q_INVOKABLE GeoPoint itemPos(int index) const;
 
     // reimplemented virtual methods
@@ -63,6 +68,7 @@ Q_SIGNALS:
     void modelChanged();
     void delegateChanged();
     void itemAreaChanged();
+    void currentIndexChanged();
 
 private:
     PoiViewPrivate *d_ptr;

@@ -587,6 +587,37 @@ void Map::lookAt(const QRectF &area, int offsetX, int offsetY, int margin)
     setRequestedZoomLevel(zoom);
 }
 
+void Map::ensureVisible(const GeoPoint &geoPoint, int offsetX, int offsetY,
+                        int margin)
+{
+    Q_D(Map);
+    if (d->mainLayer == 0) return;
+
+    const Projection *projection = d->mainLayer->projection();
+    Point point = projection->geoToUnit(geoPoint);
+
+    Point offsetUnits = point - d->centerUnits;
+    QPoint offsetPixels = offsetUnits.toPixel(d->zoomLevel);
+    offsetPixels += QPoint(offsetX, offsetY);
+
+    int scrollX = 0, scrollY = 0;
+    if (offsetPixels.x() + margin > width() / 2) {
+        scrollX = width() / 2 - (offsetPixels.x() + margin);
+    } else if (offsetPixels.x() - margin < -width() / 2) {
+        scrollX = -width() / 2 - (offsetPixels.x() - margin);
+    }
+
+    if (offsetPixels.y() + margin > height() / 2) {
+        scrollY = height() / 2 - (offsetPixels.y() + margin);
+    } else if (offsetPixels.y() - margin < -height() / 2) {
+        scrollY = -height() / 2 - (offsetPixels.y() - margin);
+    }
+
+    // Convert the pixels back to units
+    Point scrollUnits = d->pixel2unit(QPoint(scrollX, scrollY));
+    d->setRequestedCenter(d->centerUnits - scrollUnits);
+}
+
 GeoPoint Map::pixelsToGeo(const QPointF &pixel) const
 {
     Q_D(const Map);

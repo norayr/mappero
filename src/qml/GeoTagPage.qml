@@ -30,6 +30,7 @@ Item {
                 id: poiView
                 anchors.fill: parent
                 model: dropArea.model
+                currentIndex: taggableView.currentIndex
                 delegate: ImagePoi {
                     width: 80
                     height: 80
@@ -40,11 +41,12 @@ Item {
                         taggable.location = view.itemPos(index)
                     }
 
-                    onClicked: view.setCurrent(index)
+                    onPressed: view.setCurrent(index)
                 }
 
                 function setCurrent(index) {
                     taggableView.currentIndex = index
+                    dropArea.model.selection.setSelection(index)
                 }
             }
         }
@@ -83,16 +85,6 @@ Item {
             id: taggableView
             anchors.fill: parent
             model: dropArea.model
-
-            onSelectedItemsChanged: {
-                // TODO: show all the items on the map?
-                if (selectedItems.length == 1) {
-                    var taggable = selectedItems[0]
-                    if (taggable.hasLocation) {
-                        map.requestedCenter = taggable.location
-                    }
-                }
-            }
         }
     }
 

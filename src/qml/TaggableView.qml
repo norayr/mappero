@@ -25,6 +25,7 @@ ListView {
             } else {
                 ListView.view.model.selection.setSelection(index)
             }
+            ListView.view.currentIndex = index
         }
 
         Connections {

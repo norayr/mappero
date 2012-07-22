@@ -49,6 +49,9 @@ public:
     void updateItemsPosition();
     QDeclarativeItem *createItem(VisualModelItem *modelItem);
 
+    inline VisualModelItem *visualItemAt(int index);
+    inline QDeclarativeItem *itemAt(int index);
+
     QVariant modelValue(int index, int role) {
         return model->data(model->index(index, 0), role);
     }
@@ -68,6 +71,8 @@ private:
     QVector<VisualModelItem*> items;
     QDeclarativeComponent *delegate;
     int geoPointRole;
+    int currentIndex;
+    int highestZ;
     mutable PoiView *q_ptr;
 };
 
@@ -160,6 +165,8 @@ PoiViewPrivate::PoiViewPrivate(PoiView *poiView):
     model(0),
     delegate(0),
     geoPointRole(0),
+    currentIndex(-1),
+    highestZ(1),
     q_ptr(poiView)
 {
 }
@@ -280,6 +287,21 @@ QDeclarativeItem *PoiViewPrivate::createItem(VisualModelItem *modelItem)
     return item;
 }
 
+VisualModelItem *PoiViewPrivate::visualItemAt(int index)
+{
+    if (index < 0 || index >= items.count()) return 0;
+
+    return items.at(index);
+}
+
+QDeclarativeItem *PoiViewPrivate::itemAt(int index)
+{
+    VisualModelItem *visualItem = visualItemAt(index);
+    if (visualItem == 0) return 0;
+
+    return visualItem->item();
+}
+
 QPoint PoiViewPrivate::geoToPos(const GeoPoint &geo) const
 {
     Q_Q(const PoiView);
@@ -386,6 +408,33 @@ QRectF PoiView::itemArea() const
     if (latMax < latMin) latMax = latMin;
     if (lonMax < lonMin) lonMax = lonMin;
     return QRectF(latMin, lonMin, latMax - latMin, lonMax - lonMin);
+}
+
+void PoiView::setCurrentIndex(int index)
+{
+    Q_D(PoiView);
+
+    if (index == d->currentIndex) return;
+
+    d->currentIndex = index;
+    Q_EMIT currentIndexChanged();
+
+    VisualModelItem *visualItem = d->visualItemAt(index);
+    if (visualItem != 0 && visualItem->geoPoint().isValid()) {
+        QPoint origin = visualItem->origin().toPoint();
+        QDeclarativeItem *item = visualItem->item();
+        map()->ensureVisible(visualItem->geoPoint(),
+                             item->width() / 2 - origin.x(),
+                             item->height() / 2 - origin.y(),
+                             qMax(item->width(), item->height()));
+        item->setZValue(d->highestZ++);
+    }
+}
+
+int PoiView::currentIndex() const
+{
+    Q_D(const PoiView);
+    return d->currentIndex;
 }
 
 GeoPoint PoiView::itemPos(int index) const
