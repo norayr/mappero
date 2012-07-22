@@ -8,6 +8,7 @@ PoiItem {
     property alias topText: nameText.text
     transformOrigin: Item.Bottom
 
+    signal clicked
     signal dragFinished
 
     BorderImage {
@@ -56,5 +57,7 @@ PoiItem {
         drag.target: poiItem
         drag.filterChildren: true
         drag.onActiveChanged: if (!drag.active) poiItem.dragFinished()
+
+        onClicked: poiItem.clicked()
     }
 }

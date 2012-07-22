@@ -39,6 +39,12 @@ Item {
                     onDragFinished: {
                         taggable.location = view.itemPos(index)
                     }
+
+                    onClicked: view.setCurrent(index)
+                }
+
+                function setCurrent(index) {
+                    taggableView.currentIndex = index
                 }
             }
         }
