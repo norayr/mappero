@@ -1,4 +1,4 @@
-/* vi: set et sw=4 ts=8 cino=t0,(0: */
+/* vi: set et sw=4 ts=4 cino=t0,(0: */
 /*
  * Copyright (C) 2012 Alberto Mardegan <mardy@users.sourceforge.net>
  *
