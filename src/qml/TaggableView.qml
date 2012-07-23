@@ -6,7 +6,11 @@ ListView {
 
     orientation: ListView.Horizontal
     cacheBuffer: 40
+    clip: true
     highlightMoveDuration: 500
+    highlightRangeMode: ListView.ApplyRange
+    preferredHighlightBegin: 0
+    preferredHighlightEnd: width / 2
     spacing: 2
     delegate: TaggableDelegate {
         id: delegate
