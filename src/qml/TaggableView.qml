@@ -8,9 +8,9 @@ ListView {
     cacheBuffer: 40
     clip: true
     highlightMoveDuration: 500
-    highlightRangeMode: ListView.ApplyRange
+    highlightRangeMode: ListView.StrictlyEnforceRange
     preferredHighlightBegin: 0
-    preferredHighlightEnd: width / 2
+    preferredHighlightEnd: height
     spacing: 2
     delegate: TaggableDelegate {
         id: delegate
