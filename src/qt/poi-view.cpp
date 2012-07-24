@@ -334,9 +334,18 @@ void PoiViewPrivate::onRowsInserted(const QModelIndex &, int first, int last)
 
 void PoiViewPrivate::onRowsRemoved(const QModelIndex &, int first, int last)
 {
-    Q_UNUSED(first);
-    Q_UNUSED(last);
-    // FIXME TODO
+    for (int i = last; i >= first; i--) {
+        delete items[i];
+    }
+
+    items.remove(first, last - first + 1);
+
+    int len = items.count();
+    for (int i = first; i < len; i++) {
+        VisualModelItem *visualItem = items[i];
+        if (visualItem != 0)
+            visualItem->setIndex(i);
+    }
 }
 
 void PoiViewPrivate::onDataChanged(const QModelIndex &topLeft,

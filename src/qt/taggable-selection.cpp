@@ -28,6 +28,7 @@ using namespace Mappero;
 TaggableSelection::TaggableSelection(TaggableModel *model):
     QObject(model),
     _model(model),
+    _isEmpty(true),
     _needsSave(false),
     _hasLocation(false),
     _lastIndex(-1)
@@ -80,6 +81,33 @@ void TaggableSelection::setCtrlSelection(int index)
     update();
 }
 
+void TaggableSelection::removeItems()
+{
+    if (_isEmpty) return;
+
+    QList<int> sortedIndexes = _indexes.toList();
+    qSort(sortedIndexes);
+
+    /* Start removing rows from the end, so we don't have to update the indexes
+     */
+    int last = -1;
+    int count = 0;
+    int len = sortedIndexes.count();
+    for (int i = len - 1; i >= 0; i--) {
+        int index = sortedIndexes[i];
+        if (index == last - count) {
+            count++;
+        } else {
+            if (last >= 0) {
+                _model->removeRows(last - count + 1, count);
+            }
+            last = index;
+            count = 1;
+        }
+    }
+    _model->removeRows(last - count + 1, count);
+}
+
 void TaggableSelection::update()
 {
     bool needsSave = false;
@@ -105,15 +133,30 @@ void TaggableSelection::update()
         Q_EMIT hasLocationChanged();
     }
 
+    if (_indexes.isEmpty() != _isEmpty) {
+        _isEmpty = _indexes.isEmpty();
+        Q_EMIT isEmptyChanged();
+    }
+
     Q_EMIT itemsChanged();
 }
 
 void TaggableSelection::onRowsRemoved(const QModelIndex &,
-                                      int start, int end)
+                                      int first, int last)
 {
-    Q_UNUSED(start);
-    Q_UNUSED(end);
-    // FIXME TODO
+    int count = last - first + 1;
+
+    TaggableIndexes newIndexes;
+
+    foreach (int index, _indexes) {
+        if (index < first) {
+            newIndexes.insert(index);
+        } else if (index > last) {
+            newIndexes.insert(index - count);
+        }
+    }
+
+    _indexes = newIndexes;
     update();
 }
 

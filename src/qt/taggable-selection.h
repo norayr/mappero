@@ -38,6 +38,7 @@ class TaggableSelection: public QObject
     Q_OBJECT
     Q_PROPERTY(Mappero::TaggableModel *model READ model CONSTANT);
     Q_PROPERTY(QList<QObject *> items READ items NOTIFY itemsChanged);
+    Q_PROPERTY(bool empty READ isEmpty NOTIFY isEmptyChanged);
     Q_PROPERTY(bool needsSave READ needsSave NOTIFY needsSaveChanged);
     Q_PROPERTY(bool hasLocation READ hasLocation NOTIFY hasLocationChanged);
 
@@ -47,6 +48,7 @@ public:
 
     TaggableModel *model() const { return _model; }
     QList<QObject *> items() const { return _items; }
+    bool isEmpty() const { return _isEmpty; }
     bool needsSave() const { return _needsSave; }
     bool hasLocation() const { return _hasLocation; }
 
@@ -55,9 +57,11 @@ public Q_SLOTS:
     void setShiftSelection(int index);
     void setCtrlSelection(int index);
     bool isSelected(int index) { return _indexes.contains(index); }
+    void removeItems();
 
 Q_SIGNALS:
     void itemsChanged();
+    void isEmptyChanged();
     void needsSaveChanged();
     void hasLocationChanged();
 
@@ -73,6 +77,7 @@ private:
     TaggableModel *_model;
     TaggableIndexes _indexes;
     QList<QObject *> _items;
+    bool _isEmpty;
     bool _needsSave;
     bool _hasLocation;
     int _lastIndex;

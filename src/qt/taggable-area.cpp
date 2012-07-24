@@ -103,6 +103,16 @@ int TaggableModel::rowCount(const QModelIndex &parent) const
     return taggables.count();
 }
 
+bool TaggableModel::removeRows(int row, int count, const QModelIndex &parent)
+{
+    beginRemoveRows(parent, row, row + count - 1);
+    for (int i = 1; i <= count; i++) {
+        taggables.removeAt(row + count - i);
+    }
+    endRemoveRows();
+    return true;
+}
+
 void TaggableModel::onTaggableChanged()
 {
     if (checkChangesQueued) return;
