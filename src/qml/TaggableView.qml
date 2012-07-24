@@ -10,7 +10,7 @@ ListView {
     highlightMoveDuration: 500
     highlightRangeMode: ListView.StrictlyEnforceRange
     preferredHighlightBegin: 0
-    preferredHighlightEnd: height
+    preferredHighlightEnd: width
     spacing: 2
     delegate: TaggableDelegate {
         id: delegate
