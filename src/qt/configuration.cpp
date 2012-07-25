@@ -29,6 +29,8 @@
 
 using namespace Mappero;
 
+static const QLatin1String keyLastPosition("LastPosition");
+static const QLatin1String keyLastZoomLevel("LastZoomLevel");
 static const QLatin1String keyMapCacheDir("MapCacheDir");
 
 namespace Mappero {
@@ -75,3 +77,26 @@ QString Configuration::mapCacheDir() const
         QLatin1String("/Maps/");
 }
 
+void Configuration::setLastPosition(const GeoPoint &position)
+{
+    setValue(keyLastPosition, QVariant::fromValue<GeoPoint>(position));
+    Q_EMIT lastPositionChanged();
+}
+
+GeoPoint Configuration::lastPosition() const
+{
+    return value(keyLastPosition,
+                 QVariant::fromValue<GeoPoint>(GeoPoint(59.935, 30.3286))).
+                 value<GeoPoint>();
+}
+
+void Configuration::setLastZoomLevel(qreal zoom)
+{
+    setValue(keyLastZoomLevel, zoom);
+    Q_EMIT lastZoomLevelChanged();
+}
+
+qreal Configuration::lastZoomLevel() const
+{
+    return value(keyLastZoomLevel, 8).toReal();
+}

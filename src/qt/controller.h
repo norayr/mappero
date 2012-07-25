@@ -37,6 +37,7 @@ class ControllerPrivate;
 class Controller: public QObject
 {
     Q_OBJECT
+    Q_PROPERTY(Mappero::Configuration *conf READ configuration CONSTANT);
 
 public:
     Controller(QObject *parent = 0);

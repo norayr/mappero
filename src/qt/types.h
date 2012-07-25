@@ -148,6 +148,9 @@ inline uint qHash(const Mappero::TileSpec &tile)
 
 Q_DECLARE_METATYPE(Mappero::GeoPoint)
 
+QDataStream &operator<<(QDataStream &out, const Mappero::GeoPoint &geoPoint);
+QDataStream &operator>>(QDataStream &in, Mappero::GeoPoint &geoPoint);
+
 #include <QDebug>
 
 QDebug operator<<(QDebug dbg, const Mappero::GeoPoint &p);

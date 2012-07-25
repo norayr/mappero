@@ -17,6 +17,7 @@
  * along with Mappero.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "configuration.h"
 #include "controller.h"
 #include "gps.h"
 #include "map.h"
@@ -46,6 +47,7 @@ int main(int argc, char *argv[])
     app.setApplicationName("mappero");
 
     qRegisterMetaType<Mappero::GeoPoint>("GeoPoint");
+    qRegisterMetaTypeStreamOperators<Mappero::GeoPoint>("GeoPoint");
     qmlRegisterType<Mappero::Map>("Mappero", 1, 0, "MapView");
     qmlRegisterType<Mappero::Tracker>("Mappero", 1, 0, "Tracker");
     qmlRegisterType<Mappero::PoiItem>("Mappero", 1, 0, "PoiItem");
@@ -53,6 +55,7 @@ int main(int argc, char *argv[])
     qmlRegisterUncreatableType<Mappero::MapItem>("Mappero", 1, 0, "MapItem",
                                                  "C++ creation only");
     qmlRegisterType<QAbstractListModel>();
+    qmlRegisterType<Mappero::Configuration>();
 
     Mappero::Controller controller;
     Mappero::View view;

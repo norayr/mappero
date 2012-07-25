@@ -23,8 +23,8 @@ Item {
             flickable: mapFlickable
 
             mainLayerId: "OpenStreetMap I"
-            center: Mappero.geo(59.935, 30.3286)
-            requestedZoomLevel: 8
+            center: Mappero.conf.lastPosition
+            requestedZoomLevel: Mappero.conf.lastZoomLevel
 
             PoiView {
                 id: poiView
@@ -91,5 +91,10 @@ Item {
     Connections {
         target: dropArea.model
         onRowsInserted: map.lookAt(poiView.itemArea, 0, 80, 40)
+    }
+
+    Component.onDestruction: {
+        Mappero.conf.lastPosition = map.center
+        Mappero.conf.lastZoomLevel = map.zoomLevel
     }
 }

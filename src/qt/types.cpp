@@ -47,6 +47,18 @@ Geo GeoPoint::distanceTo(const GeoPoint &other) const
     return ((2.0 * GATAN2(GSQTR(a), GSQTR(1.0 - a))) * EARTH_RADIUS);
 }
 
+QDataStream &operator<<(QDataStream &out, const Mappero::GeoPoint &geoPoint)
+{
+    return out << geoPoint.lat << geoPoint.lon;
+}
+
+QDataStream &operator>>(QDataStream &in, Mappero::GeoPoint &geoPoint)
+{
+    in >> geoPoint.lat;
+    in >> geoPoint.lon;
+    return in;
+}
+
 QDebug operator<<(QDebug dbg, const GeoPoint &p)
 {
     dbg.nospace() << "(" << p.lat << ", " << p.lon << ")";

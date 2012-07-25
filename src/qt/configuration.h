@@ -21,6 +21,8 @@
 #ifndef MAP_CONFIGURATION_H
 #define MAP_CONFIGURATION_H
 
+#include "types.h"
+
 #include <QObject>
 #include <QSettings>
 
@@ -30,12 +32,26 @@ class ConfigurationPrivate;
 class Configuration: public QSettings
 {
     Q_OBJECT
+    Q_PROPERTY(Mappero::GeoPoint lastPosition READ lastPosition \
+               WRITE setLastPosition NOTIFY lastPositionChanged);
+    Q_PROPERTY(qreal lastZoomLevel READ lastZoomLevel \
+               WRITE setLastZoomLevel NOTIFY lastZoomLevelChanged);
 
 public:
     Configuration(QObject *parent = 0);
     ~Configuration();
 
     QString mapCacheDir() const;
+
+    void setLastPosition(const GeoPoint &position);
+    GeoPoint lastPosition() const;
+
+    void setLastZoomLevel(qreal zoom);
+    qreal lastZoomLevel() const;
+
+Q_SIGNALS:
+    void lastPositionChanged();
+    void lastZoomLevelChanged();
 
 private:
     ConfigurationPrivate *d_ptr;

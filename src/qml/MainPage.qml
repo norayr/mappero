@@ -16,8 +16,8 @@ Item {
 
         tracker: tracker
         mainLayerId: "OpenStreetMap I"
-        center: Qt.point(60.19997, 24.94057)
-        requestedZoomLevel: 8
+        center: Mappero.conf.lastPosition
+        requestedZoomLevel: Mappero.conf.lastZoomLevel
         followGps: visible
     }
 
@@ -29,5 +29,10 @@ Item {
     Osm {
         id: osm
         anchors.fill: parent
+    }
+
+    Component.onDestruction: {
+        Mappero.conf.lastPosition = map.center
+        Mappero.conf.lastZoomLevel = map.zoomLevel
     }
 }
