@@ -40,6 +40,17 @@ TaggableSelection::TaggableSelection(TaggableModel *model):
             this, SLOT(onRowsRemoved(const QModelIndex&,int,int)));
 }
 
+void TaggableSelection::selectAll()
+{
+    int len = _model->rowCount();
+    for (int i = 0; i < len; i++) {
+        _indexes.insert(i);
+    }
+    _lastIndex = -1;
+
+    update();
+}
+
 void TaggableSelection::setSelection(int index)
 {
     _indexes.clear();

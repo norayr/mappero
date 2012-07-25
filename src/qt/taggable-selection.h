@@ -53,6 +53,7 @@ public:
     bool hasLocation() const { return _hasLocation; }
 
 public Q_SLOTS:
+    void selectAll();
     void setSelection(int index);
     void setShiftSelection(int index);
     void setCtrlSelection(int index);
