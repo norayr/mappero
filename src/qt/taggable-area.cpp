@@ -61,6 +61,8 @@ TaggableModel::TaggableModel(QObject *parent):
 
 void TaggableModel::addUrls(const QList<QUrl> &urlList)
 {
+    bool wasEmpty = isEmpty();
+
     int first = rowCount();
     int last = first + urlList.count() - 1;
     beginInsertRows(QModelIndex(), first, last);
@@ -72,6 +74,10 @@ void TaggableModel::addUrls(const QList<QUrl> &urlList)
         taggables.append(taggable);
     }
     endInsertRows();
+
+    if (wasEmpty && !isEmpty()) {
+        Q_EMIT isEmptyChanged();
+    }
 }
 
 QVariant TaggableModel::data(const QModelIndex &index, int role) const
@@ -110,6 +116,10 @@ bool TaggableModel::removeRows(int row, int count, const QModelIndex &parent)
         taggables.removeAt(row + count - i);
     }
     endRemoveRows();
+
+    if (count > 0 && isEmpty()) {
+        Q_EMIT isEmptyChanged();
+    }
     return true;
 }
 

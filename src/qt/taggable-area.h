@@ -34,6 +34,7 @@ class TaggableModel: public QAbstractListModel
 {
     Q_OBJECT
     Q_PROPERTY(Mappero::TaggableSelection *selection READ selection CONSTANT);
+    Q_PROPERTY(bool empty READ isEmpty NOTIFY isEmptyChanged);
 
 public:
     enum TaggableModelRoles {
@@ -53,8 +54,12 @@ public:
                     const QModelIndex &parent = QModelIndex());
 
     TaggableSelection *selection() const { return _selection; }
+    bool isEmpty() const { return taggables.isEmpty(); }
 
     Taggable *taggable(int row) const { return taggables[row]; }
+
+Q_SIGNALS:
+    void isEmptyChanged();
 
 private Q_SLOTS:
     void onTaggableChanged();
