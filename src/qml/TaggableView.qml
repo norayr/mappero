@@ -32,6 +32,12 @@ ListView {
             ListView.view.currentIndex = index
         }
 
+        ListView.onRemove: SequentialAnimation {
+            PropertyAction { target: delegate; property: "ListView.delayRemove"; value: true }
+            NumberAnimation { target: delegate; properties: "scale,width"; to: 0; duration: 250; easing.type: Easing.InOutQuad }
+            PropertyAction { target: delegate; property: "ListView.delayRemove"; value: false }
+        }
+
         Connections {
             target: delegate.ListView.view.model.selection
             onItemsChanged: delegate.selected = delegate.ListView.view.model.selection.isSelected(index)

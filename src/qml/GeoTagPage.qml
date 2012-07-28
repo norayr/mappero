@@ -76,15 +76,33 @@ Item {
         height: UI.TagPaneHeight
         color: "white"
 
-        TaggableArea {
-            id: dropArea
-            anchors.fill: parent
+        FileTools {
+            id: fileTools
+            anchors.left: parent.left
+            anchors.top: parent.top
+            anchors.bottom: parent.bottom
+            anchors.margins: spacing
+
+            model: dropArea.model
         }
 
-        TaggableView {
-            id: taggableView
-            anchors.fill: parent
-            model: dropArea.model
+        Rectangle {
+            anchors.left: fileTools.right
+            anchors.right: parent.right
+            anchors.top: parent.top
+            anchors.bottom: parent.bottom
+            color: "white"
+
+            TaggableArea {
+                id: dropArea
+                anchors.fill: parent
+            }
+
+            TaggableView {
+                id: taggableView
+                anchors.fill: parent
+                model: dropArea.model
+            }
         }
     }
 

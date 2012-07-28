@@ -1,7 +1,9 @@
+var FileToolsWidth = 120
 var MenuButtonHeight = 72
 var MenuButtonFontPixelSize = 24
 var OsmButtonSize = 72
 var OsmScreenMargin = 8
+var PaneButtonHeight = 30
 var TagPaneHeight = 120
 var TaggableEmblemSize = 24
 var TaggableSourceWidth = TagPaneHeight - 4
