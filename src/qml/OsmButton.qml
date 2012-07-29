@@ -1,10 +1,7 @@
 import QtQuick 1.0
+import "UIConstants.js" as UI
 
-Image {
-    signal clicked
-
-    MouseArea {
-        anchors.fill: parent
-        onClicked: parent.clicked()
-    }
+ImageButton {
+    width: UI.OsmButtonSize
+    height: UI.OsmButtonSize
 }
