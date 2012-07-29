@@ -9,7 +9,5 @@
   <file>taggable-modified.svg</file>
   <file alias="taggable-reload-off">taggable-reload-off.svg</file>
   <file alias="taggable-reload">taggable-reload.svg</file>
-  <file alias="taggable-save-off">taggable-save-off.svg</file>
-  <file alias="taggable-save">taggable-save.svg</file>
 </qresource>
 </RCC>

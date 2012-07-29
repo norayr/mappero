@@ -38,14 +38,4 @@ Row {
         source: ":tag-remove"
         onActivate: taggable.clearLocation()
     }
-
-    ItemAction {
-        width: UI.TaggableToolsSize
-        height: UI.TaggableToolsSize
-        selectedItems: root.selection.items
-        enabled: root.selection.needsSave
-
-        source: ":taggable-save"
-        onActivate: taggable.save()
-    }
 }

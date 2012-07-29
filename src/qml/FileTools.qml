@@ -17,6 +17,18 @@ Column {
     }
 
     PaneButton {
+        text: qsTr("Save")
+        enabled: selection.needsSave
+        onClicked: {
+            var l = selection.items.length
+            for (var i = 0; i < l; i++) {
+                var taggable = selection.items[i]
+                taggable.save()
+            }
+        }
+    }
+
+    PaneButton {
         text: qsTr("Clear")
         onClicked: selection.removeItems()
         enabled: !selection.empty
