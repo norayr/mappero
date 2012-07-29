@@ -1,17 +1,19 @@
 <!DOCTYPE RCC><RCC version="1.0">
 <qresource>
-  <file>maemo-mapper-fullscreen.png</file>
-  <file>maemo-mapper-go-to.png</file>
-  <file>maemo-mapper-gps-disable.png</file>
-  <file>maemo-mapper-gps-enable.png</file>
-  <file>maemo-mapper-path.png</file>
-  <file>maemo-mapper-point.png</file>
-  <file>maemo-mapper-route.png</file>
-  <file>maemo-mapper-settings.png</file>
-  <file>maemo-mapper-view.png</file>
-  <file>maemo-mapper-wait.png</file>
-  <file>maemo-mapper-zoom-in.png</file>
-  <file>maemo-mapper-zoom-out.png</file>
+  <file alias="osm-fullscreen">maemo-mapper-fullscreen.png</file>
+  <file alias="osm-go-to">maemo-mapper-go-to.png</file>
+  <file alias="osm-gps-disable">maemo-mapper-gps-disable.png</file>
+  <file alias="osm-gps-enable">maemo-mapper-gps-enable.png</file>
+  <file alias="osm-path">maemo-mapper-path.png</file>
+  <file alias="osm-point">maemo-mapper-point.png</file>
+  <file alias="osm-route">maemo-mapper-route.png</file>
+  <file alias="osm-settings">maemo-mapper-settings.png</file>
+  <file alias="osm-view">maemo-mapper-view.png</file>
+  <file alias="osm-wait">maemo-mapper-wait.png</file>
+  <file alias="osm-zoom-in-off">maemo-mapper-zoom-in-off.png</file>
+  <file alias="osm-zoom-in">maemo-mapper-zoom-in.png</file>
+  <file alias="osm-zoom-out-off">maemo-mapper-zoom-out-off.png</file>
+  <file alias="osm-zoom-out">maemo-mapper-zoom-out.png</file>
   <file>poi-frame.svg</file>
 </qresource>
 </RCC>
