@@ -43,7 +43,8 @@ public:
     };
 
     TiledLayer(const QString &name, const QString &id,
-               const QString &url, const QString &format, const Type *type);
+               const QString &url, const QString &format, const Type *type,
+               int minZoom, int maxZoom);
     virtual ~TiledLayer();
 
     const QString url() const;

@@ -4,6 +4,7 @@
   <file>GeoSetter.qml</file>
   <file>GeoTagPage.qml</file>
   <file>ItemAction.qml</file>
+  <file>MapControls.qml</file>
   <file>PaneButton.qml</file>
   <file>TaggableDelegate.qml</file>
   <file>TaggableView.qml</file>

@@ -243,10 +243,12 @@ void TiledLayerPrivate::onOnlineStateChanged(bool isOnline)
 
 TiledLayer::TiledLayer(const QString &name, const QString &id,
                        const QString &url, const QString &format,
-                       const Type *type):
+                       const Type *type,
+                       int minZoom, int maxZoom):
     Layer(id, projectionFromLayerType(type)),
     d_ptr(new TiledLayerPrivate(this, name, id, url, format, type))
 {
+    setZoomRange(minZoom, maxZoom);
 }
 
 TiledLayer::~TiledLayer()

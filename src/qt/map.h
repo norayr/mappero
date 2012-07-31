@@ -58,6 +58,10 @@ class Map: public QDeclarativeItem {
     Q_PROPERTY(qreal requestedZoomLevel \
                READ requestedZoomLevel WRITE setRequestedZoomLevel \
                NOTIFY requestedZoomLevelChanged);
+    Q_PROPERTY(qreal minZoomLevel READ minZoomLevel
+               NOTIFY mainLayerIdChanged);
+    Q_PROPERTY(qreal maxZoomLevel READ maxZoomLevel
+               NOTIFY mainLayerIdChanged);
     Q_PROPERTY(QString mainLayerId READ mainLayerId WRITE setMainLayerId \
                NOTIFY mainLayerIdChanged);
     Q_PROPERTY(bool followGps READ followGps WRITE setFollowGps \
@@ -95,6 +99,9 @@ public:
 
     void setRequestedZoomLevel(qreal zoom);
     qreal requestedZoomLevel() const;
+
+    qreal minZoomLevel() const;
+    qreal maxZoomLevel() const;
 
     void setMainLayerId(const QString &layerId);
     QString mainLayerId() const;

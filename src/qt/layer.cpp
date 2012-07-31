@@ -74,7 +74,7 @@ Layer *Layer::fromId(const QString &id)
             Mappero::TiledLayer::Type::get("XYZ_INV");
         return new TiledLayer("OpenStreet", "OpenStreetMap I",
                               "http://tile.openstreetmap.org/%0d/%d/%d.png",
-                              "png", type);
+                              "png", type, 3, 19);
     } else {
         return 0;
     }

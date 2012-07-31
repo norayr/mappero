@@ -502,6 +502,12 @@ void Map::setRequestedZoomLevel(qreal zoom)
     Q_D(Map);
     if (zoom == d->requestedZoomLevel) return;
 
+    if (d->mainLayer != 0) {
+        if (zoom < d->mainLayer->minZoom() ||
+            zoom > d->mainLayer->maxZoom())
+            return;
+    }
+
     /* approximate the zoom level to the nearest integer.
      * TODO add a protected method so that subclasses can decide whether this
      * should happen.
@@ -515,6 +521,22 @@ qreal Map::requestedZoomLevel() const
 {
     Q_D(const Map);
     return d->requestedZoomLevel;
+}
+
+qreal Map::minZoomLevel() const
+{
+    Q_D(const Map);
+
+    if (d->mainLayer == 0) return MIN_ZOOM;
+    return d->mainLayer->minZoom();
+}
+
+qreal Map::maxZoomLevel() const
+{
+    Q_D(const Map);
+
+    if (d->mainLayer == 0) return MAX_ZOOM;
+    return d->mainLayer->maxZoom();
 }
 
 void Map::setFollowGps(bool followGps)

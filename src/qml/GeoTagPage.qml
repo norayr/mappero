@@ -51,6 +51,13 @@ Item {
             }
         }
 
+        MapControls {
+            anchors.top: parent.top
+            anchors.right: parent.right
+            anchors.margins: UI.ToolSpacing
+            map: map
+        }
+
         ToolBar {
             anchors.bottom: parent.bottom
             anchors.bottomMargin: UI.ToolSpacing
