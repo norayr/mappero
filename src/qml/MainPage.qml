@@ -14,11 +14,14 @@ Item {
         anchors.fill: parent
         flickable: mapFlickable
 
-        tracker: tracker
         mainLayerId: "OpenStreetMap I"
         center: Mappero.conf.lastPosition
         requestedZoomLevel: Mappero.conf.lastZoomLevel
         followGps: visible
+
+        PathItem {
+            tracker: tracker
+        }
     }
 
     MapFlickable {

@@ -66,7 +66,6 @@ class Map: public QDeclarativeItem {
                NOTIFY mainLayerIdChanged);
     Q_PROPERTY(bool followGps READ followGps WRITE setFollowGps \
                NOTIFY followGpsChanged);
-    Q_PROPERTY(Mappero::Tracker *tracker READ tracker WRITE setTracker);
     Q_PROPERTY(QDeclarativeListProperty<Mappero::MapItem> items READ items);
     Q_CLASSINFO("DefaultProperty", "items");
 
@@ -109,13 +108,8 @@ public:
     void setMainLayer(Layer *layer);
     Layer *mainLayer() const;
 
-    void setRoute(const Path &route);
-
     void setFollowGps(bool followGps);
     bool followGps() const;
-
-    void setTracker(Tracker *tracker);
-    Tracker *tracker() const;
 
     QDeclarativeListProperty<MapItem> items();
 

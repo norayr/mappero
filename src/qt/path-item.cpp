@@ -71,12 +71,12 @@ void PathItemPrivate::onTrackChanged()
     q->update();
 }
 
-PathItem::PathItem(Map *map):
-    MapGraphicsItem(),
+PathItem::PathItem(QDeclarativeItem *parent):
+    MapItem(parent),
     d_ptr(new PathItemPrivate(this))
 {
     setCacheMode(QGraphicsItem::ItemCoordinateCache);
-    setMap(map);
+    setFlag(QGraphicsItem::ItemHasNoContents, false);
 }
 
 PathItem::~PathItem()

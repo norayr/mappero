@@ -30,10 +30,13 @@ class Path;
 class Tracker;
 
 class PathItemPrivate;
-class PathItem: public MapGraphicsItem
+class PathItem: public MapItem
 {
+    Q_OBJECT
+    Q_PROPERTY(Mappero::Tracker *tracker READ tracker WRITE setTracker);
+
 public:
-    PathItem(Map *map);
+    PathItem(QDeclarativeItem *parent = 0);
     ~PathItem();
 
     void setTracker(Tracker *tracker);
