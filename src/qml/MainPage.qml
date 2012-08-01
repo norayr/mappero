@@ -4,11 +4,6 @@ import Mappero 1.0
 Item {
     anchors.fill: parent
 
-    Tracker {
-        id: tracker
-        tracking: true
-    }
-
     Map {
         id: map
         anchors.fill: parent
@@ -20,7 +15,11 @@ Item {
         followGps: visible
 
         PathLayer {
-            tracker: tracker
+            Tracker {
+                id: tracker
+                tracking: true
+                color: "red"
+            }
         }
     }
 

@@ -27,22 +27,20 @@
 namespace Mappero {
 
 class Path;
-class Tracker;
+class PathItem;
 
 class PathLayerPrivate;
 class PathLayer: public MapItem
 {
     Q_OBJECT
-    Q_PROPERTY(Mappero::Tracker *tracker READ tracker WRITE setTracker);
+    Q_PROPERTY(QDeclarativeListProperty<Mappero::PathItem> items READ items);
+    Q_CLASSINFO("DefaultProperty", "items");
 
 public:
     PathLayer(QDeclarativeItem *parent = 0);
     ~PathLayer();
 
-    void setTracker(Tracker *tracker);
-    Tracker *tracker() const;
-
-    void setRoute(const Path &route);
+    QDeclarativeListProperty<PathItem> items();
 
 protected:
     // reimplemented methods

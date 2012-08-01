@@ -20,9 +20,9 @@
 
 #include "debug.h"
 #include "map.h"
+#include "path-item.h"
 #include "path-layer.h"
 #include "path.h"
-#include "tracker.h"
 
 #include <QPainter>
 #include <QPen>
@@ -31,43 +31,94 @@ using namespace Mappero;
 
 namespace Mappero {
 
+typedef QDeclarativeListProperty<PathItem> PathList;
+
+struct PathItemData {
+    inline PathItemData(PathItem *pathItem);
+    PathItem *pathItem;
+    QPainterPath painterPath;
+    QPen pen;
+};
+
 class PathLayerPrivate: public QObject
 {
     Q_OBJECT
     Q_DECLARE_PUBLIC(PathLayer)
 
-    PathLayerPrivate(PathLayer *mark):
+    PathLayerPrivate(PathLayer *pathLayer):
         QObject(0),
-        q_ptr(mark),
-        tracker(0),
-        route(0),
-        routePen(Qt::green, 4),
-        trackPen(Qt::red, 4)
+        q_ptr(pathLayer)
     {
-        routePen.setCosmetic(true);
-        trackPen.setCosmetic(true);
     }
     ~PathLayerPrivate() {};
 
+    static void itemAppend(PathList *p, PathItem *o) {
+        PathLayerPrivate *d = reinterpret_cast<PathLayerPrivate*>(p->data);
+        d->addPathItem(o);
+    }
+    static int itemCount(PathList *p) {
+        PathLayerPrivate *d = reinterpret_cast<PathLayerPrivate*>(p->data);
+        return d->items.count();
+    }
+    static PathItem *itemAt(PathList *p, int idx) {
+        PathLayerPrivate *d = reinterpret_cast<PathLayerPrivate*>(p->data);
+        return d->items.at(idx)->pathItem;
+    }
+    static void itemClear(PathList *p) {
+        PathLayerPrivate *d = reinterpret_cast<PathLayerPrivate*>(p->data);
+        foreach (PathItemData *data, d->items) {
+            delete data;
+        }
+        d->items.clear();
+    }
+
+    void addPathItem(PathItem *pathItem);
+
 public Q_SLOTS:
-    void onTrackChanged();
+    void onPathChanged();
 
 private:
     mutable PathLayer *q_ptr;
-    Tracker *tracker;
+    QList<PathItemData *> items;
     QRectF boundingRect;
-    QPainterPath routePath;
-    QPainterPath trackPath;
-    const Path *route;
-    QPen routePen;
-    QPen trackPen;
 };
 }; // namespace
 
-void PathLayerPrivate::onTrackChanged()
+PathItemData::PathItemData(PathItem *pathItem):
+    pathItem(pathItem),
+    pen(pathItem->color(), 4)
+{
+    pen.setCosmetic(true);
+}
+
+void PathLayerPrivate::addPathItem(PathItem *pathItem)
+{
+    items.append(new PathItemData(pathItem));
+    QObject::connect(pathItem, SIGNAL(pathChanged()),
+                     this, SLOT(onPathChanged()));
+}
+
+void PathLayerPrivate::onPathChanged()
 {
     Q_Q(PathLayer);
-    trackPath = tracker->path().toPainterPath(q->map()->zoomLevel());
+
+    /* Find the PathItemData; using a QMap would be more efficient, but only
+     * when many paths are loaded -- which is unlikely. */
+    PathItemData *data = 0;
+    PathItem *pathItem = static_cast<PathItem*>(sender());
+    int length = items.count();
+    for (int i = 0; i < length; i++) {
+        if (items[i]->pathItem == pathItem) {
+            data = items[i];
+            break;
+        }
+    }
+    if (data == 0) {
+        qWarning() << "pathChanged() signal from unknown PathItem";
+        return;
+    }
+
+    data->painterPath = pathItem->path().toPainterPath(q->map()->zoomLevel());
     q->update();
 }
 
@@ -84,27 +135,13 @@ PathLayer::~PathLayer()
     delete d_ptr;
 }
 
-void PathLayer::setTracker(Tracker *tracker)
+QDeclarativeListProperty<PathItem> PathLayer::items()
 {
-    Q_D(PathLayer);
-    d->tracker = tracker;
-    QObject::connect(d->tracker, SIGNAL(pathChanged()),
-                     d, SLOT(onTrackChanged()));
-}
-
-Tracker *PathLayer::tracker() const
-{
-    Q_D(const PathLayer);
-    return d->tracker;
-}
-
-void PathLayer::setRoute(const Path &route)
-{
-    Q_D(PathLayer);
-
-    d->route = &route;
-
-    update();
+    return PathList(this, d_ptr,
+                    PathLayerPrivate::itemAppend,
+                    PathLayerPrivate::itemCount,
+                    PathLayerPrivate::itemAt,
+                    PathLayerPrivate::itemClear);
 }
 
 QRectF PathLayer::boundingRect() const
@@ -130,11 +167,10 @@ void PathLayer::paint(QPainter *painter,
     transformation.translate(offset.x(), offset.y());
 
     painter->setTransform(transformation);
-    painter->setPen(d->routePen);
-    painter->drawPath(d->routePath);
-
-    painter->setPen(d->trackPen);
-    painter->drawPath(d->trackPath);
+    foreach (PathItemData *data, d->items) {
+        painter->setPen(data->pen);
+        painter->drawPath(data->painterPath);
+    }
 }
 
 void PathLayer::mapEvent(MapEvent *event)
@@ -144,12 +180,9 @@ void PathLayer::mapEvent(MapEvent *event)
         event->centerChanged()) {
         setPos(0, 0);
 
-        if (d->route) {
-            d->routePath = d->route->toPainterPath(map()->zoomLevel());
-        }
-        if (d->tracker) {
-            d->trackPath =
-                d->tracker->path().toPainterPath(map()->zoomLevel());
+        foreach (PathItemData *data, d->items) {
+            data->painterPath =
+                data->pathItem->path().toPainterPath(map()->zoomLevel());
         }
         update();
     }
