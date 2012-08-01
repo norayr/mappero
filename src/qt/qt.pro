@@ -50,6 +50,7 @@ SOURCES += \
     map.cpp \
     map-object.cpp \
     mark.cpp \
+    path-item.cpp \
     path-layer.cpp \
     path.cpp \
     poi-item.cpp \
@@ -70,6 +71,7 @@ HEADERS += \
     map.h \
     map-object.h \
     mark.h \
+    path-item.h \
     path-layer.h \
     path.h \
     poi-item.h \

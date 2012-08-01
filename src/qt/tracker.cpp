@@ -57,7 +57,6 @@ private:
     Geo maximumUncertainty;
     Geo minimumDistance;
     Geo distanceFromLast;
-    Path track;
 };
 
 } // namespace
@@ -77,6 +76,8 @@ inline TrackerPrivate::TrackerPrivate(Tracker *tracker):
 
 bool TrackerPrivate::pointIsSignificant(const GpsPosition &position)
 {
+    Q_Q(Tracker);
+    Path &track = q->path();
     if (track.isEmpty()) return true;
 
     /* TODO */
@@ -109,14 +110,15 @@ void TrackerPrivate::onPositionUpdated(const GpsPosition &position)
     distanceFromLast = -1;
     if (!pointIsSignificant(position)) return;
 
+    Path &track = q->path();
     track.addPoint(position.geo(), position.altitude(),
                    position.time().toTime_t(),
                    distanceFromLast);
-    Q_EMIT q->trackChanged();
+    Q_EMIT q->pathChanged();
 }
 
 Tracker::Tracker(QObject *parent):
-    QObject(parent),
+    PathItem(parent),
     d_ptr(new TrackerPrivate(this))
 {
 }
@@ -139,31 +141,6 @@ bool Tracker::isTracking() const
 {
     Q_D(const Tracker);
     return d->isTracking;
-}
-
-void Tracker::setTrack(const Path &track)
-{
-    Q_D(Tracker);
-    d->track = track;
-    Q_EMIT trackChanged();
-}
-
-Path Tracker::track() const
-{
-    Q_D(const Tracker);
-    return d->track;
-}
-
-void Tracker::loadFile(const QString &fileName)
-{
-    Path path;
-    path.load(fileName);
-    setTrack(path);
-}
-
-void Tracker::saveFile(const QString &fileName) const
-{
-    track().save(fileName);
 }
 
 #include "tracker.moc"

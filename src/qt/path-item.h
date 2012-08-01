@@ -19,41 +19,47 @@
  * along with Mappero.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef MAP_TRACKER_H
-#define MAP_TRACKER_H
+#ifndef MAP_PATH_ITEM_H
+#define MAP_PATH_ITEM_H
 
-#include "path-item.h"
+#include "path.h"
 
+#include <QColor>
 #include <QObject>
 
 namespace Mappero {
 
-class Gps;
-
-class TrackerPrivate;
-class Tracker: public PathItem
+class PathItemPrivate;
+class PathItem: public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(bool tracking READ isTracking WRITE setTracking \
-               NOTIFY trackingChanged);
+    Q_PROPERTY(Path path READ path WRITE setPath NOTIFY pathChanged);
+    Q_PROPERTY(QColor color READ color WRITE setColor NOTIFY colorChanged);
 
 public:
-    Tracker(QObject *parent = 0);
-    ~Tracker();
+    PathItem(QObject *parent = 0);
+    ~PathItem();
 
-    void setGps(Gps *gps);
+    void setPath(const Path &path);
+    Path path() const;
+    Path &path();
 
-    void setTracking(bool isTracking);
-    bool isTracking() const;
+    void setColor(const QColor &color);
+    QColor color() const;
+
+public Q_SLOTS:
+    void loadFile(const QString &fileName);
+    void saveFile(const QString &fileName) const;
 
 Q_SIGNALS:
-    void trackingChanged();
+    void colorChanged();
+    void pathChanged();
 
 private:
-    TrackerPrivate *d_ptr;
-    Q_DECLARE_PRIVATE(Tracker)
+    PathItemPrivate *d_ptr;
+    Q_DECLARE_PRIVATE(PathItem)
 };
 
 }; // namespace
 
-#endif /* MAP_TRACKER_H */
+#endif /* MAP_PATH_ITEM_H */

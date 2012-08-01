@@ -67,7 +67,7 @@ private:
 void PathLayerPrivate::onTrackChanged()
 {
     Q_Q(PathLayer);
-    trackPath = tracker->track().toPainterPath(q->map()->zoomLevel());
+    trackPath = tracker->path().toPainterPath(q->map()->zoomLevel());
     q->update();
 }
 
@@ -88,7 +88,7 @@ void PathLayer::setTracker(Tracker *tracker)
 {
     Q_D(PathLayer);
     d->tracker = tracker;
-    QObject::connect(d->tracker, SIGNAL(trackChanged()),
+    QObject::connect(d->tracker, SIGNAL(pathChanged()),
                      d, SLOT(onTrackChanged()));
 }
 
@@ -149,7 +149,7 @@ void PathLayer::mapEvent(MapEvent *event)
         }
         if (d->tracker) {
             d->trackPath =
-                d->tracker->track().toPainterPath(map()->zoomLevel());
+                d->tracker->path().toPainterPath(map()->zoomLevel());
         }
         update();
     }
