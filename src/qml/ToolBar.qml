@@ -7,6 +7,7 @@ Row {
     property variant selection
 
     signal geoSetterDropped(variant pos)
+    signal trackLoaded(string filePath)
 
     spacing: UI.ToolSpacing
 
@@ -37,5 +38,25 @@ Row {
 
         source: ":tag-remove"
         onActivate: taggable.clearLocation()
+    }
+
+    ImageButton {
+        width: UI.TaggableToolsSize
+        height: UI.TaggableToolsSize
+
+        source: ":osm-path" // FIXME
+        onClicked: fileChooserLoad.open()
+
+        FileDialog {
+            id: fileChooserLoad
+            visible: true
+            title: "Choose a file"
+            folder: "."
+            selectExisting: true
+            selectMultiple: false
+            nameFilters: [ "Tracks (*.gpx *.kml)" ]
+
+            onAccepted: root.trackLoaded(filePath)
+        }
     }
 }

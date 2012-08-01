@@ -26,6 +26,13 @@ Item {
             center: Mappero.conf.lastPosition
             requestedZoomLevel: Mappero.conf.lastZoomLevel
 
+            PathLayer {
+                PathItem {
+                    id: track
+                    color: "red"
+                }
+            }
+
             PoiView {
                 id: poiView
                 anchors.fill: parent
@@ -72,6 +79,8 @@ Item {
                     taggable.location = map.pixelsToGeo(pos.x, pos.y)
                 }
             }
+
+            onTrackLoaded: track.loadFile(filePath)
         }
     }
 
