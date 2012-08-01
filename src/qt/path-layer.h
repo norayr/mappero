@@ -19,8 +19,8 @@
  * along with Mappero.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef MAP_PATH_ITEM_H
-#define MAP_PATH_ITEM_H
+#ifndef MAP_PATH_LAYER_H
+#define MAP_PATH_LAYER_H
 
 #include "map-object.h"
 
@@ -29,15 +29,15 @@ namespace Mappero {
 class Path;
 class Tracker;
 
-class PathItemPrivate;
-class PathItem: public MapItem
+class PathLayerPrivate;
+class PathLayer: public MapItem
 {
     Q_OBJECT
     Q_PROPERTY(Mappero::Tracker *tracker READ tracker WRITE setTracker);
 
 public:
-    PathItem(QDeclarativeItem *parent = 0);
-    ~PathItem();
+    PathLayer(QDeclarativeItem *parent = 0);
+    ~PathLayer();
 
     void setTracker(Tracker *tracker);
     Tracker *tracker() const;
@@ -53,10 +53,10 @@ protected:
     void mapEvent(MapEvent *event);
 
 private:
-    PathItemPrivate *d_ptr;
-    Q_DECLARE_PRIVATE(PathItem)
+    PathLayerPrivate *d_ptr;
+    Q_DECLARE_PRIVATE(PathLayer)
 };
 
 }; // namespace
 
-#endif /* MAP_PATH_ITEM_H */
+#endif /* MAP_PATH_LAYER_H */

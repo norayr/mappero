@@ -21,7 +21,7 @@
 #include "controller.h"
 #include "gps.h"
 #include "map.h"
-#include "path-item.h"
+#include "path-layer.h"
 #include "poi-item.h"
 #include "poi-view.h"
 #ifdef GEOTAGGING_ENABLED
@@ -51,7 +51,7 @@ int main(int argc, char *argv[])
     qRegisterMetaTypeStreamOperators<Mappero::GeoPoint>("GeoPoint");
     qmlRegisterType<Mappero::Map>("Mappero", 1, 0, "MapView");
     qmlRegisterType<Mappero::Tracker>("Mappero", 1, 0, "Tracker");
-    qmlRegisterType<Mappero::PathItem>("Mappero", 1, 0, "PathItem");
+    qmlRegisterType<Mappero::PathLayer>("Mappero", 1, 0, "PathLayer");
     qmlRegisterType<Mappero::PoiItem>("Mappero", 1, 0, "PoiItem");
     qmlRegisterType<Mappero::PoiView>("Mappero", 1, 0, "PoiView");
     qmlRegisterUncreatableType<Mappero::MapItem>("Mappero", 1, 0, "MapItem",

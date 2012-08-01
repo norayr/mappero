@@ -19,7 +19,7 @@ Item {
         requestedZoomLevel: Mappero.conf.lastZoomLevel
         followGps: visible
 
-        PathItem {
+        PathLayer {
             tracker: tracker
         }
     }

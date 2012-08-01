@@ -20,7 +20,7 @@
 
 #include "debug.h"
 #include "map.h"
-#include "path-item.h"
+#include "path-layer.h"
 #include "path.h"
 #include "tracker.h"
 
@@ -31,12 +31,12 @@ using namespace Mappero;
 
 namespace Mappero {
 
-class PathItemPrivate: public QObject
+class PathLayerPrivate: public QObject
 {
     Q_OBJECT
-    Q_DECLARE_PUBLIC(PathItem)
+    Q_DECLARE_PUBLIC(PathLayer)
 
-    PathItemPrivate(PathItem *mark):
+    PathLayerPrivate(PathLayer *mark):
         QObject(0),
         q_ptr(mark),
         tracker(0),
@@ -47,13 +47,13 @@ class PathItemPrivate: public QObject
         routePen.setCosmetic(true);
         trackPen.setCosmetic(true);
     }
-    ~PathItemPrivate() {};
+    ~PathLayerPrivate() {};
 
 public Q_SLOTS:
     void onTrackChanged();
 
 private:
-    mutable PathItem *q_ptr;
+    mutable PathLayer *q_ptr;
     Tracker *tracker;
     QRectF boundingRect;
     QPainterPath routePath;
@@ -64,59 +64,60 @@ private:
 };
 }; // namespace
 
-void PathItemPrivate::onTrackChanged()
+void PathLayerPrivate::onTrackChanged()
 {
-    Q_Q(PathItem);
+    Q_Q(PathLayer);
     trackPath = tracker->track().toPainterPath(q->map()->zoomLevel());
     q->update();
 }
 
-PathItem::PathItem(QDeclarativeItem *parent):
+PathLayer::PathLayer(QDeclarativeItem *parent):
     MapItem(parent),
-    d_ptr(new PathItemPrivate(this))
+    d_ptr(new PathLayerPrivate(this))
 {
     setCacheMode(QGraphicsItem::ItemCoordinateCache);
     setFlag(QGraphicsItem::ItemHasNoContents, false);
 }
 
-PathItem::~PathItem()
+PathLayer::~PathLayer()
 {
     delete d_ptr;
 }
 
-void PathItem::setTracker(Tracker *tracker)
+void PathLayer::setTracker(Tracker *tracker)
 {
-    Q_D(PathItem);
+    Q_D(PathLayer);
     d->tracker = tracker;
     QObject::connect(d->tracker, SIGNAL(trackChanged()),
                      d, SLOT(onTrackChanged()));
 }
 
-Tracker *PathItem::tracker() const
+Tracker *PathLayer::tracker() const
 {
-    Q_D(const PathItem);
+    Q_D(const PathLayer);
     return d->tracker;
 }
 
-void PathItem::setRoute(const Path &route)
+void PathLayer::setRoute(const Path &route)
 {
-    Q_D(PathItem);
+    Q_D(PathLayer);
 
     d->route = &route;
 
     update();
 }
 
-QRectF PathItem::boundingRect() const
+QRectF PathLayer::boundingRect() const
 {
-    Q_D(const PathItem);
+    Q_D(const PathLayer);
     return d->boundingRect;
 }
 
-void PathItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
-                     QWidget *widget)
+void PathLayer::paint(QPainter *painter,
+                      const QStyleOptionGraphicsItem *option,
+                      QWidget *widget)
 {
-    Q_D(const PathItem);
+    Q_D(const PathLayer);
 
     Q_UNUSED(option);
     Q_UNUSED(widget);
@@ -136,9 +137,9 @@ void PathItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
     painter->drawPath(d->trackPath);
 }
 
-void PathItem::mapEvent(MapEvent *event)
+void PathLayer::mapEvent(MapEvent *event)
 {
-    Q_D(PathItem);
+    Q_D(PathLayer);
     if (event->zoomLevelChanged() ||
         event->centerChanged()) {
         setPos(0, 0);
@@ -160,4 +161,4 @@ void PathItem::mapEvent(MapEvent *event)
     }
 }
 
-#include "path-item.moc"
+#include "path-layer.moc"
