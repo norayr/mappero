@@ -29,11 +29,18 @@ class Osm;
 class View: public QDeclarativeView
 {
     Q_OBJECT
+
 public:
     View();
 
 public slots:
     void switchFullscreen();
+
+Q_SIGNALS:
+    void closing();
+
+protected:
+    void closeEvent(QCloseEvent *);
 };
 
 };

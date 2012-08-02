@@ -127,8 +127,11 @@ Item {
         onRowsInserted: map.lookAt(poiView.itemArea, 0, 80, 40)
     }
 
-    Component.onDestruction: {
-        Mappero.conf.lastPosition = map.center
-        Mappero.conf.lastZoomLevel = map.zoomLevel
+    Connections {
+        target: view
+        onClosing: {
+            Mappero.conf.lastPosition = map.center
+            Mappero.conf.lastZoomLevel = map.zoomLevel
+        }
     }
 }

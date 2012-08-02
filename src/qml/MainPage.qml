@@ -33,8 +33,11 @@ Item {
         anchors.fill: parent
     }
 
-    Component.onDestruction: {
-        Mappero.conf.lastPosition = map.center
-        Mappero.conf.lastZoomLevel = map.zoomLevel
+    Connections {
+        target: view
+        onClosing: {
+            Mappero.conf.lastPosition = map.center
+            Mappero.conf.lastZoomLevel = map.zoomLevel
+        }
     }
 }

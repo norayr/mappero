@@ -60,3 +60,8 @@ void View::switchFullscreen()
         showFullScreen();
 }
 
+void View::closeEvent(QCloseEvent *event)
+{
+    Q_EMIT closing();
+    QDeclarativeView::closeEvent(event);
+}
