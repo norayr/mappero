@@ -94,7 +94,7 @@ QVariant TaggableModel::data(const QModelIndex &index, int role) const
             return fi.fileName();
         }
     case TimeRole:
-        return QDateTime::fromTime_t(taggable->time());
+        return taggable->time();
     case GeoPointRole:
         return taggable->hasLocation() ?
             QVariant::fromValue(taggable->location()) : QVariant();

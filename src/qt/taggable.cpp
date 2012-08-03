@@ -23,7 +23,6 @@
 #include "taggable.h"
 
 #include <QCryptographicHash>
-#include <QDateTime>
 #include <QDesktopServices>
 #include <QDir>
 #include <QPixmap>
@@ -405,10 +404,10 @@ qint64 Taggable::lastChange() const
     return d->lastChange;
 }
 
-time_t Taggable::time() const
+QDateTime Taggable::time() const
 {
     Q_D(const Taggable);
-    return d->time;
+    return QDateTime::fromTime_t(d->time);
 }
 
 QPixmap Taggable::pixmap(QSize *size, const QSize &requestedSize) const

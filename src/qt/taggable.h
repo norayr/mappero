@@ -23,6 +23,7 @@
 
 #include "types.h"
 
+#include <QDateTime>
 #include <QDeclarativeImageProvider>
 #include <QMap>
 #include <QMetaType>
@@ -47,6 +48,7 @@ class Taggable: public QObject
                NOTIFY locationChanged);
     Q_PROPERTY(bool hasLocation READ hasLocation NOTIFY locationChanged);
     Q_PROPERTY(bool needsSave READ needsSave NOTIFY needsSaveChanged);
+    Q_PROPERTY(QDateTime time READ time NOTIFY fileNameChanged);
 
 public:
     Taggable(QObject *parent = 0);
@@ -64,7 +66,7 @@ public:
     bool needsSave() const;
     qint64 lastChange() const;
 
-    time_t time() const;
+    QDateTime time() const;
 
     QPixmap pixmap(QSize *size, const QSize &requestedSize) const;
 
