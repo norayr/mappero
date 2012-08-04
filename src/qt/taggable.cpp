@@ -59,7 +59,6 @@ class TaggablePrivate
         return QString::fromAscii(value.toString().c_str());
     }
     static Geo exifGeoCoord(const Exiv2::Value &value, bool positive);
-    void setNeedsSave(bool needsSave);
 
 private:
     mutable Taggable *q_ptr;
@@ -67,7 +66,7 @@ private:
     time_t time;
     Exiv2::Image::AutoPtr image;
     GeoPoint geoPoint;
-    bool needsSave;
+    GeoPoint exifGeoPoint;
     qint64 lastChange;
 };
 }; // namespace
@@ -76,7 +75,8 @@ TaggablePrivate::TaggablePrivate(Taggable *taggable):
     q_ptr(taggable),
     time(0),
     image(0),
-    needsSave(false),
+    geoPoint(),
+    exifGeoPoint(),
     lastChange(0)
 {
 }
@@ -89,8 +89,8 @@ void TaggablePrivate::loadExifInfo()
 {
     // reset the cached data
     time = 0;
-    geoPoint = GeoPoint();
     lastChange = Controller::clock();
+    exifGeoPoint = GeoPoint();
 
     // load the EXIF data
     image = Exiv2::ImageFactory::open(fileName.toUtf8().constData());
@@ -111,6 +111,7 @@ void TaggablePrivate::loadExifInfo()
     }
 
     readGeoData(exifData);
+    geoPoint = exifGeoPoint;
         /*
         Exiv2::ExifData::const_iterator end = exifData.end();
         for (Exiv2::ExifData::const_iterator i = exifData.begin();
@@ -153,7 +154,7 @@ void TaggablePrivate::readGeoData(const Exiv2::ExifData &exifData)
     if (i == exifData.end()) return;
     lon = exifGeoCoord(i->value(), lonRef[0] == 'E');
 
-    geoPoint = GeoPoint(lat, lon);
+    exifGeoPoint = GeoPoint(lat, lon);
 }
 
 static Exiv2::RationalValue geoToExif(Geo geo)
@@ -202,7 +203,11 @@ void TaggablePrivate::save()
     }
     image->writeMetadata();
 
-    setNeedsSave(false);
+    if (exifGeoPoint != geoPoint) {
+        Q_Q(Taggable);
+        exifGeoPoint = geoPoint;
+        Q_EMIT q->needsSaveChanged();
+    }
 }
 
 Geo TaggablePrivate::exifGeoCoord(const Exiv2::Value &value, bool positive)
@@ -315,18 +320,6 @@ QPixmap TaggablePrivate::preview(QSize *size,
     return QPixmap::fromImage(preview);
 }
 
-void TaggablePrivate::setNeedsSave(bool needsSave)
-{
-    Q_Q(Taggable);
-    if (needsSave) {
-        lastChange = Controller::clock();
-    }
-
-    if (needsSave == this->needsSave) return;
-    this->needsSave = needsSave;
-    Q_EMIT q->needsSaveChanged();
-}
-
 Taggable::Taggable(QObject *parent):
     QObject(parent),
     d_ptr(new TaggablePrivate(this))
@@ -374,10 +367,14 @@ void Taggable::setLocation(const GeoPoint &location)
 
     if (location == d->geoPoint) return;
 
+    d->lastChange = Controller::clock();
+    bool oldNeedsSave = needsSave();
     d->geoPoint = location;
     Q_EMIT locationChanged();
 
-    d->setNeedsSave(true);
+    if (needsSave() != oldNeedsSave) {
+        Q_EMIT needsSaveChanged();
+    }
 }
 
 GeoPoint Taggable::location() const
@@ -395,7 +392,7 @@ bool Taggable::hasLocation() const
 bool Taggable::needsSave() const
 {
     Q_D(const Taggable);
-    return d->needsSave;
+    return d->geoPoint != d->exifGeoPoint;
 }
 
 qint64 Taggable::lastChange() const
@@ -444,10 +441,9 @@ void Taggable::reload()
     Q_D(Taggable);
 
     GeoPoint oldLocation = d->geoPoint;
-    bool oldNeedsSave = d->needsSave;
+    bool oldNeedsSave = needsSave();
 
     d->loadExifInfo();
-    d->needsSave = false;
 
     if (oldNeedsSave) {
         Q_EMIT needsSaveChanged();

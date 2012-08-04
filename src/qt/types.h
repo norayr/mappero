@@ -120,10 +120,12 @@ struct GeoPoint {
 };
 
 inline bool operator==(const GeoPoint &p1, const GeoPoint &p2)
-{ return p1.lat == p2.lat && p1.lon == p2.lon; }
+{ return p1.lon == p2.lon && (p1.isValid() == p2.isValid()) &&
+    (!p1.isValid() || p1.lat == p2.lat); }
 
 inline bool operator!=(const GeoPoint &p1, const GeoPoint &p2)
-{ return p1.lat != p2.lat || p1.lon != p2.lon; }
+{ return p1.lon != p2.lon || (p1.isValid() != p2.isValid()) ||
+    (p1.isValid() && p1.lat != p2.lat); }
 
 struct TileSpec
 {
