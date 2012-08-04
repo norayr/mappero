@@ -82,6 +82,14 @@ Item {
 
             onTrackLoaded: track.loadFile(filePath)
         }
+
+        Correlator {
+            anchors.left: parent.left
+            anchors.top: parent.top
+            anchors.margins: UI.ToolSpacing
+            selection: dropArea.model.selection
+            track: track
+        }
     }
 
     Rectangle {

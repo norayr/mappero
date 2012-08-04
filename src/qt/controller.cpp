@@ -148,3 +148,13 @@ qint64 Controller::clock()
 {
     return elapsedTimer.elapsed();
 }
+
+QString Controller::formatOffset(int seconds)
+{
+    if (seconds / 30 == 0) return "=";
+    if (seconds > 0) {
+        return QString::fromLatin1("+%1:00").arg((seconds + 30) / 60);
+    } else {
+        return QString::fromLatin1("%1:00").arg((seconds - 30) / 60);
+    }
+}

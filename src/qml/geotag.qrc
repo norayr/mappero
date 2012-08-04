@@ -1,5 +1,6 @@
 <!DOCTYPE RCC><RCC version="1.0">
 <qresource>
+  <file>Correlator.qml</file>
   <file>FileTools.qml</file>
   <file>GeoSetter.qml</file>
   <file>GeoTagPage.qml</file>
@@ -8,6 +9,8 @@
   <file>PaneButton.qml</file>
   <file>TaggableDelegate.qml</file>
   <file>TaggableView.qml</file>
+  <file>TimeSlider.qml</file>
+  <file>TimeZoneOffset.qml</file>
   <file>ToolBar.qml</file>
 </qresource>
 </RCC>

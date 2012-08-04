@@ -25,6 +25,7 @@
 #include "path.h"
 
 #include <QColor>
+#include <QDateTime>
 #include <QObject>
 
 namespace Mappero {
@@ -35,6 +36,11 @@ class PathItem: public QObject
     Q_OBJECT
     Q_PROPERTY(Path path READ path WRITE setPath NOTIFY pathChanged);
     Q_PROPERTY(QColor color READ color WRITE setColor NOTIFY colorChanged);
+    Q_PROPERTY(bool empty READ isEmpty NOTIFY pathChanged);
+    Q_PROPERTY(int timeOffset READ timeOffset WRITE setTimeOffset \
+               NOTIFY timeOffsetChanged);
+    Q_PROPERTY(QDateTime startTime READ startTime NOTIFY timesChanged);
+    Q_PROPERTY(QDateTime endTime READ endTime NOTIFY timesChanged);
 
 public:
     PathItem(QObject *parent = 0);
@@ -47,6 +53,16 @@ public:
     void setColor(const QColor &color);
     QColor color() const;
 
+    bool isEmpty() const;
+
+    void setTimeOffset(int offset);
+    int timeOffset() const;
+
+    QDateTime startTime() const;
+    QDateTime endTime() const;
+
+    Q_INVOKABLE GeoPoint positionAt(const QDateTime &time) const;
+
 public Q_SLOTS:
     void loadFile(const QString &fileName);
     void saveFile(const QString &fileName) const;
@@ -54,6 +70,8 @@ public Q_SLOTS:
 Q_SIGNALS:
     void colorChanged();
     void pathChanged();
+    void timeOffsetChanged();
+    void timesChanged();
 
 private:
     PathItemPrivate *d_ptr;

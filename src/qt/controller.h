@@ -59,6 +59,7 @@ public:
 
 public Q_SLOTS:
     GeoPoint geo(qreal lat, qreal lon) { return GeoPoint(lat, lon); }
+    QString formatOffset(int seconds);
 
 private:
     ControllerPrivate *d_ptr;

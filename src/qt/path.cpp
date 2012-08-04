@@ -74,7 +74,7 @@ inline PathPoint operator+(const PathPoint &p, const PathVector &v)
 }
 
 PathPoint::PathPoint():
-    geo(0, 0),
+    geo(),
     unit(0, 0),
     time(0),
     zoom(SCHAR_MAX),
@@ -158,6 +158,11 @@ bool Path::save(QIODevice *device) const
 bool Path::isEmpty() const
 {
     return d->points.isEmpty();
+}
+
+const PathPoint &Path::firstPoint() const
+{
+    return d->points.first();
 }
 
 const PathPoint &Path::lastPoint() const

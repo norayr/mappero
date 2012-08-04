@@ -9,5 +9,8 @@
   <file>taggable-modified.svg</file>
   <file alias="taggable-reload-off">taggable-reload-off.svg</file>
   <file alias="taggable-reload">taggable-reload.svg</file>
+  <file alias="time-slider-handle">time-slider-handle.svg</file>
+  <file alias="tz-minus">tz-minus.svg</file>
+  <file alias="tz-plus">tz-plus.svg</file>
 </qresource>
 </RCC>

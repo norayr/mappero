@@ -29,6 +29,7 @@
 #include "taggable-area.h"
 #include "taggable-selection.h"
 #include "taggable.h"
+#include "ticks.h"
 #endif
 #include "tracker.h"
 #include "view.h"
@@ -81,6 +82,7 @@ int main(int argc, char *argv[])
     QDeclarativeEngine *engine = view.rootContext()->engine();
     engine->addImageProvider(Mappero::Taggable::ImageProvider::name(),
                              Mappero::Taggable::ImageProvider::instance());
+    qmlRegisterType<Mappero::Ticks>("Mappero", 1, 0, "Ticks");
 #endif
 
     view.setSource(QUrl("qrc:/mappero.qml"));

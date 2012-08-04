@@ -116,6 +116,7 @@ public:
     bool save(QIODevice *device) const;
 
     bool isEmpty() const;
+    const PathPoint &firstPoint() const;
     const PathPoint &lastPoint() const;
 
     PathPoint positionAt(time_t time) const;

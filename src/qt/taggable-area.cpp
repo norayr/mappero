@@ -145,7 +145,6 @@ void TaggableModel::checkChanges()
     }
 
     if (indexMin != -1) {
-        DEBUG() << "min" << indexMin << "max" << indexMax;
         Q_EMIT dataChanged(index(indexMin, 0), index(indexMax, 0));
     }
 

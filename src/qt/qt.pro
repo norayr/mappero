@@ -100,11 +100,13 @@ system(pkg-config --exists exiv2) {
     SOURCES += \
         taggable-area.cpp \
         taggable-selection.cpp \
-        taggable.cpp
+        taggable.cpp \
+        ticks.cpp
     HEADERS += \
         taggable-area.h \
         taggable-selection.h \
-        taggable.h
+        taggable.h \
+        ticks.h
     RESOURCES += \
         ../qml/geotag.qrc \
         ../../data/icons/scalable/icons-geotag.qrc
