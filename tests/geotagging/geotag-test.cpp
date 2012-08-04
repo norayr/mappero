@@ -47,7 +47,7 @@ void GeotagTest::loadTaggable()
 
     taggable->setFileName(JPEG_FILE);
     QCOMPARE(taggable->fileName(), JPEG_FILE);
-    QCOMPARE(QDateTime::fromTime_t(taggable->time()),
+    QCOMPARE(taggable->time(),
              QDateTime::fromString("Thu Jun 21 16:10:14 2012"));
 
     taggable->setFileName(ARW_FILE);
