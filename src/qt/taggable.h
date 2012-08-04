@@ -60,6 +60,7 @@ public:
     QString fileName() const;
 
     void setLocation(const GeoPoint &location);
+    Q_INVOKABLE void setCorrelatedLocation(const GeoPoint &location);
     GeoPoint location() const;
     bool hasLocation() const;
 

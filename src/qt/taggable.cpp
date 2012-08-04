@@ -47,6 +47,9 @@ class TaggablePrivate
     TaggablePrivate(Taggable *taggable);
     ~TaggablePrivate();
 
+    void setLocation(const GeoPoint &location, GeoPoint &dest);
+    GeoPoint location() const;
+
     void loadExifInfo();
     void readGeoData(const Exiv2::ExifData &exifData);
     void save();
@@ -65,7 +68,8 @@ private:
     QString fileName;
     time_t time;
     Exiv2::Image::AutoPtr image;
-    GeoPoint geoPoint;
+    GeoPoint correlatedGeoPoint;
+    GeoPoint manualGeoPoint;
     GeoPoint exifGeoPoint;
     qint64 lastChange;
 };
@@ -75,7 +79,8 @@ TaggablePrivate::TaggablePrivate(Taggable *taggable):
     q_ptr(taggable),
     time(0),
     image(0),
-    geoPoint(),
+    correlatedGeoPoint(),
+    manualGeoPoint(),
     exifGeoPoint(),
     lastChange(0)
 {
@@ -83,6 +88,29 @@ TaggablePrivate::TaggablePrivate(Taggable *taggable):
 
 TaggablePrivate::~TaggablePrivate()
 {
+}
+
+void TaggablePrivate::setLocation(const GeoPoint &point, GeoPoint &dest)
+{
+    Q_Q(Taggable);
+
+    if (point == dest) return;
+
+    lastChange = Controller::clock();
+    bool oldNeedsSave = (location() != exifGeoPoint);
+    dest = point;
+    Q_EMIT q->locationChanged();
+
+    if ((location() != exifGeoPoint) != oldNeedsSave) {
+        Q_EMIT q->needsSaveChanged();
+    }
+}
+
+GeoPoint TaggablePrivate::location() const
+{
+    if (manualGeoPoint.isValid()) return manualGeoPoint;
+    if (correlatedGeoPoint.isValid()) return correlatedGeoPoint;
+    return exifGeoPoint;
 }
 
 void TaggablePrivate::loadExifInfo()
@@ -111,7 +139,6 @@ void TaggablePrivate::loadExifInfo()
     }
 
     readGeoData(exifData);
-    geoPoint = exifGeoPoint;
         /*
         Exiv2::ExifData::const_iterator end = exifData.end();
         for (Exiv2::ExifData::const_iterator i = exifData.begin();
@@ -193,6 +220,7 @@ void TaggablePrivate::save()
 {
     Exiv2::ExifData &exifData = image->exifData();
 
+    GeoPoint geoPoint = location();
     if (geoPoint.isValid()) {
         exifData["Exif.GPSInfo.GPSLatitudeRef"] = geoPoint.lat >= 0 ? "N" : "S";
         exifData["Exif.GPSInfo.GPSLatitude"] = geoToExif(geoPoint.lat);
@@ -365,34 +393,32 @@ void Taggable::setLocation(const GeoPoint &location)
 {
     Q_D(Taggable);
 
-    if (location == d->geoPoint) return;
+    d->setLocation(location, d->manualGeoPoint);
+}
 
-    d->lastChange = Controller::clock();
-    bool oldNeedsSave = needsSave();
-    d->geoPoint = location;
-    Q_EMIT locationChanged();
+void Taggable::setCorrelatedLocation(const GeoPoint &location)
+{
+    Q_D(Taggable);
 
-    if (needsSave() != oldNeedsSave) {
-        Q_EMIT needsSaveChanged();
-    }
+    d->setLocation(location, d->correlatedGeoPoint);
 }
 
 GeoPoint Taggable::location() const
 {
     Q_D(const Taggable);
-    return d->geoPoint;
+    return d->location();
 }
 
 bool Taggable::hasLocation() const
 {
     Q_D(const Taggable);
-    return d->geoPoint.isValid();
+    return d->location().isValid();
 }
 
 bool Taggable::needsSave() const
 {
     Q_D(const Taggable);
-    return d->geoPoint != d->exifGeoPoint;
+    return d->location() != d->exifGeoPoint;
 }
 
 qint64 Taggable::lastChange() const
@@ -440,15 +466,15 @@ void Taggable::reload()
 {
     Q_D(Taggable);
 
-    GeoPoint oldLocation = d->geoPoint;
     bool oldNeedsSave = needsSave();
-
-    d->loadExifInfo();
+    GeoPoint oldLocation = location();
+    d->manualGeoPoint = d->correlatedGeoPoint = GeoPoint();
+    d->lastChange = Controller::clock();
 
     if (oldNeedsSave) {
         Q_EMIT needsSaveChanged();
     }
-    if (oldLocation != d->geoPoint) {
+    if (oldLocation != location()) {
         Q_EMIT locationChanged();
     }
 }
