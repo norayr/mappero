@@ -19,6 +19,7 @@
  */
 
 #include "debug.h"
+#include "gpx.h"
 #include "kml.h"
 #include "path.h"
 #include "projection.h"
@@ -130,10 +131,11 @@ bool Path::load(QIODevice *device)
 
     while (xml.readNextStartElement()) {
         if (xml.name() == "gpx") {
-            return d->loadGpx(xml);
+            Gpx gpx;
+            return d->load(xml, &gpx);
         } else if (xml.name() == "kml") {
-            Kml kml(xml);
-            return kml.appendToPath(this);
+            Kml kml;
+            return d->load(xml, &kml);
         }
     }
     return false;
@@ -152,7 +154,8 @@ bool Path::save(QIODevice *device) const
     QXmlStreamWriter xml(device);
 
     /* Only GPX for the time being */
-    return d->saveGpx(xml);
+    Gpx gpx;
+    return gpx.write(xml, *d);
 }
 
 bool Path::isEmpty() const
@@ -179,6 +182,7 @@ void Path::clear()
 {
     d->points.clear();
     d->wayPoints.clear();
+    d->pointsOptimized = 0;
 }
 
 void Path::addPoint(const GeoPoint &geo, int altitude, time_t time,
@@ -218,87 +222,18 @@ void Path::setProjection(const Projection *projection)
     // maybe TODO: keep track of the existing paths, and update all of them
 }
 
-bool PathData::loadGpx(QXmlStreamReader &xml)
+PathStream::PathStream()
 {
-    while (!xml.atEnd()) {
-        xml.readNext();
-
-        if (xml.isStartElement() && xml.name() == "trkpt") {
-            QXmlStreamAttributes attributes = xml.attributes();
-            QStringRef lat = attributes.value("lat");
-            QStringRef lon = attributes.value("lon");
-            if (lat.isEmpty() || lon.isEmpty()) continue;
-
-            PathPoint p(GeoPoint(lat.toString().toDouble(),
-                                 lon.toString().toDouble()));
-            QString desc;
-
-            while (xml.readNextStartElement()) {
-                if (xml.name() == "ele") {
-                    p.altitude = xml.readElementText().toFloat();
-                } else if (xml.name() == "time") {
-                    QDateTime time =
-                        QDateTime::fromString(xml.readElementText(),
-                                              Qt::ISODate);
-                    p.time = time.toTime_t();
-                } else if (xml.name() == "cmt") {
-                    desc = xml.readElementText();
-                } else {
-                    DEBUG() << "Unrecognized element:" << xml.name();
-                }
-            }
-            points.append(p);
-
-            /* is it a waypoint? */
-            if (!desc.isEmpty()) {
-                makeWayPoint(desc, points.count() - 1);
-            }
-        }
-    }
-    optimize();
-    return true;
 }
 
-bool PathData::saveGpx(QXmlStreamWriter &xml) const
+PathStream::~PathStream()
 {
-    xml.setAutoFormatting(true);
-    xml.setAutoFormattingIndent(2);
-    xml.writeStartDocument();
+}
 
-    /* GPX element */
-    xml.writeStartElement("gpx");
-    xml.writeAttribute("version", "1.0");
-    xml.writeAttribute("creator", "mappero");
-    xml.writeAttribute("xmlns", "http://www.topografix.com/GPX/1/0");
-
-    /* track element */
-    xml.writeStartElement("trk");
-
-    /* TODO handle track segments */
-    xml.writeStartElement("trkseg");
-
-    /* this is outside of the loop, in order to reuse it */
-    QDateTime time;
-    time.setTimeSpec(Qt::UTC);
-
-    foreach (const PathPoint &point, points) {
-        xml.writeStartElement("trkpt");
-        xml.writeAttribute("lat", QString::number(point.geo.lat, 'f'));
-        xml.writeAttribute("lon", QString::number(point.geo.lon, 'f'));
-
-        if (point.altitude != 0) {
-            xml.writeTextElement("ele",
-                                 QString::number(point.altitude));
-        }
-
-        if (point.time != 0) {
-            time.setTime_t(point.time);
-            xml.writeTextElement("time", time.toString(Qt::ISODate));
-        }
-        xml.writeEndElement();
-    }
-    xml.writeEndDocument();
-
+bool PathData::load(QXmlStreamReader &xml, PathStream *stream)
+{
+    if (!stream->read(xml, *this)) return false;
+    optimize();
     return true;
 }
 

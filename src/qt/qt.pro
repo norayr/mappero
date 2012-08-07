@@ -44,6 +44,7 @@ SOURCES += \
     configuration.cpp \
     controller.cpp \
     gps.cpp \
+    gpx.cpp \
     kml.cpp \
     layer.cpp \
     main.cpp \

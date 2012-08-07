@@ -1,5 +1,4 @@
 /* vi: set et sw=4 ts=4 cino=t0,(0: */
-/* -*- Mode: C; indent-tabs-mode: nil; c-basic-offset: 4; tab-width: 4 -*- */
 /*
  * Copyright (C) 2012 Alberto Mardegan <mardy@users.sourceforge.net>
  *
@@ -19,32 +18,23 @@
  * along with Mappero.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef MAP_KML_H
-#define MAP_KML_H
+#ifndef MAP_GPX_H
+#define MAP_GPX_H
 
 #include "path.h"
 
 namespace Mappero {
 
-class Kml: public PathStream
+class Gpx: public PathStream
 {
 public:
-    Kml();
-    ~Kml();
+    Gpx();
+    ~Gpx();
 
     bool read(QXmlStreamReader &xml, PathData &pathData);
     bool write(QXmlStreamWriter &xml, const PathData &pathData);
-
-private:
-    void parseCoordinates(QXmlStreamReader &xml);
-    void parseLineString(QXmlStreamReader &xml);
-    void parsePoint(QXmlStreamReader &xml);
-    void parseGeometryCollection(QXmlStreamReader &xml);
-
-private:
-    QVector<PathPoint> points;
 };
 
 }; // namespace
 
-#endif /* MAP_KML_H */
+#endif /* MAP_GPX_H */

@@ -78,6 +78,7 @@ struct PathWayPoint
 
 class Kml;
 class PathTest;
+class PathStream;
 
 class PathData: public QSharedData
 {
@@ -92,8 +93,7 @@ public:
 private:
     friend class Kml;
     friend class Path;
-    bool loadGpx(QXmlStreamReader &xml);
-    bool saveGpx(QXmlStreamWriter &xml) const;
+    bool load(QXmlStreamReader &xml, PathStream *stream);
 
     void optimize();
 
@@ -135,6 +135,16 @@ private:
     friend class Kml;
 
     QSharedDataPointer<PathData> d;
+};
+
+class PathStream
+{
+public:
+    PathStream();
+    virtual ~PathStream();
+
+    virtual bool read(QXmlStreamReader &xml, PathData &pathData) = 0;
+    virtual bool write(QXmlStreamWriter &xml, const PathData &pathData) = 0;
 };
 
 inline PathData::PathData(const PathData &other):

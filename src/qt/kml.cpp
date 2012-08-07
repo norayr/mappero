@@ -36,24 +36,24 @@ struct KmlWayPoint {
 };
 
 static void
-makeWayPoints(PathData *pathData,
+makeWayPoints(PathData &pathData,
               const QList<KmlWayPoint> &wayPoints)
 {
     int index = 0;
     foreach (const KmlWayPoint &wp, wayPoints) {
-        int wpIndex = pathData->points.indexOf(wp.p, index);
+        int wpIndex = pathData.points.indexOf(wp.p, index);
         if (wpIndex < 0) {
             qWarning() << "Waypoint not found:" << wp.desc;
             continue;
         }
 
-        pathData->makeWayPoint(wp.desc, wpIndex);
+        pathData.makeWayPoint(wp.desc, wpIndex);
         index = wpIndex + 1;
     }
 }
 
-Kml::Kml(QXmlStreamReader &xml):
-    xml(xml)
+Kml::Kml():
+    PathStream()
 {
 }
 
@@ -61,7 +61,7 @@ Kml::~Kml()
 {
 }
 
-void Kml::parseCoordinates()
+void Kml::parseCoordinates(QXmlStreamReader &xml)
 {
     QStringList pts = xml.readElementText().split(" ");
     foreach (const QString &point, pts) {
@@ -82,42 +82,41 @@ void Kml::parseCoordinates()
     }
 }
 
-void Kml::parseLineString()
+void Kml::parseLineString(QXmlStreamReader &xml)
 {
     while (xml.readNextStartElement()) {
         if (xml.name() == "coordinates") {
-            parseCoordinates();
+            parseCoordinates(xml);
         } else {
             xml.skipCurrentElement();
         }
     }
 }
 
-void Kml::parsePoint()
+void Kml::parsePoint(QXmlStreamReader &xml)
 {
     while (xml.readNextStartElement()) {
         if (xml.name() == "coordinates") {
-            parseCoordinates();
+            parseCoordinates(xml);
         } else {
             xml.skipCurrentElement();
         }
     }
 }
 
-void Kml::parseGeometryCollection()
+void Kml::parseGeometryCollection(QXmlStreamReader &xml)
 {
     while (xml.readNextStartElement()) {
         if (xml.name() == "LineString") {
-            parseLineString();
+            parseLineString(xml);
         } else {
             xml.skipCurrentElement();
         }
     }
 }
 
-bool Kml::appendToPath(Path *path)
+bool Kml::read(QXmlStreamReader &xml, PathData &pathData)
 {
-    PathData *pathData = path->d;
     QList<KmlWayPoint> waypoints;
 
     xml.readNextStartElement();
@@ -132,11 +131,11 @@ bool Kml::appendToPath(Path *path)
                 if (xml.name() == "name") {
                     desc = xml.readElementText();
                 } else if (xml.name() == "Point") {
-                    parsePoint();
+                    parsePoint(xml);
                 } else if (xml.name() == "LineString") {
-                    parseLineString();
+                    parseLineString(xml);
                 } else if (xml.name() == "GeometryCollection") {
-                    parseGeometryCollection();
+                    parseGeometryCollection(xml);
                 } else {
                     xml.skipCurrentElement();
                 }
@@ -146,7 +145,7 @@ bool Kml::appendToPath(Path *path)
             if (!desc.isEmpty() && points.count() == 1) {
                 waypoints.append(KmlWayPoint(points[0], desc));
             } else {
-                pathData->points += points;
+                pathData.points += points;
             }
         } else {
             xml.skipCurrentElement();
@@ -155,4 +154,13 @@ bool Kml::appendToPath(Path *path)
 
     makeWayPoints(pathData, waypoints);
     return true;
+}
+
+bool Kml::write(QXmlStreamWriter &xml, const PathData &pathData)
+{
+    Q_UNUSED(xml);
+    Q_UNUSED(pathData);
+    // TODO
+    qWarning() << Q_FUNC_INFO << "not implemented";
+    return false;
 }
