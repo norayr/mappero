@@ -72,8 +72,8 @@ void Kml::parseCoordinates(QXmlStreamReader &xml)
             continue;
         }
 
-        PathPoint p(GeoPoint(coords[0].toDouble(),
-                             coords[1].toDouble()));
+        PathPoint p(GeoPoint(coords[1].toDouble(),
+                             coords[0].toDouble()));
         if (coords.count() > 2) {
             p.altitude = coords[2].toInt();
         }
