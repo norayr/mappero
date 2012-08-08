@@ -76,6 +76,12 @@ struct PathWayPoint
     QString desc;
 };
 
+struct PathSegment
+{
+    PathSegment(int startIndex = 0): startIndex(startIndex) {}
+    int startIndex;
+};
+
 class Kml;
 class PathTest;
 class PathStream;
@@ -83,11 +89,12 @@ class PathStream;
 class PathData: public QSharedData
 {
 public:
-    PathData(): pointsOptimized(0) {}
+    PathData();
     inline PathData(const PathData &other);
     ~PathData() {}
 
     void makeWayPoint(const QString &desc, int pointIndex);
+    bool appendBreak();
     PathPoint positionAt(time_t time) const;
 
 private:
@@ -100,6 +107,7 @@ private:
 public:
     QVector<PathPoint> points;
     QVector<PathWayPoint> wayPoints;
+    QList<PathSegment> segments;
     int pointsOptimized;
 };
 
@@ -125,6 +133,7 @@ public:
 
     void addPoint(const GeoPoint &geo, int altitude, time_t time = 0,
                   Geo distance = 0);
+    void appendBreak();
 
     QPainterPath toPainterPath(int zoomLevel) const;
 

@@ -33,6 +33,9 @@ public:
 
     bool read(QXmlStreamReader &xml, PathData &pathData);
     bool write(QXmlStreamWriter &xml, const PathData &pathData);
+
+private:
+    void parseTrkseg(QXmlStreamReader &xml, PathData &pathData);
 };
 
 }; // namespace

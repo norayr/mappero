@@ -35,14 +35,12 @@ Gpx::~Gpx()
 {
 }
 
-bool Gpx::read(QXmlStreamReader &xml, PathData &pathData)
+void Gpx::parseTrkseg(QXmlStreamReader &xml, PathData &pathData)
 {
     QVector<PathPoint> &points = pathData.points;
 
-    while (!xml.atEnd()) {
-        xml.readNext();
-
-        if (xml.isStartElement() && xml.name() == "trkpt") {
+    while (xml.readNextStartElement()) {
+        if (xml.name() == "trkpt") {
             QXmlStreamAttributes attributes = xml.attributes();
             QStringRef lat = attributes.value("lat");
             QStringRef lon = attributes.value("lon");
@@ -72,6 +70,26 @@ bool Gpx::read(QXmlStreamReader &xml, PathData &pathData)
             if (!desc.isEmpty()) {
                 pathData.makeWayPoint(desc, points.count() - 1);
             }
+        } else {
+            xml.skipCurrentElement();
+        }
+    }
+}
+
+bool Gpx::read(QXmlStreamReader &xml, PathData &pathData)
+{
+    while (xml.readNextStartElement()) {
+        if (xml.name() == "trk") {
+            while (xml.readNextStartElement()) {
+                if (xml.name() == "trkseg") {
+                    pathData.appendBreak();
+                    parseTrkseg(xml, pathData);
+                } else {
+                    xml.skipCurrentElement();
+                }
+            }
+        } else {
+            xml.skipCurrentElement();
         }
     }
     return true;
@@ -92,26 +110,38 @@ bool Gpx::write(QXmlStreamWriter &xml, const PathData &pathData)
     /* track element */
     xml.writeStartElement("trk");
 
-    /* TODO handle track segments */
-    xml.writeStartElement("trkseg");
-
     /* this is outside of the loop, in order to reuse it */
     QDateTime time;
     time.setTimeSpec(Qt::UTC);
 
-    foreach (const PathPoint &point, pathData.points) {
-        xml.writeStartElement("trkpt");
-        xml.writeAttribute("lat", QString::number(point.geo.lat, 'f'));
-        xml.writeAttribute("lon", QString::number(point.geo.lon, 'f'));
+    QList<PathSegment>::const_iterator curr, next;
+    for (curr = pathData.segments.constBegin();
+         curr != pathData.segments.constEnd();
+         curr++) {
+        next = curr + 1;
+        int lastIndex = (next == pathData.segments.constEnd()) ?
+            pathData.points.count() : next->startIndex;
 
-        if (point.altitude != 0) {
-            xml.writeTextElement("ele",
-                                 QString::number(point.altitude));
-        }
+        if (lastIndex <= curr->startIndex) continue;
 
-        if (point.time != 0) {
-            time.setTime_t(point.time);
-            xml.writeTextElement("time", time.toString(Qt::ISODate));
+        xml.writeStartElement("trkseg");
+
+        for (int i = curr->startIndex + 1; i < lastIndex; i++) {
+            const PathPoint &point = pathData.points.at(i);
+            xml.writeStartElement("trkpt");
+            xml.writeAttribute("lat", QString::number(point.geo.lat, 'f'));
+            xml.writeAttribute("lon", QString::number(point.geo.lon, 'f'));
+
+            if (point.altitude != 0) {
+                xml.writeTextElement("ele",
+                                     QString::number(point.altitude));
+            }
+
+            if (point.time != 0) {
+                time.setTime_t(point.time);
+                xml.writeTextElement("time", time.toString(Qt::ISODate));
+            }
+            xml.writeEndElement();
         }
         xml.writeEndElement();
     }

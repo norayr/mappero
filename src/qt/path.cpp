@@ -180,9 +180,7 @@ PathPoint Path::positionAt(time_t time) const
 
 void Path::clear()
 {
-    d->points.clear();
-    d->wayPoints.clear();
-    d->pointsOptimized = 0;
+    d = new PathData;
 }
 
 void Path::addPoint(const GeoPoint &geo, int altitude, time_t time,
@@ -202,16 +200,32 @@ void Path::addPoint(const GeoPoint &geo, int altitude, time_t time,
     d->optimize();
 }
 
+void Path::appendBreak()
+{
+    d->appendBreak();
+}
+
 QPainterPath Path::toPainterPath(int zoomLevel) const
 {
     if (d->points.isEmpty()) return QPainterPath();
 
-    QPainterPath pp(d->points[0].unit.toPixel(zoomLevel));
-    foreach (const PathPoint &point, d->points) {
-        // skip points based on their zoom value
-        if (point.zoom <= zoomLevel) continue;
+    QPainterPath pp;
+    QList<PathSegment>::const_iterator curr, next;
+    for (curr = d->segments.constBegin();
+         curr != d->segments.constEnd();
+         curr++) {
+        next = curr + 1;
+        int lastIndex = (next == d->segments.constEnd()) ?
+            d->points.count() : next->startIndex;
 
-        pp.lineTo(point.unit.toPixel(zoomLevel));
+        pp.moveTo(d->points[curr->startIndex].unit.toPixel(zoomLevel));
+        for (int i = curr->startIndex + 1; i < lastIndex; i++) {
+            const PathPoint &point = d->points.at(i);
+            // skip points based on their zoom value
+            if (point.zoom <= zoomLevel) continue;
+
+            pp.lineTo(point.unit.toPixel(zoomLevel));
+        }
     }
     return pp;
 }
@@ -230,6 +244,12 @@ PathStream::~PathStream()
 {
 }
 
+PathData::PathData():
+    pointsOptimized(0)
+{
+    segments.append(PathSegment());
+}
+
 bool PathData::load(QXmlStreamReader &xml, PathStream *stream)
 {
     if (!stream->read(xml, *this)) return false;
@@ -240,6 +260,19 @@ bool PathData::load(QXmlStreamReader &xml, PathStream *stream)
 void PathData::makeWayPoint(const QString &desc, int pointIndex)
 {
     wayPoints.append(PathWayPoint(desc, pointIndex));
+}
+
+bool PathData::appendBreak()
+{
+    if (points.isEmpty()) return false;
+
+    Q_ASSERT (!segments.isEmpty());
+
+    int length = points.count();
+    const PathSegment &segment = segments.last();
+    if (segment.startIndex == length) return false;
+    segments.append(PathSegment(length));
+    return true;
 }
 
 PathPoint PathData::positionAt(time_t time) const

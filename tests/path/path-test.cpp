@@ -41,11 +41,13 @@ void PathTest::loadGpx()
 
     path.load(":/Lauttasaari.gpx");
     QCOMPARE(path.d->points.count(), 524);
+    QCOMPARE(path.d->segments.count(), 2);
 
     Path route;
     route.load(":/Route.gpx");
     QCOMPARE(route.d->points.count(), 1509);
     QCOMPARE(route.d->wayPoints.count(), 15);
+    QCOMPARE(route.d->segments.count(), 1);
 }
 
 void PathTest::loadKml()
@@ -57,6 +59,7 @@ void PathTest::loadKml()
     QCOMPARE(route.d->wayPoints[0].desc, UTF8("Vilhonkatu 13, Helsinki"));
     QCOMPARE(route.d->wayPoints[1].desc,
              UTF8("Helsinki-vantaan Lentoasema 2, Vantaa"));
+    QCOMPARE(route.d->segments.count(), 1);
 
     route.clear();
 
@@ -70,6 +73,7 @@ void PathTest::loadKml()
              UTF8("Continue onto Kaisaniemenkatu/Kajsaniemigatan"));
     QCOMPARE(route.d->wayPoints[21].desc,
              UTF8("Arrive at: Tikkurila, Vantaa, Finland"));
+    QCOMPARE(route.d->segments.count(), 1);
 }
 
 void PathTest::saveGpx()
