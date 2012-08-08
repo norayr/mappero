@@ -59,6 +59,7 @@ public Q_SLOTS:
     void setCtrlSelection(int index);
     bool isSelected(int index) { return _indexes.contains(index); }
     void removeItems();
+    int nextUntagged() const;
 
 Q_SIGNALS:
     void itemsChanged();

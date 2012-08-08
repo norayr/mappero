@@ -21,16 +21,7 @@ ListView {
         bottomText: Qt.formatDateTime(model.time, "d/M/yyyy hh:mm")
         selected: ListView.view.model.selection.isSelected(index)
 
-        onClicked: {
-            if (mouse.modifiers & Qt.ShiftModifier) {
-                ListView.view.model.selection.setShiftSelection(index)
-            } else if (mouse.modifiers & Qt.ControlModifier) {
-                ListView.view.model.selection.setCtrlSelection(index)
-            } else {
-                ListView.view.model.selection.setSelection(index)
-            }
-            ListView.view.currentIndex = index
-        }
+        onClicked: ListView.view.select(index, mouse.modifiers)
 
         ListView.onRemove: SequentialAnimation {
             PropertyAction { target: delegate; property: "ListView.delayRemove"; value: true }
@@ -41,6 +32,25 @@ ListView {
         Connections {
             target: delegate.ListView.view.model.selection
             onItemsChanged: delegate.selected = delegate.ListView.view.model.selection.isSelected(index)
+        }
+    }
+
+    function select(index, modifiers) {
+        if (index == -1) return
+        if (modifiers & Qt.ShiftModifier) {
+            model.selection.setShiftSelection(index)
+        } else if (modifiers & Qt.ControlModifier) {
+            model.selection.setCtrlSelection(index)
+        } else {
+            model.selection.setSelection(index)
+        }
+        currentIndex = index
+    }
+
+    Keys.onPressed: {
+        if (event.key == Qt.Key_N) {
+            event.accepted = true
+            select(model.selection.nextUntagged(), event.modifiers)
         }
     }
 }

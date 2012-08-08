@@ -119,6 +119,19 @@ void TaggableSelection::removeItems()
     _model->removeRows(last - count + 1, count);
 }
 
+int TaggableSelection::nextUntagged() const
+{
+    int first = (_lastIndex >= 0) ? _lastIndex + 1 : 0;
+
+    int len = _model->rowCount();
+    for (int i = first; i < len; i++) {
+        Taggable *taggable = _model->taggable(i);
+        if (!taggable->hasLocation()) return i;
+    }
+
+    return -1;
+}
+
 void TaggableSelection::update()
 {
     bool needsSave = false;

@@ -7,6 +7,7 @@ Rectangle {
 
     Loader {
         anchors.fill: parent
+        focus: true
         source: firstPage
     }
 }
