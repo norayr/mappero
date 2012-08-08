@@ -50,6 +50,7 @@ private:
 
 private Q_SLOTS:
     void onPositionUpdated(const GpsPosition &position);
+    void onGpsActivated(bool active);
 
 private:
     mutable Tracker *q_ptr;
@@ -72,6 +73,8 @@ inline TrackerPrivate::TrackerPrivate(Tracker *tracker):
     Gps *gps = Gps::instance();
     QObject::connect(gps, SIGNAL(positionUpdated(const GpsPosition &)),
                      this, SLOT(onPositionUpdated(const GpsPosition &)));
+    QObject::connect(gps, SIGNAL(activated(bool)),
+                     this, SLOT(onGpsActivated(bool)));
 }
 
 bool TrackerPrivate::pointIsSignificant(const GpsPosition &position)
@@ -115,6 +118,18 @@ void TrackerPrivate::onPositionUpdated(const GpsPosition &position)
                    position.time().toTime_t(),
                    distanceFromLast);
     Q_EMIT q->pathChanged();
+}
+
+void TrackerPrivate::onGpsActivated(bool active)
+{
+    Q_Q(Tracker);
+
+    if (!isTracking) return;
+
+    if (!active) {
+        // insert a break
+        q->path().appendBreak();
+    }
 }
 
 Tracker::Tracker(QObject *parent):
