@@ -80,7 +80,10 @@ Item {
                 }
             }
 
-            onTrackLoaded: track.loadFile(filePath)
+            onTrackLoaded: {
+                track.loadFile(filePath)
+                map.lookAt(track.itemArea(), 0, 0, 40)
+            }
         }
 
         Correlator {

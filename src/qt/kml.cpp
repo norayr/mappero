@@ -145,7 +145,9 @@ bool Kml::read(QXmlStreamReader &xml, PathData &pathData)
             if (!desc.isEmpty() && points.count() == 1) {
                 waypoints.append(KmlWayPoint(points[0], desc));
             } else {
-                pathData.points += points;
+                foreach (const PathPoint &p, points) {
+                    pathData.addPoint(p);
+                }
             }
         } else {
             xml.skipCurrentElement();

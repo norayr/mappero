@@ -178,6 +178,11 @@ PathPoint Path::positionAt(time_t time) const
     return d->positionAt(time);
 }
 
+QRectF Path::boundingRect() const
+{
+    return d->boundingRect();
+}
+
 void Path::clear()
 {
     d = new PathData;
@@ -190,14 +195,8 @@ void Path::addPoint(const GeoPoint &geo, int altitude, time_t time,
     PathPoint p(geo);
     p.altitude = altitude;
     p.time = time;
-    if (!isEmpty()) {
-        if (distance < 0) {
-            distance = geo.distanceTo(lastPoint().geo);
-        }
-        p.distance = distance;
-    }
-    d->points.append(p);
-    d->optimize();
+    p.distance = distance;
+    d->addPoint(p);
 }
 
 void Path::appendBreak()
@@ -245,7 +244,9 @@ PathStream::~PathStream()
 }
 
 PathData::PathData():
-    pointsOptimized(0)
+    pointsOptimized(0),
+    latMin(100), latMax(-100),
+    lonMin(200), lonMax(-200)
 {
     segments.append(PathSegment());
 }
@@ -255,6 +256,35 @@ bool PathData::load(QXmlStreamReader &xml, PathStream *stream)
     if (!stream->read(xml, *this)) return false;
     optimize();
     return true;
+}
+
+void PathData::addPoint(const PathPoint &p)
+{
+    int distance = -1;
+    if (p.distance < 0 && !points.isEmpty()) {
+        distance = p.geo.distanceTo(points.last().geo);
+    }
+    points.append(p);
+
+    if (distance >= 0) {
+        PathPoint &addedPoint = points.last();
+        addedPoint.distance = distance;
+    }
+
+    /* update bounding rect */
+    if (p.geo.lat < latMin) {
+        latMin = p.geo.lat;
+    } else if (p.geo.lat > latMax) {
+        latMax = p.geo.lat;
+    }
+
+    if (p.geo.lon < lonMin) {
+        lonMin = p.geo.lon;
+    } else if (p.geo.lon > lonMax) {
+        lonMax = p.geo.lon;
+    }
+
+    optimize();
 }
 
 void PathData::makeWayPoint(const QString &desc, int pointIndex)
@@ -296,6 +326,11 @@ PathPoint PathData::positionAt(time_t time) const
     /* interpolate between a and b */
     double t = (double(time) - a->time) / (b->time - a->time);
     return *a + (*b - *a) * t;
+}
+
+QRectF PathData::boundingRect() const
+{
+    return QRectF(QPointF(latMin, lonMin), QPointF(latMax, lonMax));
 }
 
 void PathData::optimize()

@@ -64,7 +64,7 @@ void Gpx::parseTrkseg(QXmlStreamReader &xml, PathData &pathData)
                     DEBUG() << "Unrecognized element:" << xml.name();
                 }
             }
-            points.append(p);
+            pathData.addPoint(p);
 
             /* is it a waypoint? */
             if (!desc.isEmpty()) {

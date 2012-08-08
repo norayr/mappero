@@ -62,6 +62,7 @@ public:
     QDateTime endTime() const;
 
     Q_INVOKABLE GeoPoint positionAt(const QDateTime &time) const;
+    Q_INVOKABLE QRectF itemArea() const;
 
 public Q_SLOTS:
     void loadFile(const QString &fileName);

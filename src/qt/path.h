@@ -93,12 +93,13 @@ public:
     inline PathData(const PathData &other);
     ~PathData() {}
 
+    void addPoint(const PathPoint &point);
     void makeWayPoint(const QString &desc, int pointIndex);
     bool appendBreak();
     PathPoint positionAt(time_t time) const;
+    QRectF boundingRect() const;
 
 private:
-    friend class Kml;
     friend class Path;
     bool load(QXmlStreamReader &xml, PathStream *stream);
 
@@ -109,6 +110,7 @@ public:
     QVector<PathWayPoint> wayPoints;
     QList<PathSegment> segments;
     int pointsOptimized;
+    Geo latMin, latMax, lonMin, lonMax;
 };
 
 class Path
@@ -128,6 +130,7 @@ public:
     const PathPoint &lastPoint() const;
 
     PathPoint positionAt(time_t time) const;
+    QRectF boundingRect() const;
 
     void clear();
 

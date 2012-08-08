@@ -144,6 +144,12 @@ GeoPoint PathItem::positionAt(const QDateTime &time) const
     return p.geo;
 }
 
+QRectF PathItem::itemArea() const
+{
+    Q_D(const PathItem);
+    return d->path.boundingRect();
+}
+
 void PathItem::loadFile(const QString &fileName)
 {
     Path path;
