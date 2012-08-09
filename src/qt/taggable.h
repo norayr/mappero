@@ -72,7 +72,7 @@ public:
     QPixmap pixmap(QSize *size, const QSize &requestedSize) const;
 
 public Q_SLOTS:
-    void clearLocation() { setLocation(GeoPoint()); }
+    void clearLocation();
     void open() const;
     void reload();
     void save();
