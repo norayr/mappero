@@ -36,7 +36,7 @@ ListView {
     }
 
     function select(index, modifiers) {
-        if (index == -1) return
+        if (index < 0 || index >= model.rowCount()) return
         if (modifiers & Qt.ShiftModifier) {
             model.selection.setShiftSelection(index)
         } else if (modifiers & Qt.ControlModifier) {
@@ -49,8 +49,14 @@ ListView {
 
     Keys.onPressed: {
         if (event.key == Qt.Key_N) {
-            event.accepted = true
             select(model.selection.nextUntagged(), event.modifiers)
+        } else if (event.key == Qt.Key_Left) {
+            select(currentIndex - 1, event.modifiers)
+        } else if (event.key == Qt.Key_Right) {
+            select(currentIndex + 1, event.modifiers)
+        } else {
+            return
         }
+        event.accepted = true
     }
 }
