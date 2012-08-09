@@ -10,12 +10,22 @@ Rectangle {
 
     signal clicked(variant mouse)
 
-    color: selected ? "blue" : "white"
+    color: "black"
+    border.width: 0
+
+    states: State {
+        name: "selected"
+        when: selected
+        PropertyChanges {
+            target: root
+            border.color: "blue"; border.width: 2; y: 0
+        }
+    }
 
     Image {
         id: thumbnail
         anchors.fill: parent
-        anchors.margins: 2
+        anchors.margins: 1
         clip: true
         fillMode: Image.PreserveAspectCrop
         source: taggable.pixmapUrl
@@ -26,7 +36,7 @@ Rectangle {
             anchors.left: parent.left
             anchors.right: parent.right
             anchors.top: parent.top
-            height: 20
+            height: 16
             Rectangle {
                 anchors.fill: parent
                 color: "#000"
@@ -34,8 +44,11 @@ Rectangle {
             }
             Text {
                 id: nameText
-                anchors.horizontalCenter: parent.horizontalCenter
+                anchors.fill: parent
+                horizontalAlignment: Text.AlignHCenter
+                verticalAlignment: Text.AlignVCenter
                 color: "#fff"
+                font.pixelSize: 10
             }
         }
 
@@ -43,7 +56,7 @@ Rectangle {
             anchors.left: parent.left
             anchors.right: parent.right
             anchors.bottom: parent.bottom
-            height: 20
+            height: 16
             Rectangle {
                 anchors.fill: parent
                 color: "#000"
@@ -51,8 +64,11 @@ Rectangle {
             }
             Text {
                 id: timeText
-                anchors.horizontalCenter: parent.horizontalCenter
+                anchors.fill: parent
+                horizontalAlignment: Text.AlignHCenter
+                verticalAlignment: Text.AlignVCenter
                 color: "#fff"
+                font.pixelSize: 10
             }
         }
     }

@@ -121,7 +121,19 @@ Item {
             anchors.right: parent.right
             anchors.top: parent.top
             anchors.bottom: parent.bottom
+            anchors.leftMargin: fileTools.spacing
             color: "white"
+
+            Text {
+                anchors.fill: parent
+                visible: dropArea.model.empty
+                horizontalAlignment: Text.AlignHCenter
+                verticalAlignment: Text.AlignVCenter
+                color: "#ddd"
+                font.italic: true
+                font.pixelSize: parent.height / 2
+                text: qsTr("Drop your images here")
+            }
 
             TaggableArea {
                 id: dropArea

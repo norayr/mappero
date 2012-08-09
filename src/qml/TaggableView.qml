@@ -11,7 +11,8 @@ ListView {
     spacing: 2
     delegate: TaggableDelegate {
         id: delegate
-        height: ListView.view.height
+        height: ListView.view.height - 6
+        y: 6
         width: height
         source: taggable.pixmapUrl
         topText: model.fileName

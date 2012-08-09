@@ -11,6 +11,8 @@ Rectangle {
     anchors.left: parent.left
     anchors.right: parent.right
     height: UI.PaneButtonHeight
+    color: enabled ? "#dfdfd0" : "#eee"
+    radius: UI.PaneButtonHeight / 2
 
     Text {
         id: label
