@@ -62,6 +62,7 @@ void Gpx::parseTrkseg(QXmlStreamReader &xml, PathData &pathData)
                     desc = xml.readElementText();
                 } else {
                     DEBUG() << "Unrecognized element:" << xml.name();
+                    xml.skipCurrentElement();
                 }
             }
             pathData.addPoint(p);
