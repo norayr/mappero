@@ -4,6 +4,8 @@ import "UIConstants.js" as UI
 
 Item {
     anchors.fill: parent
+    Keys.forwardTo: [ taggableView, toolBar, fileTools ]
+    focus: true
 
     Item {
         id: mapView
@@ -66,6 +68,7 @@ Item {
         }
 
         ToolBar {
+            id: toolBar
             anchors.bottom: parent.bottom
             anchors.bottomMargin: UI.ToolSpacing
             anchors.horizontalCenter: parent.horizontalCenter

@@ -59,4 +59,23 @@ Row {
             onAccepted: root.trackLoaded(filePath)
         }
     }
+
+    Keys.onPressed: {
+        if (event.key == Qt.Key_R) {
+            var l = selection.items.length
+            for (var i = 0; i < l; i++) {
+                var taggable = selection.items[i]
+                taggable.reload()
+            }
+        } else if (event.key == Qt.Key_D) {
+            var l = selection.items.length
+            for (var i = 0; i < l; i++) {
+                var taggable = selection.items[i]
+                taggable.clearLocation()
+            }
+        } else {
+            return
+        }
+        event.accepted = true
+    }
 }
