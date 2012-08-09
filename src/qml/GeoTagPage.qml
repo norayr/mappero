@@ -54,7 +54,7 @@ Item {
                 }
 
                 function setCurrent(index) {
-                    taggableView.currentIndex = index
+                    taggableView.setCurrent(index)
                     dropArea.model.selection.setSelection(index)
                 }
             }

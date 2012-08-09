@@ -8,9 +8,6 @@ ListView {
     cacheBuffer: 40
     clip: true
     highlightMoveDuration: 500
-    highlightRangeMode: ListView.StrictlyEnforceRange
-    preferredHighlightBegin: 0
-    preferredHighlightEnd: width
     spacing: 2
     delegate: TaggableDelegate {
         id: delegate
@@ -33,6 +30,20 @@ ListView {
             target: delegate.ListView.view.model.selection
             onItemsChanged: delegate.selected = delegate.ListView.view.model.selection.isSelected(index)
         }
+    }
+
+    SequentialAnimation {
+        id: highlightAnimation
+        running: false
+        alwaysRunToEnd: true
+        NumberAnimation { target: currentItem; properties: "scale"; to: 0.8; duration: 100; easing.type: Easing.InCubic; easing.amplitude: 1 }
+        NumberAnimation { target: currentItem; properties: "scale"; to: 1; duration: 400; easing.type: Easing.OutElastic; easing.amplitude: 1 }
+    }
+
+    function setCurrent(index) {
+        if (index == currentIndex) currentIndex = -1
+        currentIndex = index
+        highlightAnimation.running = true
     }
 
     function select(index, modifiers) {
