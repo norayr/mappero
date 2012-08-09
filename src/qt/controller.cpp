@@ -158,3 +158,19 @@ QString Controller::formatOffset(int seconds)
         return QString::fromLatin1("%1:00").arg((seconds - 30) / 60);
     }
 }
+
+QString Controller::formatLength(qreal metres)
+{
+    const char *unit;
+    int decimals;
+
+    if (metres >= 1000) {
+        metres /= 1000;
+        decimals = 1;
+        unit = "km";
+    } else {
+        decimals = 0;
+        unit = "m";
+    }
+    return QString::fromLatin1("%1%2").arg(metres, 0, 'f', decimals).arg(unit);
+}

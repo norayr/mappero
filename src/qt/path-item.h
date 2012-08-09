@@ -41,6 +41,7 @@ class PathItem: public QObject
                NOTIFY timeOffsetChanged);
     Q_PROPERTY(QDateTime startTime READ startTime NOTIFY timesChanged);
     Q_PROPERTY(QDateTime endTime READ endTime NOTIFY timesChanged);
+    Q_PROPERTY(int length READ length NOTIFY pathChanged);
 
 public:
     PathItem(QObject *parent = 0);
@@ -60,6 +61,8 @@ public:
 
     QDateTime startTime() const;
     QDateTime endTime() const;
+
+    qreal length() const;
 
     Q_INVOKABLE GeoPoint positionAt(const QDateTime &time) const;
     Q_INVOKABLE QRectF itemArea() const;

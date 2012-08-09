@@ -28,6 +28,28 @@ Item {
         anchors.fill: parent
     }
 
+    Rectangle {
+        anchors.right: parent.right
+        anchors.top: parent.top
+        anchors.margins: 4
+        color: "white"
+        opacity: 0.8
+        width: 100
+        height: content.height + 8
+        visible: !tracker.empty
+
+        Column {
+            id: content
+            anchors.top: parent.top
+            anchors.left: parent.left
+            anchors.right: parent.right
+            anchors.margins: 4
+            Text {
+                text: Mappero.formatLength(tracker.length)
+            }
+        }
+    }
+
     Osm {
         id: osm
         anchors.fill: parent

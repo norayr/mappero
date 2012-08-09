@@ -183,6 +183,11 @@ QRectF Path::boundingRect() const
     return d->boundingRect();
 }
 
+Geo Path::length() const
+{
+    return d->length();
+}
+
 void Path::clear()
 {
     d = new PathData;
@@ -246,7 +251,8 @@ PathStream::~PathStream()
 PathData::PathData():
     pointsOptimized(0),
     latMin(100), latMax(-100),
-    lonMin(200), lonMax(-200)
+    lonMin(200), lonMax(-200),
+    m_length(0)
 {
     segments.append(PathSegment());
 }
@@ -260,8 +266,8 @@ bool PathData::load(QXmlStreamReader &xml, PathStream *stream)
 
 void PathData::addPoint(const PathPoint &p)
 {
-    int distance = -1;
-    if (p.distance < 0 && !points.isEmpty()) {
+    int distance = p.distance;
+    if (distance < 0 && !points.isEmpty()) {
         distance = p.geo.distanceTo(points.last().geo);
     }
     points.append(p);
@@ -269,6 +275,7 @@ void PathData::addPoint(const PathPoint &p)
     if (distance >= 0) {
         PathPoint &addedPoint = points.last();
         addedPoint.distance = distance;
+        m_length += distance;
     }
 
     /* update bounding rect */

@@ -135,6 +135,12 @@ QDateTime PathItem::endTime() const
     return QDateTime::fromTime_t(d->path.lastPoint().time).addSecs(d->offset);
 }
 
+qreal PathItem::length() const
+{
+    Q_D(const PathItem);
+    return d->path.length();
+}
+
 GeoPoint PathItem::positionAt(const QDateTime &time) const
 {
     Q_D(const PathItem);

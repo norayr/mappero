@@ -98,6 +98,7 @@ public:
     bool appendBreak();
     PathPoint positionAt(time_t time) const;
     QRectF boundingRect() const;
+    Geo length() const { return m_length; }
 
 private:
     friend class Path;
@@ -111,6 +112,7 @@ public:
     QList<PathSegment> segments;
     int pointsOptimized;
     Geo latMin, latMax, lonMin, lonMax;
+    Geo m_length;
 };
 
 class Path
@@ -131,6 +133,7 @@ public:
 
     PathPoint positionAt(time_t time) const;
     QRectF boundingRect() const;
+    Geo length() const;
 
     void clear();
 
