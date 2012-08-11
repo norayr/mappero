@@ -39,7 +39,7 @@ View::View():
     setRenderHints(QPainter::Antialiasing);
     setTransformationAnchor(QGraphicsView::NoAnchor);
     setAlignment(Qt::AlignLeft | Qt::AlignTop);
-#ifndef Q_OS_WIN32
+#if !defined(Q_OS_WIN32) && !defined (Q_OS_MAC)
     setViewport(new QGLWidget);
     setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
 #endif
