@@ -8,6 +8,7 @@ Row {
 
     signal geoSetterDropped(variant pos)
     signal trackLoaded(string filePath)
+    signal help()
 
     spacing: UI.ToolSpacing
 
@@ -60,6 +61,14 @@ Row {
         }
     }
 
+    ImageButton {
+        width: UI.TaggableToolsSize
+        height: UI.TaggableToolsSize
+
+        source: ":help"
+        onClicked: root.help()
+    }
+
     Keys.onPressed: {
         if (event.key == Qt.Key_R) {
             var l = selection.items.length
@@ -73,6 +82,11 @@ Row {
                 var taggable = selection.items[i]
                 taggable.clearLocation()
             }
+        } else if (event.key == Qt.Key_H ||
+                   event.key == Qt.Key_Help ||
+                   event.key == Qt.Key_F1 ||
+                   event.key == Qt.Key_Question) {
+            help()
         } else {
             return
         }

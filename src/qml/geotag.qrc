@@ -1,6 +1,7 @@
 <!DOCTYPE RCC><RCC version="1.0">
 <qresource>
   <file>Correlator.qml</file>
+  <file>Help.qml</file>
   <file>FileTools.qml</file>
   <file>GeoSetter.qml</file>
   <file>GeoTagPage.qml</file>

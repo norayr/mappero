@@ -87,6 +87,8 @@ Item {
                 track.loadFile(filePath)
                 map.lookAt(track.itemArea(), 0, 0, 40)
             }
+
+            onHelp: helpLoader.source = "Help.qml"
         }
 
         Correlator {
@@ -146,6 +148,19 @@ Item {
                 model: dropArea.model
             }
         }
+    }
+
+    Loader {
+        id: helpLoader
+        anchors.horizontalCenter: parent.horizontalCenter
+        anchors.top: parent.top
+        anchors.bottom: parent.bottom
+        focus: true
+    }
+
+    Connections {
+        target: helpLoader.item
+        onClose: helpLoader.source = ""
     }
 
     Connections {

@@ -1,5 +1,6 @@
 <!DOCTYPE RCC><RCC version="1.0">
 <qresource>
+  <file alias="help">help.svg</file>
   <file alias="tag-remove-off">tag-remove-off.svg</file>
   <file alias="tag-remove">tag-remove.svg</file>
   <file>taggable-handle-in.svg</file>
