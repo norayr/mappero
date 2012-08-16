@@ -10,3 +10,4 @@ var TaggableSourceWidth = TagPaneHeight - 4
 var TaggableSourceHeight = TaggableSourceWidth
 var TaggableToolsSize = 32
 var ToolSpacing = 8
+var ToolbarMargins = 8

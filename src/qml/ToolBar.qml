@@ -1,7 +1,7 @@
 import QtQuick 1.0
 import "UIConstants.js" as UI
 
-Row {
+Item {
     id: root
 
     property variant selection
@@ -10,63 +10,72 @@ Row {
     signal trackLoaded(string filePath)
     signal help()
 
-    spacing: UI.ToolSpacing
+    width: row.width + 2 * UI.ToolbarMargins
+    height: row.height + 2 * UI.ToolbarMargins
 
-    GeoSetter {
-        id: geoSetter
-        width: UI.TaggableToolsSize
-        height: UI.TaggableToolsSize
-        selectedItems: root.selection.items
+    PaneBackground {}
 
-        onDropped: root.geoSetterDropped(pos)
-    }
+    Row {
+        id: row
+        anchors.centerIn: parent
+        spacing: UI.ToolSpacing
 
-    ItemAction {
-        width: UI.TaggableToolsSize
-        height: UI.TaggableToolsSize
-        selectedItems: root.selection.items
-        enabled: root.selection.needsSave
+        GeoSetter {
+            id: geoSetter
+            width: UI.TaggableToolsSize
+            height: UI.TaggableToolsSize
+            selectedItems: root.selection.items
 
-        source: ":taggable-reload"
-        onActivate: taggable.reload()
-    }
-
-    ItemAction {
-        width: UI.TaggableToolsSize
-        height: UI.TaggableToolsSize
-        selectedItems: root.selection.items
-        enabled: root.selection.hasLocation
-
-        source: ":tag-remove"
-        onActivate: taggable.clearLocation()
-    }
-
-    ImageButton {
-        width: UI.TaggableToolsSize
-        height: UI.TaggableToolsSize
-
-        source: ":osm-path" // FIXME
-        onClicked: fileChooserLoad.open()
-
-        FileDialog {
-            id: fileChooserLoad
-            visible: true
-            title: "Choose a file"
-            folder: "."
-            selectExisting: true
-            selectMultiple: false
-            nameFilters: [ "GPS tracks (*.gpx *.kml)", "All files (*.*)" ]
-
-            onAccepted: root.trackLoaded(filePath)
+            onDropped: root.geoSetterDropped(pos)
         }
-    }
 
-    ImageButton {
-        width: UI.TaggableToolsSize
-        height: UI.TaggableToolsSize
+        ItemAction {
+            width: UI.TaggableToolsSize
+            height: UI.TaggableToolsSize
+            selectedItems: root.selection.items
+            enabled: root.selection.needsSave
 
-        source: ":help"
-        onClicked: root.help()
+            source: ":taggable-reload"
+            onActivate: taggable.reload()
+        }
+
+        ItemAction {
+            width: UI.TaggableToolsSize
+            height: UI.TaggableToolsSize
+            selectedItems: root.selection.items
+            enabled: root.selection.hasLocation
+
+            source: ":tag-remove"
+            onActivate: taggable.clearLocation()
+        }
+
+        ImageButton {
+            width: UI.TaggableToolsSize
+            height: UI.TaggableToolsSize
+
+            source: ":osm-path" // FIXME
+            onClicked: fileChooserLoad.open()
+
+            FileDialog {
+                id: fileChooserLoad
+                visible: true
+                title: "Choose a file"
+                folder: "."
+                selectExisting: true
+                selectMultiple: false
+                nameFilters: [ "GPS tracks (*.gpx *.kml)", "All files (*.*)" ]
+
+                onAccepted: root.trackLoaded(filePath)
+            }
+        }
+
+        ImageButton {
+            width: UI.TaggableToolsSize
+            height: UI.TaggableToolsSize
+
+            source: ":help"
+            onClicked: root.help()
+        }
     }
 
     Keys.onPressed: {
