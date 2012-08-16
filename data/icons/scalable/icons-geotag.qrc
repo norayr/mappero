@@ -3,11 +3,11 @@
   <file alias="help">help.svg</file>
   <file alias="tag-remove-off">tag-remove-off.svg</file>
   <file alias="tag-remove">tag-remove.svg</file>
-  <file>taggable-handle-in.svg</file>
-  <file>taggable-handle-off.svg</file>
-  <file>taggable-handle.svg</file>
-  <file>taggable-has-pos.svg</file>
-  <file>taggable-modified.svg</file>
+  <file alias="taggable-handle-in">taggable-handle-in.svg</file>
+  <file alias="taggable-handle-off">taggable-handle-off.svg</file>
+  <file alias="taggable-handle">taggable-handle.svg</file>
+  <file alias="taggable-has-pos">taggable-has-pos.svg</file>
+  <file alias="taggable-modified">taggable-modified.svg</file>
   <file alias="taggable-reload-off">taggable-reload-off.svg</file>
   <file alias="taggable-reload">taggable-reload.svg</file>
   <file alias="time-slider-handle">time-slider-handle.svg</file>

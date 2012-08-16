@@ -20,14 +20,14 @@ Item {
         Image {
             id: movingHandle
             anchors.fill: parent
-            source: enabled ? ":taggable-handle.svg" : ":taggable-handle-off.svg"
+            source: enabled ? ":taggable-handle" : ":taggable-handle-off"
         }
         Image {
             id: cross
             x: handle.hotX - width / 2
             y: handle.hotY - height / 2
             visible: handleMouseArea.drag.active
-            source: ":taggable-handle-in.svg"
+            source: ":taggable-handle-in"
         }
 
         states: [
