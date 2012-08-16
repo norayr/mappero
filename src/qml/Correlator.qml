@@ -13,12 +13,7 @@ Item {
     height: controls.height + 2 * controls.anchors.margins
     visible: !track.empty
 
-    Rectangle {
-        anchors.fill: parent
-        radius: 8
-        color: "white"
-        opacity: 0.6
-    }
+    PaneBackground {}
 
     Column {
         id: controls
