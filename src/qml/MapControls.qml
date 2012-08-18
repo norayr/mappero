@@ -1,24 +1,36 @@
 import QtQuick 1.0
 import "UIConstants.js" as UI
 
-Column {
+Item {
+    id: root
     property variant map
+    width: 32 + UI.ToolbarMargins * 2
+    height: col.height + UI.ToolbarMargins * 2
 
-    width: 32
+    PaneBackground {}
 
-    ImageButton {
-        width: parent.width
-        height: width
-        enabled: map.minZoomLevel < map.requestedZoomLevel
-        source: ":osm-zoom-in"
-        onClicked: map.requestedZoomLevel--
-    }
+    Column {
+        id: col
+        anchors.top: parent.top
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.margins: spacing
+        spacing: UI.ToolbarMargins
 
-    ImageButton {
-        width: parent.width
-        height: width
-        enabled: map.maxZoomLevel > map.requestedZoomLevel
-        source: ":osm-zoom-out"
-        onClicked: map.requestedZoomLevel++
+        ImageButton {
+            width: parent.width
+            height: width
+            enabled: root.map.minZoomLevel < root.map.requestedZoomLevel
+            source: ":geo-osm-zoom-in"
+            onClicked: root.map.requestedZoomLevel--
+        }
+
+        ImageButton {
+            width: parent.width
+            height: width
+            enabled: root.map.maxZoomLevel > root.map.requestedZoomLevel
+            source: ":geo-osm-zoom-out"
+            onClicked: root.map.requestedZoomLevel++
+        }
     }
 }
