@@ -53,7 +53,7 @@ Item {
             width: UI.TaggableToolsSize
             height: UI.TaggableToolsSize
 
-            source: ":osm-path" // FIXME
+            source: ":correlate"
             onClicked: fileChooserLoad.open()
 
             FileDialog {

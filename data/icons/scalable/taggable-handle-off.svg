@@ -14,7 +14,7 @@
    id="svg2"
    version="1.1"
    inkscape:version="0.48.0 r9654"
-   sodipodi:docname="taggable-handle-off.svg">
+   sodipodi:docname="taggable-handle.svg">
   <sodipodi:namedview
      id="base"
      pagecolor="#ffffff"
@@ -42,53 +42,7 @@
        type="xygrid" />
   </sodipodi:namedview>
   <defs
-     id="defs4">
-    <filter
-       color-interpolation-filters="sRGB"
-       inkscape:menu-tooltip="Render in shades of gray by reducing saturation to zero"
-       inkscape:menu="Color"
-       height="1"
-       width="1"
-       y="0"
-       x="0"
-       inkscape:label="Desaturate"
-       id="filter2987">
-      <feColorMatrix
-         values="0"
-         type="saturate"
-         id="feColorMatrix2989" />
-    </filter>
-    <filter
-       color-interpolation-filters="sRGB"
-       inkscape:menu-tooltip="Render in shades of gray by reducing saturation to zero"
-       inkscape:menu="Color"
-       height="1"
-       width="1"
-       y="0"
-       x="0"
-       inkscape:label="Desaturate"
-       id="filter2991">
-      <feColorMatrix
-         values="0"
-         type="saturate"
-         id="feColorMatrix2993" />
-    </filter>
-    <filter
-       color-interpolation-filters="sRGB"
-       inkscape:menu-tooltip="Render in shades of gray by reducing saturation to zero"
-       inkscape:menu="Color"
-       height="1"
-       width="1"
-       y="0"
-       x="0"
-       inkscape:label="Desaturate"
-       id="filter2995">
-      <feColorMatrix
-         values="0"
-         type="saturate"
-         id="feColorMatrix2997" />
-    </filter>
-  </defs>
+     id="defs4" />
   <metadata
      id="metadata7">
     <rdf:RDF>
@@ -97,7 +51,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title />
+        <dc:title></dc:title>
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -117,16 +71,16 @@
        sodipodi:cy="55.5"
        sodipodi:cx="62.5"
        id="path3764"
-       style="fill:#ffffff;fill-opacity:1;filter:url(#filter2995)"
+       style="fill:#ffffff;fill-opacity:1"
        sodipodi:type="arc" />
     <g
        id="g3778" />
     <path
-       style="fill:#6a6a6a;fill-opacity:1;filter:url(#filter2991)"
-       d="m 7.2937571,1039.7785 c -2.7175225,-5.0486 -1.0226707,-11.4543 3.7855579,-14.3077 4.808228,-2.8533 10.909054,-1.0738 13.626577,3.9748 1.725172,3.205 1.725746,7.1245 0.0015,10.3301 0,0 -2.040667,2.7115 -3.707392,3.5865 -1.805241,0.9477 -5.000176,5.2501 -5.000176,5.2501 0,0 -3.221699,-4.2492 -5.000175,-5.2501 -1.4805048,-0.8332 -3.7058919,-3.5837 -3.7058919,-3.5837 z"
+       style="fill:#6a6a6a;fill-opacity:1"
+       d="m 7.2937571,1039.7785 c -2.7175261,-5.0486 -1.0226707,-11.4543 3.7855579,-14.3077 4.808228,-2.8533 10.909054,-1.0738 13.626577,3.9748 1.725172,3.205 1.725752,7.1245 0.0015,10.3301 -1.055878,1.963 -2.040667,2.7115 -3.707392,3.5865 -1.805241,0.9477 -5.000176,5.2501 -5.000176,5.2501 0,0 -3.221699,-4.2492 -5.000175,-5.2501 -1.4805048,-0.8332 -2.5471689,-1.431 -3.7058919,-3.5837 z"
        id="path3773"
        inkscape:connector-curvature="0"
-       sodipodi:nodetypes="csscscsc" />
+       sodipodi:nodetypes="ssssscss" />
     <path
        transform="translate(0,1020.3622)"
        d="m 19,14 c 0,1.656854 -1.343146,3 -3,3 -1.656854,0 -3,-1.343146 -3,-3 0,-1.656854 1.343146,-3 3,-3 1.656854,0 3,1.343146 3,3 z"
@@ -135,7 +89,7 @@
        sodipodi:cy="14"
        sodipodi:cx="16"
        id="path3776"
-       style="fill:#fafafa;fill-opacity:1;filter:url(#filter2987)"
+       style="fill:#fafafa;fill-opacity:1"
        sodipodi:type="arc" />
   </g>
 </svg>

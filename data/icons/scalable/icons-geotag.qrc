@@ -1,5 +1,6 @@
 <!DOCTYPE RCC><RCC version="1.0">
 <qresource>
+  <file alias="correlate">correlate.svg</file>
   <file alias="help">help.svg</file>
   <file alias="geo-osm-zoom-in-off">geo-osm-zoom-in-off.svg</file>
   <file alias="geo-osm-zoom-in">geo-osm-zoom-in.svg</file>
