@@ -126,12 +126,13 @@ Item {
 
         ListModel {
             id: keysModel
+            ListElement { key: "N"; label: QT_TR_NOOP("Select the next file which has not been assigned a location") }
             ListElement { key: "R"; label: QT_TR_NOOP("Revert the selected file(s) to the original location") }
             ListElement { key: "S"; label: QT_TR_NOOP("Save the changes to the selected file(s)") }
             ListElement { key: "X"; label: QT_TR_NOOP("Save the changes to the selected file(s) and close them") }
             ListElement { key: "D"; label: QT_TR_NOOP("Delete the location information from the selected file(s)") }
             ListElement { key: "C"; label: QT_TR_NOOP("Close the selected file(s)") }
-            ListElement { key: "Ctrl+A"; label: QT_TR_NOOP("Select all") }
+            ListElement { key: "Ctrl+A"; label: QT_TR_NOOP("Select all files") }
             ListElement { key: "H"; label: QT_TR_NOOP("Show this help screen") }
         }
     }
