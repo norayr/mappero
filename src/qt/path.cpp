@@ -369,7 +369,7 @@ void PathData::optimize()
         dy = curr->unit.y() - prev->unit.y();
         dmax = qMax(qAbs(dx), qAbs(dy));
 
-        for (zoom = 0; dmax > tolerance << zoom; zoom++);
+        for (zoom = 0; dmax > tolerance << zoom; zoom++) {}
 
         /* We got the zoom level for this point, supposing that the previous
          * one is always drawn.
@@ -382,7 +382,7 @@ void PathData::optimize()
             QVector<PathPoint>::iterator prevBefore;
             /* going back is safe (we don't risk going past the head) because
              * the first point will always have zoom set to 127 */
-            for (prevBefore = prev; prev->zoom <= zoom; prev--);
+            for (prevBefore = prev; prev->zoom <= zoom; prev--) {}
 
             if (prev == prevBefore) break;
 
@@ -391,7 +391,7 @@ void PathData::optimize()
             dy = curr->unit.y() - prev->unit.y();
             dmax = qMax(qAbs(dx), qAbs(dy));
 
-            for (; dmax > tolerance << zoom; zoom++);
+            for (; dmax > tolerance << zoom; zoom++) {}
         }
 
         curr->zoom = zoom;
