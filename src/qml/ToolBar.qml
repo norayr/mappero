@@ -55,7 +55,7 @@ Row {
             folder: "."
             selectExisting: true
             selectMultiple: false
-            nameFilters: [ "Tracks (*.gpx *.kml)" ]
+            nameFilters: [ "GPS tracks (*.gpx *.kml)", "All files (*.*)" ]
 
             onAccepted: root.trackLoaded(filePath)
         }
