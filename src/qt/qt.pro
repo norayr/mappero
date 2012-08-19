@@ -119,6 +119,7 @@ system(pkg-config --exists exiv2) {
 
 win32 {
     LIBS += -static-libgcc "-static-libstdc++"
+    RC_FILE = $${TOP_SRC_DIR}/data/icons/windows/mappero-geotagger.rc
 }
 
 unix {
