@@ -1,3 +1,5 @@
+include(../../common-config.pri)
+
 # Add more folders to ship with the application, here
 folder_01.source = ../qml
 folder_01.target = qml
@@ -127,12 +129,7 @@ RESOURCES += \
     ../qml/qml.qrc \
     ../../data/icons/scalable/icons.qrc
 
-contains(MEEGO_EDITION,harmattan) {
-    target.path = /opt/qt/bin
-    INSTALLS += target
-}
-
-maemo5 {
-    target.path = /opt/qt/bin
+unix {
+    target.path = $${INSTALL_PREFIX}/bin
     INSTALLS += target
 }

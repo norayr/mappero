@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=Mappero Geotagger
+Comment=Add location information to image files
+StartupNotify=true
+Type=Application
+Terminal=false
+Exec=INSTALL_PREFIX/bin/mappero --geotag
+Icon=mappero-geotagger
+Categories=Graphics;ImageProcessing;Geography;

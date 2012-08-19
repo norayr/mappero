@@ -7,6 +7,8 @@ mkinstalldirs
 Makefile
 data/Makefile
 data/help/Makefile
+/data/mappero-geotagger.desktop
+/data/mappero.desktop
 po/Makefile
 po/POTFILES
 po/bg_BG.gmo

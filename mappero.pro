@@ -1,3 +1,5 @@
+include(common-config.pri)
+
 TEMPLATE = subdirs
 SUBDIRS = src tests
 
@@ -17,11 +19,35 @@ OTHER_FILES += \
     qtc_packaging/debian_fremantle/changelog
 
 contains(MEEGO_EDITION,harmattan) {
-    desktopfile.files = data/mappero.desktop
+    desktopfile.files = data/harmattan/mappero.desktop
     desktopfile.path = /usr/share/applications
     INSTALLS += desktopfile
 
     icon.files = data/mappero.png
     icon.path = /usr/share/icons/hicolor/80x80/apps
     INSTALLS += icon
+} else {
+    unix {
+        IN_FILES = \
+            data/mappero-geotagger.desktop \
+            data/mappero.desktop
+        for(inFile, IN_FILES) {
+            system(sed "s,INSTALL_PREFIX,$${INSTALL_PREFIX}," < $${inFile}.in \
+                > $${inFile})
+        }
+
+        QMAKE_DISTCLEAN += $${IN_FILES}
+
+        desktopfile.files = \
+            data/mappero-geotagger.desktop \
+            data/mappero.desktop
+        desktopfile.path = /usr/share/applications
+        INSTALLS += desktopfile
+
+        icon.files = \
+            data/icons/scalable/mappero-geotagger.svg \
+            data/icons/scalable/mappero.svg
+        icon.path = /usr/share/icons/hicolor/scalable/apps
+        INSTALLS += icon
+    }
 }

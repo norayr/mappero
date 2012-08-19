@@ -1,0 +1,60 @@
+
+DEPENDENCIES
+============
+
+In order to be able to build mappero, you will need:
+
+- Qt 4.8 or higher (Qt 4.7 might also work)
+
+- QtDesktopComponents:
+  https://qt.gitorious.org/qtplayground/qtdesktopcomponents
+  (use the "master" branch)
+
+- libexiv2: http://www.exiv2.org/ (for Mappero Geotagger)
+
+- pkg-config: http://www.freedesktop.org/wiki/Software/pkg-config/
+
+
+BUILDING
+========
+
+The recommended way of building Mappero is to open its project file
+(mappero.pro) in Qt Creator and building it from there. Make sure that the
+pkg-config executable is in one of the directories listed in the PATH
+environment variable.
+
+Alternatively, you can build mappero from the command line: from the top-level
+source directory, run
+
+  qmake && make
+
+This should generate a binary called "mappero" under src/qt, which is the main
+executable for the project.
+
+
+RUNNING
+=======
+
+Just running the "mappero" executable will start the mapping application; if
+you want to run Mappero Geotagger, you'll need to add the "--geotag" parameter
+when launching the application (you can add it to the "Arguments" field in the
+Qt Creator project's Run settings).
+
+
+INSTALLING
+==========
+
+For Windows and Mac OS X, no installation step is provided, as the process of
+installing an application in these platform is not trivial and involve either
+creating an installation application or an installation package.
+To install Mappero on Linux, just run the
+
+  make install
+
+command as root, which will install the application and its .desktop file.
+Since this command will also install the application icons, it's recommended
+that you run
+
+  update-icon-caches /usr/share/icons/hicolor/
+
+(again, as root) in order to update the system's icon database.
