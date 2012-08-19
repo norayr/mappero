@@ -51,3 +51,7 @@ contains(MEEGO_EDITION,harmattan) {
         INSTALLS += icon
     }
 }
+
+DISTNAME = mappero-$${PROJECT_VERSION}
+dist.commands = "git archive --format=tar --prefix=$${DISTNAME}/ HEAD | bzip2 -9 > $${DISTNAME}.tar.bz2"
+QMAKE_EXTRA_TARGETS += dist
