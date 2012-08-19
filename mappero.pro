@@ -3,6 +3,10 @@ include(common-config.pri)
 TEMPLATE = subdirs
 SUBDIRS = src tests
 
+exists(qtdesktopcomponents) {
+    SUBDIRS += qtdesktopcomponents/desktop.pro
+}
+
 OTHER_FILES += \
     qtc_packaging/debian_harmattan/rules \
     qtc_packaging/debian_harmattan/README \

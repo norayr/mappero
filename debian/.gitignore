@@ -1,7 +1,5 @@
+mappero-geotagger/
 tmp
 *.debhelper
+*.log
 *.substvars
-libmappero-dev/
-libmappero0-dbg/
-libmappero0/
-
