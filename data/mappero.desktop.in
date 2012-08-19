@@ -1,6 +1,5 @@
 [Desktop Entry]
 Name=Mappero
-StartupNotify=true
 Type=Application
 Terminal=false
 Exec=INSTALL_PREFIX/bin/mappero
