@@ -86,7 +86,9 @@ Rectangle {
         anchors.top: parent.top
         anchors.right: parent.right
         anchors.margins: 2
+        /* This would look a bit better, but it's not in Qt 4.7
         layoutDirection: Qt.RightToLeft
+         */
         spacing: 2
 
         Image {
