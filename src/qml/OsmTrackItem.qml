@@ -29,7 +29,7 @@ Pane {
         folder: "/home/user"
         selectExisting: false
         selectMultiple: false
-        fileName: "map.gpx"
+        fileName: Qt.formatDate(new Date(), Qt.ISODate) + ".gpx"
 
         onFolderChanged: { console.log("Folder changed: " + folder) }
         onAccepted: {
