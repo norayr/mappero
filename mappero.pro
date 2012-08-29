@@ -3,10 +3,6 @@ include(common-config.pri)
 TEMPLATE = subdirs
 SUBDIRS = src tests
 
-exists(qtdesktopcomponents) {
-    SUBDIRS += qtdesktopcomponents/desktop.pro
-}
-
 OTHER_FILES += \
     qtc_packaging/debian_harmattan/rules \
     qtc_packaging/debian_harmattan/README \
@@ -32,6 +28,10 @@ contains(MEEGO_EDITION,harmattan) {
     INSTALLS += icon
 } else {
     unix {
+        exists(qtdesktopcomponents) {
+            SUBDIRS += qtdesktopcomponents/desktop.pro
+        }
+
         IN_FILES = \
             data/mappero-geotagger.desktop \
             data/mappero.desktop
