@@ -68,6 +68,7 @@ public:
     Q_INVOKABLE QRectF itemArea() const;
 
 public Q_SLOTS:
+    void clear();
     void loadFile(const QString &fileName);
     void saveFile(const QString &fileName) const;
 

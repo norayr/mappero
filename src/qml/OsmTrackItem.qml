@@ -22,7 +22,7 @@ Pane {
         }
         MenuButton {
             text: "Clear path"
-            onClicked: pane.close()
+            onClicked: { tracker.clear(); pane.close() }
         }
     }
 

@@ -156,6 +156,12 @@ QRectF PathItem::itemArea() const
     return d->path.boundingRect();
 }
 
+void PathItem::clear()
+{
+    Path path;
+    setPath(path);
+}
+
 void PathItem::loadFile(const QString &fileName)
 {
     Path path;
