@@ -2,6 +2,9 @@ import QtQuick 1.0
 
 Pane {
     id: pane
+
+    property variant tracker
+
     Column {
         width: 400
 

@@ -53,6 +53,7 @@ Item {
     Osm {
         id: osm
         anchors.fill: parent
+        tracker: tracker
     }
 
     Connections {

@@ -5,6 +5,7 @@ Item {
     property int buttonSize: UI.OsmButtonSize
     property int screenMargin: UI.OsmScreenMargin
     property bool isPortrait: height > width
+    property variant tracker
 
     Item {
         id: columns
@@ -21,6 +22,12 @@ Item {
             source: ":osm-path"
             Loader {
                 id: trackPane
+                Binding {
+                    target: trackPane.item
+                    property: "tracker"
+                    value: tracker
+                    when: loader.status == Loader.Ready
+                }
             }
             onClicked: {
                 trackPane.source = "OsmTrackItem.qml"
