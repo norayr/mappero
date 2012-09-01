@@ -74,16 +74,11 @@ class TiledLayerPrivate: public QObject
     Q_OBJECT
     Q_DECLARE_PUBLIC(TiledLayer)
 
-    TiledLayerPrivate(TiledLayer *tiledLayer,
-                      const QString &name, const QString &id,
-                      const QString &url, const QString &format,
-                      const TiledLayer::Type *type):
+    TiledLayerPrivate(TiledLayer *tiledLayer):
         q_ptr(tiledLayer),
-        name(name),
-        id(id),
-        url(url),
-        format(format),
-        type(type),
+        url(),
+        format(),
+        type(0),
         fetchMissingTiles(false),
         center(0, 0),
         zoomLevel(-1)
@@ -118,8 +113,6 @@ private Q_SLOTS:
 
 private:
     mutable TiledLayer *q_ptr;
-    QString name;
-    QString id;
     QString url;
     QString format;
     const TiledLayer::Type *type;
@@ -241,14 +234,10 @@ void TiledLayerPrivate::onOnlineStateChanged(bool isOnline)
     q->mapEvent(0);
 }
 
-TiledLayer::TiledLayer(const QString &name, const QString &id,
-                       const QString &url, const QString &format,
-                       const Type *type,
-                       int minZoom, int maxZoom):
-    Layer(id, projectionFromLayerType(type)),
-    d_ptr(new TiledLayerPrivate(this, name, id, url, format, type))
+TiledLayer::TiledLayer():
+    Layer(),
+    d_ptr(new TiledLayerPrivate(this))
 {
-    setZoomRange(minZoom, maxZoom);
 }
 
 TiledLayer::~TiledLayer()
@@ -256,10 +245,45 @@ TiledLayer::~TiledLayer()
     delete d_ptr;
 }
 
-const QString TiledLayer::url() const
+void TiledLayer::setUrl(const QString &url)
+{
+    Q_D(TiledLayer);
+    d->url = url;
+    queueLayerChanged();
+}
+
+QString TiledLayer::url() const
 {
     Q_D(const TiledLayer);
     return d->url;
+}
+
+void TiledLayer::setFormat(const QString &format)
+{
+    Q_D(TiledLayer);
+    d->format = format;
+    queueLayerChanged();
+}
+
+QString TiledLayer::format() const
+{
+    Q_D(const TiledLayer);
+    return d->format;
+}
+
+void TiledLayer::setTypeName(const QString &typeName)
+{
+    Q_D(TiledLayer);
+    QByteArray ba = typeName.toLatin1();
+    d->type = Type::get(ba.constData());
+    setProjection(projectionFromLayerType(d->type));
+    queueLayerChanged();
+}
+
+QString TiledLayer::typeName() const
+{
+    Q_D(const TiledLayer);
+    return d->type->name;
 }
 
 QString TiledLayer::urlForTile(int zoom, int x, int y) const
@@ -272,7 +296,7 @@ QString TiledLayer::tileFileName(int zoom, int x, int y) const
 {
     Q_D(const TiledLayer);
     return d->baseDir % QString("%1/%2/%3/%4.%5")
-        .arg(d->id)
+        .arg(id())
         .arg(21 - zoom).arg(x).arg(y)
         .arg(d->format);
 }

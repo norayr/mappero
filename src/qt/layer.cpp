@@ -36,28 +36,40 @@ class LayerPrivate: public QObject
     Q_OBJECT
     Q_DECLARE_PUBLIC(Layer)
 
-    LayerPrivate(Layer *layer, const QString &id, const Projection *projection):
+    LayerPrivate(Layer *layer):
         QObject(),
         q_ptr(layer),
-        id(id),
-        projection(projection),
+        projection(0),
         minZoom(MIN_ZOOM),
-        maxZoom(MAX_ZOOM)
+        maxZoom(MAX_ZOOM),
+        layerChangedQueued(false)
     {
     }
+
+private Q_SLOTS:
+    void emitLayerChanged();
 
 private:
     mutable Layer *q_ptr;
     QString id;
+    QString name;
     const Projection *projection;
     int minZoom;
     int maxZoom;
+    bool layerChangedQueued;
 };
 };
 
-Layer::Layer(const QString &id, const Projection *projection):
-    MapGraphicsItem(),
-    d_ptr(new LayerPrivate(this, id, projection))
+void LayerPrivate::emitLayerChanged()
+{
+    Q_Q(Layer);
+    layerChangedQueued = false;
+    Q_EMIT q->layerChanged();
+}
+
+Layer::Layer():
+    MapItem(),
+    d_ptr(new LayerPrivate(this))
 {
 }
 
@@ -66,18 +78,11 @@ Layer::~Layer()
     delete d_ptr;
 }
 
-Layer *Layer::fromId(const QString &id)
+void Layer::setId(const QString &id)
 {
-    /* TODO: load available layers from config file/plugins */
-    if (id == "OpenStreetMap I") {
-        const Mappero::TiledLayer::Type *type =
-            Mappero::TiledLayer::Type::get("XYZ_INV");
-        return new TiledLayer("OpenStreet", "OpenStreetMap I",
-                              "http://tile.openstreetmap.org/%0d/%d/%d.png",
-                              "png", type, 3, 19);
-    } else {
-        return 0;
-    }
+    Q_D(Layer);
+    d->id = id;
+    queueLayerChanged();
 }
 
 QString Layer::id() const
@@ -86,16 +91,50 @@ QString Layer::id() const
     return d->id;
 }
 
-const Projection *Layer::projection()
+void Layer::setName(const QString &name)
 {
     Q_D(Layer);
+    d->name = name;
+    queueLayerChanged();
+}
+
+QString Layer::name() const
+{
+    Q_D(const Layer);
+    return d->name;
+}
+
+void Layer::setProjection(const Projection *projection)
+{
+    Q_D(Layer);
+    d->projection = projection;
+    queueLayerChanged();
+}
+
+const Projection *Layer::projection() const
+{
+    Q_D(const Layer);
     return d->projection;
+}
+
+void Layer::setMinZoom(int minZoom)
+{
+    Q_D(Layer);
+    d->minZoom = minZoom;
+    queueLayerChanged();
 }
 
 int Layer::minZoom() const
 {
     Q_D(const Layer);
     return d->minZoom;
+}
+
+void Layer::setMaxZoom(int maxZoom)
+{
+    Q_D(Layer);
+    d->maxZoom = maxZoom;
+    queueLayerChanged();
 }
 
 int Layer::maxZoom() const
@@ -115,11 +154,14 @@ void Layer::mapEvent(MapEvent *e)
     // virtual method
 }
 
-void Layer::setZoomRange(int minZoom, int maxZoom)
+void Layer::queueLayerChanged()
 {
     Q_D(Layer);
-    d->minZoom = minZoom;
-    d->maxZoom = maxZoom;
+
+    if (!d->layerChangedQueued) {
+        d->layerChangedQueued = true;
+        QMetaObject::invokeMethod(d, "emitLayerChanged", Qt::QueuedConnection);
+    }
 }
 
 #include "layer.moc"

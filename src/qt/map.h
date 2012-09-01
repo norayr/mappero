@@ -59,11 +59,11 @@ class Map: public QDeclarativeItem {
                READ requestedZoomLevel WRITE setRequestedZoomLevel \
                NOTIFY requestedZoomLevelChanged);
     Q_PROPERTY(qreal minZoomLevel READ minZoomLevel
-               NOTIFY mainLayerIdChanged);
+               NOTIFY mainLayerChanged);
     Q_PROPERTY(qreal maxZoomLevel READ maxZoomLevel
-               NOTIFY mainLayerIdChanged);
-    Q_PROPERTY(QString mainLayerId READ mainLayerId WRITE setMainLayerId \
-               NOTIFY mainLayerIdChanged);
+               NOTIFY mainLayerChanged);
+    Q_PROPERTY(Mappero::Layer *mainLayer READ mainLayer WRITE setMainLayer \
+               NOTIFY mainLayerChanged);
     Q_PROPERTY(bool followGps READ followGps WRITE setFollowGps \
                NOTIFY followGpsChanged);
     Q_PROPERTY(QDeclarativeListProperty<Mappero::MapItem> items READ items);
@@ -102,9 +102,6 @@ public:
     qreal minZoomLevel() const;
     qreal maxZoomLevel() const;
 
-    void setMainLayerId(const QString &layerId);
-    QString mainLayerId() const;
-
     void setMainLayer(Layer *layer);
     Layer *mainLayer() const;
 
@@ -133,7 +130,7 @@ Q_SIGNALS:
     void animatedZoomLevelChanged(qreal zoomLevel);
     void requestedZoomLevelChanged(qreal zoomLevel);
     void sizeChanged();
-    void mainLayerIdChanged();
+    void mainLayerChanged();
     void followGpsChanged(bool followGps);
 
 protected Q_SLOTS:

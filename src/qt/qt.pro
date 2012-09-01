@@ -71,6 +71,7 @@ HEADERS += \
     configuration.h \
     controller.h \
     gps.h \
+    layer.h \
     map.h \
     map-object.h \
     mark.h \
@@ -80,6 +81,7 @@ HEADERS += \
     poi-item.h \
     poi-view.h \
     tile-download.h \
+    tiled-layer.h \
     tracker.h \
     view.h
 

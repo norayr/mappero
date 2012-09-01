@@ -4,12 +4,16 @@ import Mappero 1.0
 Item {
     anchors.fill: parent
 
+    LayerSelector {
+        id: layerSelector
+    }
+
     Map {
         id: map
         anchors.fill: parent
         flickable: mapFlickable
 
-        mainLayerId: "OpenStreetMap I"
+        mainLayer: layerSelector.mainLayer
         center: Mappero.conf.lastPosition
         requestedZoomLevel: Mappero.conf.lastZoomLevel
         followGps: visible

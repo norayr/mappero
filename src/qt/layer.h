@@ -29,17 +29,28 @@ namespace Mappero {
 struct Projection;
 
 class LayerPrivate;
-class Layer: public MapGraphicsItem {
+class Layer: public MapItem {
+    Q_OBJECT
+    Q_PROPERTY(QString uid READ id WRITE setId NOTIFY layerChanged);
+    Q_PROPERTY(QString name READ name WRITE setName NOTIFY layerChanged);
+    Q_PROPERTY(int minZoom READ minZoom WRITE setMinZoom NOTIFY layerChanged);
+    Q_PROPERTY(int maxZoom READ maxZoom WRITE setMaxZoom NOTIFY layerChanged);
+
 public:
-    Layer(const QString &id, const Projection *projection);
+    Layer();
     virtual ~Layer();
 
-    static Layer *fromId(const QString &id);
+    void setId(const QString &id);
     QString id() const;
 
-    const Projection *projection();
+    void setName(const QString &name);
+    QString name() const;
 
+    const Projection *projection() const;
+
+    void setMinZoom(int minZoom);
     int minZoom() const;
+    void setMaxZoom(int maxZoom);
     int maxZoom() const;
 
     virtual void mapEvent(MapEvent *e);
@@ -47,8 +58,12 @@ public:
     // reimplemented virtual functions:
     QRectF boundingRect() const;
 
+Q_SIGNALS:
+    void layerChanged();
+
 protected:
-    void setZoomRange(int minZoom, int maxZoom);
+    void queueLayerChanged();
+    void setProjection(const Projection *projection);
 
 private:
     LayerPrivate *d_ptr;

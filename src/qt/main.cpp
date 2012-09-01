@@ -31,6 +31,7 @@
 #include "taggable.h"
 #include "ticks.h"
 #endif
+#include "tiled-layer.h"
 #include "tracker.h"
 #include "view.h"
 
@@ -52,6 +53,7 @@ int main(int argc, char *argv[])
     qRegisterMetaType<Mappero::GeoPoint>("GeoPoint");
     qRegisterMetaTypeStreamOperators<Mappero::GeoPoint>("GeoPoint");
     qmlRegisterType<Mappero::Map>("Mappero", 1, 0, "MapView");
+    qmlRegisterType<Mappero::TiledLayer>("Mappero", 1, 0, "TiledLayer");
     qmlRegisterType<Mappero::Tracker>("Mappero", 1, 0, "Tracker");
     qmlRegisterType<Mappero::PathItem>("Mappero", 1, 0, "PathItem");
     qmlRegisterType<Mappero::PathLayer>("Mappero", 1, 0, "PathLayer");
@@ -59,6 +61,7 @@ int main(int argc, char *argv[])
     qmlRegisterType<Mappero::PoiView>("Mappero", 1, 0, "PoiView");
     qmlRegisterUncreatableType<Mappero::MapItem>("Mappero", 1, 0, "MapItem",
                                                  "C++ creation only");
+    qmlRegisterType<Mappero::Layer>();
     qmlRegisterType<QAbstractListModel>();
     qmlRegisterType<Mappero::Configuration>();
 

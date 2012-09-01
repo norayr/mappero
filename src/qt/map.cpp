@@ -290,27 +290,6 @@ Map::~Map()
     delete d_ptr;
 }
 
-void Map::setMainLayerId(const QString &layerId)
-{
-    Q_D(Map);
-
-    if (d->mainLayer != 0 && d->mainLayer->id() == layerId) return;
-
-    Layer *layer = Layer::fromId(layerId);
-    if (layer == 0) {
-        qWarning() << "Error loading layer: " << layerId;
-        return;
-    }
-
-    setMainLayer(layer);
-}
-
-QString Map::mainLayerId() const
-{
-    Q_D(const Map);
-    return d->mainLayer != 0 ? d->mainLayer->id() : QString();
-}
-
 void Map::setMainLayer(Layer *layer)
 {
     Q_D(Map);
@@ -321,12 +300,17 @@ void Map::setMainLayer(Layer *layer)
     }
     d->mainLayer = layer;
     if (layer != 0) {
-        layer->setParentItem(d->layerGroup);
+        static_cast<QGraphicsItem*>(layer)->setParentItem(d->layerGroup);
+        layer->setZValue(-10);
         layer->setMap(this);
-        Controller::instance()->setProjection(d->mainLayer->projection());
+        const Projection *projection = d->mainLayer->projection();
+        Controller::instance()->setProjection(projection);
+        d->centerUnits = projection->geoToUnit(d->center);
+        d->animatedCenterUnits = d->centerUnits;
+        d->requestedCenterUnits = d->centerUnits;
     }
 
-    Q_EMIT mainLayerIdChanged();
+    Q_EMIT mainLayerChanged();
 }
 
 Layer *Map::mainLayer() const

@@ -32,6 +32,12 @@ namespace Mappero {
 class TiledLayerPrivate;
 class TiledLayer: public Layer
 {
+    Q_OBJECT
+    Q_PROPERTY(QString url READ url WRITE setUrl NOTIFY layerChanged);
+    Q_PROPERTY(QString format READ format WRITE setFormat NOTIFY layerChanged);
+    Q_PROPERTY(QString type READ typeName WRITE setTypeName \
+               NOTIFY layerChanged);
+
 public:
     struct Type {
         typedef QString (*MakeUrl)(const TiledLayer *layer,
@@ -42,12 +48,21 @@ public:
         static const Type *get(const char *name);
     };
 
+    TiledLayer();
     TiledLayer(const QString &name, const QString &id,
                const QString &url, const QString &format, const Type *type,
                int minZoom, int maxZoom);
     virtual ~TiledLayer();
 
-    const QString url() const;
+    void setUrl(const QString &url);
+    QString url() const;
+
+    void setFormat(const QString &format);
+    QString format() const;
+
+    void setTypeName(const QString &typeName);
+    QString typeName() const;
+
     QString urlForTile(int zoom, int x, int y) const;
     QString tileFileName(int zoom, int x, int y) const;
 
@@ -58,6 +73,9 @@ public:
                QWidget *widget);
 
     void mapEvent(MapEvent *event);
+
+Q_SIGNALS:
+    void layerChanged();
 
 protected:
     bool tileInDB(int zoom, int x, int y) const;

@@ -7,6 +7,10 @@ Item {
     Keys.forwardTo: [ taggableView, toolBar, fileTools ]
     focus: true
 
+    LayerSelector {
+        id: layerSelector
+    }
+
     Item {
         id: mapView
         anchors.left: parent.left
@@ -24,7 +28,7 @@ Item {
             anchors.fill: parent
             flickable: mapFlickable
 
-            mainLayerId: "OpenStreetMap I"
+            mainLayer: layerSelector.mainLayer
             center: Mappero.conf.lastPosition
             requestedZoomLevel: Mappero.conf.lastZoomLevel
 
