@@ -145,7 +145,7 @@ GeoPoint PathItem::positionAt(const QDateTime &time) const
 {
     Q_D(const PathItem);
 
-    time_t t = time.addSecs(d->offset).toTime_t();
+    time_t t = time.addSecs(-d->offset).toTime_t();
     PathPoint p = d->path.positionAt(t);
     return p.geo;
 }
