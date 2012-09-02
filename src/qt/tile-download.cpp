@@ -264,7 +264,7 @@ QByteArray Downloader::downloadTile(const TileTask &tile)
     QByteArray tileData;
     QNetworkReply::NetworkError error = reply->error();
     if (error != QNetworkReply::NoError) {
-        DEBUG() << "Got error" << error;
+        DEBUG() << "Got error" << error << reply->errorString();
     } else {
         tileData = reply->readAll();
     }
