@@ -2,7 +2,7 @@
 <qresource>
   <file>ImageButton.qml</file>
   <file>ImagePoi.qml</file>
-  <file>LayerSelector.qml</file>
+  <file>LayerManager.qml</file>
   <file>mappero.qml</file>
   <file>MainPage.qml</file>
   <file>MapFlickable.qml</file>

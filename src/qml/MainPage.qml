@@ -4,8 +4,8 @@ import Mappero 1.0
 Item {
     anchors.fill: parent
 
-    LayerSelector {
-        id: layerSelector
+    LayerManager {
+        id: layerManager
     }
 
     Map {
@@ -13,7 +13,7 @@ Item {
         anchors.fill: parent
         flickable: mapFlickable
 
-        mainLayer: layerSelector.mainLayer
+        mainLayer: layerManager.mainLayer
         center: Mappero.conf.lastPosition
         requestedZoomLevel: Mappero.conf.lastZoomLevel
         followGps: visible

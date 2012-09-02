@@ -7,8 +7,8 @@ Item {
     Keys.forwardTo: [ taggableView, toolBar, fileTools ]
     focus: true
 
-    LayerSelector {
-        id: layerSelector
+    LayerManager {
+        id: layerManager
     }
 
     Item {
@@ -28,7 +28,7 @@ Item {
             anchors.fill: parent
             flickable: mapFlickable
 
-            mainLayer: layerSelector.mainLayer
+            mainLayer: layerManager.mainLayer
             center: Mappero.conf.lastPosition
             requestedZoomLevel: Mappero.conf.lastZoomLevel
 
