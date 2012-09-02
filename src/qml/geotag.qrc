@@ -9,6 +9,7 @@
   <file>MapControls.qml</file>
   <file>PaneBackground.qml</file>
   <file>PaneButton.qml</file>
+  <file>Popup.qml</file>
   <file>TaggableDelegate.qml</file>
   <file>TaggableView.qml</file>
   <file>TimeSlider.qml</file>
