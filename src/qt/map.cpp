@@ -295,7 +295,7 @@ void Map::setMainLayer(Layer *layer)
     Q_D(Map);
 
     if (d->mainLayer != 0) {
-        scene()->removeItem(d->mainLayer);
+        d->mainLayer->setMap(0);
         delete d->mainLayer;
     }
     d->mainLayer = layer;
