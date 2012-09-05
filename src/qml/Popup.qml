@@ -9,6 +9,7 @@ Item {
     property bool isOpen: state == "open"
     property variant _sourcePos
 
+    anchors.fill: parent
     parent: getRootItem()
     state: "closed"
 
@@ -63,6 +64,12 @@ Item {
             }
         }
     ]
+
+    MouseArea {
+        anchors.fill: parent
+        enabled: root.isOpen
+        onClicked: root.close()
+    }
 
     Item {
         id: closedPopup
