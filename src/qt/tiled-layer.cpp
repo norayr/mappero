@@ -32,6 +32,7 @@
 #include "tiled-layer.h"
 
 #include <QFile>
+#include <QGraphicsScene>
 #include <QHash>
 #include <QObject>
 #include <QPainter> // FIXME temp
@@ -242,6 +243,11 @@ TiledLayer::TiledLayer():
 
 TiledLayer::~TiledLayer()
 {
+    QGraphicsScene *s = scene();
+    foreach (QGraphicsItem *item, childItems()) {
+        s->removeItem(item);
+    }
+
     delete d_ptr;
 }
 
