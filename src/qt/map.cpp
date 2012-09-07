@@ -308,6 +308,8 @@ void Map::setMainLayer(Layer *layer)
         d->centerUnits = projection->geoToUnit(d->center);
         d->animatedCenterUnits = d->centerUnits;
         d->requestedCenterUnits = d->centerUnits;
+        d->mapEvent.m_centerChanged = true;
+        d->deliverMapEvent();
     }
 
     Q_EMIT mainLayerChanged();
