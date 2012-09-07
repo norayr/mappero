@@ -48,15 +48,17 @@ static QString xyz_signed_get_url(const TiledLayer *layer,
                                   int zoom, int tileX, int tileY);
 static QString yandex_get_url(const TiledLayer *layer,
                               int zoom, int tileX, int tileY);
+static QString quad_qrst_get_url(const TiledLayer *layer,
+                                 int zoom, int tileX, int tileY);
+static QString quad_zero_get_url(const TiledLayer *layer,
+                                 int zoom, int tileX, int tileY);
 
 static const TiledLayer::Type layerTypes[] = {
     { "XYZ", xyz_get_url, Projection::GOOGLE },
     { "XYZ_SIGNED", xyz_signed_get_url, Projection::GOOGLE },
     { "XYZ_INV", xyz_inv_get_url, Projection::GOOGLE },
-    /* not implemented
     { "QUAD_QRST", quad_qrst_get_url, Projection::GOOGLE },
     { "QUAD_ZERO", quad_zero_get_url, Projection::GOOGLE },
-    */
     { "YANDEX", yandex_get_url, Projection::YANDEX },
     { NULL, NULL, Projection::LAST }
 };
@@ -154,6 +156,50 @@ static QString xyz_signed_get_url(const TiledLayer *layer,
              tileX,
              (1 << (MAX_ZOOM - zoom)) - tileY - 1,
              zoom - (MAX_ZOOM - 17));
+    return QString::fromUtf8(buffer);
+}
+
+static void
+map_convert_coords_to_quadtree_string(int x, int y, int zoomLevel,
+                                      char *buffer, char initial,
+                                      const char *const quadrant)
+{
+    char *ptr = buffer;
+    int n;
+
+    if (initial)
+        *ptr++ = initial;
+
+    for (n = MAX_ZOOM - zoomLevel; n >= 0; n--)
+    {
+        int xbit = (x >> n) & 1;
+        int ybit = (y >> n) & 1;
+        *ptr++ = quadrant[xbit + 2 * ybit];
+    }
+    *ptr++ = '\0';
+}
+
+static QString quad_qrst_get_url(const TiledLayer *layer,
+                                 int zoom, int tileX, int tileY)
+{
+    char location[MAX_ZOOM + 2];
+    map_convert_coords_to_quadtree_string(tileX, tileY, zoom,
+                                          location, 't', "qrts");
+    char buffer[1024];
+    snprintf(buffer, sizeof(buffer), layer->url().toUtf8().constData(),
+             location);
+    return QString::fromUtf8(buffer);
+}
+
+static QString quad_zero_get_url(const TiledLayer *layer,
+                                 int zoom, int tileX, int tileY)
+{
+    char location[MAX_ZOOM + 2];
+    map_convert_coords_to_quadtree_string(tileX, tileY, zoom,
+                                          location, '\0', "0123");
+    char buffer[1024];
+    snprintf(buffer, sizeof(buffer), layer->url().toUtf8().constData(),
+             location);
     return QString::fromUtf8(buffer);
 }
 
