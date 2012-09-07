@@ -36,6 +36,8 @@ class Configuration: public QSettings
                WRITE setLastPosition NOTIFY lastPositionChanged);
     Q_PROPERTY(qreal lastZoomLevel READ lastZoomLevel \
                WRITE setLastZoomLevel NOTIFY lastZoomLevelChanged);
+    Q_PROPERTY(QString lastMainLayer READ lastMainLayer \
+               WRITE setLastMainLayer NOTIFY lastMainLayerChanged);
 
 public:
     Configuration(QObject *parent = 0);
@@ -49,9 +51,13 @@ public:
     void setLastZoomLevel(qreal zoom);
     qreal lastZoomLevel() const;
 
+    void setLastMainLayer(const QString &layerName);
+    QString lastMainLayer() const;
+
 Q_SIGNALS:
     void lastPositionChanged();
     void lastZoomLevelChanged();
+    void lastMainLayerChanged();
 
 private:
     ConfigurationPrivate *d_ptr;

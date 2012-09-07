@@ -29,6 +29,7 @@
 
 using namespace Mappero;
 
+static const QLatin1String keyLastMainLayer("LastMainLayer");
 static const QLatin1String keyLastPosition("LastPosition");
 static const QLatin1String keyLastZoomLevel("LastZoomLevel");
 static const QLatin1String keyMapCacheDir("MapCacheDir");
@@ -99,4 +100,15 @@ void Configuration::setLastZoomLevel(qreal zoom)
 qreal Configuration::lastZoomLevel() const
 {
     return value(keyLastZoomLevel, 8).toReal();
+}
+
+void Configuration::setLastMainLayer(const QString &layerName)
+{
+    setValue(keyLastMainLayer, layerName);
+    Q_EMIT lastMainLayerChanged();
+}
+
+QString Configuration::lastMainLayer() const
+{
+    return value(keyLastMainLayer, "OpenStreetMap").toString();
 }
