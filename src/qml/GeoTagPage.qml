@@ -69,6 +69,7 @@ Item {
             anchors.right: parent.right
             anchors.margins: UI.ToolSpacing
             map: map
+            layerManager: layerManager
         }
 
         ToolBar {

@@ -4,6 +4,7 @@ import "UIConstants.js" as UI
 Item {
     id: root
     property variant map
+    property alias layerManager: layerSelector.manager
     width: 32 + UI.ToolbarMargins * 2
     height: col.height + UI.ToolbarMargins * 2
 
@@ -32,5 +33,24 @@ Item {
             source: ":geo-osm-zoom-out"
             onClicked: root.map.requestedZoomLevel++
         }
+
+        ImageButton {
+            id: ls
+            width: parent.width
+            height: width
+            source: ":layer-selector"
+            onClicked: {
+                if (layerSelector.isOpen) {
+                    layerSelector.close()
+                } else {
+                    layerSelector.open()
+                }
+            }
+        }
+    }
+
+    LayerSelector {
+        id: layerSelector
+        source: ls
     }
 }

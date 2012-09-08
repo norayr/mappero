@@ -6,6 +6,7 @@
   <file alias="geo-osm-zoom-in">geo-osm-zoom-in.svg</file>
   <file alias="geo-osm-zoom-out-off">geo-osm-zoom-out-off.svg</file>
   <file alias="geo-osm-zoom-out">geo-osm-zoom-out.svg</file>
+  <file alias="layer-selector">layer-selector.png</file>
   <file alias="tag-remove-off">tag-remove-off.svg</file>
   <file alias="tag-remove">tag-remove.svg</file>
   <file alias="taggable-handle-in">taggable-handle-in.svg</file>

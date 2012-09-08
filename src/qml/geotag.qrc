@@ -6,6 +6,7 @@
   <file>GeoSetter.qml</file>
   <file>GeoTagPage.qml</file>
   <file>ItemAction.qml</file>
+  <file>LayerSelector.qml</file>
   <file>MapControls.qml</file>
   <file>PaneBackground.qml</file>
   <file>PaneButton.qml</file>
