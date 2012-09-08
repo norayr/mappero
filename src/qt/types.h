@@ -53,6 +53,7 @@ typedef float Geo;
 #define GROUND(x) round(x)
 #define GCEIL(x) ceil(x)
 #define GTRUNC(x) trunc(x)
+#define GMOD(x, y) fmod(x, y)
 #else
 #define GSIN(x) sinf(x)
 #define GCOS(x) cosf(x)
@@ -68,6 +69,7 @@ typedef float Geo;
 #define GROUND(x) roundf(x)
 #define GCEIL(x) ceilf(x)
 #define GTRUNC(x) truncf(x)
+#define GMOD(x, y) fmodf(x, y)
 #endif
 
 typedef int Unit;
@@ -112,12 +114,25 @@ struct GeoPoint {
     Geo lat;
     Geo lon;
 
+    inline GeoPoint normalized() const;
     QPointF toPointF() const { return QPointF(lat, lon); }
     Geo distanceTo(const GeoPoint &other) const;
     bool isValid() const { return lat == lat; /* NaN != NaN */ }
     friend inline bool operator==(const GeoPoint &, const GeoPoint &);
     friend inline bool operator!=(const GeoPoint &, const GeoPoint &);
 };
+
+GeoPoint GeoPoint::normalized() const
+{
+    GeoPoint ret(GMOD(lat, 180), GMOD(lon, 360));
+    /* TODO: normalize latitude */
+    if (ret.lon > 180) {
+        ret.lon -= 360;
+    } else if (ret.lon < -180) {
+        ret.lon += 360;
+    }
+    return ret;
+}
 
 inline bool operator==(const GeoPoint &p1, const GeoPoint &p2)
 { return p1.lon == p2.lon && (p1.isValid() == p2.isValid()) &&

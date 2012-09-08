@@ -337,18 +337,18 @@ void Map::setCenter(const GeoPoint &center)
 {
     Q_D(Map);
 
-    d->center = center;
-    d->requestedCenter = center;
+    d->center = center.normalized();
+    d->requestedCenter = d->center;
     if (d->mainLayer != 0) {
         const Projection *projection = d->mainLayer->projection();
-        d->centerUnits = projection->geoToUnit(GeoPoint(center));
+        d->centerUnits = projection->geoToUnit(d->center);
         d->animatedCenterUnits = d->centerUnits;
         d->requestedCenterUnits = d->centerUnits;
         DEBUG() << "Transformed:" << d->centerUnits;
     }
 
     d->mapEvent.m_centerChanged = true;
-    Q_EMIT centerChanged(center);
+    Q_EMIT centerChanged(d->center);
 }
 
 GeoPoint Map::center() const
