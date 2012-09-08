@@ -221,6 +221,8 @@ QPainterPath Path::toPainterPath(int zoomLevel) const
         next = curr + 1;
         int lastIndex = (next == d->segments.constEnd()) ?
             d->points.count() : next->startIndex;
+        /* Check for empty segment */
+        if (curr->startIndex == lastIndex) continue;
 
         pp.moveTo(d->points[curr->startIndex].unit.toPixel(zoomLevel));
         for (int i = curr->startIndex + 1; i < lastIndex; i++) {
