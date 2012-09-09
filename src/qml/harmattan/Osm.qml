@@ -26,7 +26,7 @@ Item {
                     target: trackPane.item
                     property: "tracker"
                     value: tracker
-                    when: loader.status == Loader.Ready
+                    when: trackPane.status == Loader.Ready
                 }
             }
             onClicked: {
