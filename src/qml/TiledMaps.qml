@@ -118,6 +118,6 @@ ListModel {
         for (var i = 0; i < l; i++) {
             if (root.get(i).uid == uid) return i
         }
-        return -1
+        return 0
     }
 }
