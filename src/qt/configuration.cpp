@@ -29,6 +29,7 @@
 
 using namespace Mappero;
 
+static const QLatin1String keyGpsInterval("GpsInterval");
 static const QLatin1String keyLastMainLayer("LastMainLayer");
 static const QLatin1String keyLastPosition("LastPosition");
 static const QLatin1String keyLastZoomLevel("LastZoomLevel");
@@ -111,4 +112,15 @@ void Configuration::setLastMainLayer(const QString &layerName)
 QString Configuration::lastMainLayer() const
 {
     return value(keyLastMainLayer, "OpenStreetMap").toString();
+}
+
+void Configuration::setGpsInterval(int interval)
+{
+    setValue(keyGpsInterval, interval);
+    Q_EMIT gpsIntervalChanged();
+}
+
+int Configuration::gpsInterval() const
+{
+    return value(keyGpsInterval, 1).toInt();
 }

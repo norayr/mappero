@@ -65,6 +65,7 @@ Item {
         onClosing: {
             Mappero.conf.lastPosition = map.center
             Mappero.conf.lastZoomLevel = map.zoomLevel
+            Mappero.conf.gpsInterval = gps.updateInterval
         }
     }
 }

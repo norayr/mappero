@@ -114,6 +114,11 @@ Item {
 
         OsmButton {
             source: ":osm-settings"
+            onClicked: settingsDialog.open()
         }
+    }
+
+    SettingsDialog {
+        id: settingsDialog
     }
 }

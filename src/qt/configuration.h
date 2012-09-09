@@ -38,6 +38,8 @@ class Configuration: public QSettings
                WRITE setLastZoomLevel NOTIFY lastZoomLevelChanged);
     Q_PROPERTY(QString lastMainLayer READ lastMainLayer \
                WRITE setLastMainLayer NOTIFY lastMainLayerChanged);
+    Q_PROPERTY(int gpsInterval READ gpsInterval \
+               WRITE setGpsInterval NOTIFY gpsIntervalChanged);
 
 public:
     Configuration(QObject *parent = 0);
@@ -54,10 +56,14 @@ public:
     void setLastMainLayer(const QString &layerName);
     QString lastMainLayer() const;
 
+    void setGpsInterval(int interval);
+    int gpsInterval() const;
+
 Q_SIGNALS:
     void lastPositionChanged();
     void lastZoomLevelChanged();
     void lastMainLayerChanged();
+    void gpsIntervalChanged();
 
 private:
     ConfigurationPrivate *d_ptr;
