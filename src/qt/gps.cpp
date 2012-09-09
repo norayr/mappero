@@ -204,7 +204,7 @@ void Gps::setUpdateInterval(int interval)
     d->updateInterval = interval;
 #ifdef HAS_QTM_LOCATION
     if (d->source != 0)
-        d->source->setUpdateInterval(interval);
+        d->source->setUpdateInterval(interval * 1000);
 #endif
 }
 
