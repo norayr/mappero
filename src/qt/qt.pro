@@ -128,6 +128,12 @@ unix {
     DEFINES += XDG_THUMBNAILS
 }
 
+macx {
+    QMAKE_INFO_PLIST = ../../data/MapperoInfo.plist
+    QMAKE_CFLAGS += -gdwarf-2
+    QMAKE_CXXFLAGS += -gdwarf-2
+}
+
 RESOURCES += \
     ../qml/qml.qrc \
     ../../data/icons/scalable/icons.qrc
