@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist SYSTEM "file://localhost/System/Library/DTDs/PropertyList.dtd">
+<plist version="0.9">
+<dict>
+	<key>CFBundleName</key>
+	<string>mappero</string>
+	<key>CFBundleIconFile</key>
+	<string>mappero-geotagger</string>
+	<key>CFBundleDisplayName</key>
+	<string>Mappero Geotagger</string>
+	<key>CFBundleVersion</key>
+	<string>1.0</string>
+	<key>CFBundleShortVersionString</key>
+	<string>1.0.1</string>
+	<key>CFBundlePackageType</key>
+	<string>APPL</string>
+	<key>CFBundleGetInfoString</key>
+	<string>Created by Qt/QMake</string>
+	<key>CFBundleSignature</key>
+	<string>mpgt</string>
+	<key>CFBundleExecutable</key>
+	<string>mappero</string>
+	<key>CFBundleIdentifier</key>
+	<string>it.mardy.mappero</string>
+	<key>LSApplicationCategoryType</key>
+	<string>public.app-category.photography</string>
+</dict>
+</plist>
