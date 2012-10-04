@@ -70,7 +70,11 @@ int main(int argc, char *argv[])
     view.rootContext()->setContextProperty("Mappero", &controller);
 
     QString firstPage = "MainPage.qml";
+#ifdef Q_WS_MAC
+    if (1) {
+#else
     if (app.arguments().contains("--geotag")) {
+#endif
         firstPage = "GeoTagPage.qml";
     }
     view.rootContext()->setContextProperty("firstPage", firstPage);
