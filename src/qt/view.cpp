@@ -36,7 +36,7 @@ View::View():
     setAttribute(Qt::WA_Maemo5AutoOrientation, true);
     setAttribute(Qt::WA_Maemo5NonComposited, true);
 #endif
-    setRenderHints(QPainter::Antialiasing);
+    setRenderHints(QPainter::Antialiasing | QPainter::TextAntialiasing);
     setTransformationAnchor(QGraphicsView::NoAnchor);
     setAlignment(Qt::AlignLeft | Qt::AlignTop);
 #if !defined(Q_OS_WIN32) && !defined (Q_OS_MAC)
