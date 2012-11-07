@@ -28,6 +28,11 @@
 #include <QPixmap>
 #include <exiv2/image.hpp>
 #include <exiv2/preview.hpp>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
+#include <utime.h>
+
 
 using namespace Mappero;
 
@@ -231,7 +236,20 @@ void TaggablePrivate::save()
     } else {
         deleteLocationInfo(exifData);
     }
+
+    QByteArray fileNameUtf8 = fileName.toUtf8();
+    struct stat statBefore;
+    stat(fileNameUtf8.constData(), &statBefore);
+
     image->writeMetadata();
+
+    /* preserve modification time */
+    struct stat statAfter;
+    stat(fileNameUtf8.constData(), &statAfter);
+    struct utimbuf times;
+    times.actime = statAfter.st_atime;
+    times.modtime = statBefore.st_mtime;
+    utime(fileNameUtf8.constData(), &times);
 
     if (fileGeoPoint != geoPoint) {
         Q_Q(Taggable);
