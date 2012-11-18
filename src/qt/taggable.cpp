@@ -128,8 +128,14 @@ void TaggablePrivate::loadExifInfo()
     fileGeoPoint = GeoPoint();
 
     // load the EXIF data
-    image = Exiv2::ImageFactory::open(fileName.toUtf8().constData());
-    image->readMetadata();
+    try {
+        image = Exiv2::ImageFactory::open(fileName.toUtf8().constData());
+        image->readMetadata();
+    } catch (Exiv2::AnyError &e) {
+        DEBUG() << "Exiv2 exception, code" << e.code();
+        image.reset();
+        return;
+    }
     Exiv2::ExifData &exifData = image->exifData();
     if (exifData.empty()) {
         DEBUG() << "No exif data";
@@ -241,7 +247,12 @@ void TaggablePrivate::save()
     struct stat statBefore;
     stat(fileNameUtf8.constData(), &statBefore);
 
-    image->writeMetadata();
+    try {
+        image->writeMetadata();
+    } catch (Exiv2::AnyError &e) {
+        qCritical() << "Exiv2 exception, code" << e.code();
+        return;
+    }
 
     /* preserve modification time */
     struct stat statAfter;
@@ -381,6 +392,13 @@ Taggable::~Taggable()
 {
     imageProvider->taggables.remove(objectName());
     delete d_ptr;
+}
+
+bool Taggable::isValid() const
+{
+    Q_D(const Taggable);
+
+    return d->image.get() != 0;
 }
 
 QUrl Taggable::pixmapUrl() const
