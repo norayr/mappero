@@ -54,6 +54,8 @@ public:
     Taggable(QObject *parent = 0);
     ~Taggable();
 
+    bool isValid() const;
+
     QUrl pixmapUrl() const;
 
     void setFileName(const QString &fileName);

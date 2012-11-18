@@ -63,16 +63,22 @@ void TaggableModel::addUrls(const QList<QUrl> &urlList)
 {
     bool wasEmpty = isEmpty();
 
-    int first = rowCount();
-    int last = first + urlList.count() - 1;
-    beginInsertRows(QModelIndex(), first, last);
+    QList<Taggable*> newTaggables;
     foreach (const QUrl &url, urlList) {
         Taggable *taggable = new Taggable(this);
         QObject::connect(taggable, SIGNAL(locationChanged()),
                          this, SLOT(onTaggableChanged()));
         taggable->setFileName(url.toLocalFile());
-        taggables.append(taggable);
+        if (!taggable->isValid()) {
+            delete taggable;
+            continue;
+        }
+        newTaggables.append(taggable);
     }
+    int first = rowCount();
+    int last = first + newTaggables.count() - 1;
+    beginInsertRows(QModelIndex(), first, last);
+    taggables.append(newTaggables);
     endInsertRows();
 
     if (wasEmpty && !isEmpty()) {
