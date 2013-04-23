@@ -5,6 +5,7 @@ Maintainer: Alberto Mardegan <mardy@users.sourceforge.net>
 Build-Depends: debhelper (>= 7),
  libexiv2-dev,
  libqt4-dev (>= 4:4.7) | libqt4-47-dev,
+ libqt4-opengl-dev (>= 4:4.7) | libqt4-47-opengl-dev,
  pkg-config
 Standards-Version: 3.6.0
 
