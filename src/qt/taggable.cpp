@@ -197,7 +197,7 @@ void TaggablePrivate::readGeoData(const Exiv2::ExifData &exifData)
     fileGeoPoint = GeoPoint(lat, lon);
 }
 
-static Exiv2::RationalValue geoToExif(Geo geo)
+static Exiv2::URationalValue geoToExif(Geo geo)
 {
     Geo coord = qAbs(geo);
 
@@ -208,7 +208,7 @@ static Exiv2::RationalValue geoToExif(Geo geo)
     int minutes = icoord / 3600;
     int seconds = icoord % 3600;
 
-    Exiv2::RationalValue value;
+    Exiv2::URationalValue value;
     value.value_.push_back(std::make_pair(degrees, 1));
     value.value_.push_back(std::make_pair(minutes, 1));
     value.value_.push_back(std::make_pair(seconds, 60));
