@@ -1,3 +1,14 @@
+mappero (1.1ubuntu1) lucid; urgency=low
+
+  * Use "unsigned rational" for EXIF geodata (increases compatibility of EXIF
+    geolocation information).
+  * Handle libexiv2 exceptions.
+  * Preserve file modification time.
+  * Use font antialiasing.
+  * Fix correlation timing.
+
+ -- Alberto Mardegan <mardy@mapperone>  Wed, 24 Apr 2013 17:38:39 +0300
+
 mappero (1.0ubuntu1) lucid; urgency=low
 
   * Initial release
