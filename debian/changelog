@@ -7,7 +7,7 @@ mappero (1.1ubuntu1) lucid; urgency=low
   * Use font antialiasing.
   * Fix correlation timing.
 
- -- Alberto Mardegan <mardy@mapperone>  Wed, 24 Apr 2013 17:38:39 +0300
+ -- Alberto Mardegan <mardy@users.sourceforge.net>  Wed, 24 Apr 2013 17:38:39 +0300
 
 mappero (1.0ubuntu1) lucid; urgency=low
 
