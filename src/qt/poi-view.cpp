@@ -93,10 +93,13 @@ public:
         _item = poiViewPriv->createItem(this);
         setItemPosition(position);
 
-        QDeclarativeProperty originProp(_item, "transformOriginPoint");
-        originProp.connectNotifySignal(this,
-                                       VisualModelItem::staticMetaObject.
-                                       indexOfSlot("onOriginChanged()"));
+        QObject::connect(_item,
+                         SIGNAL(transformOriginChanged(TransformOrigin)),
+                         this, SLOT(onOriginChanged()));
+        QObject::connect(_item, SIGNAL(widthChanged()),
+                         this, SLOT(onOriginChanged()));
+        QObject::connect(_item, SIGNAL(heightChanged()),
+                         this, SLOT(onOriginChanged()));
     }
 
     ~VisualModelItem() {
@@ -115,11 +118,7 @@ public:
     void setGeoPoint(const GeoPoint &geo) { _geo = geo; }
     GeoPoint geoPoint() const { return _geo; }
 
-    QPointF origin() const {
-        if (_item == 0) return QPointF();
-        QVariant origin = _item->property("transformOriginPoint");
-        return origin.isValid() ? origin.toPointF() : QPointF();
-    }
+    QPointF origin() const { return _item->transformOriginPoint(); }
 
 private:
     void refreshRoles();

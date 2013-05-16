@@ -26,8 +26,8 @@ using namespace Mappero;
 #define DEFAULT_WIDTH 200
 #define DEFAULT_HEIGHT 200
 
-PoiItem::PoiItem(QDeclarativeItem *parent):
-    QDeclarativeItem(parent)
+PoiItem::PoiItem():
+    QDeclarativeItem(0)
 {
     setFlags(QGraphicsItem::ItemIgnoresTransformations |
              QGraphicsItem::ItemSendsGeometryChanges);
@@ -38,13 +38,4 @@ PoiItem::PoiItem(QDeclarativeItem *parent):
 
 PoiItem::~PoiItem()
 {
-}
-
-QVariant PoiItem::itemChange(GraphicsItemChange change,
-                             const QVariant &value)
-{
-    if (change == QGraphicsItem::ItemTransformOriginPointHasChanged) {
-        Q_EMIT transformOriginPointChaned();
-    }
-    return QGraphicsItem::itemChange(change, value);
 }
