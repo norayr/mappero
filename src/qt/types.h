@@ -22,6 +22,7 @@
 
 #include <QMetaType>
 #include <QPoint>
+#include <limits.h>
 #include <math.h>
 
 namespace Mappero {
