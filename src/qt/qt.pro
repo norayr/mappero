@@ -24,23 +24,9 @@ symbian:TARGET.UID3 = 0xE1BBB51C
 # Allow network access on Symbian
 symbian:TARGET.CAPABILITY += NetworkServices
 
-load(mobilityconfig)
-contains(MOBILITY_CONFIG, location) | maemo5 {
-    message(QtMobility location is available)
-    CONFIG += mobility
-    MOBILITY += location
-    DEFINES += HAS_QTM_LOCATION
-} else {
-    message(QtMobility location unavailable)
-}
-
-# Speed up launching on MeeGo/Harmattan when using applauncherd daemon
-CONFIG += qdeclarative-boostable
-
 QT += \
-    declarative \
     network \
-    opengl
+    quick
 
 SOURCES += \
     configuration.cpp \
@@ -85,18 +71,7 @@ HEADERS += \
     tracker.h \
     view.h
 
-contains(MEEGO_EDITION,harmattan) {
-    # Harmattan UI overrides
-    RESOURCES += ../qml/harmattan.qrc
-    DEFINES += MEEGO
-} else {
-    maemo5 {
-        DEFINES += MAEMO5
-    } else {
-        # Desktop
-        RESOURCES += ../qml/desktop.qrc
-    }
-}
+RESOURCES += ../qml/desktop.qrc
 
 system(pkg-config --exists exiv2) {
     message("libexiv2 is available")

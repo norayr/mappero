@@ -24,8 +24,8 @@
 #include "configuration.h"
 #include "debug.h"
 
-#include <QDesktopServices>
 #include <QFileInfo>
+#include <QStandardPaths>
 
 using namespace Mappero;
 
@@ -75,7 +75,7 @@ QString Configuration::mapCacheDir() const
     if (maemoDir.isDir() && maemoDir.isWritable())
         return QLatin1String("/home/user/MyDocs/.maps/");
 
-    return QDesktopServices::storageLocation(QDesktopServices::CacheLocation) +
+    return QStandardPaths::writableLocation(QStandardPaths::CacheLocation) +
         QLatin1String("/Maps/");
 }
 

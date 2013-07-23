@@ -21,21 +21,20 @@
 #ifndef MAP_TICKS_H
 #define MAP_TICKS_H
 
-#include <QDeclarativeItem>
+#include <QQuickPaintedItem>
 
 namespace Mappero {
 
-class Ticks: public QDeclarativeItem
+class Ticks: public QQuickPaintedItem
 {
     Q_OBJECT
 
 public:
-    Ticks(QDeclarativeItem *parent = 0);
+    Ticks(QQuickItem *parent = 0);
     virtual ~Ticks();
 
     // reimplemented methods
-    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
-               QWidget *widget = 0);
+    void paint(QPainter *painter);
 };
 
 }; // namespace

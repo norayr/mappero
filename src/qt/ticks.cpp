@@ -25,18 +25,16 @@
 
 using namespace Mappero;
 
-Ticks::Ticks(QDeclarativeItem *parent):
-    QDeclarativeItem(parent)
+Ticks::Ticks(QQuickItem *parent):
+    QQuickPaintedItem(parent)
 {
-    setFlag(QGraphicsItem::ItemHasNoContents, false);
 }
 
 Ticks::~Ticks()
 {
 }
 
-void Ticks::paint(QPainter *painter, const QStyleOptionGraphicsItem *,
-                  QWidget *)
+void Ticks::paint(QPainter *painter)
 {
     int w = width();
     int h = height();

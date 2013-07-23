@@ -32,7 +32,6 @@
 #include "tiled-layer.h"
 
 #include <QFile>
-#include <QGraphicsScene>
 #include <QHash>
 #include <QObject>
 #include <QPainter> // FIXME temp
@@ -225,7 +224,7 @@ void TiledLayerPrivate::loadTiles(const QPoint &start, const QPoint stop)
     int &x = p.rx();
     int &y = p.ry();
 
-    foreach (QGraphicsItem *item, q->childItems()) {
+    foreach (QQuickItem *item, q->childItems()) {
         item->setVisible(false);
     }
 
@@ -250,7 +249,8 @@ void TiledLayerPrivate::loadTiles(const QPoint &start, const QPoint stop)
             } else {
                 tile->setVisible(true);
             }
-            tile->setPos(x, y);
+            tile->setX(x);
+            tile->setY(y);
         }
     }
 
@@ -294,11 +294,6 @@ TiledLayer::TiledLayer():
 
 TiledLayer::~TiledLayer()
 {
-    QGraphicsScene *s = scene();
-    foreach (QGraphicsItem *item, childItems()) {
-        s->removeItem(item);
-    }
-
     delete d_ptr;
 }
 
@@ -372,15 +367,6 @@ QPixmap TiledLayer::tilePixmap(int zoom, int x, int y) const
 
     QString path = tileFileName(zoom, x, y);
     return QPixmap(path);
-}
-
-void TiledLayer::paint(QPainter *painter,
-                       const QStyleOptionGraphicsItem *option,
-                       QWidget *widget)
-{
-    Q_UNUSED(painter);
-    Q_UNUSED(option);
-    Q_UNUSED(widget);
 }
 
 void TiledLayer::mapEvent(MapEvent *event)

@@ -22,7 +22,7 @@
 #define MAP_TAGGABLE_AREA_H
 
 #include <QAbstractListModel>
-#include <QDeclarativeItem>
+#include <QQuickItem>
 #include <QUrl>
 
 namespace Mappero {
@@ -45,6 +45,8 @@ public:
     };
 
     TaggableModel(QObject *parent = 0);
+
+    QHash<int,QByteArray> roleNames() const;
     void addUrls(const QList<QUrl> &urlList);
 
     QVariant data(const QModelIndex &index,
@@ -70,11 +72,12 @@ private:
     QList<Taggable *> taggables;
     bool checkChangesQueued;
     qint64 lastChangesTime;
+    QHash<int, QByteArray> roles;
 };
 
 
 class TaggableAreaPrivate;
-class TaggableArea: public QDeclarativeItem
+class TaggableArea: public QQuickItem
 {
     Q_OBJECT
     Q_PROPERTY(Mappero::TaggableModel *model READ model CONSTANT);
@@ -87,7 +90,8 @@ public:
 
 protected:
     // reimplemented virtual methods
-    void dropEvent(QGraphicsSceneDragDropEvent *event);
+    void dropEvent(QDropEvent *event);
+    void dragEnterEvent(QDragEnterEvent *event) Q_DECL_OVERRIDE;
 
 private:
     TaggableAreaPrivate *d_ptr;

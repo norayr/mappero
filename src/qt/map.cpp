@@ -33,45 +33,55 @@
 #include "projection.h"
 
 #include <QEvent>
-#include <QGestureEvent>
-#include <QGraphicsScene>
-#include <QGraphicsSceneWheelEvent>
-#include <QPanGesture>
-#include <QPinchGesture>
-#include <QStyleOptionGraphicsItem>
 #include <math.h>
 
 using namespace Mappero;
 
 namespace Mappero {
 
-typedef QDeclarativeListProperty<MapItem> MapItemList;
+typedef QQmlListProperty<QObject> MapItemList;
 
-class LayerGroup: public MapGraphicsItem
+class LayerGroup: public MapItem
 {
 public:
     LayerGroup():
-        MapGraphicsItem()
+        MapItem()
     {
-        setFlags(QGraphicsItem::ItemHasNoContents);
+        setScalable(false);
     }
 
     void mapEvent(MapEvent *event) {
+        if (event->zoomLevelChanged() || event->animated()) {
+            qreal scale;
+            if (event->animated()) {
+                scale = exp2(map()->zoomLevel() - map()->animatedZoomLevel());
+            } else {
+                scale = 1.0;
+            }
+            setScale(scale);
+        }
         if (event->centerChanged() ||
-            event->sizeChanged()) {
-            QPointF viewCenter = event->map()->boundingRect().center();
-            setPos(viewCenter);
+            event->sizeChanged() ||
+            event->animated()) {
+            QPointF pos = event->map()->boundingRect().center();
+            if (event->animated()) {
+                Point diffUnits = map()->animatedCenterUnits().toPoint() -
+                    map()->centerUnits();
+                if (!diffUnits.isNull()) {
+                    pos -= diffUnits.toPixel(map()->animatedZoomLevel());
+                }
+            }
+            setPos(pos);
         }
-        if (event->zoomLevelChanged()) {
-            setScale(1.0);
-        }
+    }
+
+    void setPos(const QPointF &pos) {
+        setX(pos.x());
+        setY(pos.y());
     }
 
     // reimplemented virtual methods
     QRectF boundingRect() const { return QRectF(-1.0e6, -1.0e6, 2.0e6, 2.0e6); }
-    void paint(QPainter *,
-               const QStyleOptionGraphicsItem *,
-               QWidget *) {}
 };
 
 class MapPrivate: public QObject
@@ -82,10 +92,8 @@ class MapPrivate: public QObject
     MapPrivate(Map *q);
 
     void setRequestedCenter(const Point &centerUnits);
-    void onPanning(QPanGesture *pan);
-    void onPinching(QPinchGesture *pinch);
-    Point pixel2unit(const QPointF &pixel) const {
-        return (pixel * pow(2, zoomLevel)).toPoint();
+    Point pixel2unit(const QPoint &pixel) const {
+        return Point::fromPixel(pixel, zoomLevel);
     }
 
     GeoPoint unit2geo(const Point &u) const {
@@ -97,25 +105,41 @@ class MapPrivate: public QObject
 
     void setupFlickable();
 
-    static void itemAppend(MapItemList *p, MapItem *o) {
+    static void itemAppend(MapItemList *p, QObject *o) {
+        MapObject *object = qobject_cast<MapObject*>(o);
+        if (!object) {
+            qWarning() << "Adding non map-object!";
+            return;
+        }
+
         MapPrivate *d = reinterpret_cast<MapPrivate*>(p->data);
         d->items.append(o);
-        o->setMap(d->q_ptr);
-        static_cast<QGraphicsItem*>(o)->setParentItem(d->layerGroup);
+        object->setMap(d->q_ptr);
+        QQuickItem *item = qobject_cast<QQuickItem*>(o);
+        if (item) {
+            if (object->isScalable()) {
+                item->setParentItem(d->layerGroup);
+            } else {
+                item->setParentItem(d->q_ptr);
+            }
+        }
     }
     static int itemCount(MapItemList *p) {
         MapPrivate *d = reinterpret_cast<MapPrivate*>(p->data);
         return d->items.count();
     }
-    static MapItem *itemAt(MapItemList *p, int idx) {
+    static QObject *itemAt(MapItemList *p, int idx) {
         MapPrivate *d = reinterpret_cast<MapPrivate*>(p->data);
         return d->items.at(idx);
     }
     static void itemClear(MapItemList *p) {
         MapPrivate *d = reinterpret_cast<MapPrivate*>(p->data);
-        foreach (MapItem *o, d->items) {
-            o->setMap(0);
-            static_cast<QGraphicsItem*>(o)->setParentItem(0);
+        foreach (QObject *o, d->items) {
+            qobject_cast<MapObject*>(o)->setMap(0);
+            QQuickItem *item = qobject_cast<QQuickItem*>(o);
+            if (item) {
+                item->setParentItem(0);
+            }
         }
         d->items.clear();
     }
@@ -130,7 +154,7 @@ protected:
 
 private:
     QList<MapObject*> mapObjects;
-    QList<MapItem*> items;
+    QList<QObject*> items;
     LayerGroup *layerGroup;
     Layer *mainLayer;
     GeoPoint center;
@@ -138,7 +162,7 @@ private:
     GeoPoint requestedCenter;
     QPointF requestedCenterUnits;
     Point centerUnits;
-    QPointF pan;
+    QPoint panOffset;
     bool ignoreNextPan;
     QObject *flickable;
     qreal zoomLevel;
@@ -176,6 +200,10 @@ MapPrivate::MapPrivate(Map *q):
                      this, SLOT(deliverMapEvent()), Qt::QueuedConnection);
     QObject::connect(q, SIGNAL(sizeChanged()),
                      this, SLOT(deliverMapEvent()), Qt::QueuedConnection);
+    QObject::connect(q, SIGNAL(animatedZoomLevelChanged(qreal)),
+                     this, SLOT(deliverMapEvent()), Qt::QueuedConnection);
+    QObject::connect(q, SIGNAL(animatedCenterUnitsChanged(const QPointF&)),
+                     this, SLOT(deliverMapEvent()), Qt::QueuedConnection);
 }
 
 void MapPrivate::setRequestedCenter(const Point &centerUnits)
@@ -187,11 +215,8 @@ void MapPrivate::setRequestedCenter(const Point &centerUnits)
     }
 }
 
-void MapPrivate::onPanning(QPanGesture *pan)
-{
-    DEBUG() << "Panning, delta:" << pan->delta();
-}
-
+/*
+ * TODO
 void MapPrivate::onPinching(QPinchGesture *pinch)
 {
     Q_Q(Map);
@@ -209,15 +234,20 @@ void MapPrivate::onPinching(QPinchGesture *pinch)
         }
     }
 }
+*/
 
 void MapPrivate::deliverMapEvent()
 {
-    if (mapEvent.centerChanged() ||
+    bool sendToAll = mapEvent.centerChanged() ||
         mapEvent.zoomLevelChanged() ||
-        mapEvent.sizeChanged()) {
+        mapEvent.sizeChanged();
+    bool sendToUnscalable = mapEvent.animated();
 
+    if (sendToAll || sendToUnscalable) {
         foreach (MapObject *object, mapObjects) {
-            object->mapEvent(&mapEvent);
+            if (sendToAll || !object->isScalable()) {
+                object->mapEvent(&mapEvent);
+            }
         }
         mapEvent.clear();
     }
@@ -230,15 +260,15 @@ void MapPrivate::onFlickablePan()
         ignoreNextPan = false;
         return;
     }
-    pan = flickable->property("position").toPointF();
-    if (pan == QPointF(0, 0)) return;
-    layerGroup->setPos(q->boundingRect().center() - pan);
+    panOffset = flickable->property("position").toPointF().toPoint();
+    if (panOffset == QPoint(0, 0)) return;
+    q->setAnimatedCenterUnits(centerUnits.translated(pixel2unit(panOffset)));
 }
 
 void MapPrivate::onFlickablePanFinished()
 {
     Q_Q(Map);
-    Point newCenterUnits = centerUnits.translated(pixel2unit(pan));
+    Point newCenterUnits = centerUnits.translated(pixel2unit(panOffset));
     q->setCenter(unit2geo(newCenterUnits).toPointF());
     ignoreNextPan = true;
 }
@@ -263,7 +293,7 @@ void MapPrivate::setupFlickable()
 }
 
 Map::Map():
-    QDeclarativeItem(0),
+    QQuickItem(0),
     d_ptr(new MapPrivate(this))
 {
     Q_D(Map);
@@ -271,12 +301,7 @@ Map::Map():
 
     d->mark = new Mark(this);
     d->mark->setParentItem(d->layerGroup);
-    d->mark->setZValue(2);
-
-    setFlags(QGraphicsItem::ItemUsesExtendedStyleOption);
-    grabGesture(Qt::PanGesture);
-    grabGesture(Qt::PinchGesture);
-    setAcceptTouchEvents(true);
+    d->mark->setZ(2);
 
     Gps *gps = Gps::instance();
     QObject::connect(gps,
@@ -300,8 +325,8 @@ void Map::setMainLayer(Layer *layer)
     }
     d->mainLayer = layer;
     if (layer != 0) {
-        static_cast<QGraphicsItem*>(layer)->setParentItem(d->layerGroup);
-        layer->setZValue(-10);
+        static_cast<QQuickItem*>(layer)->setParentItem(d->layerGroup);
+        layer->setZ(-10);
         layer->setMap(this);
         const Projection *projection = d->mainLayer->projection();
         Controller::instance()->setProjection(projection);
@@ -362,11 +387,8 @@ void Map::setAnimatedCenterUnits(const QPointF &center)
     Q_D(Map);
 
     if (center != d->animatedCenterUnits) {
-        Point diffUnits = d->centerUnits - center.toPoint();
-        QPointF viewCenter = boundingRect().center();
-        d->layerGroup->setPos(diffUnits.toPixel(d->animatedZoomLevel) + viewCenter);
-
         d->animatedCenterUnits = center;
+        d->mapEvent.m_animated = true;
         Q_EMIT animatedCenterUnitsChanged(center);
     }
 
@@ -456,7 +478,7 @@ void Map::setAnimatedZoomLevel(qreal zoom)
     if (zoom == d->animatedZoomLevel) return;
 
     d->animatedZoomLevel = zoom;
-    d->layerGroup->setScale(exp2(d->zoomLevel - zoom));
+    d->mapEvent.m_animated = true;
     Q_EMIT animatedZoomLevelChanged(zoom);
 
     /* if we reached the requested zoom level, change the effective zoom level
@@ -528,13 +550,13 @@ bool Map::followGps() const
     return d->followGps;
 }
 
-QDeclarativeListProperty<MapItem> Map::items()
+QQmlListProperty<QObject> Map::items()
 {
-    return QDeclarativeListProperty<MapItem>(this, d_ptr,
-                                             MapPrivate::itemAppend,
-                                             MapPrivate::itemCount,
-                                             MapPrivate::itemAt,
-                                             MapPrivate::itemClear);
+    return QQmlListProperty<QObject>(this, d_ptr,
+                                     MapPrivate::itemAppend,
+                                     MapPrivate::itemCount,
+                                     MapPrivate::itemAt,
+                                     MapPrivate::itemClear);
 }
 
 void Map::lookAt(const QRectF &area, int offsetX, int offsetY, int margin)
@@ -581,20 +603,21 @@ void Map::ensureVisible(const GeoPoint &geoPoint, int offsetX, int offsetY,
     Point point = projection->geoToUnit(geoPoint);
 
     Point offsetUnits = point - d->centerUnits;
-    QPoint offsetPixels = offsetUnits.toPixel(d->zoomLevel);
+    QPoint offsetPixels = offsetUnits.toPixel(d->zoomLevel) +
+        boundingRect().center().toPoint();
     offsetPixels += QPoint(offsetX, offsetY);
 
     int scrollX = 0, scrollY = 0;
-    if (offsetPixels.x() + margin > width() / 2) {
-        scrollX = width() / 2 - (offsetPixels.x() + margin);
-    } else if (offsetPixels.x() - margin < -width() / 2) {
-        scrollX = -width() / 2 - (offsetPixels.x() - margin);
+    if (offsetPixels.x() + margin > width()) {
+        scrollX = width() - (offsetPixels.x() + margin);
+    } else if (offsetPixels.x() - margin < 0) {
+        scrollX = - (offsetPixels.x() - margin);
     }
 
-    if (offsetPixels.y() + margin > height() / 2) {
-        scrollY = height() / 2 - (offsetPixels.y() + margin);
-    } else if (offsetPixels.y() - margin < -height() / 2) {
-        scrollY = -height() / 2 - (offsetPixels.y() - margin);
+    if (offsetPixels.y() + margin > height()) {
+        scrollY = height() - (offsetPixels.y() + margin);
+    } else if (offsetPixels.y() - margin < 0) {
+        scrollY = - (offsetPixels.y() - margin);
     }
 
     // Convert the pixels back to units
@@ -605,7 +628,8 @@ void Map::ensureVisible(const GeoPoint &geoPoint, int offsetX, int offsetY,
 GeoPoint Map::pixelsToGeo(const QPointF &pixel) const
 {
     Q_D(const Map);
-    QPointF pixelsFromCenter = pixel - QPointF(width() / 2, height() / 2);
+    QPoint pixelsFromCenter =
+        (pixel - QPointF(width() / 2, height() / 2)).toPoint();
     Point units = d->centerUnits.translated(d->pixel2unit(pixelsFromCenter));
     return d->unit2geo(units);
 }
@@ -615,14 +639,6 @@ GeoPoint Map::pixelsToGeo(qreal x, qreal y) const
     return pixelsToGeo(QPointF(x, y));
 }
 
-void Map::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
-                QWidget *widget)
-{
-    Q_UNUSED(painter);
-    Q_UNUSED(option);
-    Q_UNUSED(widget);
-}
-
 void Map::geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry)
 {
     Q_UNUSED(oldGeometry);
@@ -630,46 +646,7 @@ void Map::geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry)
     Q_D(Map);
     d->mapEvent.m_sizeChanged = true;
     Q_EMIT sizeChanged();
-}
-
-bool Map::sceneEvent(QEvent *event)
-{
-    switch (event->type()) {
-    case QEvent::Gesture:
-        {
-            Q_D(Map);
-            QGestureEvent *e = static_cast<QGestureEvent*>(event);
-            bool active = false;
-            foreach (QGesture *gesture, e->activeGestures()) {
-                Qt::GestureState state = gesture->state();
-                if (state == Qt::GestureStarted ||
-                    state == Qt::GestureUpdated)
-                    active = true;
-            }
-            d->flickable->setProperty("interactive", !active);
-            QGesture *gesture;
-
-            if ((gesture = e->gesture(Qt::PanGesture)) != 0)
-                d->onPanning(static_cast<QPanGesture*>(gesture));
-
-            if ((gesture = e->gesture(Qt::PinchGesture)) != 0)
-                d->onPinching(static_cast<QPinchGesture*>(gesture));
-
-            return true;
-        }
-    case QEvent::TouchBegin:
-    case QEvent::GraphicsSceneMousePress:
-        return true;
-    default:
-        break;
-    }
-    return QDeclarativeItem::sceneEvent(event);
-}
-
-void Map::wheelEvent(QGraphicsSceneWheelEvent *e)
-{
-    Q_D(Map);
-    setRequestedZoomLevel(d->requestedZoomLevel - e->delta() / 120);
+    QQuickItem::geometryChanged(newGeometry, oldGeometry);
 }
 
 void Map::gpsPositionUpdated(const GpsPosition &pos) {

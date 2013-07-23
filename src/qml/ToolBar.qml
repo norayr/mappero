@@ -1,4 +1,5 @@
-import QtQuick 1.0
+import QtQuick 2.0
+import QtQuick.Dialogs 1.0
 import "UIConstants.js" as UI
 
 Item {
@@ -7,7 +8,7 @@ Item {
     property variant selection
 
     signal geoSetterDropped(variant pos)
-    signal trackLoaded(string filePath)
+    signal trackLoaded(url filePath)
     signal help()
 
     width: row.width + 2 * UI.ToolbarMargins
@@ -65,7 +66,7 @@ Item {
                 selectMultiple: false
                 nameFilters: [ "GPS tracks (*.gpx *.kml)", "All files (*.*)" ]
 
-                onAccepted: root.trackLoaded(filePath)
+                onAccepted: root.trackLoaded(fileUrl)
             }
         }
 

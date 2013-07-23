@@ -26,6 +26,7 @@
 #include "tile.h"
 #include "tiled-layer.h"
 
+#include <QPixmap>
 #include <QQueue>
 
 using namespace Mappero;
@@ -83,7 +84,7 @@ Tile *TileCachePrivate::tile(const TileSpec &tileSpec, bool *found)
             tileData.tile = new Tile(tileData.spec.layer);
         } else {
             tileData.tile = tiles.head().tile;
-            tileData.tile->setPixmap(QPixmap());
+            tileData.tile->setImage(QImage());
             tileData.tile->setParentItem(tileData.spec.layer);
             tiles.dequeue();
         }

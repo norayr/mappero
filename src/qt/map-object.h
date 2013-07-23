@@ -22,8 +22,7 @@
 #ifndef MAP_MAP_OBJECT_H
 #define MAP_MAP_OBJECT_H
 
-#include <QDeclarativeItem>
-#include <QGraphicsItem>
+#include <QQuickItem>
 
 namespace Mappero {
 
@@ -34,9 +33,11 @@ public:
     ~MapEvent() {}
 
     Map *map() const { return m_map; }
+    bool mapChanged() const { return m_mapChanged; }
     bool centerChanged() const { return m_centerChanged; }
     bool zoomLevelChanged() const { return m_zoomLevelChanged; }
     bool sizeChanged() const { return m_sizeChanged; }
+    bool animated() const { return m_animated; }
 
 private:
     friend class MapObject;
@@ -48,34 +49,43 @@ private:
     bool m_centerChanged;
     bool m_zoomLevelChanged;
     bool m_sizeChanged;
+    bool m_mapChanged;
+    bool m_animated;
 };
 
 class MapObject {
 public:
-    MapObject(): m_map(0) {}
+    MapObject(): m_map(0), m_scalable(true) {}
     virtual ~MapObject() {};
 
     void setMap(Map *map);
     Map *map() const { return m_map; }
 
+    bool isScalable() const { return m_scalable; }
+
     virtual void mapEvent(MapEvent *e) = 0;
+
+protected:
+    void setScalable(bool scalable) { m_scalable = scalable; }
 
 private:
     Map *m_map;
+    bool m_scalable;
 };
 
-class MapGraphicsItem: public QGraphicsItem, public MapObject {
-public:
-    MapGraphicsItem(QGraphicsItem *parent = 0):
-        QGraphicsItem(parent), MapObject() {}
-    ~MapGraphicsItem() {}
-};
+}; // namespace
 
-class MapItem: public QDeclarativeItem, public MapObject {
+Q_DECLARE_INTERFACE(Mappero::MapObject, "mappero.MapObject")
+
+namespace Mappero {
+
+class MapItem: public QQuickItem, public MapObject {
     Q_OBJECT
+    Q_INTERFACES(Mappero::MapObject)
+
 public:
-    MapItem(QDeclarativeItem *parent = 0):
-        QDeclarativeItem(parent), MapObject() {}
+    MapItem(QQuickItem *parent = 0):
+        QQuickItem(parent), MapObject() {}
     ~MapItem() {};
 };
 

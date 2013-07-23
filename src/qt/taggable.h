@@ -24,7 +24,7 @@
 #include "types.h"
 
 #include <QDateTime>
-#include <QDeclarativeImageProvider>
+#include <QQuickImageProvider>
 #include <QMap>
 #include <QMetaType>
 #include <QObject>
@@ -85,7 +85,7 @@ Q_SIGNALS:
     void needsSaveChanged();
 
 public:
-    class ImageProvider: public QDeclarativeImageProvider
+    class ImageProvider: public QQuickImageProvider
     {
     public:
         ~ImageProvider();

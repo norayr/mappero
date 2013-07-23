@@ -25,7 +25,7 @@
 #include "types.h"
 
 class QAbstractListModel;
-class QDeclarativeComponent;
+class QQmlComponent;
 
 namespace Mappero {
 
@@ -35,21 +35,21 @@ class PoiView: public MapItem
     Q_OBJECT
     Q_PROPERTY(QAbstractListModel *model READ model WRITE setModel \
                NOTIFY modelChanged);
-    Q_PROPERTY(QDeclarativeComponent *delegate READ delegate \
+    Q_PROPERTY(QQmlComponent *delegate READ delegate \
                WRITE setDelegate NOTIFY delegateChanged);
     Q_PROPERTY(QRectF itemArea READ itemArea NOTIFY itemAreaChanged);
     Q_PROPERTY(int currentIndex READ currentIndex WRITE setCurrentIndex \
                NOTIFY currentIndexChanged);
 
 public:
-    PoiView(QDeclarativeItem *parent = 0);
+    PoiView(QQuickItem *parent = 0);
     virtual ~PoiView();
 
     void setModel(QAbstractListModel *model);
     QAbstractListModel *model() const;
 
-    void setDelegate(QDeclarativeComponent *delegate);
-    QDeclarativeComponent *delegate() const;
+    void setDelegate(QQmlComponent *delegate);
+    QQmlComponent *delegate() const;
 
     QRectF itemArea() const;
 
@@ -60,9 +60,6 @@ public:
 
     // reimplemented virtual methods
     void mapEvent(MapEvent *e);
-    void paint(QPainter *, const QStyleOptionGraphicsItem *, QWidget *);
-    QRectF boundingRect() const;
-
 
 Q_SIGNALS:
     void modelChanged();

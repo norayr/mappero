@@ -27,20 +27,52 @@
 #include "tile.h"
 #include "tiled-layer.h"
 
+#include <QImage>
+#include <QSGSimpleTextureNode>
+#include <QQuickWindow>
+
 using namespace Mappero;
 
 Tile::Tile(TiledLayer *parent):
-    QGraphicsPixmapItem(parent),
-    _needsNetwork(true)
+    QQuickItem(parent),
+    m_needsNetwork(true)
 {
-    setTransformationMode(Qt::SmoothTransformation);
+    setFlags(QQuickItem::ItemHasContents);
+}
+
+Tile::~Tile()
+{
+}
+
+void Tile::setImage(const QImage &image)
+{
+    m_image = image;
+    setWidth(image.width());
+    setHeight(image.height());
+    update();
 }
 
 void Tile::setTileContents(const TileContents &tileContents)
 {
-    QPixmap pixmap;
-    pixmap.loadFromData(tileContents.image);
-    setPixmap(pixmap);
+    QImage image;
+    image.loadFromData(tileContents.image);
+    setImage(image);
 
-    _needsNetwork = tileContents.needsNetwork;
+    m_needsNetwork = tileContents.needsNetwork;
+}
+
+QSGNode *Tile::updatePaintNode(QSGNode *node, UpdatePaintNodeData *)
+{
+    if (m_image.isNull()) return node;
+
+    QSGSimpleTextureNode *n = static_cast<QSGSimpleTextureNode*>(node);
+    if (!n) {
+        n = new QSGSimpleTextureNode;
+        n->setFiltering(QSGTexture::Linear);
+    }
+    n->setRect(boundingRect());
+    delete n->texture();
+    n->setTexture(window()->createTextureFromImage(m_image));
+    m_image = QImage();
+    return n;
 }

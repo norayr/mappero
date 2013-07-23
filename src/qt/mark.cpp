@@ -69,7 +69,7 @@ private:
 }; // namespace
 
 Mark::Mark(Map *map):
-    MapGraphicsItem(),
+    MapItem(),
     d_ptr(new MarkPrivate(this))
 {
     setMap(map);
@@ -110,13 +110,9 @@ QRectF Mark::boundingRect() const
     return QRectF(-radius, -radius, radius * 2, radius * 2);
 }
 
-void Mark::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
-                 QWidget *widget)
+void Mark::paint(QPainter *painter)
 {
     Q_D(const Mark);
-
-    Q_UNUSED(option);
-    Q_UNUSED(widget);
 
     painter->setPen(Qt::NoPen);
 

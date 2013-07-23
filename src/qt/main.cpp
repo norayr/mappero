@@ -36,16 +36,15 @@
 #include "view.h"
 
 #include <QAbstractListModel>
-#include <QApplication>
-#include <QDeclarativeContext>
-#include <QDeclarativeEngine>
+#include <QQmlContext>
+#include <QQmlEngine>
 #include <QDir>
 #include <QFileInfo>
-#include <QGraphicsScene>
+#include <QGuiApplication>
 
 int main(int argc, char *argv[])
 {
-    QApplication app(argc, argv);
+    QGuiApplication app(argc, argv);
 
     app.setOrganizationName("mardy.it");
     app.setApplicationName("mappero");
@@ -87,21 +86,19 @@ int main(int argc, char *argv[])
     qmlRegisterType<Mappero::TaggableModel>();
     qmlRegisterType<Mappero::TaggableArea>("Mappero", 1, 0, "TaggableArea");
     qmlRegisterType<Mappero::TaggableSelection>();
-    QDeclarativeEngine *engine = view.rootContext()->engine();
+    QQmlEngine *engine = view.rootContext()->engine();
     engine->addImageProvider(Mappero::Taggable::ImageProvider::name(),
                              Mappero::Taggable::ImageProvider::instance());
     qmlRegisterType<Mappero::Ticks>("Mappero", 1, 0, "Ticks");
 #endif
 
     view.setSource(QUrl("qrc:/mappero.qml"));
-    view.setWindowTitle("Mappero");
+    view.setTitle("Mappero");
 #if defined MEEGO || defined MAEMO5
     view.showFullScreen();
 #else
     view.show();
 #endif
-
-    view.centerOn(0, 0);
 
     return app.exec();
 }

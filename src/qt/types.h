@@ -92,7 +92,7 @@ struct Point: public QPoint {
     }
 
     inline QPoint toPixel(qreal zoom) const {
-        return QPoint(GROUND(x() / exp2(zoom)), GROUND(y() / exp2(zoom)));
+        return QPoint(GFLOOR(x() / exp2(zoom)), GFLOOR(y() / exp2(zoom)));
     }
 
     inline Point translated(const QPoint &p) const {
@@ -103,7 +103,7 @@ struct Point: public QPoint {
         return Point(p.x() << zoom, p.y() << zoom);
     }
 
-    static Point fromPixel(const QPointF p, qreal zoom) {
+    static Point fromPixel(const QPoint p, qreal zoom) {
         return Point(p.x() * exp2(zoom), p.y() * exp2(zoom));
     }
 };

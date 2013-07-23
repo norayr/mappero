@@ -21,18 +21,21 @@
 #ifndef MAP_POI_ITEM_H
 #define MAP_POI_ITEM_H
 
-#include <QDeclarativeItem>
+#include <QQuickItem>
 
 namespace Mappero {
 
 class PoiItemPrivate;
-class PoiItem: public QDeclarativeItem
+class PoiItem: public QQuickItem
 {
     Q_OBJECT
 
 public:
     PoiItem();
     virtual ~PoiItem();
+
+protected:
+    QSGNode *updatePaintNode(QSGNode *node, UpdatePaintNodeData *) Q_DECL_OVERRIDE;
 };
 
 }; // namespace

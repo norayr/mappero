@@ -25,8 +25,8 @@
 #include "taggable.h"
 
 #include <QDateTime>
+#include <QDropEvent>
 #include <QFileInfo>
-#include <QGraphicsSceneDragDropEvent>
 #include <QMimeData>
 
 using namespace Mappero;
@@ -51,12 +51,15 @@ TaggableModel::TaggableModel(QObject *parent):
     checkChangesQueued(false),
     lastChangesTime(Controller::clock())
 {
-    QHash<int, QByteArray> roles;
     roles[TaggableRole] = "taggable";
     roles[FileNameRole] = "fileName";
     roles[TimeRole] = "time";
     roles[GeoPointRole] = "geoPoint";
-    setRoleNames(roles);
+}
+
+QHash<int,QByteArray> TaggableModel::roleNames() const
+{
+    return roles;
 }
 
 void TaggableModel::addUrls(const QList<QUrl> &urlList)
@@ -167,10 +170,10 @@ TaggableAreaPrivate::TaggableAreaPrivate(TaggableArea *taggableArea):
 }
 
 TaggableArea::TaggableArea():
-    QDeclarativeItem(0),
+    QQuickItem(0),
     d_ptr(new TaggableAreaPrivate(this))
 {
-    setAcceptDrops(true);
+    setFlags(QQuickItem::ItemAcceptsDrops);
 }
 
 TaggableArea::~TaggableArea()
@@ -185,12 +188,19 @@ TaggableModel *TaggableArea::model() const
     return d->model;
 }
 
-void TaggableArea::dropEvent(QGraphicsSceneDragDropEvent *e)
+void TaggableArea::dropEvent(QDropEvent *e)
 {
     Q_D(TaggableArea);
     const QMimeData *mimeData = e->mimeData();
 
     if (mimeData->hasUrls()) {
         d->model->addUrls(mimeData->urls());
+    }
+}
+
+void TaggableArea::dragEnterEvent(QDragEnterEvent *e)
+{
+    if (e->mimeData()->hasUrls()) {
+        e->acceptProposedAction();
     }
 }

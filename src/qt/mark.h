@@ -29,7 +29,7 @@ namespace Mappero {
 class GpsPosition;
 
 class MarkPrivate;
-class Mark: public MapGraphicsItem
+class Mark: public MapItem
 {
 public:
     Mark(Map *map);
@@ -38,11 +38,10 @@ public:
     void setPosition(const GpsPosition &position);
 
 protected:
+    void setPos(const QPointF &p) { setX(p.x()); setY(p.y()); }
     // reimplemented methods
     QRectF boundingRect() const;
-    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
-               QWidget *widget);
-
+    void paint(QPainter *painter);
     void mapEvent(MapEvent *event);
 
 private:

@@ -64,7 +64,7 @@ class TaggablePrivate
 #endif
     QPixmap preview(QSize *size, const QSize &requestedSize) const;
     static QString exifString(const Exiv2::Value &value) {
-        return QString::fromAscii(value.toString().c_str());
+        return QString::fromLatin1(value.toString().c_str());
     }
     static Geo exifGeoCoord(const Exiv2::Value &value, bool positive);
 
@@ -146,7 +146,7 @@ void TaggablePrivate::loadExifInfo()
     Exiv2::ExifData::iterator i = exifData.findKey(key);
     if (i != exifData.end()) {
         QString timeString =
-            QString::fromAscii(i->value().toString().c_str());
+            QString::fromLatin1(i->value().toString().c_str());
         time = QDateTime::fromString(timeString,
                                      "yyyy:MM:dd HH:mm:ss").toTime_t();
     }
@@ -304,7 +304,7 @@ QPixmap TaggablePrivate::cachedThumbnail(QSize *size, const QSize &) const
     QByteArray ba;
     QUrl uri = QUrl::fromLocalFile(fileName);
     ba = QCryptographicHash::hash(uri.toEncoded(), QCryptographicHash::Md5);
-    QPixmap thumbnail(thumbnailsDir + QString::fromAscii(ba.toHex()));
+    QPixmap thumbnail(thumbnailsDir + QString::fromLatin1(ba.toHex()));
     if (size != 0) *size = thumbnail.size();
     return thumbnail;
 }
@@ -537,7 +537,7 @@ void Taggable::save()
 }
 
 Taggable::ImageProvider::ImageProvider():
-    QDeclarativeImageProvider(QDeclarativeImageProvider::Pixmap)
+    QQuickImageProvider(QQmlImageProviderBase::Pixmap)
 {
     if (imageProvider != 0) {
         qWarning() << "Second instance of Taggable::ImageProvider!";

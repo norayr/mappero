@@ -22,23 +22,33 @@
 #ifndef MAP_TILE_H
 #define MAP_TILE_H
 
-#include <QGraphicsPixmapItem>
+#include <QImage>
+#include <QQuickItem>
+
+class QPixmap;
+class QSGTexture;
 
 namespace Mappero {
 
 struct TileContents;
 class TiledLayer;
 
-class Tile: public QGraphicsPixmapItem
+class Tile: public QQuickItem
 {
 public:
     Tile(TiledLayer *parent);
+    ~Tile();
 
+    void setImage(const QImage &image);
     void setTileContents(const TileContents &tileContents);
-    bool needsNetwork() const { return _needsNetwork; }
+    bool needsNetwork() const { return m_needsNetwork; }
+
+protected:
+    QSGNode *updatePaintNode(QSGNode *node, UpdatePaintNodeData *) Q_DECL_OVERRIDE;
 
 private:
-    bool _needsNetwork;
+    QImage m_image;
+    bool m_needsNetwork;
 };
 
 }; // namespace

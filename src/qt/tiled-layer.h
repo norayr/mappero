@@ -69,9 +69,6 @@ public:
     static const Projection *projectionFromLayerType(const Type *type);
 
     // reimplemented virtual functions:
-    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
-               QWidget *widget);
-
     void mapEvent(MapEvent *event);
 
 Q_SIGNALS:

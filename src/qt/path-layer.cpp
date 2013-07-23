@@ -31,7 +31,7 @@ using namespace Mappero;
 
 namespace Mappero {
 
-typedef QDeclarativeListProperty<PathItem> PathList;
+typedef QQmlListProperty<PathItem> PathList;
 
 struct PathItemData {
     inline PathItemData(PathItem *pathItem);
@@ -80,7 +80,6 @@ public Q_SLOTS:
 private:
     mutable PathLayer *q_ptr;
     QList<PathItemData *> items;
-    QRectF boundingRect;
 };
 }; // namespace
 
@@ -122,12 +121,10 @@ void PathLayerPrivate::onPathChanged()
     q->update();
 }
 
-PathLayer::PathLayer(QDeclarativeItem *parent):
-    MapItem(parent),
+PathLayer::PathLayer(QQuickItem *parent):
+    QQuickPaintedItem(parent),
     d_ptr(new PathLayerPrivate(this))
 {
-    setCacheMode(QGraphicsItem::ItemCoordinateCache);
-    setFlag(QGraphicsItem::ItemHasNoContents, false);
 }
 
 PathLayer::~PathLayer()
@@ -135,7 +132,7 @@ PathLayer::~PathLayer()
     delete d_ptr;
 }
 
-QDeclarativeListProperty<PathItem> PathLayer::items()
+QQmlListProperty<PathItem> PathLayer::items()
 {
     return PathList(this, d_ptr,
                     PathLayerPrivate::itemAppend,
@@ -144,29 +141,19 @@ QDeclarativeListProperty<PathItem> PathLayer::items()
                     PathLayerPrivate::itemClear);
 }
 
-QRectF PathLayer::boundingRect() const
+void PathLayer::paint(QPainter *painter)
 {
     Q_D(const PathLayer);
-    return d->boundingRect;
-}
-
-void PathLayer::paint(QPainter *painter,
-                      const QStyleOptionGraphicsItem *option,
-                      QWidget *widget)
-{
-    Q_D(const PathLayer);
-
-    Q_UNUSED(option);
-    Q_UNUSED(widget);
 
     QTransform transformation = painter->transform();
 
     qreal zoom = map()->zoomLevel();
 
     Point offset = -map()->centerUnits().toPixel(zoom);
-    transformation.translate(offset.x(), offset.y());
+    transformation.translate(offset.x() + width() / 2, offset.y() + height() / 2);
 
     painter->setTransform(transformation);
+    painter->setRenderHints(QPainter::Antialiasing, true);
     foreach (PathItemData *data, d->items) {
         painter->setPen(data->pen);
         painter->drawPath(data->painterPath);
@@ -178,7 +165,8 @@ void PathLayer::mapEvent(MapEvent *event)
     Q_D(PathLayer);
     if (event->zoomLevelChanged() ||
         event->centerChanged()) {
-        setPos(0, 0);
+        setX(-width() / 2);
+        setY(-height() / 2);
 
         foreach (PathItemData *data, d->items) {
             data->painterPath =
@@ -190,7 +178,10 @@ void PathLayer::mapEvent(MapEvent *event)
     if (event->sizeChanged()) {
         QSizeF size = map()->boundingRect().size();
         qreal radius = qMax(size.width(), size.height());
-        d->boundingRect = QRectF(-radius, -radius, radius * 2, radius * 2);
+        setWidth(radius);
+        setHeight(radius);
+        setX(-width() / 2);
+        setY(-height() / 2);
     }
 }
 

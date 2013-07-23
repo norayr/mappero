@@ -19,6 +19,7 @@
 
 #include "types.h"
 
+#include <QDataStream>
 #include <math.h>
 
 using namespace Mappero;

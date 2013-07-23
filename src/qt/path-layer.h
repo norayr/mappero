@@ -22,6 +22,7 @@
 #ifndef MAP_PATH_LAYER_H
 #define MAP_PATH_LAYER_H
 
+#include <QQuickPaintedItem>
 #include "map-object.h"
 
 namespace Mappero {
@@ -30,23 +31,22 @@ class Path;
 class PathItem;
 
 class PathLayerPrivate;
-class PathLayer: public MapItem
+class PathLayer: public QQuickPaintedItem, MapObject
 {
     Q_OBJECT
-    Q_PROPERTY(QDeclarativeListProperty<Mappero::PathItem> items READ items);
+    Q_PROPERTY(QQmlListProperty<Mappero::PathItem> items READ items);
     Q_CLASSINFO("DefaultProperty", "items");
+    Q_INTERFACES(Mappero::MapObject)
 
 public:
-    PathLayer(QDeclarativeItem *parent = 0);
+    PathLayer(QQuickItem *parent = 0);
     ~PathLayer();
 
-    QDeclarativeListProperty<PathItem> items();
+    QQmlListProperty<PathItem> items();
 
 protected:
     // reimplemented methods
-    QRectF boundingRect() const;
-    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
-               QWidget *widget);
+    void paint(QPainter *painter) Q_DECL_OVERRIDE;
 
     void mapEvent(MapEvent *event);
 

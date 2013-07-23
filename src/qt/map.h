@@ -24,7 +24,7 @@
 
 #include "types.h"
 
-#include <QDeclarativeItem>
+#include <QQuickItem>
 
 namespace Mappero {
 
@@ -37,7 +37,7 @@ class Projection;
 class Tracker;
 
 class MapPrivate;
-class Map: public QDeclarativeItem {
+class Map: public QQuickItem {
     Q_OBJECT
     Q_PROPERTY(GeoPoint center READ center WRITE setCenter \
                NOTIFY centerChanged);
@@ -66,7 +66,7 @@ class Map: public QDeclarativeItem {
                NOTIFY mainLayerChanged);
     Q_PROPERTY(bool followGps READ followGps WRITE setFollowGps \
                NOTIFY followGpsChanged);
-    Q_PROPERTY(QDeclarativeListProperty<Mappero::MapItem> items READ items);
+    Q_PROPERTY(QQmlListProperty<QObject> items READ items);
     Q_CLASSINFO("DefaultProperty", "items");
 
 public:
@@ -108,7 +108,7 @@ public:
     void setFollowGps(bool followGps);
     bool followGps() const;
 
-    QDeclarativeListProperty<MapItem> items();
+    QQmlListProperty<QObject> items();
 
     Q_INVOKABLE void lookAt(const QRectF &area,
                             int offsetX, int offsetY, int margin = 0);
@@ -117,10 +117,6 @@ public:
 
     Q_INVOKABLE GeoPoint pixelsToGeo(const QPointF &pixel) const;
     Q_INVOKABLE GeoPoint pixelsToGeo(qreal x, qreal y) const;
-
-    // reimplemented virtual functions:
-    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
-               QWidget *widget);
 
 Q_SIGNALS:
     void centerChanged(const GeoPoint &center);
@@ -139,8 +135,6 @@ protected Q_SLOTS:
 protected:
     // reimplemented virtual methods
     void geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry);
-    bool sceneEvent(QEvent *event);
-    void wheelEvent(QGraphicsSceneWheelEvent *e);
 
 private:
     friend class MapObject;

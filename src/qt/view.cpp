@@ -21,34 +21,12 @@
 #include "debug.h"
 #include "view.h"
 
-#include <QResizeEvent>
-#include <QGLWidget>
-
 using namespace Mappero;
 
 View::View():
-    QDeclarativeView()
+    QQuickView()
 {
     setResizeMode(SizeRootObjectToView);
-    setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-#ifdef Q_WS_MAEMO_5
-    setAttribute(Qt::WA_Maemo5AutoOrientation, true);
-    setAttribute(Qt::WA_Maemo5NonComposited, true);
-#endif
-    setRenderHints(QPainter::Antialiasing | QPainter::TextAntialiasing);
-    setTransformationAnchor(QGraphicsView::NoAnchor);
-    setAlignment(Qt::AlignLeft | Qt::AlignTop);
-#if !defined(Q_OS_WIN32) && !defined (Q_OS_MAC)
-    setViewport(new QGLWidget);
-    setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
-#endif
-#ifdef Q_WS_MAEMO_5
-    setAttribute(Qt::WA_OpaquePaintEvent);
-    setAttribute(Qt::WA_NoSystemBackground);
-    viewport()->setAttribute(Qt::WA_OpaquePaintEvent);
-    viewport()->setAttribute(Qt::WA_NoSystemBackground);
-#endif
 }
 
 void View::switchFullscreen()
@@ -58,10 +36,4 @@ void View::switchFullscreen()
         showNormal();
     else
         showFullScreen();
-}
-
-void View::closeEvent(QCloseEvent *event)
-{
-    Q_EMIT closing();
-    QDeclarativeView::closeEvent(event);
 }

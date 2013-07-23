@@ -21,26 +21,20 @@
 #ifndef MAP_VIEW_H
 #define MAP_VIEW_H
 
-#include <QDeclarativeView>
+#include <QQuickView>
 
 namespace Mappero {
 class Osm;
 
-class View: public QDeclarativeView
+class View: public QQuickView
 {
     Q_OBJECT
 
 public:
     View();
 
-public slots:
+public Q_SLOTS:
     void switchFullscreen();
-
-Q_SIGNALS:
-    void closing();
-
-protected:
-    void closeEvent(QCloseEvent *);
 };
 
 };

@@ -24,10 +24,10 @@
 #include "projection.h"
 
 #include <QAbstractListModel>
-#include <QDeclarativeComponent>
-#include <QDeclarativeContext>
-#include <QDeclarativeProperty>
-#include <QDeclarativePropertyMap>
+#include <QQmlComponent>
+#include <QQmlContext>
+#include <QQmlProperty>
+#include <QQmlPropertyMap>
 #include <QVector>
 
 using namespace Mappero;
@@ -47,10 +47,10 @@ public:
     void setModel(QAbstractListModel *newModel);
     void updateItems(int start, int end);
     void updateItemsPosition();
-    QDeclarativeItem *createItem(VisualModelItem *modelItem);
+    QQuickItem *createItem(VisualModelItem *modelItem);
 
     inline VisualModelItem *visualItemAt(int index);
-    inline QDeclarativeItem *itemAt(int index);
+    inline QQuickItem *itemAt(int index);
 
     QVariant modelValue(int index, int role) {
         return model->data(model->index(index, 0), role);
@@ -69,21 +69,21 @@ private Q_SLOTS:
 private:
     QAbstractListModel *model;
     QVector<VisualModelItem*> items;
-    QDeclarativeComponent *delegate;
+    QQmlComponent *delegate;
     int geoPointRole;
     int currentIndex;
     int highestZ;
     mutable PoiView *q_ptr;
 };
 
-class VisualModelItem: public QDeclarativePropertyMap
+class VisualModelItem: public QQmlPropertyMap
 {
     Q_OBJECT
 
 public:
     VisualModelItem(PoiViewPrivate *poiViewPriv, int index,
                     const QPoint &position):
-        QDeclarativePropertyMap(poiViewPriv),
+        QQmlPropertyMap(this, poiViewPriv),
         poiViewPriv(poiViewPriv),
         _index(index),
         _item(0)
@@ -108,10 +108,12 @@ public:
     }
 
     void updatePosition(const QPoint &position) {
-        _item->setPos(position + origin());
+        QPointF pos = position - origin();
+        _item->setX(pos.x());
+        _item->setY(pos.y());
     }
 
-    QDeclarativeItem *item() const { return _item; }
+    QQuickItem *item() const { return _item; }
 
     void setIndex(int index) { _index = index; insert("index", index); }
 
@@ -134,7 +136,7 @@ private Q_SLOTS:
 private:
     PoiViewPrivate *poiViewPriv;
     int _index;
-    QDeclarativeItem *_item;
+    QQuickItem *_item;
     GeoPoint _geo;
 };
 
@@ -155,8 +157,9 @@ void VisualModelItem::refreshRoles()
 void VisualModelItem::setItemPosition(const QPointF &position)
 {
     QPointF origin = this->origin();
-    _item->setTransform(QTransform::fromTranslate(-origin.x(), -origin.y()));
-    _item->setPos(position + origin);
+    QPointF pos = position - origin;
+    _item->setX(pos.x());
+    _item->setY(pos.y());
 }
 
 PoiViewPrivate::PoiViewPrivate(PoiView *poiView):
@@ -219,6 +222,7 @@ void PoiViewPrivate::updateItems(int start, int end)
     Point mapCenter = map->centerUnits();
     qreal zoom = map->zoomLevel();
 
+    QPoint itemCenter = q->boundingRect().center().toPoint();
     QModelIndex parent;
     for (int i = start; i < end; i++) {
         GeoPoint geoPoint;
@@ -231,9 +235,10 @@ void PoiViewPrivate::updateItems(int start, int end)
             VisualModelItem *item = items.at(i);
             Point position = projection->geoToUnit(geoPoint) - mapCenter;
             if (item != 0) {
-                item->updatePosition(position.toPixel(zoom));
+                item->updatePosition(position.toPixel(zoom) + itemCenter);
             } else {
-                item = new VisualModelItem(this, i, position.toPixel(zoom));
+                item = new VisualModelItem(this, i, position.toPixel(zoom) +
+                                           itemCenter);
                 items[i] = item;
             }
             item->setGeoPoint(geoPoint);
@@ -255,30 +260,31 @@ void PoiViewPrivate::updateItemsPosition()
 
     if (geoPointRole == 0 || delegate == 0) return;
 
-    Point mapCenter = map->centerUnits();
-    qreal zoom = map->zoomLevel();
+    Point mapCenter(map->animatedCenterUnits().toPoint());
+    qreal zoom = map->animatedZoomLevel();
 
+    QPoint itemCenter = q->boundingRect().center().toPoint();
     foreach (VisualModelItem *item, items) {
         if (item == 0) continue;
 
         GeoPoint geoPoint = item->geoPoint();
         Point position = projection->geoToUnit(geoPoint) - mapCenter;
-        item->updatePosition(position.toPixel(zoom));
+        item->updatePosition(position.toPixel(zoom) + itemCenter);
     }
 }
 
-QDeclarativeItem *PoiViewPrivate::createItem(VisualModelItem *modelItem)
+QQuickItem *PoiViewPrivate::createItem(VisualModelItem *modelItem)
 {
     Q_Q(PoiView);
 
-    QDeclarativeContext *context =
-        new QDeclarativeContext(delegate->creationContext(), modelItem);
+    QQmlContext *context =
+        new QQmlContext(delegate->creationContext(), modelItem);
     context->setContextObject(modelItem);
     context->setContextProperty("model", modelItem);
     context->setContextProperty("view", q);
     QObject *object = delegate->beginCreate(context);
 
-    QDeclarativeItem *item = qobject_cast<QDeclarativeItem*>(object);
+    QQuickItem *item = qobject_cast<QQuickItem*>(object);
     item->setParentItem(q);
 
     delegate->completeCreate();
@@ -292,7 +298,7 @@ VisualModelItem *PoiViewPrivate::visualItemAt(int index)
     return items.at(index);
 }
 
-QDeclarativeItem *PoiViewPrivate::itemAt(int index)
+QQuickItem *PoiViewPrivate::itemAt(int index)
 {
     VisualModelItem *visualItem = visualItemAt(index);
     if (visualItem == 0) return 0;
@@ -307,7 +313,8 @@ QPoint PoiViewPrivate::geoToPos(const GeoPoint &geo) const
     const Projection *projection = map->projection();
     qreal zoom = map->zoomLevel();
     Point position = projection->geoToUnit(geo) - map->centerUnits();
-    return position.toPixel(zoom);
+    QPoint itemCenter = q->boundingRect().center().toPoint();
+    return position.toPixel(zoom) + itemCenter;
 }
 
 void PoiViewPrivate::onRowsInserted(const QModelIndex &, int first, int last)
@@ -354,10 +361,11 @@ void PoiViewPrivate::onDataChanged(const QModelIndex &topLeft,
     updateItems(begin, end);
 }
 
-PoiView::PoiView(QDeclarativeItem *parent):
+PoiView::PoiView(QQuickItem *parent):
     MapItem(parent),
     d_ptr(new PoiViewPrivate(this))
 {
+    setScalable(false);
 }
 
 PoiView::~PoiView()
@@ -377,7 +385,7 @@ QAbstractListModel *PoiView::model() const
     return d->model;
 }
 
-void PoiView::setDelegate(QDeclarativeComponent *delegate)
+void PoiView::setDelegate(QQmlComponent *delegate)
 {
     Q_D(PoiView);
 
@@ -387,7 +395,7 @@ void PoiView::setDelegate(QDeclarativeComponent *delegate)
     d->delegate = delegate;
 }
 
-QDeclarativeComponent *PoiView::delegate() const
+QQmlComponent *PoiView::delegate() const
 {
     Q_D(const PoiView);
     return d->delegate;
@@ -429,12 +437,12 @@ void PoiView::setCurrentIndex(int index)
     VisualModelItem *visualItem = d->visualItemAt(index);
     if (visualItem != 0 && visualItem->geoPoint().isValid()) {
         QPoint origin = visualItem->origin().toPoint();
-        QDeclarativeItem *item = visualItem->item();
+        QQuickItem *item = visualItem->item();
         map()->ensureVisible(visualItem->geoPoint(),
                              item->width() / 2 - origin.x(),
                              item->height() / 2 - origin.y(),
                              qMax(item->width(), item->height()));
-        item->setZValue(d->highestZ++);
+        item->setZ(d->highestZ++);
     }
 }
 
@@ -457,17 +465,11 @@ GeoPoint PoiView::itemPos(int index) const
     qreal zoom = map()->zoomLevel();
     const Projection *projection = map()->projection();
 
-    QPointF p = visualItem->item()->pos() - visualItem->origin();
+    QPointF itemCenter = boundingRect().center();
+    QQuickItem *item = visualItem->item();
+    QPoint p =
+        (QPointF(item->x(), item->y()) + visualItem->origin() - itemCenter).toPoint();
     return projection->unitToGeo(Point::fromPixel(p, zoom) + mapCenter);
-}
-
-void PoiView::paint(QPainter *, const QStyleOptionGraphicsItem *, QWidget *)
-{
-}
-
-QRectF PoiView::boundingRect() const
-{
-    return QRectF(-1.0e6, -1.0e6, 2.0e6, 2.0e6);
 }
 
 void PoiView::mapEvent(MapEvent *e)
@@ -475,7 +477,8 @@ void PoiView::mapEvent(MapEvent *e)
     Q_D(PoiView);
 
     if (e->centerChanged() ||
-        e->zoomLevelChanged()) {
+        e->zoomLevelChanged() ||
+        e->animated()) {
         d->updateItemsPosition();
     }
 }

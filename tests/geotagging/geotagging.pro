@@ -1,8 +1,8 @@
 TARGET = geotag-test
 
 QT += \
-    declarative \
     network \
+    quick \
     testlib
 
 CONFIG += link_pkgconfig

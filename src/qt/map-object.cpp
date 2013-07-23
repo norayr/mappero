@@ -31,7 +31,8 @@ MapEvent::MapEvent(Map *map, bool dirty):
     m_map(map),
     m_centerChanged(dirty),
     m_zoomLevelChanged(dirty),
-    m_sizeChanged(dirty)
+    m_sizeChanged(dirty),
+    m_mapChanged(dirty)
 {
 }
 
@@ -40,6 +41,7 @@ void MapEvent::clear()
     m_centerChanged = false;
     m_zoomLevelChanged = false;
     m_sizeChanged = false;
+    m_animated = false;
 }
 
 }; // namespace

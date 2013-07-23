@@ -21,16 +21,20 @@
 #include "debug.h"
 #include "poi-item.h"
 
+#include <QSGTransformNode>
+
 using namespace Mappero;
 
 #define DEFAULT_WIDTH 200
 #define DEFAULT_HEIGHT 200
 
 PoiItem::PoiItem():
-    QDeclarativeItem(0)
+    QQuickItem(0)
 {
+    /* TODO
     setFlags(QGraphicsItem::ItemIgnoresTransformations |
              QGraphicsItem::ItemSendsGeometryChanges);
+             */
 
     setImplicitWidth(DEFAULT_WIDTH);
     setImplicitHeight(DEFAULT_HEIGHT);
@@ -38,4 +42,11 @@ PoiItem::PoiItem():
 
 PoiItem::~PoiItem()
 {
+}
+
+QSGNode *PoiItem::updatePaintNode(QSGNode *node, UpdatePaintNodeData *data)
+{
+    QSGTransformNode *transformNode = data->transformNode;
+    DEBUG() << transformNode->matrix();
+    return node;
 }
