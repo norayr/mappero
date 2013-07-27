@@ -120,19 +120,7 @@ class TileDownloadPrivate: public QObject
     Q_OBJECT
     Q_DECLARE_PUBLIC(TileDownload)
 
-    TileDownloadPrivate(TileDownload *tileDownload):
-        QObject(tileDownload),
-        q_ptr(tileDownload),
-        networkRequested(false)
-    {
-        pool = QThreadPool::globalInstance();
-        qRegisterMetaType<TaskMap::iterator>("TaskMap::iterator");
-
-        QObject::connect(&ncm,
-                         SIGNAL(onlineStateChanged(bool)),
-                         q_ptr,
-                         SIGNAL(onlineStateChanged(bool)));
-    }
+    inline TileDownloadPrivate(TileDownload *tileDownload);
     ~TileDownloadPrivate() {};
 
 public Q_SLOTS:
@@ -152,6 +140,20 @@ private:
 }; // namespace
 
 Q_DECLARE_METATYPE(Mappero::TaskMap::iterator)
+
+TileDownloadPrivate::TileDownloadPrivate(TileDownload *tileDownload):
+    QObject(tileDownload),
+    q_ptr(tileDownload),
+    networkRequested(false)
+{
+    pool = QThreadPool::globalInstance();
+    qRegisterMetaType<TaskMap::iterator>("TaskMap::iterator");
+
+    QObject::connect(&ncm,
+                     SIGNAL(onlineStateChanged(bool)),
+                     q_ptr,
+                     SIGNAL(onlineStateChanged(bool)));
+}
 
 static inline QDebug operator<<(QDebug dbg, const TileTask &t)
 {
