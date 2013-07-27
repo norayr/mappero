@@ -84,6 +84,7 @@ int main(int argc, char *argv[])
 
 #ifdef GEOTAGGING_ENABLED
     qmlRegisterType<Mappero::Taggable>();
+    qmlRegisterType<Mappero::TaggableModel>();
     qmlRegisterType<Mappero::TaggableArea>("Mappero", 1, 0, "TaggableArea");
     qmlRegisterType<Mappero::TaggableSelection>();
     QDeclarativeEngine *engine = view.rootContext()->engine();
