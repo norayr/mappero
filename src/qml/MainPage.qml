@@ -3,6 +3,7 @@ import Mappero 1.0
 
 Item {
     anchors.fill: parent
+    property bool __isPage: true
 
     LayerManager {
         id: layerManager
