@@ -71,8 +71,6 @@ HEADERS += \
     tracker.h \
     view.h
 
-RESOURCES += ../qml/desktop.qrc
-
 system(pkg-config --exists exiv2) {
     message("libexiv2 is available")
     DEFINES += GEOTAGGING_ENABLED
