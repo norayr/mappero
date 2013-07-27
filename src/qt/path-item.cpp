@@ -22,6 +22,7 @@
 #include "path-item.h"
 
 #include <QDateTime>
+#include <QUrl>
 
 using namespace Mappero;
 
@@ -162,14 +163,14 @@ void PathItem::clear()
     setPath(path);
 }
 
-void PathItem::loadFile(const QString &fileName)
+void PathItem::loadFile(const QUrl &fileName)
 {
     Path path;
-    path.load(fileName);
+    path.load(fileName.toLocalFile());
     setPath(path);
 }
 
-void PathItem::saveFile(const QString &fileName) const
+void PathItem::saveFile(const QUrl &fileName) const
 {
-    path().save(fileName);
+    path().save(fileName.toLocalFile());
 }

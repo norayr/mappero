@@ -69,8 +69,8 @@ public:
 
 public Q_SLOTS:
     void clear();
-    void loadFile(const QString &fileName);
-    void saveFile(const QString &fileName) const;
+    void loadFile(const QUrl &fileName);
+    void saveFile(const QUrl &fileName) const;
 
 Q_SIGNALS:
     void colorChanged();
