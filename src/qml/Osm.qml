@@ -15,11 +15,11 @@ Item {
         property bool isPortrait: parent.isPortrait
 
         OsmButton {
-            source: ":osm-point"
+            source: "qrc:osm-point"
         }
 
         OsmButton {
-            source: ":osm-path"
+            source: "qrc:osm-path"
             Loader {
                 id: trackPane
                 Binding {
@@ -36,20 +36,20 @@ Item {
         }
 
         OsmButton {
-            source: ":osm-route"
+            source: "qrc:osm-route"
         }
 
         OsmButton {
-            source: ":osm-go-to"
+            source: "qrc:osm-go-to"
         }
 
         OsmButton {
-            source: ":osm-zoom-in"
+            source: "qrc:osm-zoom-in"
             onClicked: map.requestedZoomLevel--
         }
 
         OsmButton {
-            source: ":osm-zoom-out"
+            source: "qrc:osm-zoom-out"
             onClicked: map.requestedZoomLevel++
         }
 
@@ -59,7 +59,7 @@ Item {
         }
 
         OsmButton {
-            source: ":osm-fullscreen"
+            source: "qrc:osm-fullscreen"
             onClicked: view.switchFullscreen()
         }
 
@@ -104,8 +104,8 @@ Item {
 
         OsmButton {
             source: gps.active ?
-                ":osm-gps-disable" :
-                ":osm-gps-enable"
+                "qrc:osm-gps-disable" :
+                "qrc:osm-gps-enable"
             onClicked: {
                 if (gps.active) gps.stop()
                 else gps.start()
@@ -113,7 +113,7 @@ Item {
         }
 
         OsmButton {
-            source: ":osm-settings"
+            source: "qrc:osm-settings"
         }
     }
 }
