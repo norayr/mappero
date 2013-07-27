@@ -23,7 +23,7 @@ Item {
             anchors.top: parent.top
             anchors.bottom: parent.bottom
             width: height
-            source: ":tz-minus"
+            source: "qrc:tz-minus"
 
             MouseArea {
                 anchors.fill: parent
@@ -50,7 +50,7 @@ Item {
             anchors.top: parent.top
             anchors.bottom: parent.bottom
             width: height
-            source: ":tz-plus"
+            source: "qrc:tz-plus"
 
             MouseArea {
                 anchors.fill: parent

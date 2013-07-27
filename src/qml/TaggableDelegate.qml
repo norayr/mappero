@@ -94,14 +94,14 @@ Rectangle {
         Image {
             width: UI.TaggableEmblemSize
             height: UI.TaggableEmblemSize
-            source: ":taggable-has-pos"
+            source: "qrc:taggable-has-pos"
             visible: taggable.hasLocation
         }
 
         Image {
             width: UI.TaggableEmblemSize
             height: UI.TaggableEmblemSize
-            source: ":taggable-modified"
+            source: "qrc:taggable-modified"
             visible: taggable.needsSave
         }
     }

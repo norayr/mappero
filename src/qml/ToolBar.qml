@@ -35,7 +35,7 @@ Item {
             selectedItems: root.selection.items
             enabled: root.selection.needsSave
 
-            source: ":taggable-reload"
+            source: "qrc:taggable-reload"
             onActivate: taggable.reload()
         }
 
@@ -45,7 +45,7 @@ Item {
             selectedItems: root.selection.items
             enabled: root.selection.hasLocation
 
-            source: ":tag-remove"
+            source: "qrc:tag-remove"
             onActivate: taggable.clearLocation()
         }
 
@@ -53,7 +53,7 @@ Item {
             width: UI.TaggableToolsSize
             height: UI.TaggableToolsSize
 
-            source: ":correlate"
+            source: "qrc:correlate"
             onClicked: fileChooserLoad.open()
 
             FileDialog {
@@ -73,7 +73,7 @@ Item {
             width: UI.TaggableToolsSize
             height: UI.TaggableToolsSize
 
-            source: ":help"
+            source: "qrc:help"
             onClicked: root.help()
         }
     }

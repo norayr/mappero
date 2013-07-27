@@ -22,7 +22,7 @@ Item {
         x: slider.xMax / 2
         y: 2;
         width: height; height: slider.height - 4
-        source: ":time-slider-handle"
+        source: "qrc:time-slider-handle"
 
         Item {
             anchors.horizontalCenter: parent.horizontalCenter

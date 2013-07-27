@@ -22,7 +22,7 @@ Item {
             width: parent.width
             height: width
             enabled: root.map.minZoomLevel < root.map.requestedZoomLevel
-            source: ":geo-osm-zoom-in"
+            source: "qrc:geo-osm-zoom-in"
             onClicked: root.map.requestedZoomLevel--
         }
 
@@ -30,7 +30,7 @@ Item {
             width: parent.width
             height: width
             enabled: root.map.maxZoomLevel > root.map.requestedZoomLevel
-            source: ":geo-osm-zoom-out"
+            source: "qrc:geo-osm-zoom-out"
             onClicked: root.map.requestedZoomLevel++
         }
 
@@ -38,7 +38,7 @@ Item {
             id: ls
             width: parent.width
             height: width
-            source: ":layer-selector"
+            source: "qrc:layer-selector"
             onClicked: {
                 if (layerSelector.isOpen) {
                     layerSelector.close()

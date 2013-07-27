@@ -18,7 +18,7 @@ PoiItem {
         border.right: 4
         border.top: 4
 
-        source: ":poi-frame.svg"
+        source: "qrc:poi-frame.svg"
         Image {
             id: thumbnail
             anchors.fill: parent
