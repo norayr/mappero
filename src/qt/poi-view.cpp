@@ -258,7 +258,6 @@ void PoiViewPrivate::updateItemsPosition()
     Point mapCenter = map->centerUnits();
     qreal zoom = map->zoomLevel();
 
-    QModelIndex parent;
     foreach (VisualModelItem *item, items) {
         if (item == 0) continue;
 
