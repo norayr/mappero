@@ -28,6 +28,10 @@ QT += \
     network \
     quick
 
+qtHaveModule(location) {
+    QT += location
+}
+
 SOURCES += \
     configuration.cpp \
     controller.cpp \
