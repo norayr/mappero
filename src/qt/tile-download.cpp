@@ -49,6 +49,7 @@ struct TileTask
     int priority;
     TileSpec spec;
 
+    TileTask(): priority(0), spec(0, 0, 0, 0) {}
     TileTask(const TileSpec &spec, int priority):
         priority(priority),
         spec(spec) {}
@@ -104,7 +105,7 @@ public:
     void run();
 
 private:
-    void processTask(TaskMap::iterator t);
+    void processTask(const TileTask &tile);
     QByteArray downloadTile(const TileTask &tile);
 
 private:
@@ -124,7 +125,7 @@ class TileDownloadPrivate: public QObject
     ~TileDownloadPrivate() {};
 
 public Q_SLOTS:
-    void taskCompleted(TaskMap::iterator t);
+    void taskCompleted(const TileTask &t);
 
 private:
     void requestTile(const TileTask &task);
@@ -139,7 +140,7 @@ private:
 };
 }; // namespace
 
-Q_DECLARE_METATYPE(Mappero::TaskMap::iterator)
+Q_DECLARE_METATYPE(Mappero::TileTask)
 
 TileDownloadPrivate::TileDownloadPrivate(TileDownload *tileDownload):
     QObject(tileDownload),
@@ -147,7 +148,7 @@ TileDownloadPrivate::TileDownloadPrivate(TileDownload *tileDownload):
     networkRequested(false)
 {
     pool = QThreadPool::globalInstance();
-    qRegisterMetaType<TaskMap::iterator>("TaskMap::iterator");
+    qRegisterMetaType<TileTask>("TileTask");
 
     QObject::connect(&ncm,
                      SIGNAL(onlineStateChanged(bool)),
@@ -183,6 +184,7 @@ void Downloader::run()
 
     do {
         /* pick a task */
+        const TileTask *t;
         hasTasks = false;
         mutex.lock();
         TaskMap::iterator i = tasks.begin();
@@ -192,6 +194,7 @@ void Downloader::run()
                 /* mark the task as in progress so that other threads won't try
                  * to take it */
                 i.value().status = TaskData::InProgress;
+                t = &i.key();
                 break;
             }
             i++;
@@ -199,7 +202,7 @@ void Downloader::run()
         mutex.unlock();
 
         if (hasTasks)
-            processTask(i);
+            processTask(*t);
     } while (hasTasks);
 
     delete networkAccessManager;
@@ -208,13 +211,13 @@ void Downloader::run()
     DEBUG() << "No more tasks, exiting";
 }
 
-void Downloader::processTask(TaskMap::iterator t)
+void Downloader::processTask(const TileTask &tile)
 {
-    const TileTask &tile = t.key();
-
     DEBUG() << "Processing task: " << tile;
 
-    TaskData &data = t.value();
+    mutex.lock();
+    TaskData &data = tasks[tile];
+    mutex.unlock();
 
     QFile tileFile(tile.spec.layer->tileFileName(tile.spec.zoom,
                                                  tile.spec.x,
@@ -245,9 +248,9 @@ void Downloader::processTask(TaskMap::iterator t)
         }
     }
 
-    t.value().status = TaskData::Completed;
+    data.status = TaskData::Completed;
     QMetaObject::invokeMethod(listener, "taskCompleted", Qt::AutoConnection,
-                              Q_ARG(TaskMap::iterator, t));
+                              Q_ARG(TileTask, tile));
 }
 
 QByteArray Downloader::downloadTile(const TileTask &tile)
@@ -275,18 +278,19 @@ QByteArray Downloader::downloadTile(const TileTask &tile)
     return tileData;
 }
 
-void TileDownloadPrivate::taskCompleted(TaskMap::iterator t)
+void TileDownloadPrivate::taskCompleted(const TileTask &tile)
 {
     Q_Q(TileDownload);
 
+    tasksMutex.lock();
+    TaskMap::iterator t = tasks.find(tile);
     TaskData &data = t.value();
 
-    Q_EMIT q->tileDownloaded(t.key().spec, data.tileContents);
+    Q_EMIT q->tileDownloaded(tile.spec, data.tileContents);
 
     /* Note: we can destroy the TaskData only because we know that the signal
      * connection is immediate; otherwise the receiver might end up accessing
      * deleted data */
-    tasksMutex.lock();
     tasks.erase(t);
     tasksMutex.unlock();
 
