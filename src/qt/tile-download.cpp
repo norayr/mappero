@@ -306,6 +306,12 @@ void TileDownloadPrivate::requestTile(const TileTask &task)
 {
     DEBUG() << task;
     tasksMutex.lock();
+    /* Check if the task is already in progress */
+    TaskMap::iterator t = tasks.find(task);
+    if (t != tasks.end() && t.value().status >= TaskData::InProgress) {
+        tasksMutex.unlock();
+        return;
+    }
     tasks.insert(task, TaskData());
     tasksMutex.unlock();
 
