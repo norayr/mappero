@@ -26,6 +26,13 @@ Item {
                 color: "red"
             }
         }
+
+        PoiView {
+            id: searchView
+            anchors.fill: parent
+            delegate: searchBox.delegate
+            model: searchBox.model
+        }
     }
 
     MapFlickable {
@@ -69,6 +76,7 @@ Item {
         id: osm
         anchors.fill: parent
         tracker: tracker
+        searchBox: searchBox
     }
 
     Connections {
@@ -78,5 +86,19 @@ Item {
             Mappero.conf.lastZoomLevel = map.zoomLevel
             Mappero.conf.gpsInterval = gps.updateInterval
         }
+    }
+
+    SearchBox {
+        id: searchBox
+        anchors.top: parent.top
+        anchors.horizontalCenter: parent.horizontalCenter
+        width: 200
+        pluginManager: pluginManager
+        location: Mappero.point(map.center)
+        visible: false
+    }
+
+    PluginManager {
+        id: pluginManager
     }
 }

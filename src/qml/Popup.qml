@@ -8,9 +8,11 @@ Item {
     property Item source
     property bool isOpen: state == "open"
     property variant _sourcePos
+    property variant _destPos
+    property string position: ""
 
-    anchors.fill: parent
-    parent: getRootItem()
+    width: openPopup.width
+    height: openPopup.height
     state: "closed"
 
     Component.onCompleted: _computePositions()
@@ -65,40 +67,45 @@ Item {
         }
     ]
 
-    MouseArea {
+    Item {
+        id: pageOverlay
         anchors.fill: parent
-        enabled: root.isOpen
-        onClicked: root.close()
-    }
+        parent: getRootItem()
 
-    Item {
-        id: closedPopup
-        x: _sourcePos.x
-        y: _sourcePos.y
-        width: source.width
-        height: source.height
-    }
-
-    Item {
-        id: openPopup
-        // FIXME: check whether the item fits in this position
-        x: _sourcePos.x - width - 20
-        y: _sourcePos.y
-        width: content.childrenRect.width + UI.ToolbarMargins * 2
-        height: content.childrenRect.height + UI.ToolbarMargins * 2
-
-        PaneBackground {}
-        Item {
-            id: content
+        MouseArea {
             anchors.fill: parent
-            anchors.margins: UI.ToolbarMargins
+            enabled: root.isOpen
+            onClicked: root.close()
         }
-    }
 
-    Item {
-        id: animatedPopup
-        visible: false
-        PaneBackground {}
+        Item {
+            id: closedPopup
+            x: _sourcePos.x
+            y: _sourcePos.y
+            width: source.width
+            height: source.height
+        }
+
+        Item {
+            id: openPopup
+            x: _destPos.x
+            y: _destPos.y
+            width: content.childrenRect.width + UI.ToolbarMargins * 2
+            height: content.childrenRect.height + UI.ToolbarMargins * 2
+
+            PaneBackground {}
+            Item {
+                id: content
+                anchors.fill: parent
+                anchors.margins: UI.ToolbarMargins
+            }
+        }
+
+        Item {
+            id: animatedPopup
+            visible: false
+            PaneBackground {}
+        }
     }
 
     function getRootItem() {
@@ -109,8 +116,21 @@ Item {
         }
         return rootItem;
     }
+
     function _computePositions() {
-        _sourcePos = parent.mapFromItem(source, 0, 0)
+        _sourcePos = pageOverlay.mapFromItem(source, 0, 0)
+        if (position == "") {
+            _destPos = pageOverlay.mapFromItem(root, 0, 0)
+        } else {
+            var dx = _sourcePos.x
+            var dy = _sourcePos.y
+            if (position == "left") dx -= openPopup.width + 20
+            else if (position == "right") dx += source.width + 20
+            else if (position == "bottom") dy += source.height + 20
+            else if (position == "top") dy -= openPopup.height + 20
+            _destPos = Qt.point(dx, dy)
+        }
+        console.log("Destpos: " + _destPos.x + "," + _destPos.y)
     }
 
     function open() {

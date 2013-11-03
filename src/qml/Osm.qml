@@ -2,10 +2,30 @@ import QtQuick 2.0
 import "UIConstants.js" as UI
 
 Item {
+    id: root
     property int buttonSize: UI.OsmButtonSize
     property int screenMargin: UI.OsmScreenMargin
     property bool isPortrait: height > width
     property variant tracker
+    property variant searchBox
+
+    states: [
+        State {
+            name: "allHidden"
+            PropertyChanges { target: searchButton; visible: false }
+            PropertyChanges { target: pathButton; visible: false }
+            PropertyChanges { target: routeButton; visible: false }
+            PropertyChanges { target: goToButton; visible: false }
+            PropertyChanges { target: fullScreenButton; visible: false }
+            PropertyChanges { target: bottom; visible: false }
+        },
+        State {
+            name: "searching"
+            extend: "allHidden"
+            PropertyChanges { target: searchButton; visible: true }
+            PropertyChanges { target: searchBox; visible: true }
+        }
+    ]
 
     Item {
         id: columns
@@ -15,10 +35,16 @@ Item {
         property bool isPortrait: parent.isPortrait
 
         OsmButton {
-            source: "qrc:osm-point"
+            id: searchButton
+            source: "qrc:osm-search"
+            onClicked: {
+                if (root.state == "searching") root.state = ""
+                else root.state = "searching"
+            }
         }
 
         OsmButton {
+            id: pathButton
             source: "qrc:osm-path"
             Loader {
                 id: trackPane
@@ -36,19 +62,23 @@ Item {
         }
 
         OsmButton {
+            id: routeButton
             source: "qrc:osm-route"
         }
 
         OsmButton {
+            id: goToButton
             source: "qrc:osm-go-to"
         }
 
         OsmButton {
+            id: zoomInButton
             source: "qrc:osm-zoom-in"
             onClicked: map.requestedZoomLevel--
         }
 
         OsmButton {
+            id: zoomOutButton
             source: "qrc:osm-zoom-out"
             onClicked: map.requestedZoomLevel++
         }
@@ -59,6 +89,7 @@ Item {
         }
 
         OsmButton {
+            id: fullScreenButton
             source: "qrc:osm-fullscreen"
             onClicked: view.switchFullscreen()
         }

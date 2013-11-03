@@ -1,0 +1,14 @@
+prefix=$${INSTALL_PREFIX}
+exec_prefix=${prefix}
+libdir=$${INSTALL_LIBDIR}
+includedir=${prefix}/include
+plugin_manifest_dir=${prefix}/$${PLUGIN_MANIFEST_DIR_BASE}
+plugin_qml_dir=${prefix}/$${PLUGIN_QML_DIR_BASE}
+mappero_qml_dir=${prefix}/$${MAPPERO_QML_DIR_BASE}
+
+Name: Mappero
+Description: Mappero plugin development
+Version: $${PROJECT_VERSION}
+Requires: Qt5Core Qt5Qml
+Libs: -L${libdir} -l$${TARGET}
+Cflags: -I${includedir}

@@ -1,0 +1,7 @@
+{
+    "name": "Nominatim",
+    "icon": "nominatim.gif",
+    "translations": "mappero",
+    "type": "search",
+    "model": "Model.qml"
+}

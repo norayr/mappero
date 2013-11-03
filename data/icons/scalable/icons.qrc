@@ -5,7 +5,7 @@
   <file alias="osm-gps-disable">maemo-mapper-gps-disable.png</file>
   <file alias="osm-gps-enable">maemo-mapper-gps-enable.png</file>
   <file alias="osm-path">maemo-mapper-path.png</file>
-  <file alias="osm-point">maemo-mapper-point.png</file>
+  <file alias="osm-search">osm-search.png</file>
   <file alias="osm-route">maemo-mapper-route.png</file>
   <file alias="osm-settings">maemo-mapper-settings.png</file>
   <file alias="osm-view">maemo-mapper-view.png</file>
@@ -15,5 +15,6 @@
   <file alias="osm-zoom-out-off">maemo-mapper-zoom-out-off.png</file>
   <file alias="osm-zoom-out">maemo-mapper-zoom-out.png</file>
   <file>poi-frame.svg</file>
+  <file>search-result.svg</file>
 </qresource>
 </RCC>

@@ -207,14 +207,10 @@ void Downloader::run()
 
     delete networkAccessManager;
     networkAccessManager = 0;
-
-    DEBUG() << "No more tasks, exiting";
 }
 
 void Downloader::processTask(const TileTask &tile)
 {
-    DEBUG() << "Processing task: " << tile;
-
     mutex.lock();
     TaskData &data = tasks[tile];
     mutex.unlock();
@@ -304,7 +300,6 @@ void TileDownloadPrivate::taskCompleted(const TileTask &tile)
 
 void TileDownloadPrivate::requestTile(const TileTask &task)
 {
-    DEBUG() << task;
     tasksMutex.lock();
     /* Check if the task is already in progress */
     TaskMap::iterator t = tasks.find(task);

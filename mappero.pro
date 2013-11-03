@@ -1,7 +1,8 @@
 include(common-config.pri)
 
 TEMPLATE = subdirs
-SUBDIRS = src tests
+CONFIG += ordered
+SUBDIRS = lib src tests
 
 OTHER_FILES += \
     qtc_packaging/debian_harmattan/rules \

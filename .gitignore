@@ -44,3 +44,6 @@ stamp*
 *marshal.*
 *.swp
 mappero/mappero.pc
+moc_*.cpp
+qrc_*.cpp
+*.moc

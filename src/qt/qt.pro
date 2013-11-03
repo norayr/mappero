@@ -32,6 +32,12 @@ qtHaveModule(location) {
     QT += location
 }
 
+LIBS += -lMappero
+QMAKE_LIBDIR += $${TOP_BUILD_DIR}/lib/Mappero
+INCLUDEPATH += $${TOP_SRC_DIR}/lib
+DEFINES += \
+    PLUGIN_MANIFEST_DIR=\\\"$${PLUGIN_MANIFEST_DIR}\\\"
+
 SOURCES += \
     configuration.cpp \
     controller.cpp \
@@ -46,6 +52,8 @@ SOURCES += \
     path-item.cpp \
     path-layer.cpp \
     path.cpp \
+    plugin-manager.cpp \
+    plugin-model.cpp \
     poi-item.cpp \
     poi-view.cpp \
     projection.cpp \
@@ -68,6 +76,8 @@ HEADERS += \
     path-item.h \
     path-layer.h \
     path.h \
+    plugin-manager.h \
+    plugin-model.h \
     poi-item.h \
     poi-view.h \
     tile-download.h \
