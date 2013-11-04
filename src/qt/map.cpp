@@ -168,6 +168,7 @@ private:
     qreal zoomLevel;
     qreal animatedZoomLevel;
     qreal requestedZoomLevel;
+    qreal pinchScale;
     bool followGps;
     MapEvent mapEvent;
     Mark *mark;
@@ -214,27 +215,6 @@ void MapPrivate::setRequestedCenter(const Point &centerUnits)
         q->setRequestedCenter(projection->unitToGeo(centerUnits).toPointF());
     }
 }
-
-/*
- * TODO
-void MapPrivate::onPinching(QPinchGesture *pinch)
-{
-    Q_Q(Map);
-    DEBUG() << "Rotating around" << pinch->centerPoint() <<
-        ", angle:" << pinch->rotationAngle();
-
-    if (pinch->totalChangeFlags() & QPinchGesture::ScaleFactorChanged) {
-        DEBUG() << "Scale" << pinch->scaleFactor() <<
-            ", total:" << pinch->totalScaleFactor();
-        qreal zoom = zoomLevel - log(pinch->totalScaleFactor());
-        if (pinch->state() == Qt::GestureFinished) {
-            q->setRequestedZoomLevel(zoom);
-        } else {
-            q->setAnimatedZoomLevel(zoom);
-        }
-    }
-}
-*/
 
 void MapPrivate::deliverMapEvent()
 {
@@ -533,6 +513,29 @@ qreal Map::maxZoomLevel() const
 
     if (d->mainLayer == 0) return MAX_ZOOM;
     return d->mainLayer->maxZoom();
+}
+
+void Map::setPinchScale(qreal scale)
+{
+    Q_D(Map);
+
+    if (scale == d->pinchScale) return;
+
+    if (scale != 0) {
+        qreal zoom = d->zoomLevel - log(scale);
+        setAnimatedZoomLevel(zoom);
+    } else {
+        qreal zoom = d->zoomLevel - log(d->pinchScale);
+        setRequestedZoomLevel(zoom);
+    }
+    d->pinchScale = scale;
+    Q_EMIT pinchScaleChanged();
+}
+
+qreal Map::pinchScale() const
+{
+    Q_D(const Map);
+    return d->pinchScale;
 }
 
 void Map::setFollowGps(bool followGps)

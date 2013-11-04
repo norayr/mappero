@@ -31,6 +31,16 @@ Item {
     MapFlickable {
         id: mapFlickable
         anchors.fill: parent
+
+        PinchArea {
+            anchors.fill: parent
+            onPinchStarted: mapFlickable.interactive = false
+            onPinchUpdated: map.pinchScale = pinch.scale
+            onPinchFinished: {
+                map.pinchScale = 0
+                mapFlickable.interactive = true
+            }
+        }
     }
 
     Rectangle {

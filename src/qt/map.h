@@ -62,6 +62,8 @@ class Map: public QQuickItem {
                NOTIFY mainLayerChanged);
     Q_PROPERTY(qreal maxZoomLevel READ maxZoomLevel
                NOTIFY mainLayerChanged);
+    Q_PROPERTY(qreal pinchScale READ pinchScale WRITE setPinchScale \
+               NOTIFY pinchScaleChanged);
     Q_PROPERTY(Mappero::Layer *mainLayer READ mainLayer WRITE setMainLayer \
                NOTIFY mainLayerChanged);
     Q_PROPERTY(bool followGps READ followGps WRITE setFollowGps \
@@ -102,6 +104,9 @@ public:
     qreal minZoomLevel() const;
     qreal maxZoomLevel() const;
 
+    void setPinchScale(qreal scale);
+    qreal pinchScale() const;
+
     void setMainLayer(Layer *layer);
     Layer *mainLayer() const;
 
@@ -125,6 +130,7 @@ Q_SIGNALS:
     void zoomLevelChanged(qreal zoomLevel);
     void animatedZoomLevelChanged(qreal zoomLevel);
     void requestedZoomLevelChanged(qreal zoomLevel);
+    void pinchScaleChanged();
     void sizeChanged();
     void mainLayerChanged();
     void followGpsChanged(bool followGps);
