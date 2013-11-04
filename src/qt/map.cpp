@@ -488,7 +488,7 @@ void Map::setRequestedZoomLevel(qreal zoom)
      * TODO add a protected method so that subclasses can decide whether this
      * should happen.
      */
-    zoom = round(zoom);
+    zoom = (zoom > d->requestedZoomLevel) ? ceil(zoom) : floor(zoom);
     d->requestedZoomLevel = zoom;
     Q_EMIT requestedZoomLevelChanged(zoom);
 }
