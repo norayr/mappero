@@ -397,6 +397,9 @@ void PoiView::setDelegate(QQmlComponent *delegate)
 
     // TODO: rebuild existing delegates
     d->delegate = delegate;
+    if (delegate->isError()) {
+        DEBUG() << delegate->errors();
+    }
 }
 
 QQmlComponent *PoiView::delegate() const
