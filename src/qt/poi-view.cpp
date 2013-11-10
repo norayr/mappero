@@ -26,6 +26,7 @@
 #include <QAbstractListModel>
 #include <QQmlComponent>
 #include <QQmlContext>
+#include <QQmlEngine>
 #include <QQmlProperty>
 #include <QQmlPropertyMap>
 #include <QVector>
@@ -277,8 +278,11 @@ QQuickItem *PoiViewPrivate::createItem(VisualModelItem *modelItem)
 {
     Q_Q(PoiView);
 
+    QQmlContext *creationContext = delegate->creationContext();
     QQmlContext *context =
-        new QQmlContext(delegate->creationContext(), modelItem);
+        new QQmlContext(creationContext ?
+                        creationContext : QQmlEngine::contextForObject(q),
+                        modelItem);
     context->setContextObject(modelItem);
     context->setContextProperty("model", modelItem);
     context->setContextProperty("view", q);
