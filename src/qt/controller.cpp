@@ -45,8 +45,14 @@ class ControllerPrivate
         view(0),
         tileDownload(0),
         tileCache(0),
-        configuration(0)
+        configuration(0),
+        uiScale(1.0)
     {
+        /* Ubuntu Touch might define this */
+        float uiScaleTest = qgetenv("GRID_UNIT_PX").toFloat();
+        if (uiScaleTest != 0.0) {
+            uiScale = uiScaleTest / 8;
+        }
     }
 
     ~ControllerPrivate()
@@ -62,6 +68,7 @@ private:
     mutable TileDownload *tileDownload;
     mutable TileCache *tileCache;
     mutable Configuration *configuration;
+    qreal uiScale;
 };
 };
 
@@ -173,4 +180,10 @@ QString Controller::formatLength(qreal metres)
         unit = "m";
     }
     return QString::fromLatin1("%1%2").arg(metres, 0, 'f', decimals).arg(unit);
+}
+
+qreal Controller::uiScale() const
+{
+    Q_D(const Controller);
+    return d->uiScale;
 }
