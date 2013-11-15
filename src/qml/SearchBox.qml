@@ -10,7 +10,7 @@ Rectangle {
     property variant location
     property variant __plugin: null
 
-    height: 40
+    height: 40 * Mappero.uiScale
     radius: height / 2
     color: "white"
     border {
@@ -22,11 +22,13 @@ Rectangle {
         id: input
         anchors {
             left: parent.left
-            right: parent.right
+            right: icon.left
             verticalCenter: parent.verticalCenter
-            margins: 4
+            leftMargin: root.height / 4
         }
-        focus: true
+        clip: true
+        focus: visible
+        font.pixelSize: root.height / 2
         onAccepted: __plugin.query = text
     }
 
