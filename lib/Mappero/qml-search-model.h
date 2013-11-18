@@ -30,6 +30,7 @@ class QmlSearchModel: public QAbstractListModel
 {
     Q_OBJECT
     Q_PROPERTY(QStringList roles READ roles WRITE setRoles NOTIFY rolesChanged)
+    Q_PROPERTY(int count READ rowCount NOTIFY countChanged)
 
 public:
     QmlSearchModel(QObject *parent = 0);
@@ -48,6 +49,7 @@ public:
     QHash<int, QByteArray> roleNames() const Q_DECL_OVERRIDE;
 
 Q_SIGNALS:
+    void countChanged();
     void rolesChanged();
 
 private:

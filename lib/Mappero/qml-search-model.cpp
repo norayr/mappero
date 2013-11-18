@@ -51,6 +51,10 @@ QmlSearchModel::QmlSearchModel(QObject *parent):
     QAbstractListModel(parent),
     d_ptr(new QmlSearchModelPrivate)
 {
+    QObject::connect(this, SIGNAL(rowsInserted(const QModelIndex&,int,int)),
+                     this, SIGNAL(countChanged()));
+    QObject::connect(this, SIGNAL(rowsRemoved(const QModelIndex&,int,int)),
+                     this, SIGNAL(countChanged()));
 }
 
 QmlSearchModel::~QmlSearchModel()
