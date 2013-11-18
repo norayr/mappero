@@ -88,6 +88,12 @@ Item {
         }
     }
 
+    PoiBrowser {
+        map: map
+        model: searchBox.model
+        onCurrentGeoPointChanged: map.requestedCenter = currentGeoPoint
+    }
+
     SearchBox {
         id: searchBox
         anchors.top: parent.top

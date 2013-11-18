@@ -13,6 +13,8 @@
   <file>Osm.qml</file>
   <file>PaneBackground.qml</file>
   <file>Pane.qml</file>
+  <file>PoiBrowserDelegate.qml</file>
+  <file>PoiBrowser.qml</file>
   <file>Popup.qml</file>
   <file>SearchBox.qml</file>
   <file>SearchPluginChooser.qml</file>
