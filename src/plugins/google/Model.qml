@@ -3,7 +3,7 @@ import Mappero 1.0
 
 SearchModel {
     id: listModel
-    roles: ["name"]
+    roles: ["name", "address"]
     property string apiKey: "AIzaSyDdPxlISfxPRpL4Z-X5es5DWNSS28z1OF0"
 
     Component.onCompleted: {
