@@ -28,7 +28,7 @@ PoiItem {
             anchors.bottomMargin: 16
             clip: true
             fillMode: Image.PreserveAspectCrop
-            source: taggable.pixmapUrl
+            source: model.taggable.pixmapUrl
             sourceSize.width: UI.TaggableSourceWidth
             sourceSize.height: UI.TaggableSourceHeight
 

@@ -47,11 +47,11 @@ Item {
                 delegate: ImagePoi {
                     width: 80
                     height: 80
-                    source: taggable.pixmapUrl
+                    source: model.taggable.pixmapUrl
                     topText: model.fileName
 
                     onDragFinished: {
-                        taggable.location = view.itemPos(index)
+                        model.taggable.location = view.itemPos(index)
                     }
 
                     onPressed: view.setCurrent(index)

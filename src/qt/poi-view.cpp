@@ -283,7 +283,6 @@ QQuickItem *PoiViewPrivate::createItem(VisualModelItem *modelItem)
         new QQmlContext(creationContext ?
                         creationContext : QQmlEngine::contextForObject(q),
                         modelItem);
-    context->setContextObject(modelItem);
     context->setContextProperty("model", modelItem);
     context->setContextProperty("view", q);
     QObject *object = delegate->beginCreate(context);
