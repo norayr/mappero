@@ -29,7 +29,10 @@ Rectangle {
         clip: true
         focus: visible
         font.pixelSize: root.height / 2
-        onAccepted: __plugin.query = text
+        onAccepted: {
+            Qt.inputMethod.hide()
+            __plugin.query = text
+        }
     }
 
     SearchPluginChooser {
