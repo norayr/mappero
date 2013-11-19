@@ -10,6 +10,7 @@ PoiItem {
     Image {
         id: image
         source: "qrc:/search-result.svg"
+        sourceSize.height: 32 * Mappero.uiScale
     }
 
     Rectangle {
@@ -25,8 +26,9 @@ PoiItem {
         anchors.horizontalCenter: image.horizontalCenter
         anchors.top: image.bottom
         anchors.margins: 3
-        width: Math.min(implicitWidth, 160)
+        width: Math.min(implicitWidth, 160 * Mappero.uiScale)
         text: model.name
+        font.pixelSize: image.implicitHeight / 3
         elide: Text.ElideRight
     }
 }
