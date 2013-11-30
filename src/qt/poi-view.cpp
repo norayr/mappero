@@ -21,8 +21,8 @@
 #include "debug.h"
 #include "map.h"
 #include "poi-view.h"
-#include "projection.h"
 
+#include <Mappero/Projection>
 #include <QAbstractListModel>
 #include <QQmlComponent>
 #include <QQmlContext>

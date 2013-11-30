@@ -23,8 +23,8 @@
 #define MAP_TILED_LAYER_H
 
 #include "layer.h"
-#include "projection.h"
 
+#include <Mappero/Projection>
 #include <QString>
 
 namespace Mappero {

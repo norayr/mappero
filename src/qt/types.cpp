@@ -19,67 +19,10 @@
 
 #include "types.h"
 
-#include <QDataStream>
-#include <math.h>
-
 using namespace Mappero;
-
-#define EQUATORIAL_CIRCUMFERENCE 40075017
-#define EARTH_RADIUS 6378137.01
-
-Geo GeoPoint::distanceTo(const GeoPoint &other) const
-{
-    Geo lat1, lon1, lat2, lon2;
-    Geo dlat, dlon, slat, slon, a;
-
-    /* Convert to radians. */
-    lat1 = deg2rad(lat);
-    lon1 = deg2rad(lon);
-    lat2 = deg2rad(other.lat);
-    lon2 = deg2rad(other.lon);
-
-    dlat = lat2 - lat1;
-    dlon = lon2 - lon1;
-
-    slat = GSIN(dlat / 2.0);
-    slon = GSIN(dlon / 2.0);
-    a = (slat * slat) + (GCOS(lat1) * GCOS(lat2) * slon * slon);
-
-    return ((2.0 * GATAN2(GSQTR(a), GSQTR(1.0 - a))) * EARTH_RADIUS);
-}
-
-QDataStream &operator<<(QDataStream &out, const Mappero::GeoPoint &geoPoint)
-{
-    return out << geoPoint.lat << geoPoint.lon;
-}
-
-QDataStream &operator>>(QDataStream &in, Mappero::GeoPoint &geoPoint)
-{
-    in >> geoPoint.lat;
-    in >> geoPoint.lon;
-    return in;
-}
-
-QDebug operator<<(QDebug dbg, const GeoPoint &p)
-{
-    dbg.nospace() << "(" << p.lat << ", " << p.lon << ")";
-    return dbg.space();
-}
-
-QDebug operator<<(QDebug dbg, const Point &p)
-{
-    dbg.nospace() << "(" << p.x() << ", " << p.y() << ")";
-    return dbg.space();
-}
 
 QDebug operator<<(QDebug dbg, const TileSpec &t)
 {
     dbg.nospace() << "(" << t.x << ", " << t.y << ")";
     return dbg.space();
-}
-
-Unit Mappero::metre2unit(qreal metres, Geo latitude)
-{
-    return metres * WORLD_SIZE_UNITS /
-        (EQUATORIAL_CIRCUMFERENCE * GCOS(deg2rad(latitude)));
 }

@@ -22,9 +22,9 @@
 #include "gps.h"
 #include "map.h"
 #include "mark.h"
-#include "projection.h"
 #include "types.h"
 
+#include <Mappero/Projection>
 #include <QBrush>
 #include <QPainter>
 

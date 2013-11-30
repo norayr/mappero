@@ -21,7 +21,7 @@
 #ifndef MAP_CONFIGURATION_H
 #define MAP_CONFIGURATION_H
 
-#include "types.h"
+#include <Mappero/types.h>
 
 #include <QObject>
 #include <QSettings>

@@ -1,7 +1,6 @@
 /* vi: set et sw=4 ts=4 cino=t0,(0: */
-/* -*- Mode: C; indent-tabs-mode: nil; c-basic-offset: 4; tab-width: 4 -*- */
 /*
- * Copyright (C) 2009-2010 Alberto Mardegan <mardy@users.sourceforge.net>
+ * Copyright (C) 2012 Alberto Mardegan <mardy@users.sourceforge.net>
  *
  * This file is part of Mappero.
  *
@@ -19,27 +18,26 @@
  * along with Mappero.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef MAP_PROJECTION_H
-#define MAP_PROJECTION_H
+#ifndef MAPPERO_GPX_H
+#define MAPPERO_GPX_H
 
-#include "types.h"
+#include "path.h"
 
 namespace Mappero {
 
-struct Projection {
-    typedef Point (*GeoToUnit)(const GeoPoint &geo);
-    typedef GeoPoint (*UnitToGeo)(const Point &unit);
-    enum Type {
-        GOOGLE,
-        YANDEX,
-        LAST
-    };
-    const char *name;
-    GeoToUnit geoToUnit;
-    UnitToGeo unitToGeo;
-    static const Projection *get(Type type);
+class Gpx: public PathStream
+{
+public:
+    Gpx();
+    ~Gpx();
+
+    bool read(QXmlStreamReader &xml, PathData &pathData);
+    bool write(QXmlStreamWriter &xml, const PathData &pathData);
+
+private:
+    void parseTrkseg(QXmlStreamReader &xml, PathData &pathData);
 };
 
-};
+}; // namespace
 
-#endif /* MAP_PROJECTION_H */
+#endif /* MAPPERO_GPX_H */

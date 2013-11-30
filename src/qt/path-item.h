@@ -22,8 +22,7 @@
 #ifndef MAP_PATH_ITEM_H
 #define MAP_PATH_ITEM_H
 
-#include "path.h"
-
+#include <Mappero/Path>
 #include <QColor>
 #include <QDateTime>
 #include <QObject>

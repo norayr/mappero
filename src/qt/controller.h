@@ -21,7 +21,7 @@
 #ifndef MAP_CONTROLLER_H
 #define MAP_CONTROLLER_H
 
-#include "types.h"
+#include <Mappero/types.h>
 
 #include <QObject>
 

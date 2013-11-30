@@ -10,17 +10,27 @@ QT += \
     qml
 
 SOURCES += \
+    gpx.cpp \
+    kml.cpp \
+    path.cpp \
     plugin.cpp \
+    projection.cpp \
     qml-search-model.cpp \
-    search-plugin.cpp
+    search-plugin.cpp \
+    types.cpp
 
 private_headers = \
     debug.h \
+    gpx.h \
+    kml.h \
     qml-search-model.h
 
 public_headers = \
+    path.h Path \
     plugin.h Plugin \
-    search-plugin.h SearchPlugin
+    projection.h Projection \
+    search-plugin.h SearchPlugin \
+    types.h
 
 HEADERS += \
     $$private_headers \

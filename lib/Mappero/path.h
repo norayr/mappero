@@ -19,8 +19,8 @@
  * along with Mappero.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef MAP_PATH_H
-#define MAP_PATH_H
+#ifndef MAPPERO_PATH_H
+#define MAPPERO_PATH_H
 
 #include "types.h"
 
@@ -168,4 +168,6 @@ inline PathData::PathData(const PathData &other):
 
 }; // namespace
 
-#endif /* MAP_PATH_H */
+Q_DECLARE_METATYPE(Mappero::Path)
+
+#endif /* MAPPERO_PATH_H */

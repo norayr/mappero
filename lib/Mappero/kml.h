@@ -19,8 +19,8 @@
  * along with Mappero.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef MAP_KML_H
-#define MAP_KML_H
+#ifndef MAPPERO_KML_H
+#define MAPPERO_KML_H
 
 #include "path.h"
 
@@ -47,4 +47,4 @@ private:
 
 }; // namespace
 
-#endif /* MAP_KML_H */
+#endif /* MAPPERO_KML_H */

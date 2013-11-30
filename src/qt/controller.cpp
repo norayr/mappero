@@ -24,10 +24,10 @@
 #include "configuration.h"
 #include "controller.h"
 #include "debug.h"
-#include "projection.h"
 #include "tile-cache.h"
 #include "tile-download.h"
 
+#include <Mappero/Projection>
 #include <QElapsedTimer>
 
 using namespace Mappero;

@@ -29,9 +29,9 @@
 #include "map-object.h"
 #include "mark.h"
 #include "path-item.h"
-#include "path.h"
-#include "projection.h"
 
+#include <Mappero/Path>
+#include <Mappero/Projection>
 #include <QEvent>
 #include <math.h>
 

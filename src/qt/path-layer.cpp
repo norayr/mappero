@@ -22,8 +22,8 @@
 #include "map.h"
 #include "path-item.h"
 #include "path-layer.h"
-#include "path.h"
 
+#include <Mappero/Path>
 #include <QPainter>
 #include <QPen>
 

@@ -42,8 +42,6 @@ SOURCES += \
     configuration.cpp \
     controller.cpp \
     gps.cpp \
-    gpx.cpp \
-    kml.cpp \
     layer.cpp \
     main.cpp \
     map.cpp \
@@ -51,12 +49,10 @@ SOURCES += \
     mark.cpp \
     path-item.cpp \
     path-layer.cpp \
-    path.cpp \
     plugin-manager.cpp \
     plugin-model.cpp \
     poi-item.cpp \
     poi-view.cpp \
-    projection.cpp \
     tile-cache.cpp \
     tile-download.cpp \
     tile.cpp \
@@ -75,7 +71,6 @@ HEADERS += \
     mark.h \
     path-item.h \
     path-layer.h \
-    path.h \
     plugin-manager.h \
     plugin-model.h \
     poi-item.h \
