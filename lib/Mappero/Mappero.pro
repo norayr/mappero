@@ -13,6 +13,7 @@ SOURCES += \
     gpx.cpp \
     kml.cpp \
     path.cpp \
+    path-builder.cpp \
     plugin.cpp \
     projection.cpp \
     qml-search-model.cpp \
@@ -23,6 +24,7 @@ private_headers = \
     debug.h \
     gpx.h \
     kml.h \
+    path-builder.h \
     qml-search-model.h
 
 public_headers = \
