@@ -17,9 +17,13 @@
  * along with Mappero.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "path.h"
+#include "path-builder.h"
+#include "qml-search-model.h"
 #include "types.h"
 
 #include <QDataStream>
+#include <QtQml>
 #include <math.h>
 
 using namespace Mappero;
@@ -76,4 +80,19 @@ Unit Mappero::metre2unit(qreal metres, Geo latitude)
 {
     return metres * WORLD_SIZE_UNITS /
         (EQUATORIAL_CIRCUMFERENCE * GCOS(deg2rad(latitude)));
+}
+
+void Mappero::registerTypes()
+{
+    static bool typesRegistered = false;
+
+    if (typesRegistered) return;
+
+    qRegisterMetaType<Mappero::GeoPoint>("GeoPoint");
+    qRegisterMetaTypeStreamOperators<Mappero::GeoPoint>("GeoPoint");
+
+    qRegisterMetaType<Mappero::Path>("Path");
+
+    qmlRegisterType<Mappero::PathBuilder>("Mappero", 1, 0, "PathBuilder");
+    qmlRegisterType<Mappero::QmlSearchModel>("Mappero", 1, 0, "SearchModel");
 }

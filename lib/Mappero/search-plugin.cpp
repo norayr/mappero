@@ -50,11 +50,6 @@ private:
 SearchPluginPrivate::SearchPluginPrivate(SearchPlugin *q):
     q_ptr(q)
 {
-    static bool typeRegistered = false;
-
-    if (!typeRegistered) {
-        qmlRegisterType<Mappero::QmlSearchModel>("Mappero", 1, 0, "SearchModel");
-    }
 }
 
 SearchPlugin::SearchPlugin(const QVariantMap &manifestData, QObject *parent):

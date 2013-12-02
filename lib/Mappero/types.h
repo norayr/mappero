@@ -143,6 +143,8 @@ inline bool operator!=(const GeoPoint &p1, const GeoPoint &p2)
 
 Unit metre2unit(qreal metres, Geo latitude);
 
+void registerTypes();
+
 } // namespace
 
 Q_DECLARE_METATYPE(Mappero::GeoPoint)
