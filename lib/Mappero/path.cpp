@@ -196,7 +196,6 @@ void Path::clear()
 void Path::addPoint(const GeoPoint &geo, int altitude, time_t time,
                     Geo distance)
 {
-    DEBUG() << geo;
     PathPoint p(geo);
     p.altitude = altitude;
     p.time = time;

@@ -90,7 +90,6 @@ class PathData: public QSharedData
 {
 public:
     PathData();
-    inline PathData(const PathData &other);
     ~PathData() {}
 
     void addPoint(const PathPoint &point);
@@ -161,10 +160,6 @@ public:
     virtual bool read(QXmlStreamReader &xml, PathData &pathData) = 0;
     virtual bool write(QXmlStreamWriter &xml, const PathData &pathData) = 0;
 };
-
-inline PathData::PathData(const PathData &other):
-    QSharedData(other), points(other.points), wayPoints(other.wayPoints),
-    pointsOptimized(other.pointsOptimized) {}
 
 }; // namespace
 
