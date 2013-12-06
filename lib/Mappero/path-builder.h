@@ -40,6 +40,7 @@ public:
 
     Path path() const;
 
+    Q_INVOKABLE void clear();
     Q_INVOKABLE void addPoint(const QVariantMap &pointData);
 
 Q_SIGNALS:

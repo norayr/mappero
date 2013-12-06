@@ -62,6 +62,13 @@ Path PathBuilder::path() const
     return d->path;
 }
 
+void PathBuilder::clear()
+{
+    Q_D(PathBuilder);
+    d->path.clear();
+    Q_EMIT pathChanged();
+}
+
 void PathBuilder::addPoint(const QVariantMap &pointData)
 {
     Q_D(PathBuilder);
