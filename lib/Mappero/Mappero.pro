@@ -3,6 +3,9 @@ include(../../common-config.pri)
 TEMPLATE = lib
 TARGET = Mappero
 
+# Error on undefined symbols
+QMAKE_LFLAGS += $$QMAKE_LFLAGS_NOUNDEF
+
 DEFINES += \
     PLUGIN_QML_DIR=\\\"$${PLUGIN_QML_DIR}\\\"
 
