@@ -40,6 +40,7 @@ private:
     mutable PathItem *q_ptr;
     Path path;
     QColor color;
+    qreal opacity;
     int offset;
 };
 
@@ -47,6 +48,7 @@ private:
 
 inline PathItemPrivate::PathItemPrivate(PathItem *tracker):
     q_ptr(tracker),
+    opacity(1.0),
     offset(0)
 {
 }
@@ -87,6 +89,7 @@ void PathItem::setColor(const QColor &color)
 {
     Q_D(PathItem);
     d->color = color;
+    d->color.setAlphaF(d->opacity);
     Q_EMIT colorChanged();
 }
 
@@ -94,6 +97,20 @@ QColor PathItem::color() const
 {
     Q_D(const PathItem);
     return d->color;
+}
+
+void PathItem::setOpacity(qreal opacity)
+{
+    Q_D(PathItem);
+    d->opacity = opacity;
+    d->color.setAlphaF(opacity);
+    Q_EMIT opacityChanged();
+}
+
+qreal PathItem::opacity() const
+{
+    Q_D(const PathItem);
+    return d->opacity;
 }
 
 bool PathItem::isEmpty() const
