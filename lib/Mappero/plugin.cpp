@@ -41,6 +41,7 @@ class PluginPrivate
 private:
     mutable Plugin *q_ptr;
     QVariantMap m_data;
+    QMap<QString,QQmlComponent*> m_loadedComponents;
 };
 
 } // namespace
@@ -168,6 +169,11 @@ QUrl Plugin::resolvePath(const QString &path) const
 
 QQmlComponent *Plugin::loadComponent(const QString &key)
 {
+    Q_D(Plugin);
+
+    if (d->m_loadedComponents.contains(key))
+        return d->m_loadedComponents[key];
+
     QString path = manifestData().value(key).toString();
     QUrl componentUrl = resolvePath(path);
     if (componentUrl.isEmpty()) return 0;
@@ -175,5 +181,17 @@ QQmlComponent *Plugin::loadComponent(const QString &key)
     QQmlContext *context = QQmlEngine::contextForObject(this);
     if (Q_UNLIKELY(context == 0)) return 0;
 
-    return new QQmlComponent(context->engine(), componentUrl, this);
+    QQmlComponent *component =
+        new QQmlComponent(context->engine(), componentUrl, this);
+    if (Q_UNLIKELY(component->isError())) {
+        qWarning() << "Error:" << component->errors();
+        delete component;
+        component = 0;
+        /* We don't just return here: we add the NULL pointer to the
+         * m_loadedComponents map, to avoid reloading this invalid component
+         * again. */
+    }
+
+    d->m_loadedComponents.insert(key, component);
+    return component;
 }
