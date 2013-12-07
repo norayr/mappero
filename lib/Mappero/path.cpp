@@ -34,6 +34,11 @@
 using namespace Mappero;
 
 static const Projection *global_projection = 0;
+static const QString keyLat = QStringLiteral(PATH_POINT_KEY_LATITUDE);
+static const QString keyLon = QStringLiteral(PATH_POINT_KEY_LONGITUDE);
+static const QString keyAltitude = QStringLiteral(PATH_POINT_KEY_ALTITUDE);
+static const QString keyTime = QStringLiteral(PATH_POINT_KEY_TIME);
+static const QString keyText = QStringLiteral(PATH_POINT_KEY_TEXT);
 
 static inline void ensure_projection()
 {
@@ -96,15 +101,13 @@ PathPoint::PathPoint(const GeoPoint &p, int altitude):
 }
 
 PathWayPoint::PathWayPoint():
-    pointIndex(-1),
-    dir(DIRECTION_UNKNOWN)
+    pointIndex(-1)
 {
 }
 
-PathWayPoint::PathWayPoint(const QString &desc, int pointIndex):
+PathWayPoint::PathWayPoint(const QVariantMap &data, int pointIndex):
     pointIndex(pointIndex),
-    dir(DIRECTION_UNKNOWN),
-    desc(desc)
+    data(data)
 {
 }
 
@@ -173,6 +176,26 @@ const PathPoint &Path::lastPoint() const
     return d->points.last();
 }
 
+int Path::wayPointCount() const
+{
+    return d->wayPoints.count();
+}
+
+const PathPoint &Path::wayPointAt(int index) const
+{
+    return d->points[d->wayPoints[index].pointIndex];
+}
+
+QString Path::wayPointText(int index) const
+{
+    return d->wayPoints[index].data[keyText].toString();
+}
+
+QVariantMap Path::wayPointData(int index) const
+{
+    return d->wayPoints[index].data;
+}
+
 PathPoint Path::positionAt(time_t time) const
 {
     return d->positionAt(time);
@@ -201,6 +224,49 @@ void Path::addPoint(const GeoPoint &geo, int altitude, time_t time,
     p.time = time;
     p.distance = distance;
     d->addPoint(p);
+}
+
+bool Path::addPoint(const QVariantMap &pointData)
+{
+    QVariantMap wayPointData;
+    bool hasLat = false;
+    bool hasLon = false;
+    qreal lat, lon;
+    time_t time = 0;
+    int altitude = 0;
+
+    for (QVariantMap::const_iterator i = pointData.begin();
+         i != pointData.end();
+         i++) {
+        if (!hasLat && i.key() == keyLat) {
+            hasLat = true;
+            lat = i.value().toReal();
+        } else if (!hasLon && i.key() == keyLon) {
+            hasLon = true;
+            lon = i.value().toReal();
+        } else if (i.key() == keyTime) {
+            QVariant vTime = i.value();
+            if (vTime.canConvert(QMetaType::Int)) {
+                time = vTime.toInt();
+            } else if (vTime.canConvert(QMetaType::QDateTime)) {
+                time = vTime.toDateTime().toMSecsSinceEpoch();
+            }
+        } else if (i.key() == keyAltitude) {
+            altitude = i.value().toInt();
+        } else {
+            // WayPoint data, just copy it
+            wayPointData.insert(i.key(), i.value());
+        }
+    }
+
+    if (!hasLat || !hasLon) return false;
+
+    addPoint(GeoPoint(lat, lon), altitude, time);
+    if (!wayPointData.isEmpty()) {
+        d->makeWayPoint(wayPointData, d->points.count() - 1);
+    }
+
+    return true;
 }
 
 void Path::appendBreak()
@@ -297,7 +363,14 @@ void PathData::addPoint(const PathPoint &p)
 
 void PathData::makeWayPoint(const QString &desc, int pointIndex)
 {
-    wayPoints.append(PathWayPoint(desc, pointIndex));
+    QVariantMap data;
+    data.insert(PATH_POINT_KEY_TEXT, desc);
+    wayPoints.append(PathWayPoint(data, pointIndex));
+}
+
+void PathData::makeWayPoint(const QVariantMap &data, int pointIndex)
+{
+    wayPoints.append(PathWayPoint(data, pointIndex));
 }
 
 bool PathData::appendBreak()

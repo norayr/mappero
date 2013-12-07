@@ -73,29 +73,7 @@ void PathBuilder::addPoint(const QVariantMap &pointData)
 {
     Q_D(PathBuilder);
 
-    static const QString keyLat = QStringLiteral("lat");
-    static const QString keyLon = QStringLiteral("lon");
-    static const QString keyAltitude = QStringLiteral("altitude");
-    static const QString keyTime = QStringLiteral("time");
-
-    if (!pointData.contains(keyLat) || !pointData.contains(keyLon)) return;
-
-    time_t time = 0;
-    if (pointData.contains(keyTime)) {
-        QVariant vTime = pointData[keyTime];
-        if (vTime.canConvert(QMetaType::Int)) {
-            time = vTime.toInt();
-        } else if (vTime.canConvert(QMetaType::QDateTime)) {
-            time = vTime.toDateTime().toMSecsSinceEpoch();
-        }
+    if (d->path.addPoint(pointData)) {
+        Q_EMIT pathChanged();
     }
-
-    d->path.addPoint(GeoPoint(pointData[keyLat].toReal(),
-                              pointData[keyLon].toReal()),
-                     pointData[keyAltitude].toInt(),
-                     time);
-
-    // TODO: support adding waypoints
-
-    Q_EMIT pathChanged();
 }

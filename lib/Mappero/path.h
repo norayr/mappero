@@ -52,10 +52,17 @@ struct PathPoint
     float distance; /* distance from previous point */
 };
 
+#define PATH_POINT_KEY_LATITUDE "lat"
+#define PATH_POINT_KEY_LONGITUDE "lon"
+#define PATH_POINT_KEY_ALTITUDE "altitude"
+#define PATH_POINT_KEY_TIME "time"
+#define PATH_POINT_KEY_TEXT "text"
+#define PATH_POINT_KEY_DIRECTION "dir"
+
 struct PathWayPoint
 {
     PathWayPoint();
-    inline PathWayPoint(const QString &desc, int pointIndex);
+    inline PathWayPoint(const QVariantMap &data, int pointIndex);
 
     /* Navigation directions */
     enum Direction {
@@ -72,8 +79,7 @@ struct PathWayPoint
     };
 
     int pointIndex;
-    Direction dir;
-    QString desc;
+    QVariantMap data;
 };
 
 struct PathSegment
@@ -94,6 +100,7 @@ public:
 
     void addPoint(const PathPoint &point);
     void makeWayPoint(const QString &desc, int pointIndex);
+    void makeWayPoint(const QVariantMap &data, int pointIndex);
     bool appendBreak();
     PathPoint positionAt(time_t time) const;
     QRectF boundingRect() const;
@@ -130,6 +137,11 @@ public:
     const PathPoint &firstPoint() const;
     const PathPoint &lastPoint() const;
 
+    int wayPointCount() const;
+    const PathPoint &wayPointAt(int index) const;
+    QString wayPointText(int index) const;
+    QVariantMap wayPointData(int index) const;
+
     PathPoint positionAt(time_t time) const;
     QRectF boundingRect() const;
     Geo length() const;
@@ -138,6 +150,7 @@ public:
 
     void addPoint(const GeoPoint &geo, int altitude, time_t time = 0,
                   Geo distance = 0);
+    bool addPoint(const QVariantMap &pointData);
     void appendBreak();
 
     QPainterPath toPainterPath(int zoomLevel) const;
