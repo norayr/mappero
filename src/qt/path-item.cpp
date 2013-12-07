@@ -21,10 +21,88 @@
 #include "debug.h"
 #include "path-item.h"
 
+#include <QAbstractListModel>
 #include <QDateTime>
 #include <QUrl>
 
 using namespace Mappero;
+
+namespace Mappero {
+
+class WayPointModel: public QAbstractListModel
+{
+    Q_OBJECT
+    Q_PROPERTY(int count READ rowCount NOTIFY countChanged)
+
+public:
+    enum Roles {
+        GeoPointRole = Qt::UserRole + 1,
+        TextRole,
+    };
+
+    WayPointModel(QObject *parent = 0);
+
+    void setPath(const Path &path);
+
+    // reimplemented virtual methods
+    int rowCount(const QModelIndex &parent = QModelIndex()) const Q_DECL_OVERRIDE;
+    QVariant data(const QModelIndex &index,
+                  int role = Qt::DisplayRole) const Q_DECL_OVERRIDE;
+    QHash<int, QByteArray> roleNames() const Q_DECL_OVERRIDE;
+
+Q_SIGNALS:
+    void countChanged();
+
+private:
+    Path m_path;
+    QHash<int, QByteArray> m_roles;
+};
+
+} // namespace
+
+WayPointModel::WayPointModel(QObject *parent):
+    QAbstractListModel(parent)
+{
+    m_roles[GeoPointRole] = "geoPoint";
+    m_roles[TextRole] = "text";
+
+    QObject::connect(this, SIGNAL(modelReset()),
+                     this, SIGNAL(countChanged()));
+}
+
+void WayPointModel::setPath(const Path &path)
+{
+    beginResetModel();
+    m_path = path;
+    endResetModel();
+}
+
+int WayPointModel::rowCount(const QModelIndex &parent) const
+{
+    Q_UNUSED(parent);
+    return m_path.wayPointCount();
+}
+
+QVariant WayPointModel::data(const QModelIndex &index, int role) const
+{
+    int row = index.row();
+    if (row >= m_path.wayPointCount()) return QVariant();
+
+    switch (role) {
+    case GeoPointRole:
+        return QVariant::fromValue(m_path.wayPointAt(row).geo);
+    case TextRole:
+        return m_path.wayPointText(row);
+    default:
+        qWarning() << "Unknown role ID:" << role;
+        return QVariant();
+    }
+}
+
+QHash<int, QByteArray> WayPointModel::roleNames() const
+{
+    return m_roles;
+}
 
 namespace Mappero {
 
@@ -42,6 +120,8 @@ private:
     QColor color;
     qreal opacity;
     int offset;
+    QQmlComponent *wayPointDelegate;
+    mutable WayPointModel *wayPointModel;
 };
 
 } // namespace
@@ -49,7 +129,9 @@ private:
 inline PathItemPrivate::PathItemPrivate(PathItem *tracker):
     q_ptr(tracker),
     opacity(1.0),
-    offset(0)
+    offset(0),
+    wayPointDelegate(0),
+    wayPointModel(0)
 {
 }
 
@@ -70,6 +152,7 @@ void PathItem::setPath(const Path &path)
 {
     Q_D(PathItem);
     d->path = path;
+    if (d->wayPointModel) d->wayPointModel->setPath(path);
     Q_EMIT pathChanged();
 }
 
@@ -159,6 +242,32 @@ qreal PathItem::length() const
     return d->path.length();
 }
 
+void PathItem::setWayPointDelegate(QQmlComponent *delegate)
+{
+    Q_D(PathItem);
+
+    if (delegate == d->wayPointDelegate) return;
+
+    d->wayPointDelegate = delegate;
+    Q_EMIT wayPointDelegateChanged();
+}
+
+QQmlComponent *PathItem::wayPointDelegate() const
+{
+    Q_D(const PathItem);
+    return d->wayPointDelegate;
+}
+
+QAbstractListModel *PathItem::wayPointModel() const
+{
+    Q_D(const PathItem);
+    if (!d->wayPointModel) {
+        d->wayPointModel = new WayPointModel(const_cast<PathItem*>(this));
+        d->wayPointModel->setPath(d->path);
+    }
+    return d->wayPointModel;
+}
+
 GeoPoint PathItem::positionAt(const QDateTime &time) const
 {
     Q_D(const PathItem);
@@ -191,3 +300,5 @@ void PathItem::saveFile(const QUrl &fileName) const
 {
     path().save(fileName.toLocalFile());
 }
+
+#include "path-item.moc"

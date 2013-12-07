@@ -27,6 +27,9 @@
 #include <QDateTime>
 #include <QObject>
 
+class QAbstractListModel;
+class QQmlComponent;
+
 namespace Mappero {
 
 class PathItemPrivate;
@@ -43,6 +46,9 @@ class PathItem: public QObject
     Q_PROPERTY(QDateTime startTime READ startTime NOTIFY timesChanged);
     Q_PROPERTY(QDateTime endTime READ endTime NOTIFY timesChanged);
     Q_PROPERTY(int length READ length NOTIFY pathChanged);
+    Q_PROPERTY(QQmlComponent *wayPointDelegate READ wayPointDelegate \
+               WRITE setWayPointDelegate NOTIFY wayPointDelegateChanged);
+    Q_PROPERTY(QAbstractListModel *wayPointModel READ wayPointModel CONSTANT);
 
 public:
     PathItem(QObject *parent = 0);
@@ -68,6 +74,11 @@ public:
 
     qreal length() const;
 
+    void setWayPointDelegate(QQmlComponent *delegate);
+    QQmlComponent *wayPointDelegate() const;
+
+    QAbstractListModel *wayPointModel() const;
+
     Q_INVOKABLE GeoPoint positionAt(const QDateTime &time) const;
     Q_INVOKABLE QRectF itemArea() const;
 
@@ -82,6 +93,7 @@ Q_SIGNALS:
     void opacityChanged();
     void timeOffsetChanged();
     void timesChanged();
+    void wayPointDelegateChanged();
 
 private:
     PathItemPrivate *d_ptr;
