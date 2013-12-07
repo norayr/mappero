@@ -64,6 +64,7 @@ public:
 private Q_SLOTS:
     void onRowsInserted(const QModelIndex &parent, int start, int end);
     void onRowsRemoved(const QModelIndex &parent, int start, int end);
+    void onModelReset();
     void onDataChanged(const QModelIndex &topLeft,
                        const QModelIndex &bottomRight);
 
@@ -199,6 +200,8 @@ void PoiViewPrivate::setModel(QAbstractListModel *newModel)
                          SIGNAL(rowsRemoved(const QModelIndex&,int,int)),
                          this,
                          SLOT(onRowsRemoved(const QModelIndex&,int,int)));
+        QObject::connect(model, SIGNAL(modelReset()),
+                         this, SLOT(onModelReset()));
         QObject::connect(model,
                          SIGNAL(dataChanged(const QModelIndex&,const QModelIndex&)),
                          this,
@@ -354,6 +357,13 @@ void PoiViewPrivate::onRowsRemoved(const QModelIndex &, int first, int last)
         if (visualItem != 0)
             visualItem->setIndex(i);
     }
+}
+
+void PoiViewPrivate::onModelReset()
+{
+    items.clear();
+    items.resize(model->rowCount());
+    updateItems(0, model->rowCount());
 }
 
 void PoiViewPrivate::onDataChanged(const QModelIndex &topLeft,
