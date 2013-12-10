@@ -13,6 +13,7 @@ QT += \
     qml
 
 SOURCES += \
+    model-aggregator.cpp \
     gpx.cpp \
     kml.cpp \
     path.cpp \
@@ -24,6 +25,7 @@ SOURCES += \
     types.cpp
 
 private_headers = \
+    model-aggregator.h \
     debug.h \
     gpx.h \
     kml.h \

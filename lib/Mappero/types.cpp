@@ -17,6 +17,7 @@
  * along with Mappero.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "model-aggregator.h"
 #include "path.h"
 #include "path-builder.h"
 #include "qml-search-model.h"
@@ -93,6 +94,7 @@ void Mappero::registerTypes()
 
     qRegisterMetaType<Mappero::Path>("Path");
 
+    qmlRegisterType<Mappero::ModelAggregator>("Mappero", 1, 0, "ModelAggregator");
     qmlRegisterType<Mappero::PathBuilder>("Mappero", 1, 0, "PathBuilder");
     qmlRegisterType<Mappero::QmlSearchModel>("Mappero", 1, 0, "SearchModel");
 }
