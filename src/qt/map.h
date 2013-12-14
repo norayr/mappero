@@ -68,8 +68,6 @@ class Map: public QQuickItem {
                NOTIFY mainLayerChanged);
     Q_PROPERTY(bool followGps READ followGps WRITE setFollowGps \
                NOTIFY followGpsChanged);
-    Q_PROPERTY(QQmlListProperty<QObject> items READ items);
-    Q_CLASSINFO("DefaultProperty", "items");
 
 public:
     Map();
@@ -113,8 +111,6 @@ public:
     void setFollowGps(bool followGps);
     bool followGps() const;
 
-    QQmlListProperty<QObject> items();
-
     Q_INVOKABLE void lookAt(const QRectF &area,
                             int offsetX, int offsetY, int margin = 0);
     Q_INVOKABLE void ensureVisible(const GeoPoint &geoPoint,
@@ -141,6 +137,8 @@ protected Q_SLOTS:
 protected:
     // reimplemented virtual methods
     void geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry);
+    void itemChange(ItemChange change,
+                    const ItemChangeData &value) Q_DECL_OVERRIDE;
 
 private:
     friend class MapObject;

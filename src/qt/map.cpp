@@ -105,44 +105,7 @@ class MapPrivate: public QObject
 
     void setupFlickable();
 
-    static void itemAppend(MapItemList *p, QObject *o) {
-        MapObject *object = qobject_cast<MapObject*>(o);
-        if (!object) {
-            qWarning() << "Adding non map-object!";
-            return;
-        }
-
-        MapPrivate *d = reinterpret_cast<MapPrivate*>(p->data);
-        d->items.append(o);
-        object->setMap(d->q_ptr);
-        QQuickItem *item = qobject_cast<QQuickItem*>(o);
-        if (item) {
-            if (object->isScalable()) {
-                item->setParentItem(d->layerGroup);
-            } else {
-                item->setParentItem(d->q_ptr);
-            }
-        }
-    }
-    static int itemCount(MapItemList *p) {
-        MapPrivate *d = reinterpret_cast<MapPrivate*>(p->data);
-        return d->items.count();
-    }
-    static QObject *itemAt(MapItemList *p, int idx) {
-        MapPrivate *d = reinterpret_cast<MapPrivate*>(p->data);
-        return d->items.at(idx);
-    }
-    static void itemClear(MapItemList *p) {
-        MapPrivate *d = reinterpret_cast<MapPrivate*>(p->data);
-        foreach (QObject *o, d->items) {
-            qobject_cast<MapObject*>(o)->setMap(0);
-            QQuickItem *item = qobject_cast<QQuickItem*>(o);
-            if (item) {
-                item->setParentItem(0);
-            }
-        }
-        d->items.clear();
-    }
+    void itemAdded(QQuickItem *item);
 
 private Q_SLOTS:
     void deliverMapEvent();
@@ -154,7 +117,6 @@ protected:
 
 private:
     QList<MapObject*> mapObjects;
-    QList<QObject*> items;
     LayerGroup *layerGroup;
     Layer *mainLayer;
     GeoPoint center;
@@ -193,8 +155,6 @@ MapPrivate::MapPrivate(Map *q):
     mark(0),
     q_ptr(q)
 {
-    layerGroup->setParentItem(q);
-
     QObject::connect(q, SIGNAL(centerChanged(const GeoPoint&)),
                      this, SLOT(deliverMapEvent()), Qt::QueuedConnection);
     QObject::connect(q, SIGNAL(zoomLevelChanged(qreal)),
@@ -213,6 +173,20 @@ void MapPrivate::setRequestedCenter(const Point &centerUnits)
     if (mainLayer != 0) {
         const Projection *projection = mainLayer->projection();
         q->setRequestedCenter(projection->unitToGeo(centerUnits).toPointF());
+    }
+}
+
+void MapPrivate::itemAdded(QQuickItem *item)
+{
+    if (item == layerGroup) return;
+
+    MapObject *object = qobject_cast<MapObject*>(item);
+    if (object) {
+        Q_Q(Map);
+        object->setMap(q);
+        if (object->isScalable()) {
+            item->setParentItem(layerGroup);
+        }
     }
 }
 
@@ -277,6 +251,7 @@ Map::Map():
     d_ptr(new MapPrivate(this))
 {
     Q_D(Map);
+    d->layerGroup->setParentItem(this);
     d->layerGroup->setMap(this);
 
     d->mark = new Mark(this);
@@ -553,15 +528,6 @@ bool Map::followGps() const
     return d->followGps;
 }
 
-QQmlListProperty<QObject> Map::items()
-{
-    return QQmlListProperty<QObject>(this, d_ptr,
-                                     MapPrivate::itemAppend,
-                                     MapPrivate::itemCount,
-                                     MapPrivate::itemAt,
-                                     MapPrivate::itemClear);
-}
-
 void Map::lookAt(const QRectF &area, int offsetX, int offsetY, int margin)
 {
     if (area.width() < 0 || area.height() < 0) return;
@@ -650,6 +616,17 @@ void Map::geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry)
     d->mapEvent.m_sizeChanged = true;
     Q_EMIT sizeChanged();
     QQuickItem::geometryChanged(newGeometry, oldGeometry);
+}
+
+void Map::itemChange(ItemChange change, const ItemChangeData &value)
+{
+    Q_D(Map);
+
+    if (change == QQuickItem::ItemChildAddedChange) {
+        d->itemAdded(value.item);
+    }
+
+    QQuickItem::itemChange(change, value);
 }
 
 void Map::gpsPositionUpdated(const GpsPosition &pos) {
