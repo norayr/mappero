@@ -38,7 +38,7 @@ class Tracker: public PathItem
                NOTIFY trackingChanged);
 
 public:
-    Tracker(QObject *parent = 0);
+    Tracker(QQuickItem *parent = 0);
     ~Tracker();
 
     void setGps(Gps *gps);

@@ -25,7 +25,7 @@
 #include <Mappero/Path>
 #include <QColor>
 #include <QDateTime>
-#include <QObject>
+#include <QQuickItem>
 
 class QAbstractListModel;
 class QQmlComponent;
@@ -33,13 +33,11 @@ class QQmlComponent;
 namespace Mappero {
 
 class PathItemPrivate;
-class PathItem: public QObject
+class PathItem: public QQuickItem
 {
     Q_OBJECT
     Q_PROPERTY(Path path READ path WRITE setPath NOTIFY pathChanged);
     Q_PROPERTY(QColor color READ color WRITE setColor NOTIFY colorChanged);
-    Q_PROPERTY(qreal opacity READ opacity WRITE setOpacity \
-               NOTIFY opacityChanged);
     Q_PROPERTY(bool empty READ isEmpty NOTIFY pathChanged);
     Q_PROPERTY(int timeOffset READ timeOffset WRITE setTimeOffset \
                NOTIFY timeOffsetChanged);
@@ -51,7 +49,7 @@ class PathItem: public QObject
     Q_PROPERTY(QAbstractListModel *wayPointModel READ wayPointModel CONSTANT);
 
 public:
-    PathItem(QObject *parent = 0);
+    PathItem(QQuickItem *parent = 0);
     ~PathItem();
 
     void setPath(const Path &path);
@@ -60,9 +58,6 @@ public:
 
     void setColor(const QColor &color);
     QColor color() const;
-
-    void setOpacity(qreal opacity);
-    qreal opacity() const;
 
     bool isEmpty() const;
 
@@ -90,7 +85,6 @@ public Q_SLOTS:
 Q_SIGNALS:
     void colorChanged();
     void pathChanged();
-    void opacityChanged();
     void timeOffsetChanged();
     void timesChanged();
     void wayPointDelegateChanged();

@@ -132,7 +132,7 @@ void TrackerPrivate::onGpsActivated(bool active)
     }
 }
 
-Tracker::Tracker(QObject *parent):
+Tracker::Tracker(QQuickItem *parent):
     PathItem(parent),
     d_ptr(new TrackerPrivate(this))
 {
