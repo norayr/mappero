@@ -106,6 +106,7 @@ class MapPrivate: public QObject
     void setupFlickable();
 
     void itemAdded(QQuickItem *item);
+    void itemRemoved(QQuickItem *item);
 
 private Q_SLOTS:
     void deliverMapEvent();
@@ -116,6 +117,7 @@ protected:
     bool eventFilter(QObject *watched, QEvent *e);
 
 private:
+    bool reparenting;
     QList<MapObject*> mapObjects;
     LayerGroup *layerGroup;
     Layer *mainLayer;
@@ -139,6 +141,7 @@ private:
 };
 
 MapPrivate::MapPrivate(Map *q):
+    reparenting(false),
     layerGroup(new LayerGroup),
     mainLayer(0),
     center(0, 0),
@@ -185,8 +188,20 @@ void MapPrivate::itemAdded(QQuickItem *item)
         Q_Q(Map);
         object->setMap(q);
         if (object->isScalable()) {
+            reparenting = true;
             item->setParentItem(layerGroup);
+            reparenting = false;
         }
+    }
+}
+
+void MapPrivate::itemRemoved(QQuickItem *item)
+{
+    if (reparenting) return;
+
+    MapObject *object = qobject_cast<MapObject*>(item);
+    if (object) {
+        object->setMap(0);
     }
 }
 
@@ -624,6 +639,8 @@ void Map::itemChange(ItemChange change, const ItemChangeData &value)
 
     if (change == QQuickItem::ItemChildAddedChange) {
         d->itemAdded(value.item);
+    } else if (change == QQuickItem::ItemChildRemovedChange) {
+        d->itemRemoved(value.item);
     }
 
     QQuickItem::itemChange(change, value);
