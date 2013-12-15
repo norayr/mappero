@@ -70,12 +70,18 @@ class PathLayerPrivate: public QObject
             delete data;
         }
         d->items.clear();
+        Q_EMIT d->q_ptr->itemsChanged();
     }
 
+    void itemAdded(QQuickItem *item);
+    void itemRemoved(QQuickItem *item);
     void addPathItem(PathItem *pathItem);
+
+    PathItemData *pathItemData(const PathItem *item);
 
 public Q_SLOTS:
     void onPathChanged();
+    void onPathPenChanged();
 
 private:
     mutable PathLayer *q_ptr;
@@ -90,34 +96,80 @@ PathItemData::PathItemData(PathItem *pathItem):
     pen.setCosmetic(true);
 }
 
+void PathLayerPrivate::itemAdded(QQuickItem *item)
+{
+    PathItem *pathItem = qobject_cast<PathItem*>(item);
+    if (pathItem) {
+        addPathItem(pathItem);
+    }
+}
+
+void PathLayerPrivate::itemRemoved(QQuickItem *item)
+{
+    PathItem *pathItem = qobject_cast<PathItem*>(item);
+    PathItemData *data = pathItemData(pathItem);
+    if (data) {
+        Q_Q(PathLayer);
+        QObject::disconnect(pathItem, 0, this, 0);
+        QObject::disconnect(pathItem, 0, q, 0);
+        items.removeOne(data);
+        Q_EMIT q->itemsChanged();
+    }
+}
+
 void PathLayerPrivate::addPathItem(PathItem *pathItem)
 {
+    Q_Q(PathLayer);
     items.append(new PathItemData(pathItem));
     QObject::connect(pathItem, SIGNAL(pathChanged()),
                      this, SLOT(onPathChanged()));
+    QObject::connect(pathItem, SIGNAL(colorChanged()),
+                     this, SLOT(onPathPenChanged()));
+    QObject::connect(pathItem, SIGNAL(opacityChanged()),
+                     q, SLOT(update()));
+    Q_EMIT q->itemsChanged();
+}
+
+PathItemData *PathLayerPrivate::pathItemData(const PathItem *item)
+{
+    /* Find the PathItemData; using a QMap would be more efficient, but only
+     * when many paths are loaded -- which is unlikely. */
+    int length = items.count();
+    for (int i = 0; i < length; i++) {
+        if (items[i]->pathItem == item) {
+            return items[i];
+        }
+    }
+    return 0;
 }
 
 void PathLayerPrivate::onPathChanged()
 {
     Q_Q(PathLayer);
 
-    /* Find the PathItemData; using a QMap would be more efficient, but only
-     * when many paths are loaded -- which is unlikely. */
-    PathItemData *data = 0;
     PathItem *pathItem = static_cast<PathItem*>(sender());
-    int length = items.count();
-    for (int i = 0; i < length; i++) {
-        if (items[i]->pathItem == pathItem) {
-            data = items[i];
-            break;
-        }
-    }
-    if (data == 0) {
+    PathItemData *data = pathItemData(pathItem);
+    if (Q_UNLIKELY(data == 0)) {
         qWarning() << "pathChanged() signal from unknown PathItem";
         return;
     }
 
     data->painterPath = pathItem->path().toPainterPath(q->map()->zoomLevel());
+    q->update();
+}
+
+void PathLayerPrivate::onPathPenChanged()
+{
+    Q_Q(PathLayer);
+
+    PathItem *pathItem = static_cast<PathItem*>(sender());
+    PathItemData *data = pathItemData(pathItem);
+    if (Q_UNLIKELY(data == 0)) {
+        qWarning() << "signal from unknown PathItem";
+        return;
+    }
+
+    data->pen = QPen(pathItem->color(), 4);
     q->update();
 }
 
@@ -155,9 +207,23 @@ void PathLayer::paint(QPainter *painter)
     painter->setTransform(transformation);
     painter->setRenderHints(QPainter::Antialiasing, true);
     foreach (PathItemData *data, d->items) {
+        painter->setOpacity(data->pathItem->opacity());
         painter->setPen(data->pen);
         painter->drawPath(data->painterPath);
     }
+}
+
+void PathLayer::itemChange(ItemChange change, const ItemChangeData &value)
+{
+    Q_D(PathLayer);
+
+    if (change == QQuickItem::ItemChildAddedChange) {
+        d->itemAdded(value.item);
+    } else if (change == QQuickItem::ItemChildRemovedChange) {
+        d->itemRemoved(value.item);
+    }
+
+    QQuickItem::itemChange(change, value);
 }
 
 void PathLayer::mapEvent(MapEvent *event)

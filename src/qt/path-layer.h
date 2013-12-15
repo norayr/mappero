@@ -34,8 +34,8 @@ class PathLayerPrivate;
 class PathLayer: public QQuickPaintedItem, MapObject
 {
     Q_OBJECT
-    Q_PROPERTY(QQmlListProperty<Mappero::PathItem> items READ items);
-    Q_CLASSINFO("DefaultProperty", "items");
+    Q_PROPERTY(QQmlListProperty<Mappero::PathItem> items READ items \
+               NOTIFY itemsChanged);
     Q_INTERFACES(Mappero::MapObject)
 
 public:
@@ -44,9 +44,14 @@ public:
 
     QQmlListProperty<PathItem> items();
 
+Q_SIGNALS:
+    void itemsChanged();
+
 protected:
     // reimplemented methods
     void paint(QPainter *painter) Q_DECL_OVERRIDE;
+    void itemChange(ItemChange change,
+                    const ItemChangeData &value) Q_DECL_OVERRIDE;
 
     void mapEvent(MapEvent *event);
 
