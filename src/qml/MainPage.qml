@@ -9,6 +9,21 @@ Item {
         id: layerManager
     }
 
+    MapFlickable {
+        id: mapFlickable
+        anchors.fill: parent
+
+        PinchArea {
+            anchors.fill: parent
+            onPinchStarted: mapFlickable.interactive = false
+            onPinchUpdated: map.pinchScale = pinch.scale
+            onPinchFinished: {
+                map.pinchScale = 0
+                mapFlickable.interactive = true
+            }
+        }
+    }
+
     Map {
         id: map
         anchors.fill: parent
@@ -32,21 +47,6 @@ Item {
             anchors.fill: parent
             delegate: searchBox.delegate
             model: searchBox.model
-        }
-    }
-
-    MapFlickable {
-        id: mapFlickable
-        anchors.fill: parent
-
-        PinchArea {
-            anchors.fill: parent
-            onPinchStarted: mapFlickable.interactive = false
-            onPinchUpdated: map.pinchScale = pinch.scale
-            onPinchFinished: {
-                map.pinchScale = 0
-                mapFlickable.interactive = true
-            }
         }
     }
 
