@@ -23,7 +23,7 @@
 #include "poi-view.h"
 
 #include <Mappero/Projection>
-#include <QAbstractListModel>
+#include <QAbstractItemModel>
 #include <QQmlComponent>
 #include <QQmlContext>
 #include <QQmlEngine>
@@ -45,7 +45,7 @@ class PoiViewPrivate: public QObject
 public:
     PoiViewPrivate(PoiView *poiView);
 
-    void setModel(QAbstractListModel *newModel);
+    void setModel(QAbstractItemModel *newModel);
     void updateItems(int start, int end);
     void updateItemsPosition();
     QQuickItem *createItem(VisualModelItem *modelItem);
@@ -69,7 +69,7 @@ private Q_SLOTS:
                        const QModelIndex &bottomRight);
 
 private:
-    QAbstractListModel *model;
+    QAbstractItemModel *model;
     QVector<VisualModelItem*> items;
     QQmlComponent *delegate;
     int geoPointRole;
@@ -175,7 +175,7 @@ PoiViewPrivate::PoiViewPrivate(PoiView *poiView):
 {
 }
 
-void PoiViewPrivate::setModel(QAbstractListModel *newModel)
+void PoiViewPrivate::setModel(QAbstractItemModel *newModel)
 {
     if (newModel == model) return;
 
@@ -386,13 +386,13 @@ PoiView::~PoiView()
     delete d_ptr;
 }
 
-void PoiView::setModel(QAbstractListModel *model)
+void PoiView::setModel(QAbstractItemModel *model)
 {
     Q_D(PoiView);
     return d->setModel(model);
 }
 
-QAbstractListModel *PoiView::model() const
+QAbstractItemModel *PoiView::model() const
 {
     Q_D(const PoiView);
     return d->model;

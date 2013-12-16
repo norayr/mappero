@@ -63,6 +63,7 @@ int main(int argc, char *argv[])
     qmlRegisterUncreatableType<Mappero::MapItem>("Mappero", 1, 0, "MapItem",
                                                  "C++ creation only");
     qmlRegisterType<Mappero::Layer>();
+    qmlRegisterType<QAbstractItemModel>();
     qmlRegisterType<QAbstractListModel>();
     qmlRegisterType<Mappero::Configuration>();
 

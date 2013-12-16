@@ -24,7 +24,7 @@
 #include "map-object.h"
 #include "types.h"
 
-class QAbstractListModel;
+class QAbstractItemModel;
 class QQmlComponent;
 
 namespace Mappero {
@@ -33,7 +33,7 @@ class PoiViewPrivate;
 class PoiView: public MapItem
 {
     Q_OBJECT
-    Q_PROPERTY(QAbstractListModel *model READ model WRITE setModel \
+    Q_PROPERTY(QAbstractItemModel *model READ model WRITE setModel \
                NOTIFY modelChanged);
     Q_PROPERTY(QQmlComponent *delegate READ delegate \
                WRITE setDelegate NOTIFY delegateChanged);
@@ -45,8 +45,8 @@ public:
     PoiView(QQuickItem *parent = 0);
     virtual ~PoiView();
 
-    void setModel(QAbstractListModel *model);
-    QAbstractListModel *model() const;
+    void setModel(QAbstractItemModel *model);
+    QAbstractItemModel *model() const;
 
     void setDelegate(QQmlComponent *delegate);
     QQmlComponent *delegate() const;
