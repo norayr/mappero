@@ -37,6 +37,7 @@ namespace Mappero {
 
 /* Plugin types */
 #define MAPPERO_PLUGIN_TYPE_SEARCH "search"
+#define MAPPERO_PLUGIN_TYPE_ROUTING "routing"
 
 class PluginPrivate;
 class Plugin: public QObject

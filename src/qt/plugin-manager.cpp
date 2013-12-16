@@ -22,6 +22,7 @@
 #include "plugin-model.h"
 
 #include "Mappero/Plugin"
+#include "Mappero/RoutingPlugin"
 #include "Mappero/SearchPlugin"
 #include <QCoreApplication>
 #include <QDir>
@@ -117,6 +118,8 @@ Plugin *PluginManagerPrivate::createPlugin(const QVariantMap &manifestData)
     QString pluginType = Plugin::type(manifestData);
     if (pluginType == QStringLiteral(MAPPERO_PLUGIN_TYPE_SEARCH)) {
         return new SearchPlugin(manifestData, q);
+    } else if (pluginType == QStringLiteral(MAPPERO_PLUGIN_TYPE_ROUTING)) {
+        return new RoutingPlugin(manifestData, q);
     } else {
         return 0;
     }

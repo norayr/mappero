@@ -21,6 +21,8 @@ SOURCES += \
     plugin.cpp \
     projection.cpp \
     qml-search-model.cpp \
+    routing-model.cpp \
+    routing-plugin.cpp \
     search-plugin.cpp \
     types.cpp
 
@@ -30,12 +32,14 @@ private_headers = \
     gpx.h \
     kml.h \
     path-builder.h \
-    qml-search-model.h
+    qml-search-model.h \
+    routing-model.h
 
 public_headers = \
     path.h Path \
     plugin.h Plugin \
     projection.h Projection \
+    routing-plugin.h RoutingPlugin \
     search-plugin.h SearchPlugin \
     types.h
 

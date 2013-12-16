@@ -21,6 +21,7 @@
 #include "path.h"
 #include "path-builder.h"
 #include "qml-search-model.h"
+#include "routing-model.h"
 #include "types.h"
 
 #include <QDataStream>
@@ -97,4 +98,5 @@ void Mappero::registerTypes()
     qmlRegisterType<Mappero::ModelAggregator>("Mappero", 1, 0, "ModelAggregator");
     qmlRegisterType<Mappero::PathBuilder>("Mappero", 1, 0, "PathBuilder");
     qmlRegisterType<Mappero::QmlSearchModel>("Mappero", 1, 0, "SearchModel");
+    qmlRegisterType<Mappero::RoutingModel>("Mappero", 1, 0, "RoutingModel");
 }
