@@ -26,6 +26,8 @@
 #include <QPointF>
 #include <QQmlListProperty>
 
+class QQmlComponent;
+
 namespace Mappero {
 
 class Path;
@@ -39,6 +41,8 @@ class RoutingModel: public QAbstractListModel
     Q_PROPERTY(QPointF to READ to WRITE setTo NOTIFY toChanged)
     Q_PROPERTY(bool running READ isRunning WRITE setRunning \
                NOTIFY isRunningChanged)
+    Q_PROPERTY(QQmlComponent *wayPointDelegate READ wayPointDelegate \
+               WRITE setWayPointDelegate NOTIFY wayPointDelegateChanged)
     Q_PROPERTY(QQmlListProperty<QObject> resources READ resources);
     Q_CLASSINFO("DefaultProperty", "resources");
 
@@ -59,6 +63,9 @@ public:
     void setRunning(bool isRunning);
     bool isRunning() const;
 
+    void setWayPointDelegate(QQmlComponent *delegate);
+    QQmlComponent *wayPointDelegate() const;
+
     QQmlListProperty<QObject> resources();
 
     Q_INVOKABLE virtual void run();
@@ -78,6 +85,7 @@ Q_SIGNALS:
     void fromChanged();
     void toChanged();
     void isRunningChanged();
+    void wayPointDelegateChanged();
 
 private:
     RoutingModelPrivate *d_ptr;

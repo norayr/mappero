@@ -57,6 +57,7 @@ private:
     QPointF m_from;
     QPointF m_to;
     bool m_isRunning;
+    QQmlComponent *m_wayPointDelegate;
     QHash<int, QByteArray> m_roles;
 };
 
@@ -124,6 +125,22 @@ bool RoutingModel::isRunning() const
 {
     Q_D(const RoutingModel);
     return d->m_isRunning;
+}
+
+void RoutingModel::setWayPointDelegate(QQmlComponent *delegate)
+{
+    Q_D(RoutingModel);
+
+    if (delegate == d->m_wayPointDelegate) return;
+
+    d->m_wayPointDelegate = delegate;
+    Q_EMIT wayPointDelegateChanged();
+}
+
+QQmlComponent *RoutingModel::wayPointDelegate() const
+{
+    Q_D(const RoutingModel);
+    return d->m_wayPointDelegate;
 }
 
 QQmlListProperty<QObject> RoutingModel::resources()
