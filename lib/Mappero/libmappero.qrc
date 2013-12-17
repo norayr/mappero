@@ -1,6 +1,0 @@
-<!DOCTYPE RCC><RCC version="1.0">
-<qresource>
-  <file alias="Mappero/Plugin/qmldir">qml/qmldir</file>
-  <file alias="Mappero/Plugin/DefaultResultsDelegate.qml">qml/DefaultResultsDelegate.qml</file>
-</qresource>
-</RCC>

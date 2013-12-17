@@ -54,7 +54,7 @@ OTHER_FILES += \
     $${QML_SOURCES}
 
 RESOURCES += \
-    libmappero.qrc
+    qml/libmappero.qrc
 
 target.path = $${INSTALL_LIBDIR}
 INSTALLS += target
