@@ -38,6 +38,7 @@ public:
     enum Roles {
         GeoPointRole = Qt::UserRole + 1,
         TextRole,
+        DataRole,
     };
 
     WayPointModel(QObject *parent = 0);
@@ -65,6 +66,7 @@ WayPointModel::WayPointModel(QObject *parent):
 {
     m_roles[GeoPointRole] = "geoPoint";
     m_roles[TextRole] = "text";
+    m_roles[DataRole] = "data";
 
     QObject::connect(this, SIGNAL(modelReset()),
                      this, SIGNAL(countChanged()));
@@ -93,6 +95,8 @@ QVariant WayPointModel::data(const QModelIndex &index, int role) const
         return QVariant::fromValue(m_path.wayPointAt(row).geo);
     case TextRole:
         return m_path.wayPointText(row);
+    case DataRole:
+        return m_path.wayPointData(row);
     default:
         qWarning() << "Unknown role ID:" << role;
         return QVariant();
