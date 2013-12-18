@@ -1,0 +1,11 @@
+<!DOCTYPE RCC><RCC version="1.0">
+<qresource prefix="/direction">
+  <file alias="left">left.svg</file>
+  <file alias="right">right.svg</file>
+  <file alias="sharp-left">sharp-left.svg</file>
+  <file alias="sharp-right">sharp-right.svg</file>
+  <file alias="slight-left">slight-left.svg</file>
+  <file alias="slight-right">slight-right.svg</file>
+  <file alias="unknown">unknown.svg</file>
+</qresource>
+</RCC>
