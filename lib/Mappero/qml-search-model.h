@@ -41,6 +41,8 @@ public:
 
     Q_INVOKABLE void append(const QVariantMap &rowData);
     Q_INVOKABLE void clear();
+    Q_INVOKABLE QVariantMap get(int row) const;
+    Q_INVOKABLE QVariant get(int row, const QString &role) const;
 
     // reimplemented virtual methods
     int rowCount(const QModelIndex &parent = QModelIndex()) const Q_DECL_OVERRIDE;

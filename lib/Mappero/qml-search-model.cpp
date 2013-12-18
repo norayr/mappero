@@ -98,6 +98,18 @@ void QmlSearchModel::clear()
     endRemoveRows();
 }
 
+QVariantMap QmlSearchModel::get(int row) const
+{
+    Q_D(const QmlSearchModel);
+    return d->m_data.at(row);
+}
+
+QVariant QmlSearchModel::get(int row, const QString &roleName) const
+{
+    int role = roleNames().key(roleName.toLatin1(), -1);
+    return data(index(row, 0), role);
+}
+
 int QmlSearchModel::rowCount(const QModelIndex &parent) const
 {
     Q_D(const QmlSearchModel);
