@@ -89,7 +89,6 @@ Item {
     }
 
     PoiBrowser {
-        map: map
         model: searchBox.model
         onCurrentGeoPointChanged: map.requestedCenter = currentGeoPoint
     }
