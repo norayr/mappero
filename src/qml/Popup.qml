@@ -82,8 +82,8 @@ Item {
             id: closedPopup
             x: _sourcePos.x
             y: _sourcePos.y
-            width: source.width
-            height: source.height
+            width: source ? source.width : undefined
+            height: source ? source.height : undefined
         }
 
         Item {
@@ -109,7 +109,8 @@ Item {
     }
 
     function getRootItem() {
-        var rootItem = source.parent
+        if (!source) return null;
+        var rootItem = source
         while (rootItem.parent && !rootItem.hasOwnProperty("__isPage"))
         {
             rootItem = rootItem.parent
