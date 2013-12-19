@@ -17,6 +17,7 @@ Popup {
             id: listItem
             width: view.width
             text: model.displayName
+            selected: ListView.isCurrentItem
             onClicked: { view.currentIndex = index; root.close() }
         }
     }
