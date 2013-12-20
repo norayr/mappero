@@ -122,6 +122,9 @@ Item {
         _sourcePos = pageOverlay.mapFromItem(source, 0, 0)
         if (position == "") {
             _destPos = pageOverlay.mapFromItem(root, 0, 0)
+        } else if (position == "pageCenter") {
+            _destPos = Qt.point((pageOverlay.width - openPopup.width) / 2,
+                                (pageOverlay.height - openPopup.height) / 2)
         } else {
             var dx = _sourcePos.x
             var dy = _sourcePos.y
