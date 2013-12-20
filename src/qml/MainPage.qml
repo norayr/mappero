@@ -98,12 +98,8 @@ Item {
         anchors.top: parent.top
         anchors.horizontalCenter: parent.horizontalCenter
         width: 200 * Mappero.uiScale
-        pluginManager: pluginManager
         location: Mappero.point(map.center)
         visible: false
     }
 
-    PluginManager {
-        id: pluginManager
-    }
 }

@@ -6,7 +6,6 @@ Rectangle {
 
     property variant model: null
     property variant delegate
-    property variant pluginManager
     property variant location
     property variant __plugin: null
 
@@ -44,7 +43,7 @@ Rectangle {
             margins: 6
         }
         width: height
-        model: pluginManager.pluginModel("search")
+        model: PluginManager.pluginModel("search")
         onActivePluginChanged: usePlugin(activePlugin)
     }
 
@@ -57,7 +56,7 @@ Rectangle {
     function usePlugin(id) {
         console.log("Activating plugin " + id)
         if (model) model.clear()
-        __plugin = pluginManager.loadPlugin(id)
+        __plugin = PluginManager.loadPlugin(id)
         if (__plugin) {
             __plugin.location = location
             delegate = __plugin.delegate

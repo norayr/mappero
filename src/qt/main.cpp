@@ -44,6 +44,16 @@
 #include <QFileInfo>
 #include <QGuiApplication>
 
+static QObject *createPluginManager(QQmlEngine *engine, QJSEngine *scriptEngine)
+{
+    Q_UNUSED(scriptEngine);
+
+    Mappero::PluginManager *manager = new Mappero::PluginManager();
+    QQmlEngine::setContextForObject(manager, engine->rootContext());
+    manager->classBegin();
+    return manager;
+}
+
 int main(int argc, char *argv[])
 {
     QGuiApplication app(argc, argv);
@@ -57,7 +67,9 @@ int main(int argc, char *argv[])
     qmlRegisterType<Mappero::Tracker>("Mappero", 1, 0, "Tracker");
     qmlRegisterType<Mappero::PathItem>("Mappero", 1, 0, "PathItem");
     qmlRegisterType<Mappero::PathLayer>("Mappero", 1, 0, "PathLayer");
-    qmlRegisterType<Mappero::PluginManager>("Mappero", 1, 0, "PluginManager");
+    qmlRegisterSingletonType<Mappero::PluginManager>("Mappero", 1, 0,
+                                                     "PluginManager",
+                                                     createPluginManager);
     qmlRegisterType<Mappero::PoiItem>("Mappero", 1, 0, "PoiItem");
     qmlRegisterType<Mappero::PoiView>("Mappero", 1, 0, "PoiView");
     qmlRegisterUncreatableType<Mappero::MapItem>("Mappero", 1, 0, "MapItem",
