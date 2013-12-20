@@ -7,6 +7,8 @@ Item {
     property string name
     property string address
 
+    signal clicked()
+
     clip: true
 
     Column {
@@ -23,5 +25,10 @@ Item {
             font.pixelSize: root.height / 4 * Math.min(1.0, root.width / contentWidth)
             text: address
         }
+    }
+
+    MouseArea {
+        anchors.fill: parent
+        onClicked: root.clicked()
     }
 }
