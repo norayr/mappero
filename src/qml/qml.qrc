@@ -23,6 +23,7 @@
   <file>SearchBox.qml</file>
   <file>SearchPluginChooser.qml</file>
   <file>SearchPluginSelector.qml</file>
+  <file>TextField.qml</file>
   <file>TiledMaps.qml</file>
   <file>UIConstants.js</file>
 </qresource>
