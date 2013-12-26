@@ -61,6 +61,7 @@ public:
 public Q_SLOTS:
     GeoPoint geo(qreal lat, qreal lon) { return GeoPoint(lat, lon); }
     QPointF point(const GeoPoint &geo) { return geo.toPointF(); }
+    bool isValid(const GeoPoint &geo) { return geo.isValid(); }
     QString formatOffset(int seconds);
     QString formatLength(qreal metres);
     qreal uiScale() const;
