@@ -3,6 +3,7 @@
   <file>Button.qml</file>
   <file>ImageButton.qml</file>
   <file>ImagePoi.qml</file>
+  <file>LabelLayout.qml</file>
   <file>LayerManager.qml</file>
   <file>ListBrowser.qml</file>
   <file>mappero.qml</file>
