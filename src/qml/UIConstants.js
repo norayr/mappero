@@ -1,3 +1,5 @@
+var FieldVSpacing = 3 * Mappero.uiScale
+var FieldHSpacing = 2 * Mappero.uiScale
 var FileToolsWidth = 120 * Mappero.uiScale
 var MenuButtonHeight = 72 * Mappero.uiScale
 var MenuButtonFontPixelSize = 24 * Mappero.uiScale
