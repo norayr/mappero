@@ -2,6 +2,7 @@
 <qresource>
   <file alias="arrow-left">arrow-left.svg</file>
   <file alias="arrow-right">arrow-right.svg</file>
+  <file alias="busy-indicator">busy-indicator.svg</file>
   <file alias="osm-fullscreen">maemo-mapper-fullscreen.png</file>
   <file alias="osm-go-to">maemo-mapper-go-to.png</file>
   <file alias="osm-gps-disable">maemo-mapper-gps-disable.png</file>

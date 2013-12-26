@@ -1,5 +1,6 @@
 <!DOCTYPE RCC><RCC version="1.0">
 <qresource>
+  <file>BusyIndicator.qml</file>
   <file>Button.qml</file>
   <file>ImageButton.qml</file>
   <file>ImagePoi.qml</file>
