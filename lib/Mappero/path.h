@@ -55,6 +55,7 @@ struct PathPoint
 #define PATH_POINT_KEY_LATITUDE "lat"
 #define PATH_POINT_KEY_LONGITUDE "lon"
 #define PATH_POINT_KEY_ALTITUDE "altitude"
+#define PATH_POINT_KEY_DISTANCE "distance"
 #define PATH_POINT_KEY_TIME "time"
 #define PATH_POINT_KEY_TEXT "text"
 #define PATH_POINT_KEY_DIRECTION "dir"

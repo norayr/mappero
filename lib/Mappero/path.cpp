@@ -37,6 +37,7 @@ static const Projection *global_projection = 0;
 static const QString keyLat = QStringLiteral(PATH_POINT_KEY_LATITUDE);
 static const QString keyLon = QStringLiteral(PATH_POINT_KEY_LONGITUDE);
 static const QString keyAltitude = QStringLiteral(PATH_POINT_KEY_ALTITUDE);
+static const QString keyDistance = QStringLiteral(PATH_POINT_KEY_DISTANCE);
 static const QString keyTime = QStringLiteral(PATH_POINT_KEY_TIME);
 static const QString keyText = QStringLiteral(PATH_POINT_KEY_TEXT);
 
@@ -232,6 +233,8 @@ bool Path::addPoint(const QVariantMap &pointData)
     bool hasLat = false;
     bool hasLon = false;
     qreal lat, lon;
+    bool hasDistance = false;
+    qreal distance;
     time_t time = 0;
     int altitude = 0;
 
@@ -253,6 +256,9 @@ bool Path::addPoint(const QVariantMap &pointData)
             }
         } else if (i.key() == keyAltitude) {
             altitude = i.value().toInt();
+        } else if (i.key() == keyDistance) {
+            distance = i.value().toReal();
+            hasDistance = true;
         } else {
             // WayPoint data, just copy it
             wayPointData.insert(i.key(), i.value());
@@ -261,7 +267,7 @@ bool Path::addPoint(const QVariantMap &pointData)
 
     if (!hasLat || !hasLon) return false;
 
-    addPoint(GeoPoint(lat, lon), altitude, time);
+    addPoint(GeoPoint(lat, lon), altitude, time, hasDistance ? distance : -1);
     if (!wayPointData.isEmpty()) {
         d->makeWayPoint(wayPointData, d->points.count() - 1);
     }
