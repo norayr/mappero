@@ -404,10 +404,17 @@ void PoiView::setDelegate(QQmlComponent *delegate)
 
     if (delegate == d->delegate) return;
 
-    // TODO: rebuild existing delegates
     d->delegate = delegate;
     if (delegate->isError()) {
         DEBUG() << delegate->errors();
+    }
+
+    /* Rebuild all delegates */
+    if (d->model) {
+        qDeleteAll(d->items);
+        d->items.clear();
+        d->items.resize(d->model->rowCount());
+        d->updateItems(0, d->model->rowCount());
     }
 }
 
@@ -494,7 +501,8 @@ void PoiView::mapEvent(MapEvent *e)
 
     if (e->centerChanged() ||
         e->zoomLevelChanged() ||
-        e->animated()) {
+        e->animated() ||
+        e->mapChanged()) {
         d->updateItemsPosition();
     }
 }
