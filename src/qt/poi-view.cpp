@@ -507,4 +507,15 @@ void PoiView::mapEvent(MapEvent *e)
     }
 }
 
+void PoiView::geometryChanged(const QRectF &newGeometry,
+                              const QRectF &oldGeometry)
+{
+    QQuickItem::geometryChanged(newGeometry, oldGeometry);
+
+    /* Since the positions of the child items are relative to this item's
+     * center, we need to recompute them whenever the geometry changes. */
+    Q_D(PoiView);
+    d->updateItemsPosition();
+}
+
 #include "poi-view.moc"

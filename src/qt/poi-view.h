@@ -60,6 +60,8 @@ public:
 
     // reimplemented virtual methods
     void mapEvent(MapEvent *e);
+    void geometryChanged(const QRectF &newGeometry,
+                         const QRectF &oldGeometry) Q_DECL_OVERRIDE;
 
 Q_SIGNALS:
     void modelChanged();
