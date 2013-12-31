@@ -212,6 +212,17 @@ Geo Path::length() const
     return d->length();
 }
 
+int Path::totalTime() const
+{
+    if (isEmpty()) return 0;
+
+    const PathPoint &first = d->points.first();
+    const PathPoint &last = d->points.last();
+
+    if (first.time == 0 || last.time == 0) return -1;
+    return last.time - first.time;
+}
+
 void Path::clear()
 {
     d = new PathData;

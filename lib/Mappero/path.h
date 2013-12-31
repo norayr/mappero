@@ -146,6 +146,7 @@ public:
     PathPoint positionAt(time_t time) const;
     QRectF boundingRect() const;
     Geo length() const;
+    int totalTime() const;
 
     void clear();
 
