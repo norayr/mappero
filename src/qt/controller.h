@@ -64,6 +64,7 @@ public Q_SLOTS:
     bool isValid(const GeoPoint &geo) { return geo.isValid(); }
     QString formatOffset(int seconds);
     QString formatLength(qreal metres);
+    QString formatDuration(int ms);
     qreal uiScale() const;
 
 private:

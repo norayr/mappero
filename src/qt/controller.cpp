@@ -29,6 +29,8 @@
 
 #include <Mappero/Projection>
 #include <QElapsedTimer>
+#include <QStringList>
+#include <cstdlib>
 
 using namespace Mappero;
 
@@ -180,6 +182,36 @@ QString Controller::formatLength(qreal metres)
         unit = "m";
     }
     return QString::fromLatin1("%1%2").arg(metres, 0, 'f', decimals).arg(unit);
+}
+
+QString Controller::formatDuration(int ms)
+{
+    int seconds = ms / 1000;
+
+    div_t d = div(seconds, 60 * 60 * 24);
+    int days = d.quot;
+    seconds = d.rem;
+
+    d = div(seconds, 60 * 60);
+    int hours = d.quot;
+    seconds = d.rem;
+
+    d = div(seconds, 60);
+    int minutes = d.quot;
+    seconds = d.rem;
+
+    QStringList components;
+    if (days > 0) {
+        components.append(tr("%1 d").arg(days));
+    }
+    if (hours > 0) {
+        components.append(tr("%1 h").arg(hours));
+    }
+    components.append(tr("%1 min").arg(minutes));
+    if (days == 0 && hours == 0) {
+        components.append(tr("%1 sec").arg(seconds));
+    }
+    return components.join(tr(", ", "time components separator"));
 }
 
 qreal Controller::uiScale() const
