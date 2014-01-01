@@ -130,5 +130,4 @@ Item {
         location: Mappero.point(map.center)
         visible: false
     }
-
 }
