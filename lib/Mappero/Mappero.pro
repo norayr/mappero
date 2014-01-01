@@ -48,7 +48,11 @@ HEADERS += \
     $$public_headers
 
 QML_SOURCES = \
-    qml/DefaultResultsDelegate.qml
+    qml/BaseRouteDelegate.qml \
+    qml/BaseWayPointDelegate.qml \
+    qml/DefaultResultsDelegate.qml \
+    qml/DefaultRouteDelegate.qml \
+    qml/DefaultWayPointDelegate.qml
 
 OTHER_FILES += \
     $${QML_SOURCES}

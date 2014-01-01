@@ -1,2 +1,6 @@
 module Mappero.Plugin
+BaseRouteDelegate 1.0 BaseRouteDelegate.qml
+BaseWayPointDelegate 1.0 BaseWayPointDelegate.qml
 DefaultResultsDelegate 1.0 DefaultResultsDelegate.qml
+DefaultRouteDelegate 1.0 DefaultRouteDelegate.qml
+DefaultWayPointDelegate 1.0 DefaultWayPointDelegate.qml
