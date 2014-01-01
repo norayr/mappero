@@ -21,11 +21,16 @@
   <file>PoiBrowserDelegate.qml</file>
   <file>PoiBrowser.qml</file>
   <file>Popup.qml</file>
+  <file>RouteBrowser.qml</file>
+  <file>RouteItems.qml</file>
+  <file>RouterDialog.qml</file>
+  <file>Router.qml</file>
   <file>SearchBox.qml</file>
   <file>SearchPluginChooser.qml</file>
   <file>SearchPluginSelector.qml</file>
   <file>TextField.qml</file>
   <file>TiledMaps.qml</file>
   <file>UIConstants.js</file>
+  <file>WayPointView.qml</file>
 </qresource>
 </RCC>

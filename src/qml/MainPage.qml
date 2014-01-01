@@ -35,11 +35,23 @@ Item {
         followGps: visible
 
         PathLayer {
+            id: pathLayer
+
             Tracker {
                 id: tracker
                 tracking: true
                 color: "red"
             }
+
+            RouteItems {
+                id: routeItemRepeater
+                model: router.model
+                currentIndex: router.currentIndex
+            }
+        }
+
+        WayPointView {
+            model: pathLayer.items
         }
 
         PoiView {
@@ -91,6 +103,23 @@ Item {
     PoiBrowser {
         model: searchBox.model
         onCurrentGeoPointChanged: map.requestedCenter = currentGeoPoint
+        onDestinationSet: {
+            router.destinationPoint = model.get(currentIndex, "geoPoint")
+            router.destinationName = model.get(currentIndex, "name")
+            router.open()
+            model.clear()
+        }
+        onOriginSet: {
+            router.originPoint = model.get(currentIndex, "geoPoint")
+            router.originName = model.get(currentIndex, "name")
+            model.clear()
+        }
+    }
+
+    Router {
+        id: router
+        currentPosition: map.center // TODO: use GPS!
+        onCurrentIndexChanged: map.lookAt(routeItemRepeater.itemAt(currentIndex).itemArea(), 0, 0, 40)
     }
 
     SearchBox {
