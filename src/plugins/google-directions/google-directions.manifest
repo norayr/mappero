@@ -1,0 +1,7 @@
+{
+    "name": "Google Directions",
+    "icon": "google-search.png",
+    "translations": "mappero",
+    "type": "routing",
+    "routingModel": "Routing.qml"
+}
