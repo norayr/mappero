@@ -43,6 +43,8 @@ class RoutingModel: public QAbstractListModel
                NOTIFY isRunningChanged)
     Q_PROPERTY(QQmlComponent *wayPointDelegate READ wayPointDelegate \
                WRITE setWayPointDelegate NOTIFY wayPointDelegateChanged)
+    Q_PROPERTY(QQmlComponent *routeDelegate READ routeDelegate \
+               WRITE setRouteDelegate NOTIFY routeDelegateChanged)
     Q_PROPERTY(QQmlListProperty<QObject> resources READ resources);
     Q_CLASSINFO("DefaultProperty", "resources");
 
@@ -66,6 +68,9 @@ public:
     void setWayPointDelegate(QQmlComponent *delegate);
     QQmlComponent *wayPointDelegate() const;
 
+    void setRouteDelegate(QQmlComponent *delegate);
+    QQmlComponent *routeDelegate() const;
+
     QQmlListProperty<QObject> resources();
 
     Q_INVOKABLE virtual void run();
@@ -86,6 +91,7 @@ Q_SIGNALS:
     void toChanged();
     void isRunningChanged();
     void wayPointDelegateChanged();
+    void routeDelegateChanged();
 
 private:
     RoutingModelPrivate *d_ptr;
