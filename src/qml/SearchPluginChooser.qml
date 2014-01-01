@@ -11,22 +11,29 @@ ImageButton {
     source: model.get(__selectedIndex, "icon")
 
     onClicked: {
-        if (selector.isOpen) {
-            selector.close()
+        if (loader.item && loader.item.isOpen) {
+            loader.item.close()
         } else {
-            selector.open()
+            loader.sourceComponent = selectorComponent;
+            loader.item.open()
         }
     }
 
-    SearchPluginSelector {
-        id: selector
-        parent: root.parent
-        anchors.horizontalCenter: parent.horizontalCenter
-        anchors.top: parent.bottom
-        anchors.margins: 10
-        model: root.model
-        selectedIndex: __selectedIndex
-        source: root
-        onIsOpenChanged: if (!isOpen) { __selectedIndex = selectedIndex; }
+    Loader {
+        id: loader
+    }
+    Component {
+        id: selectorComponent
+        SearchPluginSelector {
+            id: selector
+            parent: root.parent
+            anchors.horizontalCenter: parent.horizontalCenter
+            anchors.top: parent.bottom
+            anchors.margins: 10
+            model: root.model
+            selectedIndex: __selectedIndex
+            source: root
+            onIsOpenChanged: if (!isOpen) { __selectedIndex = selectedIndex; }
+        }
     }
 }
