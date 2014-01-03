@@ -7,6 +7,7 @@ Repeater {
     id: root
 
     property int currentIndex
+    property Item currentItem: null
 
     delegate: PathItem {
         id: pathItem
@@ -16,4 +17,6 @@ Repeater {
         z: root.currentIndex == index ? 1 : 0
         wayPointDelegate: root.model.wayPointDelegate
     }
+    onItemAdded: if (index == currentIndex) currentItem = item
+    onCurrentIndexChanged: currentItem = itemAt(currentIndex)
 }

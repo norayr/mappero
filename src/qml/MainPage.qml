@@ -52,6 +52,7 @@ Item {
                 id: routeItemRepeater
                 model: router.model
                 currentIndex: router.currentIndex
+                onCurrentItemChanged: map.lookAt(currentItem.itemArea(), 0, 0, 40)
             }
         }
 
@@ -122,7 +123,6 @@ Item {
     Router {
         id: router
         currentPosition: map.center // TODO: use GPS!
-        onCurrentIndexChanged: map.lookAt(routeItemRepeater.itemAt(currentIndex).itemArea(), 0, 0, 40)
     }
 
     SearchBox {
