@@ -6,8 +6,8 @@ ListBrowser {
 
     property variant currentGeoPoint
 
-    signal destinationSet()
-    signal originSet()
+    signal destinationSet(variant point)
+    signal originSet(variant point)
 
     delegate: PoiBrowserDelegate {
         id: browserDelegate
@@ -36,7 +36,15 @@ ListBrowser {
 
     Connections {
         target: loader.item
-        onDestinationSet: root.destinationSet()
-        onOriginSet: root.originSet()
+        onDestinationSet: root.destinationSet(currentPoint())
+        onOriginSet: root.originSet(currentPoint())
+    }
+
+    function currentPoint() {
+        var point = {
+            "geoPoint": model.get(currentIndex, "geoPoint"),
+            "name": model.get(currentIndex, "name")
+        }
+        return point
     }
 }
