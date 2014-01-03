@@ -8,23 +8,31 @@ Item {
     property variant destinationName
     property variant originPoint
     property variant originName
-    property variant model
-    property int currentIndex
+    property variant model: null
+    property int currentIndex: -1
+    property variant __routeBrowser: null
+    property bool routeBrowserNeeded: (model != null) && (model.count > 0)
 
     anchors.fill: parent
 
-    Loader {
-        id: loader
+    onRouteBrowserNeededChanged: {
+        if (routeBrowserNeeded) {
+            var component = Qt.createComponent("RouteBrowser.qml")
+            __routeBrowser = component.createObject(bottomPanel, {
+                "model": model
+            })
+            routeBrowserConnection.target = __routeBrowser
+            root.currentIndex = 0
+        } else {
+            if (__routeBrowser) __routeBrowser.destroy()
+            routeBrowserConnection.target = null
+            __routeBrowser = null
+            root.currentIndex = -1
+        }
     }
 
     Loader {
-        id: browserLoader
-        anchors {
-            bottom: parent.bottom
-            left: parent.left
-            right: parent.right
-            margins: 2
-        }
+        id: loader
     }
 
     Connections {
@@ -32,15 +40,13 @@ Item {
         onRoutesReady: {
             model = loader.item.routeModel
             loader.item.close()
-            browserLoader.setSource("RouteBrowser.qml", {
-                "model": model
-            })
         }
     }
 
     Connections {
-        target: browserLoader.item
-        onCurrentIndexChanged: root.currentIndex = browserLoader.item.currentIndex
+        id: routeBrowserConnection
+        target: null
+        onCurrentIndexChanged: root.currentIndex = __routeBrowser.currentIndex
     }
 
     onCurrentPositionChanged: {
