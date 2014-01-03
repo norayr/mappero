@@ -26,7 +26,12 @@ Item {
 
     Map {
         id: map
-        anchors.fill: parent
+        anchors {
+            top: parent.top
+            left: parent.left
+            right: parent.right
+            bottom: bottomPanel.top
+        }
         flickable: mapFlickable
 
         mainLayer: layerManager.mainLayer
@@ -59,6 +64,20 @@ Item {
             anchors.fill: parent
             delegate: searchBox.delegate
             model: searchBox.model
+        }
+    }
+
+    Item {
+        id: bottomPanel
+        anchors {
+            left: parent.left
+            right: parent.right
+            bottom: parent.bottom
+        }
+        height: childrenRect.height
+
+        Behavior on height {
+            SmoothedAnimation {}
         }
     }
 
