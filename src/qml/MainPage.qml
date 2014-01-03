@@ -119,22 +119,6 @@ Item {
         }
     }
 
-    PoiBrowser {
-        model: searchBox.model
-        onCurrentGeoPointChanged: map.requestedCenter = currentGeoPoint
-        onDestinationSet: {
-            router.destinationPoint = model.get(currentIndex, "geoPoint")
-            router.destinationName = model.get(currentIndex, "name")
-            router.open()
-            model.clear()
-        }
-        onOriginSet: {
-            router.originPoint = model.get(currentIndex, "geoPoint")
-            router.originName = model.get(currentIndex, "name")
-            model.clear()
-        }
-    }
-
     Router {
         id: router
         currentPosition: map.center // TODO: use GPS!
@@ -148,5 +132,20 @@ Item {
         width: 200 * Mappero.uiScale
         location: Mappero.point(map.center)
         visible: false
+
+        onCurrentGeoPointChanged: map.requestedCenter = currentGeoPoint
+        onDestinationSet: {
+            console.log("Destination set")
+            router.destinationPoint = point.geoPoint
+            router.destinationName = point.name
+            router.open()
+            model.clear()
+        }
+        onOriginSet: {
+            console.log("Origin set")
+            router.originPoint = point.geoPoint
+            router.originName = point.name
+            model.clear()
+        }
     }
 }

@@ -8,6 +8,11 @@ Rectangle {
     property variant delegate
     property variant location
     property variant __plugin: null
+    property variant __poiBrowser: null
+    property variant currentGeoPoint
+
+    signal destinationSet(variant point)
+    signal originSet(variant point)
 
     height: 40 * Mappero.uiScale
     radius: height / 2
@@ -15,6 +20,30 @@ Rectangle {
     border {
         width: 2
         color: "grey"
+    }
+
+    Connections {
+        id: modelConnection
+        target: null
+        onCountChanged: {
+            if (root.model.count > 0) {
+                if (__poiBrowser) return
+                __poiBrowser = poiBrowserComponent.createObject(bottomPanel, {})
+                poiBrowserConnection.target = __poiBrowser
+            } else {
+                if (__poiBrowser) __poiBrowser.destroy(1000)
+                poiBrowserConnection.target = null
+                __poiBrowser = null
+            }
+        }
+    }
+
+    Connections {
+        id: poiBrowserConnection
+        target: null
+        onCurrentGeoPointChanged: root.currentGeoPoint = __poiBrowser.currentGeoPoint
+        onDestinationSet: root.destinationSet(point)
+        onOriginSet: root.originSet(point)
     }
 
     TextInput {
@@ -53,6 +82,14 @@ Rectangle {
         value: location
     }
 
+    Component {
+        id: poiBrowserComponent
+        PoiBrowser {
+            model: searchBox.model
+            onCurrentGeoPointChanged: map.requestedCenter = currentGeoPoint
+        }
+    }
+
     function usePlugin(id) {
         console.log("Activating plugin " + id)
         if (model) model.clear()
@@ -61,7 +98,9 @@ Rectangle {
             __plugin.location = location
             delegate = __plugin.delegate
             model = __plugin.model
+            modelConnection.target = model
         } else {
+            modelConnection.target = null
             delegate = null
             model = null
         }

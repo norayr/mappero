@@ -9,7 +9,7 @@ Item {
     property alias delegate: listView.delegate
 
     anchors {
-        bottom: parent.bottom
+        top: parent.top
         left: parent.left
         right: parent.right
         margins: 2
