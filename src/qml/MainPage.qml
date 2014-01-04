@@ -107,6 +107,7 @@ Item {
     Osm {
         id: osm
         anchors.fill: parent
+        router: router
         tracker: tracker
         searchBox: searchBox
     }

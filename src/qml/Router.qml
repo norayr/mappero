@@ -10,6 +10,7 @@ Item {
     property variant originName
     property variant model: null
     property int currentIndex: -1
+    readonly property bool isOpen: loader.status == Loader.Ready
     property variant __routeBrowser: null
     property bool routeBrowserNeeded: (model != null) && (model.count > 0)
 

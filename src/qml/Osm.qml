@@ -8,6 +8,7 @@ Item {
     property bool isPortrait: height > width
     property variant tracker
     property variant searchBox
+    property variant router
 
     states: [
         State {
@@ -24,6 +25,11 @@ Item {
             extend: "allHidden"
             PropertyChanges { target: searchButton; visible: true }
             PropertyChanges { target: searchBox; visible: true }
+        },
+        State {
+            name: "routing"
+            extend: "allHidden"
+            when: router.isOpen
         }
     ]
 
