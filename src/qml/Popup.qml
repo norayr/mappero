@@ -94,6 +94,7 @@ Item {
             height: content.childrenRect.height + UI.ToolbarMargins * 2
 
             PaneBackground {}
+            MouseArea { anchors.fill: parent }
             Item {
                 id: content
                 anchors.fill: parent
