@@ -385,8 +385,6 @@ void TiledLayer::mapEvent(MapEvent *event)
     d->zoomLevel = zoomLevel;
     d->viewportHalfSize = viewportHalfSize;
 
-    DEBUG() << "center:" << map->center() << "zoom:" << zoomLevel;
-
     int halfLength = qMax(viewportHalfSize.width(), viewportHalfSize.height());
     Unit halfLengthUnit = d->pixel2unit(halfLength);
 

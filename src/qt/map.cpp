@@ -625,8 +625,6 @@ GeoPoint Map::pixelsToGeo(qreal x, qreal y) const
 
 void Map::geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry)
 {
-    Q_UNUSED(oldGeometry);
-    DEBUG() << "Geometry:" << newGeometry;
     Q_D(Map);
     d->mapEvent.m_sizeChanged = true;
     Q_EMIT sizeChanged();
