@@ -14,39 +14,46 @@ Popup {
 
     signal routesReady()
 
-    Column {
+    Item {
         width: 200
-        spacing: UI.FieldVSpacing
+        height: form.height
 
-        LabelLayout {
-            id: originItem
+        Column {
+            id: form
+            anchors.left: parent.left
+            anchors.right: parent.right
+            spacing: UI.FieldVSpacing
 
-            text: qsTr("From")
+            LabelLayout {
+                id: originItem
 
-            TextField {
-                id: originField
+                text: qsTr("From")
+
+                TextField {
+                    id: originField
+                }
+            }
+
+            LabelLayout {
+                id: destinationItem
+
+                text: qsTr("To")
+
+                TextField {
+                    id: destinationField
+                }
+            }
+
+            Button {
+                id: goButton
+                onClicked: getRoutes()
+                text: qsTr("Compute route")
             }
         }
 
-        LabelLayout {
-            id: destinationItem
-
-            text: qsTr("To")
-
-            TextField {
-                id: destinationField
-            }
+        BusyIndicator {
+            id: busyIndicator
         }
-
-        Button {
-            id: goButton
-            onClicked: getRoutes()
-            text: qsTr("Compute route")
-        }
-    }
-
-    BusyIndicator {
-        id: busyIndicator
     }
 
     function getRoutes() {
