@@ -1,7 +1,7 @@
 import QtQuick 2.0
 import Mappero 1.0
 
-SearchModel {
+PoiModel {
     id: listModel
     roles: ["name", "address"]
     property string apiKey: "AIzaSyDdPxlISfxPRpL4Z-X5es5DWNSS28z1OF0"

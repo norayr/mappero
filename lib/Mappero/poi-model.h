@@ -17,24 +17,24 @@
  * along with Mappero.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef MAPPERO_QML_SEARCH_MODEL_H
-#define MAPPERO_QML_SEARCH_MODEL_H
+#ifndef MAPPERO_POI_MODEL_H
+#define MAPPERO_POI_MODEL_H
 
 #include <QAbstractListModel>
 #include <QStringList>
 
 namespace Mappero {
 
-class QmlSearchModelPrivate;
-class QmlSearchModel: public QAbstractListModel
+class PoiModelPrivate;
+class PoiModel: public QAbstractListModel
 {
     Q_OBJECT
     Q_PROPERTY(QStringList roles READ roles WRITE setRoles NOTIFY rolesChanged)
     Q_PROPERTY(int count READ rowCount NOTIFY countChanged)
 
 public:
-    QmlSearchModel(QObject *parent = 0);
-    ~QmlSearchModel();
+    PoiModel(QObject *parent = 0);
+    ~PoiModel();
 
     void setRoles(const QStringList &roles);
     QStringList roles() const;
@@ -55,10 +55,10 @@ Q_SIGNALS:
     void rolesChanged();
 
 private:
-    QmlSearchModelPrivate *d_ptr;
-    Q_DECLARE_PRIVATE(QmlSearchModel)
+    PoiModelPrivate *d_ptr;
+    Q_DECLARE_PRIVATE(PoiModel)
 };
 
 } // namespace
 
-#endif // MAPPERO_QML_SEARCH_MODEL_H
+#endif // MAPPERO_POI_MODEL_H

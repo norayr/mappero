@@ -18,7 +18,7 @@
  */
 
 #include "debug.h"
-#include "qml-search-model.h"
+#include "poi-model.h"
 #include "search-plugin.h"
 
 #include <QQmlContext>

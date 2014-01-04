@@ -20,7 +20,7 @@
 #include "model-aggregator.h"
 #include "path.h"
 #include "path-builder.h"
-#include "qml-search-model.h"
+#include "poi-model.h"
 #include "routing-model.h"
 #include "types.h"
 
@@ -97,6 +97,6 @@ void Mappero::registerTypes()
 
     qmlRegisterType<Mappero::ModelAggregator>("Mappero", 1, 0, "ModelAggregator");
     qmlRegisterType<Mappero::PathBuilder>("Mappero", 1, 0, "PathBuilder");
-    qmlRegisterType<Mappero::QmlSearchModel>("Mappero", 1, 0, "SearchModel");
+    qmlRegisterType<Mappero::PoiModel>("Mappero", 1, 0, "PoiModel");
     qmlRegisterType<Mappero::RoutingModel>("Mappero", 1, 0, "RoutingModel");
 }

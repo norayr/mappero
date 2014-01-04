@@ -19,8 +19,8 @@ SOURCES += \
     path.cpp \
     path-builder.cpp \
     plugin.cpp \
+    poi-model.cpp \
     projection.cpp \
-    qml-search-model.cpp \
     routing-model.cpp \
     routing-plugin.cpp \
     search-plugin.cpp \
@@ -32,7 +32,7 @@ private_headers = \
     gpx.h \
     kml.h \
     path-builder.h \
-    qml-search-model.h \
+    poi-model.h \
     routing-model.h
 
 public_headers = \

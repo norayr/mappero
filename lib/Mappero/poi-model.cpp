@@ -18,7 +18,7 @@
  */
 
 #include "debug.h"
-#include "qml-search-model.h"
+#include "poi-model.h"
 
 using namespace Mappero;
 
@@ -28,12 +28,12 @@ enum Roles {
     GeoPointRole = Qt::UserRole + 1,
 };
 
-class QmlSearchModelPrivate
+class PoiModelPrivate
 {
-    friend class QmlSearchModel;
+    friend class PoiModel;
 
-    inline QmlSearchModelPrivate();
-    ~QmlSearchModelPrivate() {};
+    inline PoiModelPrivate();
+    ~PoiModelPrivate() {};
 
 private:
     QStringList m_roles;
@@ -42,14 +42,14 @@ private:
 
 } // namespace
 
-QmlSearchModelPrivate::QmlSearchModelPrivate()
+PoiModelPrivate::PoiModelPrivate()
 {
     m_roles.append("geoPoint");
 }
 
-QmlSearchModel::QmlSearchModel(QObject *parent):
+PoiModel::PoiModel(QObject *parent):
     QAbstractListModel(parent),
-    d_ptr(new QmlSearchModelPrivate)
+    d_ptr(new PoiModelPrivate)
 {
     QObject::connect(this, SIGNAL(rowsInserted(const QModelIndex&,int,int)),
                      this, SIGNAL(countChanged()));
@@ -57,14 +57,14 @@ QmlSearchModel::QmlSearchModel(QObject *parent):
                      this, SIGNAL(countChanged()));
 }
 
-QmlSearchModel::~QmlSearchModel()
+PoiModel::~PoiModel()
 {
     delete d_ptr;
 }
 
-void QmlSearchModel::setRoles(const QStringList &roles)
+void PoiModel::setRoles(const QStringList &roles)
 {
-    Q_D(QmlSearchModel);
+    Q_D(PoiModel);
     if (roles == d->m_roles) return;
 
     Q_FOREACH(const QString &role, roles) {
@@ -75,51 +75,51 @@ void QmlSearchModel::setRoles(const QStringList &roles)
     Q_EMIT rolesChanged();
 }
 
-QStringList QmlSearchModel::roles() const
+QStringList PoiModel::roles() const
 {
-    Q_D(const QmlSearchModel);
+    Q_D(const PoiModel);
     return d->m_roles;
 }
 
-void QmlSearchModel::append(const QVariantMap &rowData)
+void PoiModel::append(const QVariantMap &rowData)
 {
-    Q_D(QmlSearchModel);
+    Q_D(PoiModel);
     int count = d->m_data.count();
     beginInsertRows(QModelIndex(), count, count);
     d->m_data.append(rowData);
     endInsertRows();
 }
 
-void QmlSearchModel::clear()
+void PoiModel::clear()
 {
-    Q_D(QmlSearchModel);
+    Q_D(PoiModel);
     beginRemoveRows(QModelIndex(), 0, d->m_data.count() - 1);
     d->m_data.clear();
     endRemoveRows();
 }
 
-QVariantMap QmlSearchModel::get(int row) const
+QVariantMap PoiModel::get(int row) const
 {
-    Q_D(const QmlSearchModel);
+    Q_D(const PoiModel);
     return d->m_data.at(row);
 }
 
-QVariant QmlSearchModel::get(int row, const QString &roleName) const
+QVariant PoiModel::get(int row, const QString &roleName) const
 {
     int role = roleNames().key(roleName.toLatin1(), -1);
     return data(index(row, 0), role);
 }
 
-int QmlSearchModel::rowCount(const QModelIndex &parent) const
+int PoiModel::rowCount(const QModelIndex &parent) const
 {
-    Q_D(const QmlSearchModel);
+    Q_D(const PoiModel);
     Q_UNUSED(parent);
     return d->m_data.count();
 }
 
-QVariant QmlSearchModel::data(const QModelIndex &index, int role) const
+QVariant PoiModel::data(const QModelIndex &index, int role) const
 {
-    Q_D(const QmlSearchModel);
+    Q_D(const PoiModel);
 
     if (index.row() >= d->m_data.count()) return QVariant();
 
@@ -129,9 +129,9 @@ QVariant QmlSearchModel::data(const QModelIndex &index, int role) const
     return rowData.value(roleName);
 }
 
-QHash<int, QByteArray> QmlSearchModel::roleNames() const
+QHash<int, QByteArray> PoiModel::roleNames() const
 {
-    Q_D(const QmlSearchModel);
+    Q_D(const PoiModel);
 
     QHash<int, QByteArray> roles;
     int i = Qt::UserRole + 1;
