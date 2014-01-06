@@ -81,12 +81,12 @@ struct Point: public QPoint {
     bool isValid() const { return y() != INT_MIN; }
 
     inline QPoint toTile(int zoom) const {
-        return QPoint(x() >> (TILE_SIZE_P2 + zoom),
-                      y() >> (TILE_SIZE_P2 + zoom));
+        return QPoint(x() / (1 << (TILE_SIZE_P2 + zoom)),
+                      y() / (1 << (TILE_SIZE_P2 + zoom)));
     }
 
     inline QPoint toPixel(int zoom) const {
-        return QPoint(x() >> zoom, y() >> zoom);
+        return QPoint(x() / (1 << zoom), y() / (1 << zoom));
     }
 
     inline QPoint toPixel(qreal zoom) const {
