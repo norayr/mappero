@@ -68,7 +68,7 @@ public:
                 Point diffUnits = map()->animatedCenterUnits().toPoint() -
                     map()->centerUnits();
                 if (!diffUnits.isNull()) {
-                    pos -= diffUnits.toPixel(map()->animatedZoomLevel());
+                    pos -= diffUnits.toPixelF(map()->animatedZoomLevel());
                 }
             }
             setPos(pos);
@@ -124,7 +124,7 @@ private:
     GeoPoint center;
     QPointF animatedCenterUnits;
     GeoPoint requestedCenter;
-    QPointF requestedCenterUnits;
+    QPoint requestedCenterUnits;
     Point centerUnits;
     QPoint panOffset;
     bool ignoreNextPan;
@@ -333,13 +333,18 @@ void Map::setCenter(const GeoPoint &center)
     Q_D(Map);
 
     d->center = center.normalized();
-    d->requestedCenter = d->center;
-    if (d->mainLayer != 0) {
-        const Projection *projection = d->mainLayer->projection();
-        d->centerUnits = projection->geoToUnit(d->center);
+    if (d->center == d->requestedCenter) {
+        d->centerUnits = d->requestedCenterUnits;
         d->animatedCenterUnits = d->centerUnits;
-        d->requestedCenterUnits = d->centerUnits;
-        DEBUG() << "Transformed:" << d->centerUnits;
+    } else {
+        d->requestedCenter = d->center;
+        if (d->mainLayer != 0) {
+            const Projection *projection = d->mainLayer->projection();
+            d->centerUnits = projection->geoToUnit(d->center);
+            d->animatedCenterUnits = d->centerUnits;
+            d->requestedCenterUnits = d->centerUnits;
+            DEBUG() << "Transformed:" << d->centerUnits;
+        }
     }
 
     d->mapEvent.m_centerChanged = true;
@@ -358,12 +363,14 @@ void Map::setAnimatedCenterUnits(const QPointF &center)
 
     if (center != d->animatedCenterUnits) {
         d->animatedCenterUnits = center;
-        d->mapEvent.m_animated = true;
-        Q_EMIT animatedCenterUnitsChanged(center);
-    }
 
-    if (center == d->requestedCenterUnits)
-        setCenter(d->requestedCenter);
+        if (center.toPoint() == d->requestedCenterUnits) {
+            setCenter(d->requestedCenter);
+        } else {
+            d->mapEvent.m_animated = true;
+            Q_EMIT animatedCenterUnitsChanged(center);
+        }
+    }
 }
 
 QPointF Map::animatedCenterUnits() const

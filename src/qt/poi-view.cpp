@@ -59,7 +59,7 @@ public:
 
     QHash<int,QByteArray> roleNames() const { return model->roleNames(); }
 
-    QPoint geoToPos(const GeoPoint &geo) const;
+    QPointF geoToPos(const GeoPoint &geo) const;
 
 private Q_SLOTS:
     void onRowsInserted(const QModelIndex &parent, int start, int end);
@@ -84,7 +84,7 @@ class VisualModelItem: public QQmlPropertyMap
 
 public:
     VisualModelItem(PoiViewPrivate *poiViewPriv, int index,
-                    const QPoint &position):
+                    const QPointF &position):
         QQmlPropertyMap(this, poiViewPriv),
         poiViewPriv(poiViewPriv),
         _index(index),
@@ -109,7 +109,7 @@ public:
         _item = 0;
     }
 
-    void updatePosition(const QPoint &position) {
+    void updatePosition(const QPointF &position) {
         QPointF pos = position - origin();
         _item->setX(pos.x());
         _item->setY(pos.y());
@@ -131,7 +131,7 @@ private:
 private Q_SLOTS:
     void onOriginChanged() {
         DEBUG() << "origin changed";
-        QPoint position = poiViewPriv->geoToPos(_geo);
+        QPointF position = poiViewPriv->geoToPos(_geo);
         setItemPosition(position);
     }
 
@@ -226,7 +226,7 @@ void PoiViewPrivate::updateItems(int start, int end)
     Point mapCenter = map->centerUnits();
     qreal zoom = map->zoomLevel();
 
-    QPoint itemCenter = q->boundingRect().center().toPoint();
+    QPointF itemCenter = q->boundingRect().center();
     QModelIndex parent;
     for (int i = start; i < end; i++) {
         GeoPoint geoPoint;
@@ -239,9 +239,9 @@ void PoiViewPrivate::updateItems(int start, int end)
             VisualModelItem *item = items.at(i);
             Point position = projection->geoToUnit(geoPoint) - mapCenter;
             if (item != 0) {
-                item->updatePosition(position.toPixel(zoom) + itemCenter);
+                item->updatePosition(position.toPixelF(zoom) + itemCenter);
             } else {
-                item = new VisualModelItem(this, i, position.toPixel(zoom) +
+                item = new VisualModelItem(this, i, position.toPixelF(zoom) +
                                            itemCenter);
                 items[i] = item;
             }
@@ -267,13 +267,13 @@ void PoiViewPrivate::updateItemsPosition()
     Point mapCenter(map->animatedCenterUnits().toPoint());
     qreal zoom = map->animatedZoomLevel();
 
-    QPoint itemCenter = q->boundingRect().center().toPoint();
+    QPointF itemCenter = q->boundingRect().center();
     foreach (VisualModelItem *item, items) {
         if (item == 0) continue;
 
         GeoPoint geoPoint = item->geoPoint();
         Point position = projection->geoToUnit(geoPoint) - mapCenter;
-        item->updatePosition(position.toPixel(zoom) + itemCenter);
+        item->updatePosition(position.toPixelF(zoom) + itemCenter);
     }
 }
 
@@ -312,15 +312,15 @@ QQuickItem *PoiViewPrivate::itemAt(int index)
     return visualItem->item();
 }
 
-QPoint PoiViewPrivate::geoToPos(const GeoPoint &geo) const
+QPointF PoiViewPrivate::geoToPos(const GeoPoint &geo) const
 {
     Q_Q(const PoiView);
     Map *map = q->map();
     const Projection *projection = map->projection();
     qreal zoom = map->zoomLevel();
     Point position = projection->geoToUnit(geo) - map->centerUnits();
-    QPoint itemCenter = q->boundingRect().center().toPoint();
-    return position.toPixel(zoom) + itemCenter;
+    QPointF itemCenter = q->boundingRect().center();
+    return position.toPixelF(zoom) + itemCenter;
 }
 
 void PoiViewPrivate::onRowsInserted(const QModelIndex &, int first, int last)
