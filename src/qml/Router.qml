@@ -1,16 +1,26 @@
 import QtQuick 2.0
+import Mappero 1.0
 
 Item {
     id: root
 
     property variant currentPosition
     property variant destinationPoint
-    property variant destinationName
+    property string destinationName
     property variant originPoint
-    property variant originName
+    property string originName
     property variant model: null
     property int currentIndex: -1
     readonly property bool isOpen: loader.status == Loader.Ready
+    readonly property int routeEndsModel: Mappero.isValid(originPoint) || Mappero.isValid(destinationPoint)
+    property variant routeEndsView: Component {
+        PoiView {
+            anchors.fill: parent
+            model: endsModel
+            delegate: endsDelegate
+        }
+    }
+
     property variant __routeBrowser: null
     property bool routeBrowserNeeded: (model != null) && (model.count > 0)
 
@@ -30,6 +40,42 @@ Item {
             __routeBrowser = null
             root.currentIndex = -1
         }
+    }
+
+    PoiModel {
+        id: endsModel
+        roles: [ "name" ]
+    }
+
+    Component {
+        id: endsDelegate
+        PoiItem {
+            width: 64
+            height: 64
+            Image {
+                anchors.fill: parent
+                source: "qrc:/flag"
+            }
+            Text {
+                x: parent.width / 2 + 2
+                y: 4
+                text: model.index + 1
+            }
+        }
+    }
+    onDestinationPointChanged: updateEnds()
+    onOriginPointChanged: updateEnds()
+
+    function updateEnds() {
+        endsModel.clear()
+        endsModel.append({
+            "geoPoint": originPoint,
+            "name": originName
+        })
+        endsModel.append({
+            "geoPoint": destinationPoint,
+            "name": destinationName
+        })
     }
 
     Loader {

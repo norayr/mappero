@@ -66,6 +66,11 @@ Item {
             delegate: searchBox.delegate
             model: searchBox.model
         }
+
+        Repeater {
+            model: router.routeEndsModel
+            delegate: router.routeEndsView
+        }
     }
 
     Item {
