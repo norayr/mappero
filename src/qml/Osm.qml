@@ -13,6 +13,7 @@ Item {
     states: [
         State {
             name: "allHidden"
+            PropertyChanges { target: backButton; visible: false }
             PropertyChanges { target: searchButton; visible: false }
             PropertyChanges { target: pathButton; visible: false }
             PropertyChanges { target: routeButton; visible: false }
@@ -29,9 +30,28 @@ Item {
         State {
             name: "routing"
             extend: "allHidden"
-            when: router.isOpen
+            when: router.isOpen && !router.browsing
+        },
+        State {
+            name: "browsingRoutes"
+            extend: "routing"
+            when: router.browsing
+            PropertyChanges {
+                target: backButton;
+                visible: true
+                onClicked: router.stopBrowsing()
+            }
         }
     ]
+
+    OsmButton {
+        id: backButton
+        anchors.left: parent.left
+        anchors.top: parent.top
+        anchors.margins: screenMargin
+        source: "qrc:osm-back"
+        visible: false
+    }
 
     Item {
         id: columns
