@@ -9,5 +9,6 @@ Repeater {
         delegate: modelData.wayPointDelegate
         model: modelData.wayPointModel
         opacity: modelData.opacity
+        z: modelData.z
     }
 }
