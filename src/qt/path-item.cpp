@@ -38,12 +38,15 @@ public:
     enum Roles {
         GeoPointRole = Qt::UserRole + 1,
         TextRole,
+        TimeRole,
         DataRole,
     };
 
     WayPointModel(QObject *parent = 0);
 
     void setPath(const Path &path);
+
+    Q_INVOKABLE QVariant get(int row, const QString &role) const;
 
     // reimplemented virtual methods
     int rowCount(const QModelIndex &parent = QModelIndex()) const Q_DECL_OVERRIDE;
@@ -66,6 +69,7 @@ WayPointModel::WayPointModel(QObject *parent):
 {
     m_roles[GeoPointRole] = "geoPoint";
     m_roles[TextRole] = "text";
+    m_roles[TimeRole] = "time";
     m_roles[DataRole] = "data";
 
     QObject::connect(this, SIGNAL(modelReset()),
@@ -77,6 +81,12 @@ void WayPointModel::setPath(const Path &path)
     beginResetModel();
     m_path = path;
     endResetModel();
+}
+
+QVariant WayPointModel::get(int row, const QString &roleName) const
+{
+    int role = roleNames().key(roleName.toLatin1(), -1);
+    return data(index(row, 0), role);
 }
 
 int WayPointModel::rowCount(const QModelIndex &parent) const
@@ -95,6 +105,8 @@ QVariant WayPointModel::data(const QModelIndex &index, int role) const
         return QVariant::fromValue(m_path.wayPointAt(row).geo);
     case TextRole:
         return m_path.wayPointText(row);
+    case TimeRole:
+        return QDateTime::fromTime_t(m_path.wayPointAt(row).time);
     case DataRole:
         return m_path.wayPointData(row);
     default:
