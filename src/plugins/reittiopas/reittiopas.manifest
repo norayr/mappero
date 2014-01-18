@@ -1,0 +1,7 @@
+{
+    "name": "Reittiopas",
+    "icon": "reittiopas.png",
+    "translations": "mappero",
+    "type": "routing",
+    "routingModel": "Routing.qml"
+}
