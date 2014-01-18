@@ -119,7 +119,8 @@ macx {
 RESOURCES += \
     ../qml/qml.qrc \
     ../../data/icons/scalable/icons.qrc \
-    ../../data/icons/scalable/directions/directions.qrc
+    ../../data/icons/scalable/directions/directions.qrc \
+    ../../data/icons/scalable/transport/transport.qrc
 
 unix {
     target.path = $${INSTALL_PREFIX}/bin

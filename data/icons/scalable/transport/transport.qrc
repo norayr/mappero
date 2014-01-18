@@ -1,0 +1,10 @@
+<!DOCTYPE RCC><RCC version="1.0">
+<qresource prefix="/transport">
+  <file alias="walk">walk.svg</file>
+  <file alias="bus">bus.svg</file>
+  <file alias="tram">tram.svg</file>
+  <file alias="train">train.svg</file>
+  <file alias="ferry">ferry.svg</file>
+  <file alias="metro">metro.svg</file>
+</qresource>
+</RCC>
