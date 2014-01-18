@@ -208,7 +208,7 @@ QString Controller::formatDuration(int ms)
         components.append(tr("%1 h").arg(hours));
     }
     components.append(tr("%1 min").arg(minutes));
-    if (days == 0 && hours == 0) {
+    if (days == 0 && hours == 0 && seconds > 0) {
         components.append(tr("%1 sec").arg(seconds));
     }
     return components.join(tr(", ", "time components separator"));
