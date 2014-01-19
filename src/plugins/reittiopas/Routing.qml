@@ -42,39 +42,80 @@ RoutingModel {
         property real walkingLength: 0
         clip: true
         ListView {
+            id: listView
             anchors.fill: parent
             orientation: ListView.Horizontal
             model: changes
             header: headerComponent
-            spacing: 2
             delegate: Item {
+                property bool isLast: index === listView.count - 1
                 anchors.top: parent.top
                 anchors.bottom: parent.bottom
-                width: height * 2 / 3
+                width: height * 3 / 5
 
                 Item {
-                    id: topItem
                     anchors.verticalCenter: parent.verticalCenter
                     anchors.left: parent.left
                     anchors.right: parent.right
                     height: childrenRect.height
-
-                    Image {
-                        id: image
+                    Rectangle {
+                        id: topItem
                         anchors.top: parent.top
                         anchors.left: parent.left
                         anchors.right: parent.right
-                        anchors.leftMargin: 2
-                        anchors.rightMargin: 2
-                        height: width
-                        sourceSize: Qt.size(width, height)
-                        source: "qrc:/transport/" + model.subType
+                        anchors.leftMargin: 1
+                        anchors.rightMargin: isLast ? 1 : 0
+                        height: childrenRect.height
+                        color: "white"
+
+                        Image {
+                            id: image
+                            anchors.top: parent.top
+                            anchors.left: parent.left
+                            anchors.right: parent.right
+                            anchors.leftMargin: 4
+                            anchors.rightMargin: 4
+                            height: width
+                            sourceSize: Qt.size(width, height)
+                            source: "qrc:/transport/" + model.subType
+                        }
+                        Text {
+                            id: transportText
+                            anchors.horizontalCenter: image.horizontalCenter
+                            anchors.top: image.bottom
+                            horizontalAlignment: Text.AlignHCenter
+                            text: model.subType != "walk" ? model.line : Mappero.formatLength(model.length)
+                        }
                     }
-                    Text {
-                        id: transportText
-                        anchors.horizontalCenter: image.horizontalCenter
-                        anchors.top: image.bottom
-                        text: model.subType != "walk" ? model.line : Mappero.formatLength(model.length)
+                    Rectangle {
+                        anchors.left: parent.left
+                        anchors.right: parent.right
+                        anchors.top: topItem.bottom
+                        anchors.topMargin: -2
+                        color: "black"
+                        height: 6
+                        z: -1
+                    }
+                    Rectangle {
+                        anchors.left: parent.left
+                        anchors.right: parent.right
+                        anchors.top: topItem.bottom
+                        anchors.topMargin: 2
+                        anchors.leftMargin: 1
+                        anchors.rightMargin: isLast ? 1 : 0
+                        height: childrenRect.height
+                        color: "white"
+                        Text {
+                            anchors.horizontalCenter: parent.left
+                            horizontalAlignment: Text.AlignHCenter
+                            text: Qt.formatDateTime(model.time, "hh:mm")
+                        }
+                        Text {
+                            anchors.horizontalCenter: parent.right
+                            horizontalAlignment: Text.AlignHCenter
+                            visible: isLast
+                            text: Qt.formatDateTime(pathItem.endTime, "hh:mm")
+                        }
                     }
                 }
             }
