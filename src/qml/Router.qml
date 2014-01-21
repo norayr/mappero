@@ -34,13 +34,23 @@ Item {
                 "model": model
             })
             routeBrowserConnection.target = __routeBrowser
-            root.currentIndex = 0
+            /* HACK: wait for the bottomPanel to appear before setting the
+             * currentIndex, or map.lookAt() could be considering a bigger map
+             * than what we'll end up having once the bottomPanel appears */
+            currentIndexTimer.start()
         } else {
             if (__routeBrowser) __routeBrowser.destroy()
             routeBrowserConnection.target = null
             __routeBrowser = null
             root.currentIndex = -1
         }
+    }
+
+    Timer {
+        id: currentIndexTimer
+        onTriggered: currentIndex = 0
+        running: false
+        interval: 200
     }
 
     PoiModel {

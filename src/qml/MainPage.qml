@@ -83,7 +83,7 @@ Item {
         height: childrenRect.height
 
         Behavior on height {
-            SmoothedAnimation {}
+            SmoothedAnimation { duration: 200 }
         }
     }
 
