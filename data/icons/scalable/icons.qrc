@@ -19,6 +19,7 @@
   <file alias="osm-zoom-in">maemo-mapper-zoom-in.png</file>
   <file alias="osm-zoom-out-off">maemo-mapper-zoom-out-off.png</file>
   <file alias="osm-zoom-out">maemo-mapper-zoom-out.png</file>
+  <file alias="poi-arrow-down">poi-arrow-down.svg</file>
   <file>poi-frame.svg</file>
   <file>search-result.svg</file>
 </qresource>

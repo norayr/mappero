@@ -6,33 +6,64 @@ RoutingModel {
     id: root
 
     wayPointDelegate: BaseWayPointDelegate {
-        width: 32
+        width: 0
         height: width
-        transformOrigin: Item.Center
+        transformOrigin: Item.Bottom
 
         Loader {
-            anchors.fill: parent
+            anchors.bottom: parent.bottom
+            anchors.horizontalCenter: parent.horizontalCenter
             sourceComponent: ("type" in model.data && model.data.subType != "walk") ? transportComponent: null
         }
 
         Component {
             id: transportComponent
+
             Image {
-                id: image
-                anchors.fill: parent
-                sourceSize: Qt.size(width, height)
-                source: "qrc:/transport/" + model.data.subType
+                source: "qrc:poi-arrow-down"
+                anchors.bottom: parent.bottom
+                anchors.horizontalCenter: parent.horizontalCenter
+                width: 32
                 Rectangle {
-                    visible: lineLabel.text != ""
-                    anchors.horizontalCenter: image.horizontalCenter
-                    anchors.top: image.bottom
+                    anchors.bottom: parent.top
+                    anchors.horizontalCenter: parent.horizontalCenter
                     radius: 4
-                    width: childrenRect.width
-                    height: childrenRect.height
                     color: "white"
+                    width: childrenRect.width + 4
+                    height: childrenRect.height + 4
+
+                    Item {
+                        id: transportLine
+                        anchors.left: parent.left
+                        anchors.top: parent.top
+                        anchors.margins: 2
+                        width: childrenRect.width
+                        height: childrenRect.height
+
+                        Image {
+                            id: image
+                            anchors.left: parent.left
+                            anchors.top: parent.top
+                            width: Mappero.uiScale * 16
+                            height: width
+                            sourceSize: Qt.size(width, height)
+                            source: "qrc:/transport/" + model.data.subType
+                        }
+                        Text {
+                            id: lineLabel
+                            anchors.left: image.right
+                            anchors.margins: 2
+                            anchors.verticalCenter: image.verticalCenter
+                            text: model.data.line
+                        }
+                    }
                     Text {
-                        id: lineLabel
-                        text: model.data.line
+                        id: timeLabel
+                        anchors.top: transportLine.bottom
+                        anchors.margins: 2
+                        anchors.horizontalCenter: transportLine.horizontalCenter
+                        horizontalAlignment: Text.AlignHCenter
+                        text: Qt.formatDateTime(model.time, "hh:mm")
                     }
                 }
             }
