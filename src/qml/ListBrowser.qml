@@ -12,12 +12,14 @@ Item {
         top: parent.top
         left: parent.left
         right: parent.right
-        margins: 2
     }
     height: 100 * Mappero.uiScale
     visible: model && model.count > 0
 
-    PaneBackground {}
+    Rectangle {
+        anchors.fill: parent
+        color: "white"
+    }
 
     ImageButton {
         id: prev
