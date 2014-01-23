@@ -8,6 +8,7 @@ Rectangle {
     property bool selected: false
     property alias leftItems: leftRow.children
     property alias rightItems: rightRow.children
+    property int spacing: 0
 
     signal clicked()
 
@@ -26,8 +27,10 @@ Rectangle {
 
     Row {
         id: leftRow
+        spacing: root.spacing
         anchors {
             left: parent.left
+            leftMargin: spacing
             top: parent.top
             bottom: parent.bottom
         }
@@ -36,7 +39,9 @@ Rectangle {
     Item {
         anchors {
             left: leftRow.right
+            leftMargin: spacing
             right: rightRow.left
+            rightMargin: spacing
             top: parent.top
             bottom: parent.bottom
         }
@@ -49,8 +54,10 @@ Rectangle {
 
     Row {
         id: rightRow
+        spacing: root.spacing
         anchors {
             right: parent.right
+            rightMargin: spacing
             top: parent.top
             bottom: parent.bottom
         }
