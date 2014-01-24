@@ -14,7 +14,7 @@ ImageButton {
         if (loader.item && loader.item.isOpen) {
             loader.item.close()
         } else {
-            loader.setSource("SearchPluginSelector.qml", {
+            loader.setSource("PluginSelector.qml", {
                 "parent": root.parent,
                 "anchors.horizontalCenter": root.parent.horizontalCenter,
                 "anchors.top": root.parent.bottom,
