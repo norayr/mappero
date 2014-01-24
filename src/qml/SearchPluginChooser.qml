@@ -14,7 +14,15 @@ ImageButton {
         if (loader.item && loader.item.isOpen) {
             loader.item.close()
         } else {
-            loader.sourceComponent = selectorComponent;
+            loader.setSource("SearchPluginSelector.qml", {
+                "parent": root.parent,
+                "anchors.horizontalCenter": root.parent.horizontalCenter,
+                "anchors.top": root.parent.bottom,
+                "anchors.margins": 10,
+                "model": root.model,
+                "selectedIndex": __selectedIndex,
+                "source": root
+            })
             loader.item.open()
         }
     }
@@ -22,18 +30,9 @@ ImageButton {
     Loader {
         id: loader
     }
-    Component {
-        id: selectorComponent
-        SearchPluginSelector {
-            id: selector
-            parent: root.parent
-            anchors.horizontalCenter: parent.horizontalCenter
-            anchors.top: parent.bottom
-            anchors.margins: 10
-            model: root.model
-            selectedIndex: __selectedIndex
-            source: root
-            onIsOpenChanged: if (!isOpen) { __selectedIndex = selectedIndex; }
-        }
+
+    Connections {
+        target: loader.item
+        onIsOpenChanged: if (!loader.item.isOpen) __selectedIndex = loader.item.selectedIndex
     }
 }
