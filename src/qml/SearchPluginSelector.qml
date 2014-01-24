@@ -18,6 +18,14 @@ Popup {
             width: view.width
             text: model.displayName
             selected: ListView.isCurrentItem
+            spacing: 2
+            rightItems: [
+                Image {
+                    height: parent.height
+                    width: height
+                    source: model.icon
+                }
+            ]
             onClicked: { view.currentIndex = index; root.close() }
         }
     }
