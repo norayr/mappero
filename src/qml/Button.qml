@@ -9,6 +9,7 @@ Rectangle {
     property alias leftItems: leftRow.children
     property alias rightItems: rightRow.children
     property int spacing: 0
+    property alias labelAlignment: textField.horizontalAlignment
 
     signal clicked()
 
@@ -48,7 +49,9 @@ Rectangle {
 
         Text {
             id: textField
-            anchors.centerIn: parent
+            anchors.fill: parent
+            horizontalAlignment: Text.AlignHCenter
+            verticalAlignment: Text.AlignVCenter
         }
     }
 
