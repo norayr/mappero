@@ -252,7 +252,9 @@ QByteArray Downloader::downloadTile(const TileTask &tile)
 {
     QUrl url(tile.spec.layer->urlForTile(tile.spec.zoom,
                                          tile.spec.x, tile.spec.y));
-    QNetworkReply *reply = networkAccessManager->get(QNetworkRequest(url));
+    QNetworkRequest request(url);
+    request.setRawHeader("User-Agent", "Mappero 1.0");
+    QNetworkReply *reply = networkAccessManager->get(request);
 
     /* QNetworkReply does not implement QIODevice::waitForReadyRead(); let's
      * run an event loop till the request is finished */
