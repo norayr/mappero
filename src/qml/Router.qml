@@ -11,7 +11,7 @@ Item {
     property string originName
     property variant model: null
     property int currentIndex: -1
-    readonly property bool isOpen: loader.status == Loader.Ready
+    readonly property bool isOpen: loader.status == Loader.Ready && loader.item.isOpen
     readonly property bool browsing: __routeBrowser != null
     readonly property int routeEndsModel: Mappero.isValid(originPoint) || Mappero.isValid(destinationPoint)
     property variant routeEndsView: Component {
