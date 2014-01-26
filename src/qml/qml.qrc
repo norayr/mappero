@@ -24,6 +24,7 @@
   <file>Popup.qml</file>
   <file>RouteBrowser.qml</file>
   <file>RouteItems.qml</file>
+  <file>RoutePluginChooser.qml</file>
   <file>RouterDialog.qml</file>
   <file>Router.qml</file>
   <file>SearchBox.qml</file>

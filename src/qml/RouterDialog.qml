@@ -11,6 +11,7 @@ Popup {
     property variant originPoint
     property alias originName: originField.text
     property variant routeModel
+    property variant plugin: null
 
     signal routesReady()
 
@@ -49,6 +50,11 @@ Popup {
                 onClicked: getRoutes()
                 text: qsTr("Compute route")
             }
+
+            RoutePluginChooser {
+                model: PluginManager.pluginModel("routing")
+                onActivePluginChanged: root.plugin = PluginManager.loadPlugin(activePlugin)
+            }
         }
 
         BusyIndicator {
@@ -57,7 +63,6 @@ Popup {
     }
 
     function getRoutes() {
-        var plugin = PluginManager.loadPlugin("google-directions")
         var model = plugin.routingModel()
         var origin = Mappero.isValid(originPoint) ? originPoint : currentPosition
         model.from = Mappero.point(origin)
