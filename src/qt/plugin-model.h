@@ -40,6 +40,7 @@ public:
         IconRole,
         TypeRole,
         TranslationsRole,
+        ManifestRole,
     };
     void setPlugins(const QList<QVariantMap> &plugins);
 

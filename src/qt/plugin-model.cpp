@@ -47,6 +47,7 @@ PluginModelPrivate::PluginModelPrivate()
     m_roleNames[PluginModel::IconRole] = "icon";
     m_roleNames[PluginModel::TypeRole] = "type";
     m_roleNames[PluginModel::TranslationsRole] = "translations";
+    m_roleNames[PluginModel::ManifestRole] = "manifest";
 }
 
 PluginModelPrivate::~PluginModelPrivate()
@@ -109,6 +110,9 @@ QVariant PluginModel::data(const QModelIndex &index, int role) const
         break;
     case TranslationsRole:
         ret = Plugin::translations(pluginData);
+        break;
+    case ManifestRole:
+        ret = pluginData;
         break;
     }
 
