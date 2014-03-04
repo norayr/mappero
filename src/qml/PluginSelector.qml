@@ -5,10 +5,12 @@ Popup {
     property int selectedIndex: 0
     property alias model: view.model
 
+    minimumWidth: 200
+    minimumHeight: view.contentItem.childrenRect.height
+
     ListView {
         id: view
-        width: 200
-        height: contentItem.childrenRect.height
+        anchors.fill: parent
         clip: true
         spacing: 2
         currentIndex: selectedIndex

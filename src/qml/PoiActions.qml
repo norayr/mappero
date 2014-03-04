@@ -7,10 +7,12 @@ Popup {
     signal destinationSet()
     signal originSet()
 
+    minimumWidth: 200
+    minimumHeight: view.contentHeight
+
     Flickable {
         id: view
-        width: 200
-        height: Math.min(contentHeight, 300)
+        anchors.fill: parent
         contentHeight: contentItem.childrenRect.height
 
         Column {

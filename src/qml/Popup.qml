@@ -10,11 +10,15 @@ Item {
     property variant _sourcePos
     property variant _destPos
     property string position: ""
+    property int minimumWidth: 100
+    property int minimumHeight: 60
+    property bool _fullPage: pageOverlay.needsFullPage()
 
     width: openPopup.width
     height: openPopup.height
     state: "closed"
 
+    onHeightChanged: _computePositions()
     Component.onCompleted: _computePositions()
 
     states: [
@@ -90,8 +94,9 @@ Item {
             id: openPopup
             x: _destPos.x
             y: _destPos.y
-            width: content.childrenRect.width + UI.ToolbarMargins * 2
-            height: content.childrenRect.height + UI.ToolbarMargins * 2
+            anchors.centerIn: root._fullPage ? parent : undefined
+            width: root._fullPage ? parent.width : root.minimumWidth + UI.ToolbarMargins * 2
+            height: root._fullPage ? parent.height : root.minimumHeight + UI.ToolbarMargins * 2
 
             PaneBackground {}
             MouseArea { anchors.fill: parent }
@@ -106,6 +111,11 @@ Item {
             id: animatedPopup
             visible: false
             PaneBackground {}
+        }
+
+        function needsFullPage() {
+            return (root.minimumWidth >= parent.width * 2 / 3 ||
+                    root.minimumHeight >= parent.height * 2 / 3);
         }
     }
 

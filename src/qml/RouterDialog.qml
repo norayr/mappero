@@ -15,9 +15,11 @@ Popup {
 
     signal routesReady()
 
+    minimumWidth: 200
+    minimumHeight: form.height
+
     Item {
-        width: 200
-        height: form.height
+        anchors.fill: parent
 
         Column {
             id: form
