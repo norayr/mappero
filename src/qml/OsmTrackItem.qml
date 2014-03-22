@@ -17,12 +17,14 @@ Pane {
         }
         MenuButton {
             text: "Save..."
+            enabled: !tracker.empty
             onClicked: {
                 fileChooserSave.open()
             }
         }
         MenuButton {
             text: "Clear path"
+            enabled: !tracker.empty
             onClicked: { tracker.clear(); pane.close() }
         }
     }
