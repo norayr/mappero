@@ -74,15 +74,11 @@ Item {
             source: "qrc:osm-path"
             Loader {
                 id: trackPane
-                Binding {
-                    target: trackPane.item
-                    property: "tracker"
-                    value: tracker
-                    when: trackPane.status == Loader.Ready
-                }
             }
             onClicked: {
-                trackPane.source = "OsmTrackItem.qml"
+                trackPane.setSource("OsmTrackItem.qml", {
+                    "tracker": tracker,
+                })
                 trackPane.item.open()
             }
         }
