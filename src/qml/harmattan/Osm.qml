@@ -30,7 +30,7 @@ Item {
                 }
             }
             onClicked: {
-                trackPane.source = "OsmTrackItem.qml"
+                trackPane.source = "OsmPathItem.qml"
                 trackPane.item.open()
             }
         }

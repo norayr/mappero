@@ -4,7 +4,7 @@ import QtQuick.Dialogs 1.0
 Pane {
     id: pane
 
-    property variant tracker
+    property var path
 
     Column {
         width: 400
@@ -17,15 +17,15 @@ Pane {
         }
         MenuButton {
             text: "Save..."
-            enabled: !tracker.empty
+            enabled: !path.empty
             onClicked: {
                 fileChooserSave.open()
             }
         }
         MenuButton {
             text: "Clear path"
-            enabled: !tracker.empty
-            onClicked: { tracker.clear(); pane.close() }
+            enabled: !path.empty
+            onClicked: { path.clear(); pane.close() }
         }
     }
 
@@ -42,7 +42,7 @@ Pane {
             onAccepted: {
                 pane.close()
                 console.log("Dialog accepted: " + fileUrl)
-                tracker.saveFile(fileUrl);
+                path.saveFile(fileUrl);
             }
         },
 
@@ -58,7 +58,7 @@ Pane {
             onAccepted: {
                 pane.close()
                 console.log("Dialog accepted: " + fileUrl)
-                tracker.loadFile(fileUrl);
+                path.loadFile(fileUrl);
             }
         }
     ]

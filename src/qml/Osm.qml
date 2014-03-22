@@ -76,8 +76,8 @@ Item {
                 id: trackPane
             }
             onClicked: {
-                trackPane.setSource("OsmTrackItem.qml", {
-                    "tracker": tracker,
+                trackPane.setSource("OsmPathItem.qml", {
+                    "path": tracker,
                 })
                 trackPane.item.open()
             }

@@ -13,7 +13,7 @@
   <file>Map.qml</file>
   <file>MenuButton.qml</file>
   <file>OsmButton.qml</file>
-  <file>OsmTrackItem.qml</file>
+  <file>OsmPathItem.qml</file>
   <file>Osm.qml</file>
   <file>PaneBackground.qml</file>
   <file>Pane.qml</file>
