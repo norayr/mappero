@@ -13,3 +13,5 @@ var TaggableSourceHeight = TaggableSourceWidth * Mappero.uiScale
 var TaggableToolsSize = 32 * Mappero.uiScale
 var ToolSpacing = 8 * Mappero.uiScale
 var ToolbarMargins = 8 * Mappero.uiScale
+var TextColor = "black"
+var TextColorDisabled = "#888"
