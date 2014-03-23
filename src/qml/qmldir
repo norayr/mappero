@@ -1,0 +1,3 @@
+module Mappero.Ui
+LabelLayout 1.0 LabelLayout.qml
+SimpleSelector 1.0 SimpleSelector.qml

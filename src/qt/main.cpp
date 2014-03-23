@@ -107,6 +107,7 @@ int main(int argc, char *argv[])
     qmlRegisterType<Mappero::Ticks>("Mappero", 1, 0, "Ticks");
 #endif
 
+    engine->addImportPath("qrc:/");
     view.setSource(QUrl("qrc:/mappero.qml"));
     view.setTitle("Mappero");
 #if defined MEEGO || defined MAEMO5

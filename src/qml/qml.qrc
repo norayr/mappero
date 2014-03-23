@@ -31,9 +31,12 @@
   <file>Router.qml</file>
   <file>SearchBox.qml</file>
   <file>SearchPluginChooser.qml</file>
+  <file>SelectorView.qml</file>
+  <file>SimpleSelector.qml</file>
   <file>TextField.qml</file>
   <file>TiledMaps.qml</file>
   <file>UIConstants.js</file>
   <file>WayPointView.qml</file>
+  <file>qmldir</file>
 </qresource>
 </RCC>

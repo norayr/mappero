@@ -54,6 +54,8 @@ Popup {
             }
 
             RoutePluginChooser {
+                anchors.left: parent.left
+                anchors.right: parent.right
                 model: PluginManager.pluginModel("routing")
                 onActivePluginChanged: root.plugin = PluginManager.loadPlugin(activePlugin)
             }

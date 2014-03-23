@@ -1,0 +1,24 @@
+<!DOCTYPE RCC><RCC version="1.0">
+<qresource prefix="/Mappero/Ui">
+  <file>BusyIndicator.qml</file>
+  <file>Button.qml</file>
+  <file>ButtonWithIcon.qml</file>
+  <file>ImageButton.qml</file>
+  <file>ImagePoi.qml</file>
+  <file>LabelLayout.qml</file>
+  <file>ListBrowser.qml</file>
+  <file>MapFlickable.qml</file>
+  <file>Map.qml</file>
+  <file>MenuButton.qml</file>
+  <file>OsmButton.qml</file>
+  <file>PaneBackground.qml</file>
+  <file>Pane.qml</file>
+  <file>Popup.qml</file>
+  <file>Selector.qml</file>
+  <file>SelectorView.qml</file>
+  <file>SimpleSelector.qml</file>
+  <file>TextField.qml</file>
+  <file>UIConstants.js</file>
+  <file>qmldir</file>
+</qresource>
+</RCC>

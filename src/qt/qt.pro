@@ -117,6 +117,7 @@ macx {
 }
 
 RESOURCES += \
+    ../qml/mappero-ui.qrc \
     ../qml/qml.qrc \
     ../../data/icons/scalable/icons.qrc \
     ../../data/icons/scalable/directions/directions.qrc \
