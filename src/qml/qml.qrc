@@ -25,6 +25,7 @@
   <file>RouteActions.qml</file>
   <file>RouteBrowser.qml</file>
   <file>RouteItems.qml</file>
+  <file>RouteOptions.qml</file>
   <file>RoutePluginChooser.qml</file>
   <file>RouterDialog.qml</file>
   <file>Router.qml</file>

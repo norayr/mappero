@@ -57,10 +57,20 @@ Popup {
                 model: PluginManager.pluginModel("routing")
                 onActivePluginChanged: root.plugin = PluginManager.loadPlugin(activePlugin)
             }
+            Button {
+                id: optionsButton
+                text: qsTr("Options")
+                visible: plugin != null && plugin.optionsUi != null
+                onClicked: openOptions()
+            }
         }
 
         BusyIndicator {
             id: busyIndicator
+        }
+
+        Loader {
+            id: optionsLoader
         }
     }
 
@@ -81,5 +91,13 @@ Popup {
             root.routesReady()
             console.log("route ready, count: " + routeModel.count)
         }
+    }
+
+    function openOptions() {
+        optionsLoader.setSource("RouteOptions.qml", {
+            "source": optionsButton,
+            "optionsComponent": plugin.optionsUi
+        })
+        optionsLoader.item.open()
     }
 }
