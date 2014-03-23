@@ -148,7 +148,17 @@ Item {
         console.log("Destpos: " + _destPos.x + "," + _destPos.y)
     }
 
+    function _computeZ() {
+        var z = 0
+        var children = pageOverlay.parent.children
+        for (var i = 0; i < children.length; i++) {
+            z = Math.max(z, children[i].z)
+        }
+        return z + 1
+    }
+
     function open() {
+        pageOverlay.z = _computeZ()
         _computePositions()
         state = "open"
     }
