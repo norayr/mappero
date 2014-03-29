@@ -22,6 +22,7 @@ Item {
         }
     }
 
+    property var path
     property variant __routeBrowser: null
     property bool routeBrowserNeeded: (model != null) && (model.count > 0)
 
@@ -105,6 +106,10 @@ Item {
         id: routeBrowserConnection
         target: null
         onCurrentIndexChanged: root.currentIndex = __routeBrowser.currentIndex
+        onRouteSet: {
+            root.path = route.path
+            root.model = null
+        }
     }
 
     onCurrentPositionChanged: {

@@ -135,6 +135,7 @@ Item {
     Router {
         id: router
         currentPosition: map.center // TODO: use GPS!
+        onPathChanged: route.path = router.path
     }
 
     SearchBox {

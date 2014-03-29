@@ -22,6 +22,7 @@
   <file>PoiBrowserDelegate.qml</file>
   <file>PoiBrowser.qml</file>
   <file>Popup.qml</file>
+  <file>RouteActions.qml</file>
   <file>RouteBrowser.qml</file>
   <file>RouteItems.qml</file>
   <file>RoutePluginChooser.qml</file>
