@@ -42,6 +42,11 @@ Item {
         PathLayer {
             id: pathLayer
 
+            PathItem {
+                id: route
+                color: "green"
+            }
+
             Tracker {
                 id: tracker
                 tracking: true
@@ -113,6 +118,7 @@ Item {
         id: osm
         anchors.fill: parent
         router: router
+        route: route
         tracker: tracker
         searchBox: searchBox
     }

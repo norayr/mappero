@@ -7,6 +7,7 @@ Item {
     property int screenMargin: UI.OsmScreenMargin
     property bool isPortrait: height > width
     property variant tracker
+    property variant route
     property variant searchBox
     property variant router
 
@@ -86,6 +87,15 @@ Item {
         OsmButton {
             id: routeButton
             source: "qrc:osm-route"
+            Loader {
+                id: routePane
+            }
+            onClicked: {
+                routePane.setSource("OsmPathItem.qml", {
+                    "path": route,
+                })
+                routePane.item.open()
+            }
         }
 
         OsmButton {
