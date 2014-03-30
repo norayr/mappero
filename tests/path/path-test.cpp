@@ -46,7 +46,7 @@ void PathTest::loadGpx()
     Path route;
     route.load(":/Route.gpx");
     QCOMPARE(route.d->points.count(), 1509);
-    QCOMPARE(route.d->wayPoints.count(), 15);
+    QCOMPARE(route.wayPointCount(), 15);
     QCOMPARE(route.d->segments.count(), 1);
 }
 
@@ -55,9 +55,9 @@ void PathTest::loadKml()
     Path route;
     route.load(":/Route.kml");
     QCOMPARE(route.d->points.count(), 2105);
-    QCOMPARE(route.d->wayPoints.count(), 2);
-    QCOMPARE(route.d->wayPoints[0].desc, UTF8("Vilhonkatu 13, Helsinki"));
-    QCOMPARE(route.d->wayPoints[1].desc,
+    QCOMPARE(route.wayPointCount(), 2);
+    QCOMPARE(route.wayPointText(0), UTF8("Vilhonkatu 13, Helsinki"));
+    QCOMPARE(route.wayPointText(1),
              UTF8("Helsinki-vantaan Lentoasema 2, Vantaa"));
     QCOMPARE(route.d->segments.count(), 1);
 
@@ -65,13 +65,13 @@ void PathTest::loadKml()
 
     route.load(":/HelsinkiTikkurila.kml");
     QCOMPARE(route.d->points.count(), 276);
-    QCOMPARE(route.d->wayPoints.count(), 22);
-    QCOMPARE(route.d->wayPoints[0].desc,
+    QCOMPARE(route.wayPointCount(), 22);
+    QCOMPARE(route.wayPointText(0),
              UTF8("Head northeast on Brunnsgatan/Kaivokatu toward "
                   "Mannerheimintie/Mannerheimvägen/E12"));
-    QCOMPARE(route.d->wayPoints[1].desc,
+    QCOMPARE(route.wayPointText(1),
              UTF8("Continue onto Kaisaniemenkatu/Kajsaniemigatan"));
-    QCOMPARE(route.d->wayPoints[21].desc,
+    QCOMPARE(route.wayPointText(21),
              UTF8("Arrive at: Tikkurila, Vantaa, Finland"));
     QCOMPARE(route.d->segments.count(), 1);
 }

@@ -1,3 +1,5 @@
+include(../../common-config.pri)
+
 TARGET = path-test
 
 QT += \
@@ -6,23 +8,17 @@ QT += \
     testlib \
     xml
 
-SRC = ../../src/qt
-
 INCLUDEPATH += \
-    $${SRC}
+    ../../lib/Mappero
+
+QMAKE_LIBDIR = $${TOP_BUILD_DIR}/lib/Mappero
+QMAKE_RPATHDIR = $${QMAKE_LIBDIR}
+LIBS += -lMappero
 
 SOURCES += \
-    $${SRC}/gpx.cpp \
-    $${SRC}/kml.cpp \
-    $${SRC}/path.cpp \
-    $${SRC}/projection.cpp \
-    $${SRC}/types.cpp \
     path-test.cpp
 
 HEADERS += \
-    $${SRC}/path.h \
-    $${SRC}/projection.h \
-    $${SRC}/types.h \
     path-test.h
 
 RESOURCES += \
@@ -31,8 +27,3 @@ RESOURCES += \
 check.commands = ./path-test
 check.depends = path-test
 QMAKE_EXTRA_TARGETS += check
-
-contains(MEEGO_EDITION,harmattan) {
-    target.path = /opt/path/bin
-    INSTALLS += target
-}
