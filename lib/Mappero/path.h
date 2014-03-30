@@ -107,6 +107,9 @@ public:
     QRectF boundingRect() const;
     Geo length() const { return m_length; }
 
+    void setSource(const QString &source) { m_source = source; }
+    QString source() const { return m_source; }
+
 private:
     friend class Path;
     bool load(QXmlStreamReader &xml, PathStream *stream);
@@ -117,6 +120,7 @@ public:
     QVector<PathPoint> points;
     QVector<PathWayPoint> wayPoints;
     QList<PathSegment> segments;
+    QString m_source;
     int pointsOptimized;
     Geo latMin, latMax, lonMin, lonMax;
     Geo m_length;
@@ -154,6 +158,9 @@ public:
                   Geo distance = 0);
     bool addPoint(const QVariantMap &pointData);
     void appendBreak();
+
+    void setSource(const QString &source);
+    QString source() const;
 
     QPainterPath toPainterPath(int zoomLevel) const;
 

@@ -48,6 +48,7 @@ void PathTest::loadGpx()
     QCOMPARE(route.d->points.count(), 1509);
     QCOMPARE(route.wayPointCount(), 15);
     QCOMPARE(route.d->segments.count(), 1);
+    QCOMPARE(route.source(), QStringLiteral("google drive"));
 }
 
 void PathTest::loadKml()

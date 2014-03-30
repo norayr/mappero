@@ -6,6 +6,7 @@
      xsi:schemaLocation="http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd">
    <trk>
       <name>Google Driving Directions Track</name>
+      <src>google drive</src>
       <trkseg>
       <trkpt lat="60.16985" lon="24.93855"><cmt>Head northeast on Brunnsgatan/Kaivokatu toward Mannerheimintie/Mannerheimvägen/E12</cmt></trkpt>
       <trkpt lat="60.17034" lon="24.93989"></trkpt>

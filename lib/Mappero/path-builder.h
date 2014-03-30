@@ -33,6 +33,8 @@ class PathBuilder: public QObject
 {
     Q_OBJECT
     Q_PROPERTY(Mappero::Path path READ path NOTIFY pathChanged)
+    Q_PROPERTY(QString source READ source WRITE setSource \
+               NOTIFY sourceChanged)
 
 public:
     PathBuilder(QObject *parent = 0);
@@ -40,11 +42,15 @@ public:
 
     Path path() const;
 
+    void setSource(const QString &source);
+    QString source() const;
+
     Q_INVOKABLE void clear();
     Q_INVOKABLE void addPoint(const QVariantMap &pointData);
 
 Q_SIGNALS:
     void pathChanged();
+    void sourceChanged();
 
 private:
     PathBuilderPrivate *d_ptr;

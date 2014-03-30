@@ -216,6 +216,7 @@ RoutingModel {
 
     PathBuilder {
         id: builder
+        source: "reittiopas"
     }
 
     function run() {

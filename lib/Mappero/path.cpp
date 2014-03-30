@@ -291,6 +291,16 @@ void Path::appendBreak()
     d->appendBreak();
 }
 
+void Path::setSource(const QString &source)
+{
+    d->setSource(source);
+}
+
+QString Path::source() const
+{
+    return d->source();
+}
+
 QPainterPath Path::toPainterPath(int zoomLevel) const
 {
     if (d->points.isEmpty()) return QPainterPath();

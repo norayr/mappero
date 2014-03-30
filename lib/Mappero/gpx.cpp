@@ -85,6 +85,8 @@ bool Gpx::read(QXmlStreamReader &xml, PathData &pathData)
                 if (xml.name() == "trkseg") {
                     pathData.appendBreak();
                     parseTrkseg(xml, pathData);
+                } else if (xml.name() == "src") {
+                    pathData.setSource(xml.readElementText());
                 } else {
                     xml.skipCurrentElement();
                 }
@@ -110,6 +112,11 @@ bool Gpx::write(QXmlStreamWriter &xml, const PathData &pathData)
 
     /* track element */
     xml.writeStartElement("trk");
+
+    /* source */
+    if (!pathData.source().isEmpty()) {
+        xml.writeTextElement("src", pathData.source());
+    }
 
     /* this is outside of the loop, in order to reuse it */
     QDateTime time;

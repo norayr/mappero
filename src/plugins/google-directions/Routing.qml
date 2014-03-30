@@ -10,6 +10,7 @@ RoutingModel {
 
     PathBuilder {
         id: builder
+        source: "google-directions"
     }
 
     function run() {

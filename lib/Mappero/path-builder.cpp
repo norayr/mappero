@@ -36,6 +36,7 @@ class PathBuilderPrivate
 private:
     mutable PathBuilder *q_ptr;
     Path path;
+    QString source;
 };
 
 } // namespace
@@ -62,10 +63,25 @@ Path PathBuilder::path() const
     return d->path;
 }
 
+void PathBuilder::setSource(const QString &source)
+{
+    Q_D(PathBuilder);
+    d->source = source;
+    d->path.setSource(source);
+    Q_EMIT sourceChanged();
+}
+
+QString PathBuilder::source() const
+{
+    Q_D(const PathBuilder);
+    return d->source;
+}
+
 void PathBuilder::clear()
 {
     Q_D(PathBuilder);
     d->path.clear();
+    d->path.setSource(d->source);
     Q_EMIT pathChanged();
 }
 
