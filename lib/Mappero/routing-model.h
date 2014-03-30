@@ -84,6 +84,7 @@ public:
     Q_INVOKABLE void appendPath(const Path &path);
     Q_INVOKABLE Path getPath(int row) const;
     Q_INVOKABLE void clear();
+    Q_INVOKABLE QVariant get(int row, const QString &role) const;
 
     // reimplemented virtual methods
     int rowCount(const QModelIndex &parent = QModelIndex()) const Q_DECL_OVERRIDE;

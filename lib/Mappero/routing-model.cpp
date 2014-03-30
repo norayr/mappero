@@ -212,6 +212,12 @@ void RoutingModel::clear()
     endRemoveRows();
 }
 
+QVariant RoutingModel::get(int row, const QString &roleName) const
+{
+    int role = roleNames().key(roleName.toLatin1(), -1);
+    return data(index(row, 0), role);
+}
+
 int RoutingModel::rowCount(const QModelIndex &parent) const
 {
     Q_D(const RoutingModel);
