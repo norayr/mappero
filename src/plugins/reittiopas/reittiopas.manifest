@@ -3,5 +3,6 @@
     "icon": "reittiopas.png",
     "translations": "mappero",
     "type": "routing",
+    "optionsUiDelegate": "Options.qml",
     "routingModel": "Routing.qml"
 }
