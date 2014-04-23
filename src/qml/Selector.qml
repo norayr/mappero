@@ -8,8 +8,8 @@ Item {
     property Component listDelegate: buttonDelegate
     property var model
     property int selectedIndex: 0
-    implicitWidth: button.contentWidth //button.currentItem ? button.currentItem.width : 10
-    implicitHeight: button.currentItem ? button.currentItem.height : 10
+    width: button.contentWidth
+    height: button.currentItem ? button.currentItem.height : 10
 
     ListView {
         id: button
