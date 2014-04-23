@@ -12,5 +12,6 @@ Popup {
 
     Loader {
         id: optionsLoader
+        anchors.fill: parent
     }
 }
