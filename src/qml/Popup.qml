@@ -14,6 +14,8 @@ Item {
     property int minimumHeight: 60
     property bool _fullPage: pageOverlay.needsFullPage()
 
+    signal closed()
+
     width: openPopup.width
     height: openPopup.height
     state: "closed"
@@ -166,5 +168,6 @@ Item {
     function close() {
         _computePositions()
         state = "closed"
+        closed()
     }
 }
