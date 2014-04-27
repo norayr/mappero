@@ -12,6 +12,7 @@ Popup {
     property alias originName: originField.text
     property variant routeModel
     property variant plugin: null
+    property var __routerOptions: {}
 
     signal routesReady()
 
@@ -57,7 +58,11 @@ Popup {
                 anchors.left: parent.left
                 anchors.right: parent.right
                 model: PluginManager.pluginModel("routing")
-                onActivePluginChanged: root.plugin = PluginManager.loadPlugin(activePlugin)
+                onActivePluginChanged: {
+                    root.plugin = PluginManager.loadPlugin(activePlugin)
+                    // TODO: load plugin options from configuration
+                    root.__routerOptions = {}
+                }
             }
             Button {
                 id: optionsButton
@@ -81,6 +86,7 @@ Popup {
         var origin = Mappero.isValid(originPoint) ? originPoint : currentPosition
         model.from = Mappero.point(origin)
         model.to = Mappero.point(destinationPoint)
+        model.options = __routerOptions
         busyIndicator.running = true
         model.isRunningChanged.connect(onRouteReady)
         routeModel = model
@@ -98,7 +104,12 @@ Popup {
     function openOptions() {
         optionsLoader.setSource("RouteOptions.qml", {
             "source": optionsButton,
+            "optionsData": __routerOptions,
             "optionsComponent": plugin.optionsUi
+        })
+        optionsLoader.item.onClosed.connect(function() {
+            console.log("Options: " + JSON.stringify(optionsLoader.item.optionsData))
+            __routerOptions = optionsLoader.item.optionsData
         })
         optionsLoader.item.open()
     }

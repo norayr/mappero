@@ -25,6 +25,7 @@
 #include <QAbstractListModel>
 #include <QPointF>
 #include <QQmlListProperty>
+#include <QVariantMap>
 
 class QQmlComponent;
 
@@ -39,6 +40,8 @@ class RoutingModel: public QAbstractListModel
     Q_PROPERTY(int count READ rowCount NOTIFY countChanged)
     Q_PROPERTY(QPointF from READ from WRITE setFrom NOTIFY fromChanged)
     Q_PROPERTY(QPointF to READ to WRITE setTo NOTIFY toChanged)
+    Q_PROPERTY(QVariantMap options READ options WRITE setOptions \
+               NOTIFY optionsChanged)
     Q_PROPERTY(bool running READ isRunning WRITE setRunning \
                NOTIFY isRunningChanged)
     Q_PROPERTY(QQmlComponent *wayPointDelegate READ wayPointDelegate \
@@ -61,6 +64,9 @@ public:
 
     void setTo(const QPointF &point);
     QPointF to() const;
+
+    void setOptions(const QVariantMap &options);
+    QVariantMap options() const;
 
     void setRunning(bool isRunning);
     bool isRunning() const;
@@ -89,6 +95,7 @@ Q_SIGNALS:
     void countChanged();
     void fromChanged();
     void toChanged();
+    void optionsChanged();
     void isRunningChanged();
     void wayPointDelegateChanged();
     void routeDelegateChanged();

@@ -219,14 +219,17 @@ RoutingModel {
     }
 
     function run() {
-        findPath(from, to)
+        findPath(from, to, options)
     }
 
-    function findPath(from, to) {
+    function findPath(from, to, options) {
         var url = "http://api.reittiopas.fi/hsl/prod/?request=route" +
         "&user=mappero&pass=tbmaitw&detail=full&epsg_in=4326&epsg_out=4326" +
         "&from=" + from.y + "," + from.x +
         "&to=" + to.y + "," + to.x
+        if ("optimize" in options) {
+            url += "&optimize=" + options.optimize
+        }
         console.log("url: " + url)
         root.running = true
         var xhr = new XMLHttpRequest;

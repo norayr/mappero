@@ -56,6 +56,7 @@ private:
     QList<QObject*> m_resources;
     QPointF m_from;
     QPointF m_to;
+    QVariantMap m_options;
     bool m_isRunning;
     QQmlComponent *m_wayPointDelegate;
     QQmlComponent *m_routeDelegate;
@@ -112,6 +113,20 @@ QPointF RoutingModel::to() const
 {
     Q_D(const RoutingModel);
     return d->m_to;
+}
+
+void RoutingModel::setOptions(const QVariantMap &options)
+{
+    Q_D(RoutingModel);
+    if (options == d->m_options) return;
+    d->m_options = options;
+    Q_EMIT optionsChanged();
+}
+
+QVariantMap RoutingModel::options() const
+{
+    Q_D(const RoutingModel);
+    return d->m_options;
 }
 
 void RoutingModel::setRunning(bool isRunning)

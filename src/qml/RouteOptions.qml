@@ -5,6 +5,7 @@ Popup {
     id: root
 
     property alias optionsComponent: optionsLoader.sourceComponent
+    property alias optionsData: optionsLoader.options
 
     minimumWidth: optionsLoader.item.implicitWidth
     minimumHeight: optionsLoader.item.implicitHeight
@@ -12,6 +13,7 @@ Popup {
 
     Loader {
         id: optionsLoader
+        property var options
         anchors.fill: parent
     }
 }
