@@ -105,7 +105,7 @@ Popup {
         optionsLoader.setSource("RouteOptions.qml", {
             "source": optionsButton,
             "optionsData": __routerOptions,
-            "optionsComponent": plugin.optionsUi
+            "plugin": plugin
         })
         optionsLoader.item.onClosed.connect(function() {
             console.log("Options: " + JSON.stringify(optionsLoader.item.optionsData))

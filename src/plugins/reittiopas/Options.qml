@@ -34,9 +34,4 @@ Item {
             anchors.right: parent.right
         }
     }
-
-    Text {
-        anchors.fill: parent
-        text: "Here are the options"
-    }
 }
