@@ -16,7 +16,8 @@ Item {
             text: qsTr("Optimize for")
 
             SimpleSelector {
-                width: 100
+                anchors.left: parent.left
+                anchors.right: parent.right
                 model: ListModel {
                     id: listModel
                     ListElement { text: QT_TR_NOOP("default"); optimize: "default" }
@@ -26,12 +27,6 @@ Item {
                 }
                 onSelectedIndexChanged: options["optimize"] = model.get(selectedIndex).optimize
             }
-        }
-        Rectangle {
-            width: 50
-            color: "blue"
-            anchors.left: parent.left
-            anchors.right: parent.right
         }
     }
 }
