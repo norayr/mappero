@@ -39,6 +39,14 @@ ListBrowser {
 
     Connections {
         target: loader.item
-        onActivated: root.routeSet(loader.item.path)
+        onActivated: root.routeSet(currentRoute())
+    }
+
+    function currentRoute() {
+        var route = {
+            "path": model.get(currentIndex, "path"),
+            "wayPointDelegate": model.wayPointDelegate
+        }
+        return route
     }
 }

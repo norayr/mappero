@@ -23,6 +23,7 @@ Item {
     }
 
     property var path
+    property Component pathWayPointDelegate
     property variant __routeBrowser: null
     property bool routeBrowserNeeded: (model != null) && (model.count > 0)
 
@@ -107,8 +108,10 @@ Item {
         target: null
         onCurrentIndexChanged: root.currentIndex = __routeBrowser.currentIndex
         onRouteSet: {
+            root.pathWayPointDelegate = route.wayPointDelegate
             root.path = route.path
-            root.model = null
+            root.model.clear()
+            loader.sourceComponent = null
         }
     }
 
