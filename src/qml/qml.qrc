@@ -1,27 +1,17 @@
 <!DOCTYPE RCC><RCC version="1.0">
 <qresource>
-  <file>BusyIndicator.qml</file>
-  <file>Button.qml</file>
-  <file>ImageButton.qml</file>
   <file>ImagePoi.qml</file>
-  <file>LabelLayout.qml</file>
   <file>LayerManager.qml</file>
-  <file>ListBrowser.qml</file>
   <file>mappero.qml</file>
   <file>MainPage.qml</file>
   <file>MapFlickable.qml</file>
   <file>Map.qml</file>
-  <file>MenuButton.qml</file>
-  <file>OsmButton.qml</file>
   <file>OsmPathItem.qml</file>
   <file>Osm.qml</file>
-  <file>PaneBackground.qml</file>
-  <file>Pane.qml</file>
   <file>PluginSelector.qml</file>
   <file>PoiActions.qml</file>
   <file>PoiBrowserDelegate.qml</file>
   <file>PoiBrowser.qml</file>
-  <file>Popup.qml</file>
   <file>RouteActions.qml</file>
   <file>RouteBrowser.qml</file>
   <file>RouteItems.qml</file>
@@ -31,9 +21,6 @@
   <file>Router.qml</file>
   <file>SearchBox.qml</file>
   <file>SearchPluginChooser.qml</file>
-  <file>SelectorView.qml</file>
-  <file>SimpleSelector.qml</file>
-  <file>TextField.qml</file>
   <file>TiledMaps.qml</file>
   <file>UIConstants.js</file>
   <file>WayPointView.qml</file>

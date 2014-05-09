@@ -1,0 +1,11 @@
+prefix=$${INSTALL_PREFIX}
+exec_prefix=${prefix}
+libdir=$${INSTALL_LIBDIR}
+includedir=${prefix}/include
+
+Name: MapperoUi
+Description: Mappero user interface toolkit
+Version: $${PROJECT_VERSION}
+Requires: Qt5Core Qt5Qml Qt5Quick
+Libs: -L${libdir} -l$${TARGET}
+Cflags: -I${includedir}

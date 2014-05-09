@@ -1,0 +1,10 @@
+<!DOCTYPE RCC><RCC version="1.0">
+<qresource prefix="/Mappero/Plugin">
+  <file>qmldir</file>
+  <file>BaseRouteDelegate.qml</file>
+  <file>BaseWayPointDelegate.qml</file>
+  <file>DefaultResultsDelegate.qml</file>
+  <file>DefaultRouteDelegate.qml</file>
+  <file>DefaultWayPointDelegate.qml</file>
+</qresource>
+</RCC>

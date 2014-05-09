@@ -1,4 +1,5 @@
 import QtQuick 2.0
+import Mappero.Ui 1.0
 
 Popup {
     id: root

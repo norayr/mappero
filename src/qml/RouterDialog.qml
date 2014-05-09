@@ -1,5 +1,6 @@
 import QtQuick 2.0
 import Mappero 1.0
+import Mappero.Ui 1.0
 import "UIConstants.js" as UI
 
 Popup {

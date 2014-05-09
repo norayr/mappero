@@ -37,6 +37,7 @@
 #include "view.h"
 
 #include "Mappero/types.h"
+#include "MapperoUi/types.h"
 #include <QAbstractListModel>
 #include <QQmlContext>
 #include <QQmlEngine>
@@ -62,6 +63,7 @@ int main(int argc, char *argv[])
     app.setApplicationName("mappero");
 
     Mappero::registerTypes();
+    MapperoUi::registerTypes();
     qmlRegisterType<Mappero::Map>("Mappero", 1, 0, "MapView");
     qmlRegisterType<Mappero::TiledLayer>("Mappero", 1, 0, "TiledLayer");
     qmlRegisterType<Mappero::Tracker>("Mappero", 1, 0, "Tracker");

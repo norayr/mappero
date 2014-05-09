@@ -38,6 +38,9 @@ INCLUDEPATH += $${TOP_SRC_DIR}/lib
 DEFINES += \
     PLUGIN_MANIFEST_DIR=\\\"$${PLUGIN_MANIFEST_DIR}\\\"
 
+LIBS += -lMapperoUi
+QMAKE_LIBDIR += $${TOP_BUILD_DIR}/lib/MapperoUi
+
 SOURCES += \
     configuration.cpp \
     controller.cpp \
@@ -117,7 +120,6 @@ macx {
 }
 
 RESOURCES += \
-    ../qml/mappero-ui.qrc \
     ../qml/qml.qrc \
     ../../data/icons/scalable/icons.qrc \
     ../../data/icons/scalable/directions/directions.qrc \

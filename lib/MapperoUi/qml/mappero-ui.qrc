@@ -4,11 +4,8 @@
   <file>Button.qml</file>
   <file>ButtonWithIcon.qml</file>
   <file>ImageButton.qml</file>
-  <file>ImagePoi.qml</file>
   <file>LabelLayout.qml</file>
   <file>ListBrowser.qml</file>
-  <file>MapFlickable.qml</file>
-  <file>Map.qml</file>
   <file>MenuButton.qml</file>
   <file>OsmButton.qml</file>
   <file>PaneBackground.qml</file>
