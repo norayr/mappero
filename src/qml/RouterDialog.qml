@@ -20,6 +20,8 @@ Popup {
     minimumWidth: 200
     minimumHeight: form.height
 
+    Component.onCompleted: plugin = PluginManager.loadPlugin(pluginChooser.activePlugin)
+
     Item {
         anchors.fill: parent
 
@@ -56,6 +58,7 @@ Popup {
             }
 
             RoutePluginChooser {
+                id: pluginChooser
                 anchors.left: parent.left
                 anchors.right: parent.right
                 model: PluginManager.pluginModel("routing")
