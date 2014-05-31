@@ -1,3 +1,5 @@
+include(../tests.pri)
+
 TARGET = geotag-test
 
 QT += \

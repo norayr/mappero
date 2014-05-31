@@ -20,7 +20,7 @@
 
 #include "path-test.h"
 
-#include "path.h"
+#include "Mappero/Path"
 #include <QDebug>
 
 #define UTF8(s) QString::fromUtf8(s)

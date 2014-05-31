@@ -1,18 +1,10 @@
-include(../../common-config.pri)
+include(../tests.pri)
 
 TARGET = path-test
 
 QT += \
-    declarative \
-    network \
-    testlib \
-    xml
+    testlib
 
-INCLUDEPATH += \
-    ../../lib/Mappero
-
-QMAKE_LIBDIR = $${TOP_BUILD_DIR}/lib/Mappero
-QMAKE_RPATHDIR = $${QMAKE_LIBDIR}
 LIBS += -lMappero
 
 SOURCES += \
