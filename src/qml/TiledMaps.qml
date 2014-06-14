@@ -27,7 +27,7 @@ ListModel {
         uid: "GoogleSatellite"
         name: "Google Satellite"
         type: "XYZ_INV"
-        url: "http://khm.google.com/kh/v=109&z=%d&x=%d&y=%0d"
+        url: "http://khm.google.com/kh/v=150&z=%d&x=%d&y=%0d"
         format: "jpeg"
         minZoom: 3
         maxZoom: 15
