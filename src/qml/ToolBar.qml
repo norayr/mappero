@@ -60,7 +60,6 @@ Item {
 
             FileDialog {
                 id: fileChooserLoad
-                visible: true
                 title: "Choose a file"
                 folder: "."
                 selectExisting: true
