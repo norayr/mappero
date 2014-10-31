@@ -295,10 +295,11 @@ void TileDownloadPrivate::taskCompleted(const TileTask &tile)
     /* Note: we can destroy the TaskData only because we know that the signal
      * connection is immediate; otherwise the receiver might end up accessing
      * deleted data */
+    bool needsNetwork = data.tileContents.needsNetwork;
     tasks.erase(t);
     tasksMutex.unlock();
 
-    if (data.tileContents.needsNetwork && !networkRequested) {
+    if (needsNetwork && !networkRequested) {
         networkRequested = true;
         QNetworkConfiguration cfg = ncm.defaultConfiguration();
         QNetworkSession *session = new QNetworkSession(cfg, this);
