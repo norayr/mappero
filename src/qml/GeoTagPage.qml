@@ -21,6 +21,12 @@ Item {
         MapFlickable {
             id: mapFlickable
             anchors.fill: parent
+
+            MouseArea {
+                anchors.fill: parent
+                acceptedButtons: Qt.NoButton
+                onWheel: map.requestedZoomLevel -= wheel.angleDelta.y / 120
+            }
         }
 
         Map {
