@@ -48,11 +48,21 @@ struct TileTask
 {
     int priority;
     TileSpec spec;
+    QString fileName;
+    QUrl url;
 
     TileTask(): priority(0), spec(0, 0, 0, 0) {}
     TileTask(const TileSpec &spec, int priority):
         priority(priority),
-        spec(spec) {}
+        spec(spec)
+    {
+        TiledLayer *layer =
+            qobject_cast<TiledLayer*>(Layer::find(spec.layerId));
+        if (Q_LIKELY(layer)) {
+            fileName = layer->tileFileName(spec.zoom, spec.x, spec.y);
+            url = layer->urlForTile(spec.zoom, spec.x, spec.y);
+        }
+    }
     ~TileTask() {}
 };
 
@@ -90,7 +100,7 @@ inline bool operator<(const TileTask &t1, const TileTask &t2)
     diff = t1.spec.zoom - t2.spec.zoom;
     if (diff != 0) return diff < 0;
 
-    return t1.spec.layer->id() < t2.spec.layer->id();
+    return t1.spec.layerId < t2.spec.layerId;
 }
 
 class Downloader: public QRunnable
@@ -215,9 +225,7 @@ void Downloader::processTask(const TileTask &tile)
     TaskData &data = tasks[tile];
     mutex.unlock();
 
-    QFile tileFile(tile.spec.layer->tileFileName(tile.spec.zoom,
-                                                 tile.spec.x,
-                                                 tile.spec.y));
+    QFile tileFile(tile.fileName);
     if (tileFile.exists() &&
         tileFile.open(QIODevice::ReadOnly)) {
         data.tileContents.image = tileFile.readAll();
@@ -251,9 +259,7 @@ void Downloader::processTask(const TileTask &tile)
 
 QByteArray Downloader::downloadTile(const TileTask &tile)
 {
-    QUrl url(tile.spec.layer->urlForTile(tile.spec.zoom,
-                                         tile.spec.x, tile.spec.y));
-    QNetworkRequest request(url);
+    QNetworkRequest request(tile.url);
     request.setRawHeader("User-Agent", "Mappero 1.0");
     QNetworkReply *reply = networkAccessManager->get(request);
 
@@ -333,7 +339,12 @@ void TileDownload::requestTile(const TileSpec &tileSpec, int priority)
 {
     Q_D(TileDownload);
 
-    d->requestTile(TileTask(tileSpec, priority));
+    TileTask task(tileSpec, priority);
+    if (Q_UNLIKELY(task.fileName.isEmpty())) {
+        qWarning() << "Tile task has no filename, skipping";
+        return;
+    }
+    d->requestTile(task);
 }
 
 #include "tile-download.moc"

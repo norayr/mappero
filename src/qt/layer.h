@@ -40,6 +40,8 @@ public:
     Layer();
     virtual ~Layer();
 
+    static Layer *find(const QString &id);
+
     void setId(const QString &id);
     QString id() const;
 

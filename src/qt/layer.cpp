@@ -30,6 +30,8 @@
 
 using namespace Mappero;
 
+static QHash<QString,Layer*> layerIdMap;
+
 namespace Mappero {
 class LayerPrivate: public QObject
 {
@@ -75,13 +77,31 @@ Layer::Layer():
 
 Layer::~Layer()
 {
+    Q_D(Layer);
+    if (!d->id.isEmpty()) {
+        layerIdMap.remove(d->id);
+    }
     delete d_ptr;
+}
+
+Layer *Layer::find(const QString &id)
+{
+    return layerIdMap.value(id);
 }
 
 void Layer::setId(const QString &id)
 {
     Q_D(Layer);
+
+    if (id == d->id) return;
+
+    if (!d->id.isEmpty()) {
+        layerIdMap.remove(d->id);
+    }
     d->id = id;
+    if (!id.isEmpty()) {
+        layerIdMap.insert(id, this);
+    }
     queueLayerChanged();
 }
 

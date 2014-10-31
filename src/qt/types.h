@@ -28,16 +28,14 @@
 
 namespace Mappero {
 
-class TiledLayer;
-
 struct TileSpec
 {
-    TileSpec(int x, int y, int zoom, TiledLayer *layer):
-        x(x), y(y), zoom(zoom), layer(layer) {}
+    TileSpec(int x, int y, int zoom, const QString &layerId):
+        x(x), y(y), zoom(zoom), layerId(layerId) {}
     int x;
     int y;
     int zoom;
-    TiledLayer *layer;
+    QString layerId;
 };
 
 } // namespace
@@ -56,7 +54,7 @@ QDebug operator<<(QDebug dbg, const Mappero::TileSpec &t);
 inline bool operator==(const Mappero::TileSpec &t1, const Mappero::TileSpec &t2)
 {
     return t1.x == t2.x && t1.y == t2.y && t1.zoom == t2.zoom &&
-        t1.layer == t2.layer;
+        t1.layerId == t2.layerId;
 }
 
 #endif /* MAP_TYPES_H */

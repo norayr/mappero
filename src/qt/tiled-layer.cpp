@@ -240,7 +240,7 @@ void TiledLayerPrivate::loadTiles(const QPoint &start, const QPoint stop)
         for (int ty = start.y(); ty <= stop.y(); ty++, y+= TILE_SIZE_PIXELS) {
             int my = ty % worldSizeTiles;
             if (my < 0) my += worldSizeTiles;
-            TileSpec tileSpec(mx, my, zoomLevel, q);
+            TileSpec tileSpec(mx, my, zoomLevel, q->id());
             bool found;
 
             Tile *tile = tileCache->tile(tileSpec, &found);

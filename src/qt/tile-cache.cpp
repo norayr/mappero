@@ -44,11 +44,14 @@ struct TileData
 
 typedef QQueue<TileData> TileQueue;
 
-class TileCachePrivate
+class TileCachePrivate: public QObject
 {
-    friend class TileCache;
+    Q_OBJECT
+    Q_DECLARE_PUBLIC(TileCache)
 
-    TileCachePrivate(int maxSize):
+    TileCachePrivate(TileCache *tileCache, int maxSize):
+        QObject(),
+        q_ptr(tileCache),
         maxSize(maxSize)
     {
     }
@@ -56,7 +59,11 @@ class TileCachePrivate
 
     Tile *tile(const TileSpec &tileSpec, bool *found);
 
+private Q_SLOTS:
+    void onTileDestroyed();
+
 private:
+    mutable TileCache *q_ptr;
     int maxSize;
     TileQueue tiles;
 };
@@ -80,12 +87,21 @@ Tile *TileCachePrivate::tile(const TileSpec &tileSpec, bool *found)
         /* We didn't find the tile; see if we are allowed to allocate a new
          * one, otherwise just return the first one of the queue, so it will be
          * reused */
+        TiledLayer *layer =
+            qobject_cast<TiledLayer*>(Layer::find(tileData.spec.layerId));
+        if (Q_UNLIKELY(!layer)) {
+            *found = false;
+            return 0;
+        }
+
         if (tiles.count() < maxSize) {
-            tileData.tile = new Tile(tileData.spec.layer);
+            tileData.tile = new Tile(layer);
+            QObject::connect(tileData.tile, SIGNAL(destroyed()),
+                             this, SLOT(onTileDestroyed()));
         } else {
             tileData.tile = tiles.head().tile;
             tileData.tile->setImage(QImage());
-            tileData.tile->setParentItem(tileData.spec.layer);
+            tileData.tile->setParentItem(layer);
             tiles.dequeue();
         }
         *found = false;
@@ -94,8 +110,19 @@ Tile *TileCachePrivate::tile(const TileSpec &tileSpec, bool *found)
     return tileData.tile;
 }
 
+void TileCachePrivate::onTileDestroyed()
+{
+    Tile *tile = reinterpret_cast<Tile*>(sender());
+    Q_FOREACH(const TileData &tileData, tiles) {
+        if (tileData.tile == tile) {
+            tiles.removeOne(tileData);
+            break;
+        }
+    }
+}
+
 TileCache::TileCache():
-    d_ptr(new TileCachePrivate(100))
+    d_ptr(new TileCachePrivate(this, 100))
 {
 }
 
@@ -119,3 +146,5 @@ Tile *TileCache::find(const TileSpec &tileSpec) const
     int idx = d->tiles.indexOf(tileData);
     return idx >= 0 ? d->tiles[idx].tile : 0;
 }
+
+#include "tile-cache.moc"
