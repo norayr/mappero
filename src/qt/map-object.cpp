@@ -32,7 +32,8 @@ MapEvent::MapEvent(Map *map, bool dirty):
     m_centerChanged(dirty),
     m_zoomLevelChanged(dirty),
     m_sizeChanged(dirty),
-    m_mapChanged(dirty)
+    m_mapChanged(dirty),
+    m_animated(false)
 {
 }
 
