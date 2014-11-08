@@ -3,6 +3,7 @@ include(../tests.pri)
 TARGET = geotag-test
 
 QT += \
+    concurrent \
     network \
     quick \
     testlib
