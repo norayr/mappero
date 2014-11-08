@@ -35,6 +35,8 @@ class TaggableModel: public QAbstractListModel
     Q_OBJECT
     Q_PROPERTY(Mappero::TaggableSelection *selection READ selection CONSTANT);
     Q_PROPERTY(bool empty READ isEmpty NOTIFY isEmptyChanged);
+    Q_PROPERTY(int busyTaggableCount READ busyTaggableCount \
+               NOTIFY busyTaggableCountChanged)
 
 public:
     enum TaggableModelRoles {
@@ -60,16 +62,24 @@ public:
 
     Taggable *taggable(int row) const { return taggables[row]; }
 
+    int busyTaggableCount() const { return busyTaggables.count(); }
+
 Q_SIGNALS:
     void isEmptyChanged();
+    void busyTaggableCountChanged();
 
 private Q_SLOTS:
     void onTaggableChanged();
+    void onTaggableSaveStateChanged();
     void checkChanges();
+
+private:
+    void deleteWhenIdle(Taggable *taggable);
 
 private:
     TaggableSelection *_selection;
     QList<Taggable *> taggables;
+    QList<Taggable *> busyTaggables;
     bool checkChangesQueued;
     qint64 lastChangesTime;
     QHash<int, QByteArray> roles;

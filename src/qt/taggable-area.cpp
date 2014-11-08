@@ -122,7 +122,8 @@ bool TaggableModel::removeRows(int row, int count, const QModelIndex &parent)
 {
     beginRemoveRows(parent, row, row + count - 1);
     for (int i = 1; i <= count; i++) {
-        taggables.removeAt(row + count - i);
+        Taggable *taggable = taggables.takeAt(row + count - i);
+        deleteWhenIdle(taggable);
     }
     endRemoveRows();
 
@@ -138,6 +139,18 @@ void TaggableModel::onTaggableChanged()
 
     QMetaObject::invokeMethod(this, "checkChanges", Qt::QueuedConnection);
     checkChangesQueued = true;
+}
+
+void TaggableModel::onTaggableSaveStateChanged()
+{
+    Taggable *taggable = qobject_cast<Taggable*>(sender());
+    Q_ASSERT(taggable);
+
+    if (taggable->saveState() != Taggable::Saving) {
+        busyTaggables.removeOne(taggable);
+        delete taggable;
+        Q_EMIT busyTaggableCountChanged();
+    }
 }
 
 void TaggableModel::checkChanges()
@@ -159,6 +172,18 @@ void TaggableModel::checkChanges()
 
     checkChangesQueued = false;
     lastChangesTime = Controller::clock();
+}
+
+void TaggableModel::deleteWhenIdle(Taggable *taggable)
+{
+    if (taggable->saveState() == Taggable::Saving) {
+        QObject::connect(taggable, SIGNAL(saveStateChanged()),
+                         this, SLOT(onTaggableSaveStateChanged()));
+        busyTaggables.append(taggable);
+        Q_EMIT busyTaggableCountChanged();
+    } else {
+        delete taggable;
+    }
 }
 
 TaggableAreaPrivate::TaggableAreaPrivate(TaggableArea *taggableArea):

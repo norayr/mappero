@@ -143,7 +143,7 @@ void TaggableSelection::update()
         Taggable *taggable = _model->taggable(index);
 
         if (taggable->hasLocation()) hasLocation = true;
-        if (taggable->needsSave()) needsSave = true;
+        if (taggable->saveState() == Taggable::NeedsSave) needsSave = true;
         _items.append(taggable);
     }
 

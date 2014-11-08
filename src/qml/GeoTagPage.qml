@@ -158,6 +158,8 @@ Item {
                 anchors.fill: parent
                 model: dropArea.model
             }
+
+            BusyMessage { count: dropArea.model.busyTaggableCount }
         }
     }
 

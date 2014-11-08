@@ -47,12 +47,19 @@ class Taggable: public QObject
     Q_PROPERTY(Mappero::GeoPoint location READ location WRITE setLocation \
                NOTIFY locationChanged);
     Q_PROPERTY(bool hasLocation READ hasLocation NOTIFY locationChanged);
-    Q_PROPERTY(bool needsSave READ needsSave NOTIFY needsSaveChanged);
+    Q_PROPERTY(SaveState saveState READ saveState NOTIFY saveStateChanged);
     Q_PROPERTY(QDateTime time READ time NOTIFY fileNameChanged);
+    Q_ENUMS(SaveState)
 
 public:
     Taggable(QObject *parent = 0);
     ~Taggable();
+
+    enum SaveState {
+        Unchanged = 0,
+        NeedsSave,
+        Saving,
+    };
 
     bool isValid() const;
 
@@ -66,7 +73,7 @@ public:
     GeoPoint location() const;
     bool hasLocation() const;
 
-    bool needsSave() const;
+    SaveState saveState() const;
     qint64 lastChange() const;
 
     QDateTime time() const;
@@ -82,7 +89,7 @@ public Q_SLOTS:
 Q_SIGNALS:
     void fileNameChanged();
     void locationChanged();
-    void needsSaveChanged();
+    void saveStateChanged();
 
 public:
     class ImageProvider: public QQuickImageProvider

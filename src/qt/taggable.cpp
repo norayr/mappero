@@ -25,7 +25,9 @@
 #include <QCryptographicHash>
 #include <QDesktopServices>
 #include <QDir>
+#include <QFuture>
 #include <QPixmap>
+#include <QtConcurrent>
 #include <exiv2/image.hpp>
 #include <exiv2/preview.hpp>
 #include <sys/stat.h>
@@ -44,6 +46,30 @@ static QString thumbnailsDir;
 #endif
 
 namespace Mappero {
+
+bool saveMetadata(Exiv2::Image *image)
+{
+    std::string fileName = image->io().path();
+    struct stat statBefore;
+    stat(fileName.c_str(), &statBefore);
+
+    try {
+        image->writeMetadata();
+    } catch (Exiv2::AnyError &e) {
+        qCritical() << "Exiv2 exception, code" << e.code();
+        return false;
+    }
+
+    /* preserve modification time */
+    struct stat statAfter;
+    stat(fileName.c_str(), &statAfter);
+    struct utimbuf times;
+    times.actime = statAfter.st_atime;
+    times.modtime = statBefore.st_mtime;
+    utime(fileName.c_str(), &times);
+
+    return true;
+}
 
 class TaggablePrivate
 {
@@ -78,6 +104,8 @@ private:
     GeoPoint exifGeoPoint;
     GeoPoint fileGeoPoint;
     qint64 lastChange;
+    QFuture<bool> m_saveFuture;
+    QFutureWatcher<bool> m_saveFutureWatcher;
 };
 }; // namespace
 
@@ -91,10 +119,15 @@ TaggablePrivate::TaggablePrivate(Taggable *taggable):
     fileGeoPoint(),
     lastChange(0)
 {
+    QObject::connect(&m_saveFutureWatcher, SIGNAL(finished()),
+                     taggable, SIGNAL(saveStateChanged()));
 }
 
 TaggablePrivate::~TaggablePrivate()
 {
+    if (!m_saveFuture.isFinished()) {
+        qWarning() << "Saving not complete!";
+    }
 }
 
 void TaggablePrivate::setLocation(const GeoPoint &point, GeoPoint &dest)
@@ -109,7 +142,7 @@ void TaggablePrivate::setLocation(const GeoPoint &point, GeoPoint &dest)
     Q_EMIT q->locationChanged();
 
     if ((location() != fileGeoPoint) != oldNeedsSave) {
-        Q_EMIT q->needsSaveChanged();
+        Q_EMIT q->saveStateChanged();
     }
 }
 
@@ -243,29 +276,13 @@ void TaggablePrivate::save()
         deleteLocationInfo(exifData);
     }
 
-    QByteArray fileNameUtf8 = fileName.toUtf8();
-    struct stat statBefore;
-    stat(fileNameUtf8.constData(), &statBefore);
-
-    try {
-        image->writeMetadata();
-    } catch (Exiv2::AnyError &e) {
-        qCritical() << "Exiv2 exception, code" << e.code();
-        return;
-    }
-
-    /* preserve modification time */
-    struct stat statAfter;
-    stat(fileNameUtf8.constData(), &statAfter);
-    struct utimbuf times;
-    times.actime = statAfter.st_atime;
-    times.modtime = statBefore.st_mtime;
-    utime(fileNameUtf8.constData(), &times);
+    m_saveFuture = QtConcurrent::run(saveMetadata, image.get());
+    m_saveFutureWatcher.setFuture(m_saveFuture);
 
     if (fileGeoPoint != geoPoint) {
         Q_Q(Taggable);
         fileGeoPoint = geoPoint;
-        Q_EMIT q->needsSaveChanged();
+        Q_EMIT q->saveStateChanged();
     }
 }
 
@@ -464,10 +481,14 @@ bool Taggable::hasLocation() const
     return d->location().isValid();
 }
 
-bool Taggable::needsSave() const
+Taggable::SaveState Taggable::saveState() const
 {
     Q_D(const Taggable);
-    return d->location() != d->fileGeoPoint;
+    if (d->m_saveFuture.isFinished()) {
+        return (d->location() != d->fileGeoPoint) ? NeedsSave : Unchanged;
+    } else {
+        return Saving;
+    }
 }
 
 qint64 Taggable::lastChange() const
@@ -515,14 +536,14 @@ void Taggable::reload()
 {
     Q_D(Taggable);
 
-    bool oldNeedsSave = needsSave();
+    bool oldSaveState = saveState();
     GeoPoint oldLocation = location();
     d->manualGeoPoint = d->correlatedGeoPoint = GeoPoint();
     d->exifGeoPoint = d->fileGeoPoint;
     d->lastChange = Controller::clock();
 
-    if (oldNeedsSave) {
-        Q_EMIT needsSaveChanged();
+    if (oldSaveState != Unchanged) {
+        Q_EMIT saveStateChanged();
     }
     if (oldLocation != location()) {
         Q_EMIT locationChanged();

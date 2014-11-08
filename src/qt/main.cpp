@@ -99,7 +99,8 @@ int main(int argc, char *argv[])
     view.rootContext()->setContextProperty("firstPage", firstPage);
 
 #ifdef GEOTAGGING_ENABLED
-    qmlRegisterType<Mappero::Taggable>();
+    qmlRegisterUncreatableType<Mappero::Taggable>("Mappero", 1, 0, "Taggable",
+                                                  "C++ creation only");
     qmlRegisterType<Mappero::TaggableModel>();
     qmlRegisterType<Mappero::TaggableArea>("Mappero", 1, 0, "TaggableArea");
     qmlRegisterType<Mappero::TaggableSelection>();

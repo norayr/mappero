@@ -1,3 +1,4 @@
+import Mappero 1.0
 import QtQuick 2.0
 import "UIConstants.js" as UI
 
@@ -102,7 +103,14 @@ Rectangle {
             width: UI.TaggableEmblemSize
             height: UI.TaggableEmblemSize
             source: "qrc:taggable-modified"
-            visible: taggable.needsSave
+            visible: taggable.saveState != Taggable.Unchanged
+            onVisibleChanged: rotation = 0
+            RotationAnimation on rotation {
+                loops: Animation.Infinite
+                from: 0
+                to: 360
+                running: taggable.saveState == Taggable.Saving
+            }
         }
     }
 }

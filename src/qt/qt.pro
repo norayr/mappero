@@ -88,6 +88,7 @@ HEADERS += \
 system(pkg-config --exists exiv2) {
     message("libexiv2 is available")
     DEFINES += GEOTAGGING_ENABLED
+    QT += concurrent
     PKGCONFIG += exiv2
     SOURCES += \
         taggable-area.cpp \
