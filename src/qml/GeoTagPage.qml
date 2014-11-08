@@ -57,10 +57,10 @@ Item {
                     topText: model.fileName
 
                     onDragFinished: {
-                        model.taggable.location = view.itemPos(index)
+                        model.taggable.location = view.itemPos(model.index)
                     }
 
-                    onPressed: view.setCurrent(index)
+                    onPressed: view.setCurrent(model.index)
                 }
 
                 function setCurrent(index) {
