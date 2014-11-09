@@ -23,6 +23,7 @@
 
 #include <QAbstractListModel>
 #include <QQuickItem>
+#include <QSet>
 #include <QUrl>
 
 namespace Mappero {
@@ -62,7 +63,9 @@ public:
 
     Taggable *taggable(int row) const { return taggables[row]; }
 
-    int busyTaggableCount() const { return busyTaggables.count(); }
+    int busyTaggableCount() const {
+        return busyTaggables.count() + busyRemovedTaggables.count();
+    }
 
 Q_SIGNALS:
     void isEmptyChanged();
@@ -79,7 +82,8 @@ private:
 private:
     TaggableSelection *_selection;
     QList<Taggable *> taggables;
-    QList<Taggable *> busyTaggables;
+    QSet<Taggable *> busyTaggables;
+    QSet<Taggable *> busyRemovedTaggables;
     bool checkChangesQueued;
     qint64 lastChangesTime;
     QHash<int, QByteArray> roles;

@@ -159,7 +159,10 @@ Item {
                 model: dropArea.model
             }
 
-            BusyMessage { count: dropArea.model.busyTaggableCount }
+            BusyMessage {
+                id: busyMessage
+                count: dropArea.model.busyTaggableCount
+            }
         }
     }
 
@@ -187,5 +190,11 @@ Item {
             Mappero.conf.lastPosition = map.center
             Mappero.conf.lastZoomLevel = map.zoomLevel
         }
+    }
+
+    function closeRequest() {
+        console.log("got close request")
+        busyMessage.gotCloseRequest = true;
+        return dropArea.model.busyTaggableCount == 0
     }
 }

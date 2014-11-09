@@ -71,6 +71,8 @@ void TaggableModel::addUrls(const QList<QUrl> &urlList)
         Taggable *taggable = new Taggable(this);
         QObject::connect(taggable, SIGNAL(locationChanged()),
                          this, SLOT(onTaggableChanged()));
+        QObject::connect(taggable, SIGNAL(saveStateChanged()),
+                         this, SLOT(onTaggableSaveStateChanged()));
         taggable->setFileName(url.toLocalFile());
         if (!taggable->isValid()) {
             delete taggable;
@@ -146,9 +148,15 @@ void TaggableModel::onTaggableSaveStateChanged()
     Taggable *taggable = qobject_cast<Taggable*>(sender());
     Q_ASSERT(taggable);
 
-    if (taggable->saveState() != Taggable::Saving) {
-        busyTaggables.removeOne(taggable);
-        delete taggable;
+    if (taggable->saveState() == Taggable::Saving) {
+        busyTaggables.insert(taggable);
+    } else {
+        if (busyRemovedTaggables.contains(taggable)) {
+            busyRemovedTaggables.remove(taggable);
+            delete taggable;
+        } else {
+            busyTaggables.remove(taggable);
+        }
         Q_EMIT busyTaggableCountChanged();
     }
 }
@@ -177,9 +185,8 @@ void TaggableModel::checkChanges()
 void TaggableModel::deleteWhenIdle(Taggable *taggable)
 {
     if (taggable->saveState() == Taggable::Saving) {
-        QObject::connect(taggable, SIGNAL(saveStateChanged()),
-                         this, SLOT(onTaggableSaveStateChanged()));
-        busyTaggables.append(taggable);
+        busyTaggables.remove(taggable);
+        busyRemovedTaggables.insert(taggable);
         Q_EMIT busyTaggableCountChanged();
     } else {
         delete taggable;
@@ -209,7 +216,6 @@ TaggableArea::~TaggableArea()
 TaggableModel *TaggableArea::model() const
 {
     Q_D(const TaggableArea);
-    DEBUG() << "called";
     return d->model;
 }
 

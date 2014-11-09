@@ -33,6 +33,9 @@ class View: public QQuickView
 public:
     View();
 
+protected:
+    bool event(QEvent *e) Q_DECL_OVERRIDE;
+
 public Q_SLOTS:
     void switchFullscreen();
 };

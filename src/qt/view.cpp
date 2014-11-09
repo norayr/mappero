@@ -21,6 +21,8 @@
 #include "debug.h"
 #include "view.h"
 
+#include <QQuickItem>
+
 using namespace Mappero;
 
 View::View():
@@ -36,4 +38,22 @@ void View::switchFullscreen()
         showNormal();
     else
         showFullScreen();
+}
+
+bool View::event(QEvent *e)
+{
+    if (e->type() == QEvent::Close) {
+        QObject *root = rootObject();
+        if (root) {
+            QVariant canQuit = true;
+            if (QMetaObject::invokeMethod(root, "closeRequest",
+                                          Qt::DirectConnection,
+                                          Q_RETURN_ARG(QVariant, canQuit)) &&
+                !canQuit.toBool()) {
+                e->accept();
+                return true;
+            }
+        }
+    }
+    return QQuickView::event(e);
 }
