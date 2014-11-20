@@ -101,7 +101,11 @@ Item {
             height: root._fullPage ? parent.height : root.minimumHeight + UI.ToolbarMargins * 2
 
             PaneBackground {}
-            MouseArea { anchors.fill: parent }
+            MouseArea {
+                anchors.fill: parent
+                acceptedButtons: Qt.AllButtons
+                onWheel: {}
+            }
             Item {
                 id: content
                 anchors.fill: parent
