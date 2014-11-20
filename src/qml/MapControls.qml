@@ -53,5 +53,6 @@ Item {
     LayerSelector {
         id: layerSelector
         source: ls
+        position: "left"
     }
 }

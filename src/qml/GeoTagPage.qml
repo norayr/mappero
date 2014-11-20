@@ -6,6 +6,7 @@ Item {
     anchors.fill: parent
     Keys.forwardTo: [ taggableView, toolBar, fileTools ]
     focus: true
+    property bool __isPage: true
 
     LayerManager {
         id: layerManager

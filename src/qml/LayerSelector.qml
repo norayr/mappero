@@ -6,10 +6,12 @@ Popup {
     id: root
     property variant manager
 
+    minimumWidth: 200
+    minimumHeight: 250
+
     ListView {
         id: view
-        width: 200
-        height: 250
+        anchors.fill: parent
         clip: true
         spacing: 2
         model: manager.model
