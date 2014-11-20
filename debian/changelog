@@ -1,3 +1,10 @@
+mappero (1.3ubuntu1) trusty; urgency=medium
+
+  * Build with Qt5.
+  * Don't block the UI while writing EXIF data.
+
+ -- Alberto Mardegan <mardy@users.sourceforge.net>  Thu, 20 Nov 2014 14:38:13 +0300
+
 mappero (1.2ubuntu1) precise; urgency=low
 
   * Set User-Agent (required for OpenStreetMap)
