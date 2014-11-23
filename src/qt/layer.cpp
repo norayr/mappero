@@ -58,6 +58,7 @@ private:
     const Projection *projection;
     int minZoom;
     int maxZoom;
+    QString notice;
     bool layerChangedQueued;
 };
 };
@@ -161,6 +162,19 @@ int Layer::maxZoom() const
 {
     Q_D(const Layer);
     return d->maxZoom;
+}
+
+void Layer::setNotice(const QString &notice)
+{
+    Q_D(Layer);
+    d->notice = notice;
+    queueLayerChanged();
+}
+
+QString Layer::notice() const
+{
+    Q_D(const Layer);
+    return d->notice;
 }
 
 QRectF Layer::boundingRect() const

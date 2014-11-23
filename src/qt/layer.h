@@ -35,6 +35,7 @@ class Layer: public MapItem {
     Q_PROPERTY(QString name READ name WRITE setName NOTIFY layerChanged);
     Q_PROPERTY(int minZoom READ minZoom WRITE setMinZoom NOTIFY layerChanged);
     Q_PROPERTY(int maxZoom READ maxZoom WRITE setMaxZoom NOTIFY layerChanged);
+    Q_PROPERTY(QString notice READ notice WRITE setNotice NOTIFY layerChanged)
 
 public:
     Layer();
@@ -54,6 +55,9 @@ public:
     int minZoom() const;
     void setMaxZoom(int maxZoom);
     int maxZoom() const;
+
+    void setNotice(const QString &notice);
+    QString notice() const;
 
     virtual void mapEvent(MapEvent *e);
 

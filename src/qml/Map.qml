@@ -20,4 +20,17 @@ MapView {
             duration: 500
         }
     }
+
+    Rectangle {
+        anchors.fill: noticeLabel
+        opacity: 0.6
+        color: "#fff"
+    }
+
+    Text {
+        id: noticeLabel
+        anchors.bottom: parent.bottom
+        anchors.right: parent.right
+        text: mainLayer.notice
+    }
 }

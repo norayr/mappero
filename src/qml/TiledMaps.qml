@@ -11,6 +11,7 @@ ListModel {
         format: "png"
         minZoom: 3
         maxZoom: 19
+        notice: "© <a href=\"http://www.openstreetmap.org/copyright\">OpenStreetMap</a> contributors"
     }
 
     ListElement {
@@ -21,6 +22,7 @@ ListModel {
         format: "png"
         minZoom: 1
         maxZoom: 19
+        notice: "Powered by Google"
     }
 
     ListElement {
@@ -31,6 +33,7 @@ ListModel {
         format: "jpeg"
         minZoom: 3
         maxZoom: 15
+        notice: "Powered by Google"
     }
 
     ListElement {
@@ -41,6 +44,7 @@ ListModel {
         format: "png"
         minZoom: 1
         maxZoom: 19
+        notice: "Powered by Google"
     }
 
     ListElement {
@@ -51,6 +55,7 @@ ListModel {
         format: "jpeg"
         minZoom: 2
         maxZoom: 19
+        notice: "Powered by Bing"
     }
 
     ListElement {
@@ -61,6 +66,7 @@ ListModel {
         format: "jpeg"
         minZoom: 2
         maxZoom: 19
+        notice: "Powered by Bing"
     }
 
     ListElement {
@@ -71,6 +77,7 @@ ListModel {
         format: "jpeg"
         minZoom: 2
         maxZoom: 19
+        notice: "Powered by Bing"
     }
 
     ListElement {
@@ -81,6 +88,7 @@ ListModel {
         format: "png"
         minZoom: 4
         maxZoom: 19
+        notice: "Powered by Yandex"
     }
 
     ListElement {
@@ -91,6 +99,7 @@ ListModel {
         format: "png"
         minZoom: 2
         maxZoom: 19
+        notice: "Powered by Yandex"
     }
 
     function find(uid) {
