@@ -102,6 +102,17 @@ ListModel {
         notice: "Powered by Yandex"
     }
 
+    ListElement {
+        uid: "HereVector"
+        name: "HERE vector"
+        url: "http://1.base.maps.cit.api.here.com/maptile/2.1/maptile/newest/normal.day/%d/%d/%d/256/png8?app_id=ZcYzFLXh2pUuEsIRrb6q&app_code=uwv-Hyp-kCyvl-nP2VFh3w"
+        type: "XYZ_INV"
+        format: "png"
+        minZoom: 2
+        maxZoom: 19
+        notice: "Powered by HERE"
+    }
+
     function find(uid) {
         var l = root.count
         for (var i = 0; i < l; i++) {
