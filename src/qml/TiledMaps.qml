@@ -74,26 +74,6 @@ ListModel {
     }
 
     ListElement {
-        uid: "YahooStr"
-        name: "Yahoo Street"
-        url: "http://us.maps1.yimg.com/us.tile.maps.yahoo.com/tl?v=4.1&x=%d&y=%-d&z=%d"
-        type: "XYZ_SIGNED"
-        format: "png"
-        minZoom: 4
-        maxZoom: 19
-    }
-
-    ListElement {
-        uid: "YahooSat"
-        name: "Yahoo Satellite"
-        url: "http://us.maps3.yimg.com/aerial.maps.yimg.com/ximg?v=1.7&t=a&s=256&x=%d&y=%-d&z=%d"
-        type: "XYZ_SIGNED"
-        format: "jpeg"
-        minZoom: 4
-        maxZoom: 19
-    }
-
-    ListElement {
         uid: "YandexVector"
         name: "Yandex Vector"
         url: "http://vec.maps.yandex.net/tiles?l=map&v=2.14.0&x=%d&y=%d&z=%d"
