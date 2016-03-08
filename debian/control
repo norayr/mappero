@@ -10,7 +10,7 @@ Build-Depends: debhelper (>= 7),
  qt5-default,
  qt5-qmake,
  pkg-config
-Standards-Version: 3.6.0
+Standards-Version: 3.9.5
 
 Package: mappero-geotagger
 Architecture: any
