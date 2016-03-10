@@ -38,6 +38,12 @@ struct TileSpec
     QString layerId;
 };
 
+inline bool operator==(const TileSpec &t1, const TileSpec &t2)
+{
+    return t1.x == t2.x && t1.y == t2.y && t1.zoom == t2.zoom &&
+        t1.layerId == t2.layerId;
+}
+
 } // namespace
 
 inline uint qHash(const Mappero::TileSpec &tile)
@@ -50,11 +56,5 @@ inline uint qHash(const Mappero::TileSpec &tile)
 #include <QDebug>
 
 QDebug operator<<(QDebug dbg, const Mappero::TileSpec &t);
-
-inline bool operator==(const Mappero::TileSpec &t1, const Mappero::TileSpec &t2)
-{
-    return t1.x == t2.x && t1.y == t2.y && t1.zoom == t2.zoom &&
-        t1.layerId == t2.layerId;
-}
 
 #endif /* MAP_TYPES_H */

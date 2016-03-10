@@ -67,12 +67,13 @@ private:
     int maxSize;
     TileQueue tiles;
 };
-}; // namespace
 
 inline bool operator==(const TileData &t1, const TileData &t2)
 {
     return t1.spec == t2.spec;
 }
+
+} // namespace
 
 Tile *TileCachePrivate::tile(const TileSpec &tileSpec, bool *found)
 {
