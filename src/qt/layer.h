@@ -26,7 +26,7 @@
 
 namespace Mappero {
 
-struct Projection;
+class Projection;
 
 class LayerPrivate;
 class Layer: public MapItem {

@@ -26,7 +26,8 @@
 
 namespace Mappero {
 
-struct Projection {
+class Projection {
+public:
     typedef Point (*GeoToUnit)(const GeoPoint &geo);
     typedef GeoPoint (*UnitToGeo)(const Point &unit);
     enum Type {
