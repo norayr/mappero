@@ -2,7 +2,12 @@ include(common-config.pri)
 
 TEMPLATE = subdirs
 CONFIG += ordered
-SUBDIRS = lib src tests
+SUBDIRS = lib src
+
+# Tests disabled for OSX: "framework not found XCTest"
+!macx {
+    SUBDIRS += tests
+}
 
 OTHER_FILES += \
     qtc_packaging/debian_harmattan/rules \
