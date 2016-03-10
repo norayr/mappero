@@ -1,8 +1,5 @@
 PROJECT_VERSION = 1.4
 
-TOP_SRC_DIR     = $$PWD
-TOP_BUILD_DIR   = $${TOP_SRC_DIR}/$(BUILD_DIR)
-
 INSTALL_PREFIX = /usr
 
 contains(MEEGO_EDITION,harmattan) {
