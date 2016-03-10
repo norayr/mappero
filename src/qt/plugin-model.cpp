@@ -90,7 +90,7 @@ QVariant PluginModel::data(const QModelIndex &index, int role) const
 {
     Q_D(const PluginModel);
 
-    if (index.row() >= d->m_plugins.count()) return QVariant();
+    if (index.row() < 0 || index.row() >= d->m_plugins.count()) return QVariant();
 
     const QVariantMap &pluginData = d->m_plugins.at(index.row());
     QVariant ret;
