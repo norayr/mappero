@@ -61,6 +61,7 @@ int main(int argc, char *argv[])
 
     app.setOrganizationName("mardy.it");
     app.setApplicationName("mappero");
+    app.setApplicationVersion(MAPPERO_VERSION);
 
     Mappero::registerTypes();
     MapperoUi::registerTypes();

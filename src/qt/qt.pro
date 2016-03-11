@@ -36,6 +36,7 @@ LIBS += -lMappero
 QMAKE_LIBDIR += $${TOP_BUILD_DIR}/lib/Mappero
 INCLUDEPATH += $${TOP_SRC_DIR}/lib
 DEFINES += \
+    MAPPERO_VERSION=\\\"$${PROJECT_VERSION}\\\" \
     PLUGIN_MANIFEST_DIR=\\\"$${PLUGIN_MANIFEST_DIR}\\\"
 
 LIBS += -lMapperoUi

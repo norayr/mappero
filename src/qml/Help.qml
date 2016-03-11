@@ -46,7 +46,7 @@ Item {
                     font.pointSize: 8
                     horizontalAlignment: Text.AlignHCenter
                     textFormat: Text.StyledText
-                    text: qsTr("version ") + "<b>1.0</b>"
+                    text: qsTr("version <b>%1</b>").arg(Qt.application.version)
                 }
             }
 
