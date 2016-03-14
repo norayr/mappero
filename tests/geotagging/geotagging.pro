@@ -11,6 +11,9 @@ QT += \
 CONFIG += link_pkgconfig
 PKGCONFIG += exiv2
 
+DEFINES += \
+    TEST_DATA_DIR=\\\"$${PWD}/\\\"
+
 SRC = ../../src/qt
 
 INCLUDEPATH += \

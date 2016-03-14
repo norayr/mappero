@@ -26,8 +26,8 @@
 
 #define UTF8(s) QString::fromUtf8(s)
 
-#define JPEG_FILE UTF8("12060025.jpg")
-#define ARW_FILE UTF8("a700.arw")
+#define JPEG_FILE UTF8(TEST_DATA_DIR "12060025.jpg")
+#define ARW_FILE UTF8(TEST_DATA_DIR "a700.arw")
 
 using namespace Mappero;
 
