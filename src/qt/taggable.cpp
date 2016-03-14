@@ -82,7 +82,9 @@ class TaggablePrivate
     GeoPoint location() const;
 
     void loadExifInfo();
-    void readGeoData(const Exiv2::ExifData &exifData);
+    static GeoPoint readExifGeoLocation(const Exiv2::ExifData &exifData);
+    void readGeoData(const Exiv2::Image &image);
+    void deleteLocationInfo();
     void save();
 
 #ifdef XDG_THUMBNAILS
@@ -184,7 +186,7 @@ void TaggablePrivate::loadExifInfo()
                                      "yyyy:MM:dd HH:mm:ss").toTime_t();
     }
 
-    readGeoData(exifData);
+    readGeoData(*image);
         /*
         Exiv2::ExifData::const_iterator end = exifData.end();
         for (Exiv2::ExifData::const_iterator i = exifData.begin();
@@ -200,7 +202,7 @@ void TaggablePrivate::loadExifInfo()
         */
 }
 
-void TaggablePrivate::readGeoData(const Exiv2::ExifData &exifData)
+GeoPoint TaggablePrivate::readExifGeoLocation(const Exiv2::ExifData &exifData)
 {
     QString latRef;
     Exiv2::ExifData::const_iterator i =
@@ -208,26 +210,103 @@ void TaggablePrivate::readGeoData(const Exiv2::ExifData &exifData)
     if (i != exifData.end()) {
         latRef = exifString(i->value());
     }
-    if (latRef.isEmpty() || (latRef[0] != 'N' && latRef[0] != 'S')) return;
+    if (latRef.isEmpty() || (latRef[0] != 'N' && latRef[0] != 'S'))
+        return GeoPoint();
 
     QString lonRef;
     i = exifData.findKey(Exiv2::ExifKey("Exif.GPSInfo.GPSLongitudeRef"));
     if (i != exifData.end()) {
         lonRef = exifString(i->value());
     }
-    if (lonRef.isEmpty() || (lonRef[0] != 'E' && lonRef[0] != 'W')) return;
+    if (lonRef.isEmpty() || (lonRef[0] != 'E' && lonRef[0] != 'W'))
+        return GeoPoint();
 
     Geo lat, lon;
 
     i = exifData.findKey(Exiv2::ExifKey("Exif.GPSInfo.GPSLatitude"));
-    if (i == exifData.end()) return;
+    if (i == exifData.end()) return GeoPoint();
     lat = exifGeoCoord(i->value(), latRef[0] == 'N');
 
     i = exifData.findKey(Exiv2::ExifKey("Exif.GPSInfo.GPSLongitude"));
-    if (i == exifData.end()) return;
+    if (i == exifData.end()) return GeoPoint();
     lon = exifGeoCoord(i->value(), lonRef[0] == 'E');
 
-    fileGeoPoint = GeoPoint(lat, lon);
+    return GeoPoint(lat, lon);
+}
+
+struct GeoCoord {
+    GeoCoord(const Exiv2::Value &v): positive(true) {
+        int count = v.count();
+        coord[0] = count > 0 ? v.toFloat(0) : NAN;
+        coord[1] = count > 1 ? v.toFloat(1) : 0;
+        coord[2] = count > 2 ? v.toFloat(2) : 0;
+    }
+    GeoCoord(const QStringList &parts): positive(true) {
+        int count = parts.count();
+        coord[0] = count > 0 ? parts[0].toFloat() : NAN;
+        coord[1] = count > 1 ? parts[1].toFloat() : 0;
+        coord[2] = count > 2 ? parts[2].toFloat() : 0;
+    }
+    void setPositive(bool p) { positive = p; }
+    Geo toGeo() {
+        Geo sum = coord[0] + coord[1] / 60.0 + coord[2] / 3600.0;
+        return positive ? sum : -sum;
+    }
+private:
+    Geo coord[3];
+    bool positive;
+};
+
+static Geo parseXmpGeoCoord(const QString &s)
+{
+    if (s.isEmpty()) return 200.0;
+    QChar reference = s.at(s.length() - 1).toUpper();
+    QStringList coords = s.left(s.length() -1).split(',');
+    GeoCoord c(coords);
+    if (reference == 'W' || reference == 'S') {
+        c.setPositive(false);
+    }
+    return c.toGeo();
+}
+
+static std::string geoToXmp(Geo geo, Qt::Orientation orientation)
+{
+    char direction;
+
+    /* Vertical orientation means latitude, horizonal means longitude */
+    if (geo < 0) {
+        geo = -geo;
+        direction = (orientation == Qt::Vertical) ? 'S' : 'W';
+    } else {
+        direction = (orientation == Qt::Vertical) ? 'N' : 'E';
+    }
+
+    int degrees = GFLOOR(geo);
+    double minutes = (geo - degrees) * 60.0;
+
+    QString coord = "%1,%2%3";
+    coord = coord.arg(degrees).arg(minutes, 0, 'f', 8).arg(direction);
+    return coord.toStdString();
+}
+
+void TaggablePrivate::readGeoData(const Exiv2::Image &image)
+{
+    const Exiv2::XmpData &xmpData = image.xmpData();
+    Exiv2::XmpData::const_iterator i =
+        xmpData.findKey(Exiv2::XmpKey("Xmp.exif.GPSLatitude"));
+    if (i != xmpData.end()) {
+        QString lat = QString::fromStdString(i->value().toString());
+        i = xmpData.findKey(Exiv2::XmpKey("Xmp.exif.GPSLongitude"));
+        if (i != xmpData.end()) {
+            QString lon = QString::fromStdString(i->value().toString());
+            fileGeoPoint = GeoPoint(parseXmpGeoCoord(lat),
+                                    parseXmpGeoCoord(lon));
+            return;
+        }
+    }
+
+    /* Else, read the location from the EXIF data */
+    fileGeoPoint = readExifGeoLocation(image.exifData());
 }
 
 static Exiv2::URationalValue geoToExif(Geo geo)
@@ -248,8 +327,17 @@ static Exiv2::URationalValue geoToExif(Geo geo)
     return value;
 }
 
-static void deleteLocationInfo(Exiv2::ExifData &exifData)
+void TaggablePrivate::deleteLocationInfo()
 {
+    Exiv2::XmpData &xmpData = image->xmpData();
+    Exiv2::XmpData::iterator x;
+
+    x = xmpData.findKey(Exiv2::XmpKey("Xmp.exif.GPSLatitude"));
+    if (x != xmpData.end()) xmpData.erase(x);
+    x = xmpData.findKey(Exiv2::XmpKey("Xmp.exif.GPSLongitude"));
+    if (x != xmpData.end()) xmpData.erase(x);
+
+    Exiv2::ExifData &exifData = image->exifData();
     Exiv2::ExifData::iterator i;
 
     i = exifData.findKey(Exiv2::ExifKey("Exif.GPSInfo.GPSLatitudeRef"));
@@ -265,15 +353,21 @@ static void deleteLocationInfo(Exiv2::ExifData &exifData)
 void TaggablePrivate::save()
 {
     Exiv2::ExifData &exifData = image->exifData();
+    Exiv2::XmpData &xmpData = image->xmpData();
 
     GeoPoint geoPoint = location();
     if (geoPoint.isValid()) {
+        xmpData["Xmp.exif.GPSLatitude"] = geoToXmp(geoPoint.lat,
+                                                   Qt::Vertical);
+        xmpData["Xmp.exif.GPSLongitude"] = geoToXmp(geoPoint.lon,
+                                                    Qt::Horizontal);
+
         exifData["Exif.GPSInfo.GPSLatitudeRef"] = geoPoint.lat >= 0 ? "N" : "S";
         exifData["Exif.GPSInfo.GPSLatitude"] = geoToExif(geoPoint.lat);
         exifData["Exif.GPSInfo.GPSLongitudeRef"] = geoPoint.lon >= 0 ? "E" : "W";
         exifData["Exif.GPSInfo.GPSLongitude"] = geoToExif(geoPoint.lon);
     } else {
-        deleteLocationInfo(exifData);
+        deleteLocationInfo();
     }
 
     m_saveFuture = QtConcurrent::run(saveMetadata, image.get());
