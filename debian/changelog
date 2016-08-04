@@ -1,3 +1,10 @@
+mappero (1.4ubuntu2) xenial; urgency=medium
+
+  * PluginModel: don't crash on invalid indexes
+  * Clang build fixes
+
+ -- Alberto Mardegan <mardy@users.sourceforge.net>  Thu, 04 Aug 2016 18:30:25 +0300
+
 mappero (1.4ubuntu1) trusty; urgency=medium
 
   * Fix Google Satellite maps.
