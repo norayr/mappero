@@ -32,15 +32,13 @@ qtHaveModule(location) {
     QT += location
 }
 
-LIBS += -lMappero
-QMAKE_LIBDIR += $${TOP_BUILD_DIR}/lib/Mappero
+LIBS += -L$${TOP_BUILD_DIR}/lib/Mappero -lMappero
 INCLUDEPATH += $${TOP_SRC_DIR}/lib
 DEFINES += \
     MAPPERO_VERSION=\\\"$${PROJECT_VERSION}\\\" \
     PLUGIN_MANIFEST_DIR=\\\"$${PLUGIN_MANIFEST_DIR}\\\"
 
-LIBS += -lMapperoUi
-QMAKE_LIBDIR += $${TOP_BUILD_DIR}/lib/MapperoUi
+LIBS += -L$${TOP_BUILD_DIR}/lib/MapperoUi -lMapperoUi
 
 QMAKE_LFLAGS += '-Wl,-rpath,\'\$$ORIGIN/../lib\''
 
