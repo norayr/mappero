@@ -76,6 +76,12 @@ private:
     Q_DECLARE_PRIVATE(Layer)
 };
 
+static inline QDebug operator<<(QDebug dbg, Layer *layer)
+{
+    dbg.nospace() << static_cast<QObject*>(layer) << " (" << layer->id() << ", name " << layer->name() << ")";
+    return dbg.space();
+}
+
 };
 
 #endif /* MAP_LAYER_H */
