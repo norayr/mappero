@@ -297,7 +297,7 @@ void Map::setMainLayer(Layer *layer)
     }
     d->mainLayer = layer;
     if (layer != 0) {
-        static_cast<QQuickItem*>(layer)->setParentItem(d->layerGroup);
+        layer->setParentItem(d->layerGroup);
         layer->setZ(-10);
         layer->setMap(this);
         const Projection *projection = d->mainLayer->projection();
