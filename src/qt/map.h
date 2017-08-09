@@ -136,7 +136,8 @@ protected Q_SLOTS:
 
 protected:
     // reimplemented virtual methods
-    void geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry);
+    void geometryChanged(const QRectF &newGeometry,
+                         const QRectF &oldGeometry) Q_DECL_OVERRIDE;
     void itemChange(ItemChange change,
                     const ItemChangeData &value) Q_DECL_OVERRIDE;
 

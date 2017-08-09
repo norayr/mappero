@@ -166,7 +166,7 @@ TileDownloadPrivate::TileDownloadPrivate(TileDownload *tileDownload):
                      SIGNAL(onlineStateChanged(bool)));
 }
 
-static inline QDebug operator<<(QDebug dbg, const TileTask &t)
+inline QDebug operator<<(QDebug dbg, const TileTask &t)
 {
     dbg.nospace() << t.spec;
     return dbg.space();

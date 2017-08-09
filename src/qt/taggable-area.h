@@ -104,7 +104,7 @@ public:
 
 protected:
     // reimplemented virtual methods
-    void dropEvent(QDropEvent *event);
+    void dropEvent(QDropEvent *event) Q_DECL_OVERRIDE;
     void dragEnterEvent(QDragEnterEvent *event) Q_DECL_OVERRIDE;
 
 private:

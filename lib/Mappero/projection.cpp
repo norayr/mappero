@@ -103,7 +103,7 @@ static GeoPoint unit2geo_yandex(const Point &unit)
     lat = xphi + YANDEX_AB * GSIN(2.0 * xphi) + YANDEX_BB * GSIN(4.0 * xphi) +
         YANDEX_CB * GSIN(6.0 * xphi) + YANDEX_DB * GSIN(8.0 * xphi);
     lon = x / YANDEX_Rn;
-    lat = rad2deg(abs(lat) > M_PI_2 ? M_PI_2 : lat);
-    lon = rad2deg(abs(lon) > M_PI_2 ? M_PI_2 : lon);
+    lat = rad2deg(qAbs(lat) > M_PI_2 ? M_PI_2 : lat);
+    lon = rad2deg(qAbs(lon) > M_PI_2 ? M_PI_2 : lon);
     return GeoPoint(lat, lon);
 }

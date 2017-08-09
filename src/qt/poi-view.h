@@ -59,7 +59,7 @@ public:
     Q_INVOKABLE GeoPoint itemPos(int index) const;
 
     // reimplemented virtual methods
-    void mapEvent(MapEvent *e);
+    void mapEvent(MapEvent *e) Q_DECL_OVERRIDE;
     void geometryChanged(const QRectF &newGeometry,
                          const QRectF &oldGeometry) Q_DECL_OVERRIDE;
 

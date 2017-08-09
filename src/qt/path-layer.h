@@ -53,7 +53,7 @@ protected:
     void itemChange(ItemChange change,
                     const ItemChangeData &value) Q_DECL_OVERRIDE;
 
-    void mapEvent(MapEvent *event);
+    void mapEvent(MapEvent *event) Q_DECL_OVERRIDE;
 
 private:
     PathLayerPrivate *d_ptr;
