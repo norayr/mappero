@@ -289,6 +289,8 @@ void Map::setMainLayer(Layer *layer)
 {
     Q_D(Map);
 
+    if (layer == d->mainLayer) return;
+
     if (d->mainLayer != 0) {
         d->mainLayer->setMap(0);
         delete d->mainLayer;
