@@ -32,13 +32,17 @@ qtHaveModule(location) {
     QT += location
 }
 
-LIBS += -L$${TOP_BUILD_DIR}/lib/Mappero -lMappero
+win32:CONFIG(release, debug|release): BUILDD = "/release"
+else:win32:CONFIG(debug, debug|release): BUILDD = "/debug"
+else: BUILDD = ""
+
+LIBS += -L$${TOP_BUILD_DIR}/lib/Mappero$${BUILDD} -lMappero
 INCLUDEPATH += $${TOP_SRC_DIR}/lib
 DEFINES += \
     MAPPERO_VERSION=\\\"$${PROJECT_VERSION}\\\" \
     PLUGIN_MANIFEST_DIR=\\\"$${PLUGIN_MANIFEST_DIR}\\\"
 
-LIBS += -L$${TOP_BUILD_DIR}/lib/MapperoUi -lMapperoUi
+LIBS += -L$${TOP_BUILD_DIR}/lib/MapperoUi$${BUILDD} -lMapperoUi
 
 QMAKE_LFLAGS += '-Wl,-rpath,\'\$$ORIGIN/../lib\''
 
