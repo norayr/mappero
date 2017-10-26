@@ -5,7 +5,7 @@ CONFIG += ordered
 SUBDIRS = lib src
 
 # Tests disabled for OSX: "framework not found XCTest"
-!macx {
+!CONFIG(nomake_tests):!macx {
     SUBDIRS += tests
 }
 
