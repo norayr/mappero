@@ -58,6 +58,7 @@ static QObject *createPluginManager(QQmlEngine *engine, QJSEngine *scriptEngine)
 int main(int argc, char *argv[])
 {
     QGuiApplication app(argc, argv);
+    Q_INIT_RESOURCE(mappero_ui);
 
     app.setOrganizationName("mardy.it");
     app.setApplicationName("mappero");
@@ -122,3 +123,19 @@ int main(int argc, char *argv[])
 
     return app.exec();
 }
+
+#ifdef STATIC_BUILD
+    #include <QQmlExtensionPlugin>
+    Q_IMPORT_PLUGIN(QWindowsIntegrationPlugin)
+    Q_IMPORT_PLUGIN(QmlFolderListModelPlugin)
+    Q_IMPORT_PLUGIN(QmlSettingsPlugin)
+    Q_IMPORT_PLUGIN(QtQuick2Plugin)
+    Q_IMPORT_PLUGIN(QtQuick2DialogsPlugin)
+    Q_IMPORT_PLUGIN(QtQuick2DialogsPrivatePlugin)
+    Q_IMPORT_PLUGIN(QtQuick2WindowPlugin)
+    Q_IMPORT_PLUGIN(QtQuickControls1Plugin)
+    Q_IMPORT_PLUGIN(QtQuickLayoutsPlugin)
+    // Image formsts
+    Q_IMPORT_PLUGIN(QJpegPlugin)
+    Q_IMPORT_PLUGIN(QSvgPlugin)
+#endif

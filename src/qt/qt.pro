@@ -132,3 +132,21 @@ unix {
     target.path = $${INSTALL_PREFIX}/bin
     INSTALLS += target
 }
+
+CONFIG(static) {
+    DEFINES += STATIC_BUILD
+    LIBS += \
+        -L$$[QT_INSTALL_QML]/Qt/labs/folderlistmodel -lqmlfolderlistmodelplugin \
+        -L$$[QT_INSTALL_QML]/Qt/labs/settings -lqmlsettingsplugin \
+        -L$$[QT_INSTALL_QML]/QtQuick.2 \
+        -L$$[QT_INSTALL_QML]/QtQuick/Controls -lqtquickcontrolsplugin \
+        -L$$[QT_INSTALL_QML]/QtQuick/Dialogs -ldialogplugin \
+        -L$$[QT_INSTALL_QML]/QtQuick/Dialogs/Private -ldialogsprivateplugin \
+        -L$$[QT_INSTALL_QML]/QtQuick/Layouts -lqquicklayoutsplugin \
+        -L$$[QT_INSTALL_QML]/QtQuick/Window.2 -lwindowplugin \
+        -L$$[QT_INSTALL_PLUGINS]/imageformats
+    QTPLUGIN += \
+        QtQuick2Plugin \
+        qjpeg \
+        qsvg
+}
