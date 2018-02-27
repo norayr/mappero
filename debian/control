@@ -15,6 +15,7 @@ Standards-Version: 3.9.5
 Package: mappero-geotagger
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends},
+ qml-module-qtquick-controls,
  qtdeclarative5-dialogs-plugin
 Description: Add location information to your pictures
  Mappero Geotagger is a graphical tool to add geolocation information to your
