@@ -1,3 +1,10 @@
+mappero (1.5ubuntu0) xenial; urgency=medium
+
+  * debian/control: add missing dependency on QtQuick.Controls
+  * Update Google satellite maps
+
+ -- Alberto Mardegan <mardy@users.sourceforge.net>  Tue, 27 Feb 2018 22:50:10 +0300
+
 mappero (1.4ubuntu2) xenial; urgency=medium
 
   * PluginModel: don't crash on invalid indexes
