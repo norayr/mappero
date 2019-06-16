@@ -1,7 +1,7 @@
 include(../../common-config.pri)
 
 # Add more folders to ship with the application, here
-folder_01.source = ../qml
+folder_01.source = ./qml
 folder_01.target = qml
 DEPLOYMENTFOLDERS = folder_01
 
@@ -104,7 +104,7 @@ system(pkg-config --exists exiv2) {
         taggable.h \
         ticks.h
     RESOURCES += \
-        ../qml/geotag.qrc \
+        qml/geotag.qrc \
         ../../data/icons/scalable/icons-geotag.qrc
 } else {
     message("libexiv2 not found, geotagging disabled")
@@ -127,7 +127,7 @@ macx {
 }
 
 RESOURCES += \
-    ../qml/qml.qrc \
+    qml/qml.qrc \
     ../../data/icons/scalable/icons.qrc \
     ../../data/icons/scalable/directions/directions.qrc \
     ../../data/icons/scalable/transport/transport.qrc
