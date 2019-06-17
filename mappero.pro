@@ -51,13 +51,13 @@ contains(MEEGO_EDITION,harmattan) {
         desktopfile.files = \
             data/mappero-geotagger.desktop \
             data/mappero.desktop
-        desktopfile.path = /usr/share/applications
+        desktopfile.path = $${INSTALL_PREFIX}/share/applications
         INSTALLS += desktopfile
 
         icon.files = \
             data/icons/scalable/mappero-geotagger.svg \
             data/icons/scalable/mappero.svg
-        icon.path = /usr/share/icons/hicolor/scalable/apps
+        icon.path = $${INSTALL_PREFIX}/share/icons/hicolor/scalable/apps
         INSTALLS += icon
     }
 }
