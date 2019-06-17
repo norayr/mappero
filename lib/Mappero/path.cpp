@@ -243,7 +243,7 @@ bool Path::addPoint(const QVariantMap &pointData)
     QVariantMap wayPointData;
     bool hasLat = false;
     bool hasLon = false;
-    qreal lat, lon;
+    qreal lat = 0.0, lon = 0.0;
     bool hasDistance = false;
     qreal distance;
     time_t time = 0;
