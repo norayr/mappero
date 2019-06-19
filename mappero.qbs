@@ -25,6 +25,7 @@ Project {
 
     AutotestRunner {
         name: "check"
+        environment: [ "QT_QPA_PLATFORM=offscreen" ]
         Depends { productTypes: ["coverage-clean"] }
     }
 }
