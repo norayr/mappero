@@ -100,13 +100,13 @@ int main(int argc, char *argv[])
     }
     view.rootContext()->setContextProperty("firstPage", firstPage);
 
+    QQmlEngine *engine = view.rootContext()->engine();
 #ifdef GEOTAGGING_ENABLED
     qmlRegisterUncreatableType<Mappero::Taggable>("Mappero", 1, 0, "Taggable",
                                                   "C++ creation only");
     qmlRegisterType<Mappero::TaggableModel>();
     qmlRegisterType<Mappero::TaggableArea>("Mappero", 1, 0, "TaggableArea");
     qmlRegisterType<Mappero::TaggableSelection>();
-    QQmlEngine *engine = view.rootContext()->engine();
     engine->addImageProvider(Mappero::Taggable::ImageProvider::name(),
                              Mappero::Taggable::ImageProvider::instance());
     qmlRegisterType<Mappero::Ticks>("Mappero", 1, 0, "Ticks");
