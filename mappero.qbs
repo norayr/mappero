@@ -23,5 +23,8 @@ Project {
         "tests/tests.qbs",
     ]
 
-    AutotestRunner { name: "check" }
+    AutotestRunner {
+        name: "check"
+        Depends { productTypes: ["coverage-clean"] }
+    }
 }

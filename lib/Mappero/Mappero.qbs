@@ -50,6 +50,7 @@ DynamicLibrary {
         ]
     }
 
+    Depends { name: "buildconfig" }
     Depends { name: "cpp" }
     Depends { name: "Qt.gui" }
     Depends { name: "Qt.qml" }

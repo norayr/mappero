@@ -6,4 +6,13 @@ Project {
     references: [
         "path/path.qbs",
     ]
+
+    CoverageClean {
+        condition: project.enableCoverage
+    }
+
+    CoverageReport {
+        condition: project.enableCoverage
+        extractPatterns: [ '*/src/*.cpp', '*/lib/*.cpp' ]
+    }
 }
