@@ -17,6 +17,7 @@
  * along with Mappero.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "application.h"
 #include "configuration.h"
 #include "controller.h"
 #include "gps.h"
@@ -42,7 +43,6 @@
 #include <QQmlContext>
 #include <QDir>
 #include <QFileInfo>
-#include <QGuiApplication>
 
 static QObject *createPluginManager(QQmlEngine *engine, QJSEngine *scriptEngine)
 {
@@ -56,12 +56,8 @@ static QObject *createPluginManager(QQmlEngine *engine, QJSEngine *scriptEngine)
 
 int main(int argc, char *argv[])
 {
-    QGuiApplication app(argc, argv);
+    Mappero::Application app(argc, argv);
     Q_INIT_RESOURCE(mappero_ui);
-
-    app.setOrganizationName("mardy.it");
-    app.setApplicationName("mappero");
-    app.setApplicationVersion(MAPPERO_VERSION);
 
     Mappero::registerTypes();
     MapperoUi::registerTypes();
@@ -87,15 +83,7 @@ int main(int argc, char *argv[])
     engine.rootContext()->setContextProperty("gps", Mappero::Gps::instance());
     engine.rootContext()->setContextProperty("Mappero", &controller);
 
-    QString firstPage = "MainPage.qml";
-#ifdef Q_OS_OSX
-    if (1) {
-#else
-    if (app.arguments().contains("--geotag")) {
-#endif
-        firstPage = "GeoTagPage.qml";
-    }
-    engine.rootContext()->setContextProperty("firstPage", firstPage);
+    engine.rootContext()->setContextProperty("firstPage", app.firstPage());
 
 #ifdef GEOTAGGING_ENABLED
     qmlRegisterUncreatableType<Mappero::Taggable>("Mappero", 1, 0, "Taggable",

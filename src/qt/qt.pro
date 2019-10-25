@@ -47,6 +47,7 @@ LIBS += -L$${TOP_BUILD_DIR}/lib/MapperoUi$${BUILDD} -lMapperoUi
 QMAKE_LFLAGS += '-Wl,-rpath,\'\$$ORIGIN/../lib\''
 
 SOURCES += \
+    application.cpp \
     configuration.cpp \
     controller.cpp \
     gps.cpp \
@@ -69,6 +70,7 @@ SOURCES += \
     types.cpp
 
 HEADERS += \
+    application.h \
     configuration.h \
     controller.h \
     gps.h \

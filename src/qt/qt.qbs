@@ -10,6 +10,8 @@ QtGuiApplication {
     cpp.cxxLanguageVersion: "c++11"
 
     files: [
+        "application.cpp",
+        "application.h",
         "configuration.cpp",
         "configuration.h",
         "controller.cpp",
