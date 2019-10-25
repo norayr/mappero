@@ -28,6 +28,9 @@ namespace Mappero {
 class ApplicationPrivate;
 class Application: public QGuiApplication
 {
+    Q_OBJECT
+    Q_PROPERTY(QString firstPage READ firstPage CONSTANT)
+
 public:
     Application(int &argc, char **argv);
     ~Application();

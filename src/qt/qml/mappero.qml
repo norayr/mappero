@@ -13,6 +13,6 @@ Window {
         id: loader
         anchors.fill: parent
         focus: true
-        source: firstPage
+        source: application.firstPage
     }
 }

@@ -80,6 +80,8 @@ int main(int argc, char *argv[])
 
     Mappero::Controller controller;
     QQmlApplicationEngine engine;
+    engine.rootContext()->setContextProperty("application",
+                                             QVariant::fromValue(&app));
     engine.rootContext()->setContextProperty("gps", Mappero::Gps::instance());
     engine.rootContext()->setContextProperty("Mappero", &controller);
 
