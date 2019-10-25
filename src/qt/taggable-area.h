@@ -50,7 +50,8 @@ public:
     TaggableModel(QObject *parent = 0);
 
     QHash<int,QByteArray> roleNames() const;
-    void addUrls(const QList<QUrl> &urlList);
+
+    Q_INVOKABLE void addUrls(const QList<QUrl> &urlList);
 
     QVariant data(const QModelIndex &index,
                   int role = Qt::DisplayRole) const;

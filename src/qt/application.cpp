@@ -20,6 +20,7 @@
 #include "application.h"
 
 #include <QDebug>
+#include <QFileOpenEvent>
 #include <QThreadPool>
 
 using namespace Mappero;
@@ -70,4 +71,14 @@ QString Application::firstPage() const
     }
 
     return pageName;
+}
+
+bool Application::event(QEvent *event)
+{
+    if (event->type() == QEvent::FileOpen) {
+        QFileOpenEvent *openEvent = static_cast<QFileOpenEvent *>(event);
+        Q_EMIT itemsAddRequest({ openEvent->url() });
+    }
+
+    return QGuiApplication::event(event);
 }

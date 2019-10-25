@@ -21,7 +21,9 @@
 #define MAPPERO_APPLICATION_H
 
 #include <QGuiApplication>
+#include <QList>
 #include <QString>
+#include <QUrl>
 
 namespace Mappero {
 
@@ -36,6 +38,12 @@ public:
     ~Application();
 
     QString firstPage() const;
+
+Q_SIGNALS:
+    void itemsAddRequest(const QList<QUrl> &items);
+
+protected:
+    bool event(QEvent *event) override;
 
 private:
     QScopedPointer<ApplicationPrivate> d_ptr;
