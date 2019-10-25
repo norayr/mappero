@@ -6,3 +6,4 @@ Terminal=false
 Exec=INSTALL_PREFIX/bin/mappero --geotag
 Icon=mappero-geotagger
 Categories=Graphics;ImageProcessing;Geography;
+X-Application-Version=$${PROJECT_VERSION}

@@ -120,7 +120,8 @@ unix {
 }
 
 macx {
-    QMAKE_INFO_PLIST = ../../data/MapperoInfo.plist
+    QMAKE_SUBSTITUTES += $${TOP_SRC_DIR}/data/MapperoInfo.plist.in
+    QMAKE_INFO_PLIST = $${TOP_BUILD_DIR}/data/MapperoInfo.plist
     QMAKE_CFLAGS += -gdwarf-2
     QMAKE_CXXFLAGS += -gdwarf-2
     QT += svg # so that macdeploysqt copyes the svg plugin

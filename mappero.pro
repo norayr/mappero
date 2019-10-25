@@ -48,8 +48,9 @@ contains(MEEGO_EDITION,harmattan) {
 
         QMAKE_DISTCLEAN += $${IN_FILES}
 
+        QMAKE_SUBSTITUTES += $${TOP_SRC_DIR}/data/mappero-geotagger.desktop.in
         desktopfile.files = \
-            data/mappero-geotagger.desktop \
+            $${TOP_BUILD_DIR}data/mappero-geotagger.desktop \
             data/mappero.desktop
         desktopfile.path = $${INSTALL_PREFIX}/share/applications
         INSTALLS += desktopfile
