@@ -31,7 +31,6 @@ class Configuration;
 class Projection;
 class TileCache;
 class TileDownload;
-class View;
 
 class ControllerPrivate;
 class Controller: public QObject
@@ -45,9 +44,6 @@ public:
     ~Controller();
 
     static Controller *instance();
-
-    void setView(View *view);
-    View *view() const;
 
     void setProjection(const Projection *projection);
     const Projection *projection() const;

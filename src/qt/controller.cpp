@@ -44,7 +44,6 @@ class ControllerPrivate
 
     ControllerPrivate():
         projection(Projection::get(Projection::GOOGLE)),
-        view(0),
         tileDownload(0),
         tileCache(0),
         configuration(0),
@@ -64,7 +63,6 @@ class ControllerPrivate
     }
 
     const Projection *projection;
-    View *view;
 private:
     mutable Controller *q_ptr;
     mutable TileDownload *tileDownload;
@@ -93,19 +91,6 @@ Controller::~Controller()
 Controller *Controller::instance()
 {
     return controller;
-}
-
-void Controller::setView(View *view)
-{
-    Q_D(Controller);
-    Q_ASSERT(d->view == 0);
-    d->view = view;
-}
-
-View *Controller::view() const
-{
-    Q_D(const Controller);
-    return d->view;
 }
 
 void Controller::setProjection(const Projection *projection)

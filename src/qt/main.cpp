@@ -85,7 +85,6 @@ int main(int argc, char *argv[])
 
     Mappero::Controller controller;
     Mappero::View view;
-    controller.setView(&view);
     view.rootContext()->setContextProperty("view", &view);
     view.rootContext()->setContextProperty("gps", Mappero::Gps::instance());
     view.rootContext()->setContextProperty("Mappero", &controller);
