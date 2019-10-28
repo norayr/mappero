@@ -1,4 +1,5 @@
 import QtQuick 2.0
+import QtQuick.Window 2.1
 import Mappero.Ui 1.0
 import "UIConstants.js" as UI
 
@@ -124,7 +125,11 @@ Item {
         OsmButton {
             id: fullScreenButton
             source: "qrc:osm-fullscreen"
-            onClicked: view.switchFullscreen()
+            onClicked: if (mainWindow.visibility == Window.FullScreen) {
+                    mainWindow.showNormal()
+                } else {
+                    mainWindow.showFullScreen()
+                }
         }
 
         function layoutChildren() {

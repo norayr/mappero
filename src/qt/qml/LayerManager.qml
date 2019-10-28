@@ -29,7 +29,7 @@ Item {
     }
 
     Connections {
-        target: view
+        target: mainWindow
         onClosing: {
             Mappero.conf.lastMainLayer = mainLayer.uid
         }

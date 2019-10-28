@@ -186,16 +186,16 @@ Item {
     }
 
     Connections {
-        target: view
+        target: mainWindow
         onClosing: {
-            Mappero.conf.lastPosition = map.center
-            Mappero.conf.lastZoomLevel = map.zoomLevel
+            console.log("got close request")
+            busyMessage.gotCloseRequest = true;
+            if (dropArea.model.busyTaggableCount > 0) {
+                close.accepted = false
+            } else {
+                Mappero.conf.lastPosition = map.center
+                Mappero.conf.lastZoomLevel = map.zoomLevel
+            }
         }
-    }
-
-    function closeRequest() {
-        console.log("got close request")
-        busyMessage.gotCloseRequest = true;
-        return dropArea.model.busyTaggableCount == 0
     }
 }

@@ -124,7 +124,7 @@ Item {
     }
 
     Connections {
-        target: view
+        target: mainWindow
         onClosing: {
             Mappero.conf.lastPosition = map.center
             Mappero.conf.lastZoomLevel = map.zoomLevel

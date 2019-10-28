@@ -34,13 +34,12 @@
 #endif
 #include "tiled-layer.h"
 #include "tracker.h"
-#include "view.h"
 
 #include "Mappero/types.h"
 #include "MapperoUi/types.h"
 #include <QAbstractListModel>
+#include <QQmlApplicationEngine>
 #include <QQmlContext>
-#include <QQmlEngine>
 #include <QDir>
 #include <QFileInfo>
 #include <QGuiApplication>
@@ -84,10 +83,9 @@ int main(int argc, char *argv[])
     qmlRegisterType<Mappero::Configuration>();
 
     Mappero::Controller controller;
-    Mappero::View view;
-    view.rootContext()->setContextProperty("view", &view);
-    view.rootContext()->setContextProperty("gps", Mappero::Gps::instance());
-    view.rootContext()->setContextProperty("Mappero", &controller);
+    QQmlApplicationEngine engine;
+    engine.rootContext()->setContextProperty("gps", Mappero::Gps::instance());
+    engine.rootContext()->setContextProperty("Mappero", &controller);
 
     QString firstPage = "MainPage.qml";
 #ifdef Q_OS_OSX
@@ -97,28 +95,21 @@ int main(int argc, char *argv[])
 #endif
         firstPage = "GeoTagPage.qml";
     }
-    view.rootContext()->setContextProperty("firstPage", firstPage);
+    engine.rootContext()->setContextProperty("firstPage", firstPage);
 
-    QQmlEngine *engine = view.rootContext()->engine();
 #ifdef GEOTAGGING_ENABLED
     qmlRegisterUncreatableType<Mappero::Taggable>("Mappero", 1, 0, "Taggable",
                                                   "C++ creation only");
     qmlRegisterType<Mappero::TaggableModel>();
     qmlRegisterType<Mappero::TaggableArea>("Mappero", 1, 0, "TaggableArea");
     qmlRegisterType<Mappero::TaggableSelection>();
-    engine->addImageProvider(Mappero::Taggable::ImageProvider::name(),
-                             Mappero::Taggable::ImageProvider::instance());
+    engine.addImageProvider(Mappero::Taggable::ImageProvider::name(),
+                            Mappero::Taggable::ImageProvider::instance());
     qmlRegisterType<Mappero::Ticks>("Mappero", 1, 0, "Ticks");
 #endif
 
-    engine->addImportPath("qrc:/");
-    view.setSource(QUrl("qrc:/mappero.qml"));
-    view.setTitle("Mappero");
-#if defined MEEGO || defined MAEMO5
-    view.showFullScreen();
-#else
-    view.show();
-#endif
+    engine.addImportPath("qrc:/");
+    engine.load(QUrl("qrc:/mappero.qml"));
 
     return app.exec();
 }

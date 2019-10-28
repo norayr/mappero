@@ -66,8 +66,7 @@ SOURCES += \
     tile.cpp \
     tiled-layer.cpp \
     tracker.cpp \
-    types.cpp \
-    view.cpp
+    types.cpp
 
 HEADERS += \
     configuration.h \
@@ -85,8 +84,7 @@ HEADERS += \
     poi-view.h \
     tile-download.h \
     tiled-layer.h \
-    tracker.h \
-    view.h
+    tracker.h
 
 system(pkg-config --exists exiv2) {
     message("libexiv2 is available")

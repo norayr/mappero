@@ -49,8 +49,6 @@ QtGuiApplication {
         "tracker.h",
         "types.cpp",
         "types.h",
-        "view.cpp",
-        "view.h",
         "../../data/icons/scalable/icons.qrc",
     ]
 
