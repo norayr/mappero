@@ -1,6 +1,6 @@
 import Mappero.Ui 1.0
 import QtQuick 2.0
-import QtQuick.Dialogs 1.0
+import Qt.labs.platform 1.0
 import "UIConstants.js" as UI
 
 Item {
@@ -61,12 +61,9 @@ Item {
             FileDialog {
                 id: fileChooserLoad
                 title: "Choose a file"
-                folder: "."
-                selectExisting: true
-                selectMultiple: false
                 nameFilters: [ "GPS tracks (*.gpx *.kml)", "All files (*.*)" ]
 
-                onAccepted: root.trackLoaded(fileUrl)
+                onAccepted: root.trackLoaded(file)
             }
         }
 
