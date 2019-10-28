@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010 Alberto Mardegan <mardy@users.sourceforge.net>
+ * Copyright (C) 2010-2019 Alberto Mardegan <mardy@users.sourceforge.net>
  *
  * This file is part of Mappero.
  *
