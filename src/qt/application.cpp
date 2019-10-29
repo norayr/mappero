@@ -20,7 +20,9 @@
 #include "application.h"
 
 #include <QDebug>
+#include <QFileInfo>
 #include <QFileOpenEvent>
+#include <QMetaObject>
 #include <QThreadPool>
 
 using namespace Mappero;
@@ -31,18 +33,73 @@ class ApplicationPrivate
 {
     Q_DECLARE_PUBLIC(Application)
 
+    enum Mode {
+        Mapping = 0,
+        Geotagger,
+    };
+
 public:
     ApplicationPrivate(Application *q);
 
+    void parseCmdLine();
+
 private:
+    Mode m_mode;
     Application *q_ptr;
 };
 
 } // namespace
 
 ApplicationPrivate::ApplicationPrivate(Application *q):
+#ifdef Q_OS_MACOS
+    m_mode(Geotagger),
+#else
+    m_mode(Mapping),
+#endif
     q_ptr(q)
 {
+    parseCmdLine();
+}
+
+void ApplicationPrivate::parseCmdLine()
+{
+    Q_Q(Application);
+
+    enum Status { Start, Items, };
+
+    QList<QUrl> items;
+
+    const QStringList args = q->arguments().mid(1);
+    Status status = Start;
+    for (const QString &arg: args) {
+        if (status == Start) {
+            if (arg[0] == '-') {
+                if (arg == "--geotag") {
+                    m_mode = Geotagger;
+                } else if (arg == "--") {
+                    status = Items;
+                } else {
+                    qWarning() << "Unknown option" << arg;
+                    status = Items;
+                }
+                continue;
+            } else {
+                status = Items;
+            }
+        }
+
+        if (status == Items) {
+            QFileInfo fileInfo(arg);
+            if (fileInfo.isFile()) {
+                items.append(QUrl::fromLocalFile(arg));
+            }
+        }
+    }
+
+    if (!items.isEmpty()) {
+        QMetaObject::invokeMethod(q, "itemsAddRequest", Qt::QueuedConnection,
+                                  Q_ARG(QList<QUrl>, items));
+    }
 }
 
 Application::Application(int &argc, char **argv):
@@ -61,16 +118,9 @@ Application::~Application()
 
 QString Application::firstPage() const
 {
-    QString pageName = "MainPage.qml";
-#ifdef Q_OS_OSX
-    if (1) {
-#else
-    if (arguments().contains("--geotag")) {
-#endif
-        pageName = "GeoTagPage.qml";
-    }
-
-    return pageName;
+    Q_D(const Application);
+    return d->m_mode == ApplicationPrivate::Mapping ?
+        "MainPage.qml" : "GeoTagPage.qml";
 }
 
 bool Application::event(QEvent *event)
