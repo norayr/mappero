@@ -2,6 +2,8 @@ import qbs 1.0
 
 DynamicLibrary {
     name: "MapperoUi"
+
+    bundle.isBundle: false
     cpp.allowUnresolvedSymbols: false
     cpp.cxxLanguageVersion: "c++11"
 
@@ -36,6 +38,7 @@ DynamicLibrary {
     }
 
     Depends { name: "buildconfig" }
+    Depends { name: "bundle" }
     Depends { name: "cpp" }
     Depends { name: "Qt.quick" }
 

@@ -3,6 +3,7 @@ import qbs 1.0
 DynamicLibrary {
     name: "Mappero"
 
+    bundle.isBundle: false
     cpp.allowUnresolvedSymbols: false
     cpp.defines: [
         'PLUGIN_QML_DIR="' + project.pluginDir + '"',
@@ -51,6 +52,7 @@ DynamicLibrary {
     }
 
     Depends { name: "buildconfig" }
+    Depends { name: "bundle" }
     Depends { name: "cpp" }
     Depends { name: "Qt.gui" }
     Depends { name: "Qt.qml" }
