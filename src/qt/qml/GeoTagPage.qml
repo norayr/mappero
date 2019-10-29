@@ -198,4 +198,9 @@ Item {
             }
         }
     }
+
+    Connections {
+        target: application
+        onItemsAddRequest: dropArea.model.addUrls(items)
+    }
 }
