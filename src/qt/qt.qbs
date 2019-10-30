@@ -53,6 +53,7 @@ QtGuiApplication {
         "tracker.h",
         "types.cpp",
         "types.h",
+        "../../data/MapperoInfo.plist",
         "../../data/icons/scalable/icons.qrc",
     ]
 
@@ -99,5 +100,10 @@ QtGuiApplication {
         cpp.defines: outer.concat([
             'GEOTAGGING_ENABLED',
         ])
+    }
+
+    FileTagger {
+        patterns: [ "*.plist" ]
+        fileTags: "infoplist"
     }
 }

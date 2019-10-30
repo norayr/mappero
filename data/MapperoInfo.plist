@@ -8,14 +8,10 @@
   <string>mappero-geotagger</string>
   <key>CFBundleDisplayName</key>
   <string>Mappero Geotagger</string>
-  <key>CFBundleVersion</key>
-  <string>$${PROJECT_VERSION}</string>
   <key>CFBundleShortVersionString</key>
-  <string>$${PROJECT_VERSION}.BUILD_VERSION</string>
+  <string>${SHORT_VERSION}.BUILD_VERSION</string>
   <key>CFBundlePackageType</key>
   <string>APPL</string>
-  <key>CFBundleGetInfoString</key>
-  <string>Created by Qt/QMake</string>
   <key>CFBundleSignature</key>
   <string>mpgt</string>
   <key>CFBundleExecutable</key>
@@ -24,8 +20,6 @@
   <string>it.mardy.mappero</string>
   <key>LSApplicationCategoryType</key>
   <string>public.app-category.photography</string>
-  <key>LSMinimumSystemVersion</key>
-  <string>10.5.0</string>
   <key>NSPrincipalClass</key>
   <string>NSApplication</string>
   <key>NSHighResolutionCapable</key>
