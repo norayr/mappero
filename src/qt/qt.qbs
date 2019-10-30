@@ -3,6 +3,7 @@ import qbs 1.0
 QtGuiApplication {
     name: "mappero"
     version: project.version
+    install: true
 
     cpp.defines: [
         'MAPPERO_VERSION="' + project.version + '"',
@@ -98,11 +99,5 @@ QtGuiApplication {
         cpp.defines: outer.concat([
             'GEOTAGGING_ENABLED',
         ])
-    }
-
-    Group {
-        fileTagsFilter: "application"
-        qbs.install: true
-        qbs.installDir: "bin"
     }
 }
