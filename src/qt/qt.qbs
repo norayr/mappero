@@ -2,6 +2,7 @@ import qbs 1.0
 
 QtGuiApplication {
     name: "mappero"
+    version: project.version
 
     cpp.defines: [
         'MAPPERO_VERSION="' + project.version + '"',
