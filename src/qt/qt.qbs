@@ -106,6 +106,11 @@ QtGuiApplication {
         ])
     }
 
+    Properties {
+        condition: qbs.targetOS.contains("darwin")
+        qbs.installPrefix: ""
+    }
+
     FileTagger {
         patterns: [ "*.plist" ]
         fileTags: "infoplist"
