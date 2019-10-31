@@ -1,6 +1,9 @@
 import qbs 1.0
 
 QtGuiApplication {
+    property string libPath: qbs.targetOS.contains("darwin") ?
+        "../Frameworks" : "../lib"
+
     name: "mappero"
     version: project.version
     install: true
@@ -10,6 +13,7 @@ QtGuiApplication {
         'PLUGIN_MANIFEST_DIR="' + project.pluginManifestDir + '"',
     ]
     cpp.cxxLanguageVersion: "c++11"
+    cpp.rpaths: cpp.rpathOrigin + "/" + libPath
 
     files: [
         "application.cpp",
