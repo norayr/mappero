@@ -4,6 +4,8 @@ DynamicLibrary {
     name: "MapperoUi"
 
     bundle.isBundle: false
+    install: true
+
     cpp.allowUnresolvedSymbols: false
     cpp.cxxLanguageVersion: "c++11"
 
@@ -41,11 +43,5 @@ DynamicLibrary {
     Depends { name: "bundle" }
     Depends { name: "cpp" }
     Depends { name: "Qt.quick" }
-
-    Group {
-        fileTagsFilter: "dynamiclibrary"
-        qbs.install: true
-        qbs.installDir: "lib"
-    }
 }
 

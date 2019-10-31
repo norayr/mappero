@@ -4,6 +4,8 @@ DynamicLibrary {
     name: "Mappero"
 
     bundle.isBundle: false
+    install: true
+
     cpp.allowUnresolvedSymbols: false
     cpp.defines: [
         'PLUGIN_QML_DIR="' + project.pluginDir + '"',
@@ -56,12 +58,6 @@ DynamicLibrary {
     Depends { name: "cpp" }
     Depends { name: "Qt.gui" }
     Depends { name: "Qt.qml" }
-
-    Group {
-        fileTagsFilter: "dynamiclibrary"
-        qbs.install: true
-        qbs.installDir: "lib"
-    }
 
     Export {
         Depends { name: "cpp" }
