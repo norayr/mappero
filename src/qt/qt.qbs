@@ -83,6 +83,7 @@ QtGuiApplication {
             "qml/geotag.qrc",
             "../../data/icons/scalable/icons-geotag.qrc",
             "../../data/mappero-geotagger.desktop",
+            "../../data/it.mardy.mappero-geotagger.metainfo.xml",
         ]
     }
 

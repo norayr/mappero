@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Copyright 2019 Alberto Mardegan <info@mardy.it> -->
+<component type="desktop-application">
+  <id>it.mardy.mappero-geotagger</id>
+  <metadata_license>FSFAP</metadata_license>
+  <project_license>GPL-3.0</project_license>
+  <name>Mappero Geotagger</name>
+  <summary>Add location information to image files</summary>
+
+  <description>
+    <p>Mappero Geotagger is a geotagging application: it allows you to assign a
+      geographic location to your photos. The location information is embedded
+      following a standard format in the picture file itself, so that you won't
+      lose it if you need to move the file around; and if you upload it to 
+      Flickr or other services which support the EXIF standard, other people
+      will be able to find your pictures just by browsing a map.</p>
+
+    <p>Features:</p>
+    <ul>
+      <li>Automatic downloading of maps from OpenStreetMap.</li>
+      <li>Visualize existing location information by showing your photos on a map.</li>
+      <li>Set or modify geolocation information by dragging pictures on the map.</li>
+      <li>Visualization of GPX and KML GPS tracks.</li>
+      <li>Automatic assignment of location information by correlating the time
+        of the photos with the times of a GPX track (this process is often
+        called <em>correlation</em>).</li>
+      <li>Graphic visualization of the photos on the map during the GPX
+        correlation operation, with controls to specify time zone offset and
+        fine-grained time adjustment.</li>
+    </ul>
+
+    <p>Mappero Geotagger supports all file formats supported by libexiv2.</p>
+  </description>
+
+  <screenshots>
+    <screenshot type="default">
+      <caption>The main screen</caption>
+      <image>http://www.mardy.it/archivos/imagines/mappero-geotagger.png</image>
+    </screenshot>
+    <screenshot>
+      <caption>See Mappero Geotagger in action</caption>
+      <video>https://youtu.be/b1J84dISuNk</video>
+    </screenshot>
+  </screenshots>
+
+  <url type="homepage">http://www.mardy.it/mappero-geotagger/</url>
+
+  <provides>
+    <binary>mappero</binary>
+  </provides>
+
+  <releases>
+    <release version="1.6" date="2019-10-30">
+      <description>
+        <p>Accept items from command line, add MIME-type information</p>
+      </description>
+    </release>
+  </releases>
+</component>

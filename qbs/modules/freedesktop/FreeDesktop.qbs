@@ -69,4 +69,16 @@ Module {
         qbs.install: true
         qbs.installDir: "share/applications"
     }
+
+    FileTagger {
+        patterns: [ "*.metainfo.xml", "*.appdata.xml" ]
+        fileTags: [ "appstream" ]
+    }
+
+    Group {
+        condition: fdoModule._fdoSupported
+        fileTagsFilter: [ "appstream" ]
+        qbs.install: true
+        qbs.installDir: "share/metainfo"
+    }
 }
