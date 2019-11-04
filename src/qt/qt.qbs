@@ -16,6 +16,10 @@ QtGuiApplication {
         ]
         if (qbs.targetOS.contains("unix"))
             defines.push('XDG_THUMBNAILS')
+        if (exiv2.present)
+            defines.push('GEOTAGGING_ENABLED')
+        if (Qt.core.staticBuild)
+            defines.push('STATIC_BUILD')
         return defines
     }
     cpp.cxxLanguageVersion: "c++11"
@@ -113,6 +117,7 @@ QtGuiApplication {
     Depends { name: "buildconfig" }
     Depends { name: "cpp" }
     Depends { name: "freedesktop" }
+    Depends { name: "Qt.core" }
     Depends { name: "Qt.quick" }
     Depends { name: "Mappero" }
     Depends { name: "MapperoUi" }
