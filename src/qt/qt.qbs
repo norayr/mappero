@@ -117,6 +117,7 @@ QtGuiApplication {
     Depends { name: "buildconfig" }
     Depends { name: "cpp" }
     Depends { name: "freedesktop" }
+    Depends { name: "pkgconfig" }
     Depends { name: "Qt.core" }
     Depends { name: "Qt.quick" }
     Depends { name: "Mappero" }
@@ -133,6 +134,11 @@ QtGuiApplication {
         cpp.defines: outer.concat([
             'GEOTAGGING_ENABLED',
         ])
+    }
+
+    Properties {
+        condition: Qt.core.staticBuild
+        pkgconfig.staticMode: true
     }
 
     freedesktop.desktopKeys: ({
