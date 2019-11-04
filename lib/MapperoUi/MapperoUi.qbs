@@ -42,6 +42,12 @@ DynamicLibrary {
     Depends { name: "buildconfig" }
     Depends { name: "bundle" }
     Depends { name: "cpp" }
+    Depends { name: "Qt.core" }
     Depends { name: "Qt.quick" }
+
+    Properties {
+        condition: Qt.core.staticBuild
+        type: "staticlibrary"
+    }
 }
 

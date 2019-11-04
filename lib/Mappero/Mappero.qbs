@@ -56,6 +56,7 @@ DynamicLibrary {
     Depends { name: "buildconfig" }
     Depends { name: "bundle" }
     Depends { name: "cpp" }
+    Depends { name: "Qt.core" }
     Depends { name: "Qt.gui" }
     Depends { name: "Qt.qml" }
 
@@ -63,5 +64,10 @@ DynamicLibrary {
         Depends { name: "cpp" }
         cpp.includePaths: [product.sourceDirectory + '/..']
         cpp.libraryPaths: [product.buildDirectory]
+    }
+
+    Properties {
+        condition: Qt.core.staticBuild
+        type: "staticlibrary"
     }
 }
