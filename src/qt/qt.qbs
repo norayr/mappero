@@ -75,6 +75,7 @@ QtGuiApplication {
         "types.h",
         "../../data/MapperoInfo.plist",
         "../../data/icons/scalable/icons.qrc",
+        "../../data/icons/windows/mappero-geotagger.rc",
     ]
 
     Group {
