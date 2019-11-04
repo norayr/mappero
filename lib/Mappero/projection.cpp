@@ -23,7 +23,7 @@
 #include "projection.h"
 
 #include <QDebug>
-#include <math.h>
+#include <QtMath>
 
 using namespace Mappero;
 
