@@ -1,4 +1,5 @@
 import qbs 1.0
+import qbs.FileInfo
 
 QtGuiApplication {
     property string libPath: qbs.targetOS.contains("darwin") ?
@@ -81,6 +82,7 @@ QtGuiApplication {
             "ticks.h",
             "qml/geotag.qrc",
             "../../data/icons/scalable/icons-geotag.qrc",
+            "../../data/mappero-geotagger.desktop",
         ]
     }
 
@@ -95,6 +97,7 @@ QtGuiApplication {
 
     Depends { name: "buildconfig" }
     Depends { name: "cpp" }
+    Depends { name: "freedesktop" }
     Depends { name: "Qt.quick" }
     Depends { name: "Mappero" }
     Depends { name: "MapperoUi" }
@@ -111,6 +114,13 @@ QtGuiApplication {
             'GEOTAGGING_ENABLED',
         ])
     }
+
+    freedesktop.desktopKeys: ({
+        'Exec': FileInfo.joinPaths(qbs.installPrefix,
+                                   product.installDir,
+                                   product.targetName) + ' --geotag',
+        'X-Application-Version': product.version,
+    })
 
     FileTagger {
         patterns: [ "*.plist" ]
