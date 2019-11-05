@@ -15,6 +15,12 @@ QtGuiApplication {
     cpp.cxxLanguageVersion: "c++11"
     cpp.rpaths: cpp.rpathOrigin + "/" + libPath
 
+    qbs.installPrefix: {
+        if (qbs.targetOS.contains("darwin"))
+            return ""
+        return original
+    }
+
     files: [
         "application.cpp",
         "application.h",
@@ -104,11 +110,6 @@ QtGuiApplication {
         cpp.defines: outer.concat([
             'GEOTAGGING_ENABLED',
         ])
-    }
-
-    Properties {
-        condition: qbs.targetOS.contains("darwin")
-        qbs.installPrefix: ""
     }
 
     FileTagger {
