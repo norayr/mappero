@@ -9,10 +9,15 @@ QtGuiApplication {
     version: project.version
     install: true
 
-    cpp.defines: [
-        'MAPPERO_VERSION="' + project.version + '"',
-        'PLUGIN_MANIFEST_DIR="' + project.pluginManifestDir + '"',
-    ]
+    cpp.defines: {
+        var defines = [
+            'MAPPERO_VERSION="' + project.version + '"',
+            'PLUGIN_MANIFEST_DIR="' + project.pluginManifestDir + '"',
+        ]
+        if (qbs.targetOS.contains("unix"))
+            defines.push('XDG_THUMBNAILS')
+        return defines
+    }
     cpp.cxxLanguageVersion: "c++11"
     cpp.rpaths: cpp.rpathOrigin + "/" + libPath
 
