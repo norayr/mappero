@@ -101,6 +101,15 @@ QtGuiApplication {
         ]
     }
 
+    Group {
+        condition: qbs.targetOS.contains("unix") && !qbs.targetOS.contains("darwin")
+        files: [
+            "../../data/icons/scalable/mappero-geotagger.svg",
+        ]
+        qbs.install: product.install
+        qbs.installDir: freedesktop.appIconDir
+    }
+
     Depends { name: "buildconfig" }
     Depends { name: "cpp" }
     Depends { name: "freedesktop" }
