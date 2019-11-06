@@ -6,6 +6,8 @@ import "freedesktop.js" as Fdo
 Module {
     id: fdoModule
 
+    property string appIconDir: "share/icons/hicolor/scalable/apps"
+
     property var desktopKeys
 
     readonly property var defaultDesktopKeys: {
