@@ -90,6 +90,8 @@ QtGuiApplication {
             "taggable.h",
             "ticks.cpp",
             "ticks.h",
+            "qml/GeoTagPage.qml",
+            "qml/ToolBar.qml",
             "qml/geotag.qrc",
             "../../data/icons/scalable/icons-geotag.qrc",
             "../../data/mappero-geotagger.desktop",
@@ -101,6 +103,7 @@ QtGuiApplication {
         name: "qml files"
         prefix: "qml/"
         files: [
+            "mappero.qml",
             "qml.qrc",
             "qmldir",
         ]
