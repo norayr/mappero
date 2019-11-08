@@ -124,6 +124,7 @@ QtGuiApplication {
     Depends { name: "pkgconfig" }
     Depends { name: "Qt.core" }
     Depends { name: "Qt.quick" }
+    Depends { name: "Qt.svg"; condition: Qt.core.staticBuild }
     Depends { name: "Mappero" }
     Depends { name: "MapperoUi" }
     Depends {
