@@ -20,6 +20,8 @@
 #ifndef MAPPERO_PLUGIN_H
 #define MAPPERO_PLUGIN_H
 
+#include "global.h"
+
 #include <QObject>
 #include <QQmlComponent>
 #include <QUrl>
@@ -40,7 +42,7 @@ namespace Mappero {
 #define MAPPERO_PLUGIN_TYPE_ROUTING "routing"
 
 class PluginPrivate;
-class Plugin: public QObject
+class MAPPERO_EXPORT Plugin: public QObject
 {
     Q_OBJECT
     Q_PROPERTY(QString name READ name CONSTANT)

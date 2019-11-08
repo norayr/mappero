@@ -20,13 +20,15 @@
 #ifndef MAPPERO_MODEL_AGGREGATOR_H
 #define MAPPERO_MODEL_AGGREGATOR_H
 
+#include "global.h"
+
 #include <QAbstractItemModel>
 #include <QQmlListProperty>
 
 namespace Mappero {
 
 class ModelAggregatorPrivate;
-class ModelAggregator: public QAbstractItemModel
+class MAPPERO_EXPORT ModelAggregator: public QAbstractItemModel
 {
     Q_OBJECT
     Q_PROPERTY(int count READ rowCount NOTIFY countChanged)

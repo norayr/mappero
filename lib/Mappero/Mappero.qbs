@@ -8,11 +8,13 @@ DynamicLibrary {
 
     cpp.allowUnresolvedSymbols: false
     cpp.defines: [
+        'BUILDING_LIBMAPPERO',
         'PLUGIN_QML_DIR="' + project.pluginDir + '"',
     ]
     cpp.cxxLanguageVersion: "c++11"
 
     files: [
+        "global.h",
         "gpx.cpp",
         "gpx.h",
         "kml.cpp",

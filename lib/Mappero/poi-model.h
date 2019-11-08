@@ -20,13 +20,15 @@
 #ifndef MAPPERO_POI_MODEL_H
 #define MAPPERO_POI_MODEL_H
 
+#include "global.h"
+
 #include <QAbstractListModel>
 #include <QStringList>
 
 namespace Mappero {
 
 class PoiModelPrivate;
-class PoiModel: public QAbstractListModel
+class MAPPERO_EXPORT PoiModel: public QAbstractListModel
 {
     Q_OBJECT
     Q_PROPERTY(QStringList roles READ roles WRITE setRoles NOTIFY rolesChanged)

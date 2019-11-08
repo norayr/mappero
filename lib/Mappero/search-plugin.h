@@ -32,7 +32,7 @@ namespace Mappero {
 #define MAPPERO_SEARCH_PLUGIN_KEY_MODEL "model"
 
 class SearchPluginPrivate;
-class SearchPlugin: public Plugin
+class MAPPERO_EXPORT SearchPlugin: public Plugin
 {
     Q_OBJECT
     Q_PROPERTY(QQmlComponent *delegate READ delegate CONSTANT)

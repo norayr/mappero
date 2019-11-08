@@ -20,6 +20,8 @@
 #ifndef MAPPERO_TYPES_H
 #define MAPPERO_TYPES_H
 
+#include "global.h"
+
 #include <QMetaType>
 #include <QPoint>
 #include <limits.h>
@@ -110,7 +112,7 @@ struct Point: public QPoint {
     }
 };
 
-struct GeoPoint {
+struct MAPPERO_EXPORT GeoPoint {
     GeoPoint(): lat(NAN), lon(0) {}
     GeoPoint(const QPointF &p): lat(p.x()), lon(p.y()) {}
     GeoPoint(Geo lat, Geo lon): lat(lat), lon(lon) {}
@@ -145,21 +147,21 @@ inline bool operator!=(const GeoPoint &p1, const GeoPoint &p2)
 { return p1.lon != p2.lon || (p1.isValid() != p2.isValid()) ||
     (p1.isValid() && p1.lat != p2.lat); }
 
-Unit metre2unit(qreal metres, Geo latitude);
+MAPPERO_EXPORT Unit metre2unit(qreal metres, Geo latitude);
 
-void registerTypes();
+MAPPERO_EXPORT void registerTypes();
 
 } // namespace
 
 Q_DECLARE_METATYPE(Mappero::GeoPoint)
 
-QDataStream &operator<<(QDataStream &out, const Mappero::GeoPoint &geoPoint);
-QDataStream &operator>>(QDataStream &in, Mappero::GeoPoint &geoPoint);
+MAPPERO_EXPORT QDataStream &operator<<(QDataStream &out, const Mappero::GeoPoint &geoPoint);
+MAPPERO_EXPORT QDataStream &operator>>(QDataStream &in, Mappero::GeoPoint &geoPoint);
 
 #include <QDebug>
 
-QDebug operator<<(QDebug dbg, const Mappero::GeoPoint &p);
-QDebug operator<<(QDebug dbg, const Mappero::Point &p);
+MAPPERO_EXPORT QDebug operator<<(QDebug dbg, const Mappero::GeoPoint &p);
+MAPPERO_EXPORT QDebug operator<<(QDebug dbg, const Mappero::Point &p);
 
 
 #define PI   ((Mappero::Geo)3.14159265358979323846)

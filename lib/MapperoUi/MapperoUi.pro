@@ -10,6 +10,9 @@ QT += \
     qml \
     quick
 
+DEFINES += \
+    BUILDING_LIBMAPPEROUI
+
 SOURCES += \
     types.cpp
 

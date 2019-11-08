@@ -20,9 +20,11 @@
 #ifndef MAPPEROUI_TYPES_H
 #define MAPPEROUI_TYPES_H
 
+#include "global.h"
+
 namespace MapperoUi {
 
-void registerTypes();
+MAPPEROUI_EXPORT void registerTypes();
 
 } // namespace
 

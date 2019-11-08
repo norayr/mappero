@@ -32,7 +32,7 @@ class RoutingModel;
 #define MAPPERO_ROUTING_PLUGIN_KEY_OPTIONS_UI_DELEGATE "optionsUiDelegate"
 
 class RoutingPluginPrivate;
-class RoutingPlugin: public Plugin
+class MAPPERO_EXPORT RoutingPlugin: public Plugin
 {
     Q_OBJECT
     Q_PROPERTY(QQmlComponent *optionsUi READ optionsUi CONSTANT)

@@ -34,7 +34,7 @@ namespace Mappero {
 class Path;
 
 class RoutingModelPrivate;
-class RoutingModel: public QAbstractListModel
+class MAPPERO_EXPORT RoutingModel: public QAbstractListModel
 {
     Q_OBJECT
     Q_PROPERTY(int count READ rowCount NOTIFY countChanged)

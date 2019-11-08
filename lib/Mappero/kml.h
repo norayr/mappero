@@ -26,7 +26,7 @@
 
 namespace Mappero {
 
-class Kml: public PathStream
+class MAPPERO_EXPORT Kml: public PathStream
 {
 public:
     Kml();

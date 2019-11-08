@@ -1,6 +1,5 @@
-/* vi: set et sw=4 ts=4 cino=t0,(0: */
 /*
- * Copyright (C) 2012-2019 Alberto Mardegan <mardy@users.sourceforge.net>
+ * Copyright (C) 2019 Alberto Mardegan <mardy@users.sourceforge.net>
  *
  * This file is part of Mappero.
  *
@@ -18,26 +17,16 @@
  * along with Mappero.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef MAPPERO_GPX_H
-#define MAPPERO_GPX_H
+#ifndef MAPPEROUI_GLOBAL_H
+#define MAPPEROUI_GLOBAL_H
 
-#include "path.h"
+#include <QtCore/QtGlobal>
 
-namespace Mappero {
+#if defined(BUILDING_LIBMAPPEROUI)
+#  define MAPPEROUI_EXPORT Q_DECL_EXPORT
+#else
+#  define MAPPEROUI_EXPORT Q_DECL_IMPORT
+#endif
 
-class MAPPERO_EXPORT Gpx: public PathStream
-{
-public:
-    Gpx();
-    ~Gpx();
+#endif /* MAPPEROUI_GLOBAL_H */
 
-    bool read(QXmlStreamReader &xml, PathData &pathData);
-    bool write(QXmlStreamWriter &xml, const PathData &pathData);
-
-private:
-    void parseTrkseg(QXmlStreamReader &xml, PathData &pathData);
-};
-
-}; // namespace
-
-#endif /* MAPPERO_GPX_H */

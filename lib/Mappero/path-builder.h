@@ -29,7 +29,7 @@
 namespace Mappero {
 
 class PathBuilderPrivate;
-class PathBuilder: public QObject
+class MAPPERO_EXPORT PathBuilder: public QObject
 {
     Q_OBJECT
     Q_PROPERTY(Mappero::Path path READ path NOTIFY pathChanged)

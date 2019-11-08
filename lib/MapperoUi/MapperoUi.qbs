@@ -8,8 +8,12 @@ DynamicLibrary {
 
     cpp.allowUnresolvedSymbols: false
     cpp.cxxLanguageVersion: "c++11"
+    cpp.defines: [
+        'BUILDING_LIBMAPPEROUI',
+    ]
 
     files: [
+        "global.h",
         "types.cpp",
         "types.h",
     ]

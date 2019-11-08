@@ -36,7 +36,7 @@ namespace Mappero {
 
 class Projection;
 
-struct PathPoint
+struct MAPPERO_EXPORT PathPoint
 {
     PathPoint();
     PathPoint(const GeoPoint &p, int altitude = 0);
@@ -126,7 +126,7 @@ public:
     Geo m_length;
 };
 
-class Path
+class MAPPERO_EXPORT Path
 {
 public:
     Path();
@@ -173,7 +173,7 @@ private:
     QSharedDataPointer<PathData> d;
 };
 
-class PathStream
+class MAPPERO_EXPORT PathStream
 {
 public:
     PathStream();
