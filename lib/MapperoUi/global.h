@@ -22,10 +22,14 @@
 
 #include <QtCore/QtGlobal>
 
-#if defined(BUILDING_LIBMAPPEROUI)
-#  define MAPPEROUI_EXPORT Q_DECL_EXPORT
+#ifndef QT_STATIC
+#  if defined(BUILDING_LIBMAPPEROUI)
+#    define MAPPEROUI_EXPORT Q_DECL_EXPORT
+#  else
+#    define MAPPEROUI_EXPORT Q_DECL_IMPORT
+#  endif
 #else
-#  define MAPPEROUI_EXPORT Q_DECL_IMPORT
+#  define MAPPEROUI_EXPORT
 #endif
 
 #endif /* MAPPEROUI_GLOBAL_H */

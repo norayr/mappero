@@ -22,10 +22,14 @@
 
 #include <QtCore/QtGlobal>
 
-#if defined(BUILDING_LIBMAPPERO)
-#  define MAPPERO_EXPORT Q_DECL_EXPORT
+#ifndef QT_STATIC
+#  if defined(BUILDING_LIBMAPPERO)
+#    define MAPPERO_EXPORT Q_DECL_EXPORT
+#  else
+#    define MAPPERO_EXPORT Q_DECL_IMPORT
+#  endif
 #else
-#  define MAPPERO_EXPORT Q_DECL_IMPORT
+#  define MAPPERO_EXPORT
 #endif
 
 #endif /* MAPPERO_GLOBAL_H */
