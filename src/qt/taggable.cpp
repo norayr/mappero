@@ -28,8 +28,7 @@
 #include <QFuture>
 #include <QPixmap>
 #include <QtConcurrent>
-#include <exiv2/image.hpp>
-#include <exiv2/preview.hpp>
+#include <exiv2/exiv2.hpp>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
