@@ -20,7 +20,11 @@
 #ifndef MAPPERO_APPLICATION_H
 #define MAPPERO_APPLICATION_H
 
+#ifdef QT_WIDGETS_LIB
+#include <QApplication>
+#else
 #include <QGuiApplication>
+#endif
 #include <QList>
 #include <QString>
 #include <QUrl>
@@ -28,7 +32,12 @@
 namespace Mappero {
 
 class ApplicationPrivate;
-class Application: public QGuiApplication
+class Application:
+#ifdef QT_WIDGETS_LIB
+    public QApplication
+#else
+    public QGuiApplication
+#endif
 {
     Q_OBJECT
     Q_PROPERTY(QString firstPage READ firstPage CONSTANT)

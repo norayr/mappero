@@ -103,7 +103,11 @@ void ApplicationPrivate::parseCmdLine()
 }
 
 Application::Application(int &argc, char **argv):
+#ifdef QT_WIDGETS_LIB
+    QApplication(argc, argv),
+#else
     QGuiApplication(argc, argv),
+#endif
     d_ptr(new ApplicationPrivate(this))
 {
     setOrganizationName("mardy.it");
