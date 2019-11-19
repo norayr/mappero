@@ -21,6 +21,8 @@ Module {
     }
     property bool _fdoSupported: qbs.targetOS.contains("unix") && !qbs.targetOS.contains("darwin")
 
+    additionalProductTypes: [ "desktopfile" ]
+
     FileTagger {
         patterns: [ "*.desktop" ]
         fileTags: [ "desktopfile_source" ]
@@ -30,7 +32,7 @@ Module {
         condition: _fdoSupported
 
         inputs: [ "desktopfile_source" ]
-        outputFileTags: [ "desktopfile", "application" ]
+        outputFileTags: [ "desktopfile" ]
         outputArtifacts: [
             {
                 fileTags: [ "desktopfile" ],
