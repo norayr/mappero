@@ -5,13 +5,13 @@ Item {
 
     signal close()
 
-    width: 600
     focus: true
     Keys.onPressed: if (event.modifiers == Qt.NoModifier) close()
 
     MouseArea {
-        x: 0
-        y: 0
+        property var origin: mainWindow.contentItem.mapToItem(root, 0, 0)
+        x: origin.x
+        y: origin.y
         width: mainWindow.width
         height: mainWindow.height
         onWheel: wheel.accepted = true
@@ -19,8 +19,12 @@ Item {
     }
 
     Rectangle {
-        anchors.fill: parent
-        anchors.margins: 20
+        anchors {
+            top: parent.top; bottom: parent.bottom
+            horizontalCenter: parent.horizontalCenter
+            margins: 20
+        }
+        width: 600
         radius: 10
         color: "white"
         border.width: 1
