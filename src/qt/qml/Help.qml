@@ -82,6 +82,32 @@ Item {
 
                 Item { width: 1; height: 10 }
 
+                Text {
+                    anchors.left: parent.left
+                    anchors.right: parent.right
+                    anchors.margins: 15
+                    font.pointSize: 10
+                    wrapMode: Text.WordWrap
+                    textFormat: Text.RichText
+                    text: qsTr(
+`<center><h2>Quick help</h2></center>
+<p>To add geolocation information to your photos, please follow these steps:</p>
+<ol>
+  <li>Drop the photos onto the white area at the bottom of the window
+  <li>Click on the photo(s) to geotag, then drag the orange marker and drop it
+  on the map, at the desired location
+  <li>Click on the \"Save\" button
+</ol>
+<p>You can also correlate with a GPX route, by selecting one via the <img
+src=\"qrc:correlate\" width=\"20\"/> button.  The images should automatically
+be placed along the route, and the time slider on the upper left corner of the
+screen can be used to synchronise the images with the track.</p>
+<p>There's also <a href=\"https://www.youtube.com/watch?v=b1J84dISuNk\">a video
+showcasing Mappero Geotagger</a>, where the various features are briefly shown
+in action.</p>
+`)
+                    onLinkActivated: Qt.openUrlExternally(link)
+                }
 
                 Text {
                     id: keybindingTitle
