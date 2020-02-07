@@ -10,7 +10,10 @@ Item {
     Keys.onPressed: if (event.modifiers == Qt.NoModifier) close()
 
     MouseArea {
-        anchors.fill: parent
+        x: 0
+        y: 0
+        width: mainWindow.width
+        height: mainWindow.height
         onWheel: wheel.accepted = true
         onClicked: root.close()
     }
