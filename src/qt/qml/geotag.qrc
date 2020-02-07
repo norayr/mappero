@@ -15,5 +15,7 @@
   <file>TimeSlider.qml</file>
   <file>TimeZoneOffset.qml</file>
   <file>ToolBar.qml</file>
+  <file>ToolTip.qml</file>
+  <file>ToolTipParentHandler.qml</file>
 </qresource>
 </RCC>

@@ -24,6 +24,9 @@ Item {
 
         GeoSetter {
             id: geoSetter
+
+            property string toolTip: qsTr("Drag and drop me on the map!")
+
             width: UI.TaggableToolsSize
             height: UI.TaggableToolsSize
             selectedItems: root.selection.items
@@ -32,6 +35,8 @@ Item {
         }
 
         ItemAction {
+            property string toolTip: qsTr("Revert to saved position")
+
             width: UI.TaggableToolsSize
             height: UI.TaggableToolsSize
             selectedItems: root.selection.items
@@ -42,6 +47,8 @@ Item {
         }
 
         ItemAction {
+            property string toolTip: qsTr("Remove geolocation info")
+
             width: UI.TaggableToolsSize
             height: UI.TaggableToolsSize
             selectedItems: root.selection.items
@@ -52,6 +59,8 @@ Item {
         }
 
         ImageButton {
+            property string toolTip: qsTr("Open a GPX track")
+
             width: UI.TaggableToolsSize
             height: UI.TaggableToolsSize
 
@@ -68,11 +77,26 @@ Item {
         }
 
         ImageButton {
+            property string toolTip: qsTr("Help screen")
+
             width: UI.TaggableToolsSize
             height: UI.TaggableToolsSize
 
             source: "qrc:help"
             onClicked: root.help()
+        }
+    }
+
+    ToolTipParentHandler {
+        id: hoverDetector
+        anchors.fill: row
+
+        ToolTip {
+            id: toolTip
+            property var target: hoverDetector.activeItem
+            hotSpot: target ? target.mapToItem(root, target.width / 2, -16) : null
+            text: target ? target.toolTip : ""
+            hovered: target != null
         }
     }
 
