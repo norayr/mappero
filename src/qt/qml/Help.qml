@@ -11,6 +11,7 @@ Item {
 
     MouseArea {
         anchors.fill: parent
+        onWheel: wheel.accepted = true
         onClicked: root.close()
     }
 
