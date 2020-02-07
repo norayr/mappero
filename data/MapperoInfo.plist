@@ -8,6 +8,8 @@
   <string>mappero-geotagger</string>
   <key>CFBundleDisplayName</key>
   <string>mappero</string>
+  <key>CFBundleDevelopmentRegion</key>
+  <string>en</string>
   <key>CFBundleShortVersionString</key>
   <string>${SHORT_VERSION}.BUILD_VERSION</string>
   <key>CFBundlePackageType</key>
