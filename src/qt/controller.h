@@ -1,6 +1,6 @@
 /* vi: set et sw=4 ts=4 cino=t0,(0: */
 /*
- * Copyright (C) 2009-2019 Alberto Mardegan <mardy@users.sourceforge.net>
+ * Copyright (C) 2009-2020 Alberto Mardegan <mardy@users.sourceforge.net>
  *
  * This file is part of Mappero.
  *
