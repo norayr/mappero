@@ -7,7 +7,7 @@
   <key>CFBundleIconFile</key>
   <string>mappero-geotagger</string>
   <key>CFBundleDisplayName</key>
-  <string>Mappero Geotagger</string>
+  <string>mappero</string>
   <key>CFBundleShortVersionString</key>
   <string>${SHORT_VERSION}.BUILD_VERSION</string>
   <key>CFBundlePackageType</key>
