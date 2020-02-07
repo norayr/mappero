@@ -55,5 +55,10 @@
         <p>Accept items from command line, add MIME-type information</p>
       </description>
     </release>
+    <release version="1.7" date="2020-02-07">
+      <description>
+        <p>Improve help screen, add tooltips</p>
+      </description>
+    </release>
   </releases>
 </component>
