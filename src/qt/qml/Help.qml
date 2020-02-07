@@ -25,69 +25,64 @@ Item {
         color: "white"
         border.width: 1
 
-        Column {
-            id: title
-            anchors.top: parent.top
-            anchors.left: parent.left
-            anchors.right: parent.right
+        Flickable {
+            id: flickable
+            anchors.fill: parent
             anchors.margins: 15
-            spacing: 10
+            contentHeight: contentColumn.height
+            clip: true
 
             Column {
+                id: contentColumn
                 anchors.left: parent.left
                 anchors.right: parent.right
-                Text {
+                spacing: 10
+
+                Column {
                     anchors.left: parent.left
                     anchors.right: parent.right
-                    font.bold: true
-                    font.pointSize: 20
-                    horizontalAlignment: Text.AlignHCenter
-                    text: "Mappero Geotagger"
+                    Text {
+                        anchors.left: parent.left
+                        anchors.right: parent.right
+                        font.bold: true
+                        font.pointSize: 20
+                        horizontalAlignment: Text.AlignHCenter
+                        text: "Mappero Geotagger"
+                    }
+                    Text {
+                        anchors.left: parent.left
+                        anchors.right: parent.right
+                        font.pointSize: 8
+                        horizontalAlignment: Text.AlignHCenter
+                        textFormat: Text.StyledText
+                        text: qsTr("version <b>%1</b>").arg(Qt.application.version)
+                    }
                 }
+
                 Text {
                     anchors.left: parent.left
                     anchors.right: parent.right
                     font.pointSize: 8
                     horizontalAlignment: Text.AlignHCenter
                     textFormat: Text.StyledText
-                    text: qsTr("version <b>%1</b>").arg(Qt.application.version)
+                    text: qsTr("Written by Alberto Mardegan and distributed under the <b>GPLv3</b> license")
                 }
-            }
 
-            Text {
-                anchors.left: parent.left
-                anchors.right: parent.right
-                font.pointSize: 8
-                horizontalAlignment: Text.AlignHCenter
-                textFormat: Text.StyledText
-                text: qsTr("Written by Alberto Mardegan and distributed under the <b>GPLv3</b> license")
-            }
+                Item { width: 1; height: 10 }
 
-            Item { width: 1; height: 10 }
+                Text {
+                    anchors.left: parent.left
+                    anchors.right: parent.right
+                    anchors.margins: 15
+                    font.pointSize: 10
+                    wrapMode: Text.WordWrap
+                    text: qsTr("If you got this program for free, please consider <a href=\"http://www.mardy.it/mappero-geotagger\">making a donation</a> to support its development.\nFor any questions, feature requests or bug reports please <a href=\"http://lists.mardy.it/listinfo.cgi/mappero-geotagger-mardy.it\">join the mailing-list</a>.")
+                    onLinkActivated: Qt.openUrlExternally(link)
+                }
 
-            Text {
-                anchors.left: parent.left
-                anchors.right: parent.right
-                anchors.margins: 15
-                font.pointSize: 10
-                wrapMode: Text.WordWrap
-                text: qsTr("If you got this program for free, please consider <a href=\"http://www.mardy.it/mappero-geotagger\">making a donation</a> to support its development.\nFor any questions, feature requests or bug reports please <a href=\"http://lists.mardy.it/listinfo.cgi/mappero-geotagger-mardy.it\">join the mailing-list</a>.")
-                onLinkActivated: Qt.openUrlExternally(link)
-            }
-        }
+                Item { width: 1; height: 10 }
 
-        Item {
-            anchors.top: title.bottom
-            anchors.left: parent.left
-            anchors.right: parent.right
-            anchors.bottom: parent.bottom
-            anchors.margins: 15
 
-            Item {
-                anchors.verticalCenter: parent.verticalCenter
-                anchors.left: parent.left
-                anchors.right: parent.right
-                height: keybindingTitle.height + grid.height
                 Text {
                     id: keybindingTitle
                     anchors.left: parent.left
@@ -101,7 +96,6 @@ Item {
 
                 Grid {
                     id: grid
-                    anchors.top: keybindingTitle.bottom
                     anchors.left: parent.left
                     anchors.right: parent.right
                     anchors.topMargin: 10
