@@ -22,6 +22,7 @@
 #include <QDebug>
 #include <QFileInfo>
 #include <QFileOpenEvent>
+#include <QIcon>
 #include <QMetaObject>
 #include <QThreadPool>
 
@@ -110,9 +111,16 @@ Application::Application(int &argc, char **argv):
 #endif
     d_ptr(new ApplicationPrivate(this))
 {
+    Q_D(const Application);
     setOrganizationName("mardy.it");
     setApplicationName("mappero");
     setApplicationVersion(MAPPERO_VERSION);
+    if (d->m_mode == ApplicationPrivate::Geotagger) {
+        setApplicationDisplayName("Mappero Geotagger");
+        setWindowIcon(QIcon(":/mappero-geotagger"));
+    } else {
+        setApplicationDisplayName("Mappero");
+    }
 }
 
 Application::~Application()
