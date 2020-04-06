@@ -134,6 +134,10 @@ QtGuiApplication {
     }
     Depends { name: "Qt.concurrent"; condition: exiv2.present }
 
+    // Disable QML tooling plugins
+    Depends { name: "Qt.plugin_support" }
+    Qt.plugin_support.pluginsByType: ({qmltooling: []})
+
     Properties {
         condition: exiv2.present
         overrideListProperties: false
