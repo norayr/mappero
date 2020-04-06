@@ -109,6 +109,7 @@ int main(int argc, char *argv[])
     Q_IMPORT_PLUGIN(QWindowsIntegrationPlugin)
     Q_IMPORT_PLUGIN(QtQuick2Plugin)
     Q_IMPORT_PLUGIN(QtQuick2WindowPlugin)
+    Q_IMPORT_PLUGIN(QtLabsPlatformPlugin)
 #ifndef GEOTAGGING_ENABLED
     Q_IMPORT_PLUGIN(QmlFolderListModelPlugin)
     Q_IMPORT_PLUGIN(QmlSettingsPlugin)
