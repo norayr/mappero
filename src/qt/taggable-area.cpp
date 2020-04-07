@@ -235,3 +235,9 @@ void TaggableArea::dragEnterEvent(QDragEnterEvent *e)
         e->acceptProposedAction();
     }
 }
+
+void TaggableArea::dragMoveEvent(QDragMoveEvent *e)
+{
+    // Needed because of https://bugreports.qt.io/browse/QTBUG-83379
+    e->acceptProposedAction();
+}

@@ -107,6 +107,7 @@ protected:
     // reimplemented virtual methods
     void dropEvent(QDropEvent *event) Q_DECL_OVERRIDE;
     void dragEnterEvent(QDragEnterEvent *event) Q_DECL_OVERRIDE;
+    void dragMoveEvent(QDragMoveEvent *event) Q_DECL_OVERRIDE;
 
 private:
     TaggableAreaPrivate *d_ptr;
