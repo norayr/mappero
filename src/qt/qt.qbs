@@ -7,6 +7,7 @@ QtGuiApplication {
 
     name: "mappero"
     version: project.version
+    consoleApplication: false
     install: true
 
     cpp.defines: {
