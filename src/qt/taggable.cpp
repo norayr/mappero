@@ -31,7 +31,6 @@
 #include <exiv2/exiv2.hpp>
 #include <sys/stat.h>
 #include <sys/types.h>
-#include <unistd.h>
 #include <utime.h>
 
 
