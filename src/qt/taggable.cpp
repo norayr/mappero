@@ -31,6 +31,11 @@
 #include <exiv2/exiv2.hpp>
 #include <sys/stat.h>
 #include <sys/types.h>
+#ifdef Q_OS_WIN32
+#include <sys/utime.h>
+#else
+#include <utime.h>
+#endif
 
 
 using namespace Mappero;
