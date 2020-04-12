@@ -105,7 +105,7 @@ ListModel {
     ListElement {
         uid: "HereVector"
         name: "HERE vector"
-        url: "http://1.base.maps.cit.api.here.com/maptile/2.1/maptile/newest/normal.day/%d/%d/%d/256/png8?app_id=ZcYzFLXh2pUuEsIRrb6q&app_code=uwv-Hyp-kCyvl-nP2VFh3w"
+        url: "https://1.base.maps.ls.hereapi.com/maptile/2.1/maptile/newest/normal.day/%d/%d/%d/256/png8?apiKey=dx8yOMdyLYUmMt4yBOjwafgSPyRConcQp3Vz5Lczu2g"
         type: "XYZ_INV"
         format: "png"
         minZoom: 2
