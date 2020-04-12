@@ -26,7 +26,10 @@ Item {
             MouseArea {
                 anchors.fill: parent
                 acceptedButtons: Qt.NoButton
-                onWheel: map.requestedZoomLevel -= wheel.angleDelta.y / 120
+                onWheel: {
+                    map.zoomCenter = mapToItem(map, wheel.x, wheel.y)
+                    map.requestedZoomLevel -= wheel.angleDelta.y / 120
+                }
             }
         }
 

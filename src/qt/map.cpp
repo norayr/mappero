@@ -134,6 +134,8 @@ private:
     qreal zoomLevel;
     qreal animatedZoomLevel;
     qreal requestedZoomLevel;
+    Point m_zoomCenterUnits;
+    bool m_zoomCenterIsSet;
     qreal pinchScale;
     bool followGps;
     MapEvent mapEvent;
@@ -155,6 +157,7 @@ MapPrivate::MapPrivate(Map *q):
     zoomLevel(-1),
     animatedZoomLevel(-1),
     requestedZoomLevel(-1),
+    m_zoomCenterIsSet(false),
     followGps(true),
     mapEvent(q),
     mark(0),
@@ -444,6 +447,10 @@ void Map::setZoomLevel(qreal zoom)
     d->zoomLevel = zoom;
     d->animatedZoomLevel = zoom;
     d->mapEvent.m_zoomLevelChanged = true;
+    if (d->m_zoomCenterIsSet) {
+        d->m_zoomCenterIsSet = false;
+        setCenter(d->unit2geo(animatedCenterUnits().toPoint()).toPointF());
+    }
     Q_EMIT zoomLevelChanged(zoom);
 }
 
@@ -458,6 +465,12 @@ void Map::setAnimatedZoomLevel(qreal zoom)
     Q_D(Map);
     if (zoom == d->animatedZoomLevel) return;
 
+    if (d->m_zoomCenterIsSet) {
+        qreal scale = exp2(zoomLevel() - zoom);
+        QPointF diff = centerUnits() - d->m_zoomCenterUnits;
+        d->animatedCenterUnits = d->m_zoomCenterUnits + diff / scale;
+        d->mapEvent.m_centerChanged = true;
+    }
     d->animatedZoomLevel = zoom;
     d->mapEvent.m_animated = true;
     Q_EMIT animatedZoomLevelChanged(zoom);
@@ -498,6 +511,30 @@ qreal Map::requestedZoomLevel() const
 {
     Q_D(const Map);
     return d->requestedZoomLevel;
+}
+
+/* Set the center of the zoom operation, in pixels; a center with
+ * negative x() is invalid */
+void Map::setZoomCenter(const QPointF &center)
+{
+    Q_D(Map);
+    if (center.x() < 0) {
+        d->m_zoomCenterIsSet = false;
+    } else {
+        d->m_zoomCenterIsSet = true;
+        QPoint pixelsFromCenter =
+            (center - QPointF(width() / 2, height() / 2)).toPoint();
+        d->m_zoomCenterUnits =
+            d->centerUnits.translated(d->pixel2unit(pixelsFromCenter));
+    }
+    Q_EMIT zoomCenterChanged();
+}
+
+QPointF Map::zoomCenter() const
+{
+    Q_D(const Map);
+    return d->m_zoomCenterIsSet ?
+        d->m_zoomCenterUnits.toPixel(animatedZoomLevel()) : QPointF(-1, -1);
 }
 
 qreal Map::minZoomLevel() const

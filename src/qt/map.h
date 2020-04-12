@@ -58,6 +58,8 @@ class Map: public QQuickItem {
     Q_PROPERTY(qreal requestedZoomLevel \
                READ requestedZoomLevel WRITE setRequestedZoomLevel \
                NOTIFY requestedZoomLevelChanged);
+    Q_PROPERTY(QPointF zoomCenter READ zoomCenter WRITE setZoomCenter
+               NOTIFY zoomCenterChanged);
     Q_PROPERTY(qreal minZoomLevel READ minZoomLevel
                NOTIFY mainLayerChanged);
     Q_PROPERTY(qreal maxZoomLevel READ maxZoomLevel
@@ -99,6 +101,9 @@ public:
     void setRequestedZoomLevel(qreal zoom);
     qreal requestedZoomLevel() const;
 
+    void setZoomCenter(const QPointF &center);
+    QPointF zoomCenter() const;
+
     qreal minZoomLevel() const;
     qreal maxZoomLevel() const;
 
@@ -126,6 +131,7 @@ Q_SIGNALS:
     void zoomLevelChanged(qreal zoomLevel);
     void animatedZoomLevelChanged(qreal zoomLevel);
     void requestedZoomLevelChanged(qreal zoomLevel);
+    void zoomCenterChanged();
     void pinchScaleChanged();
     void sizeChanged();
     void mainLayerChanged();
