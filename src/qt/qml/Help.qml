@@ -80,7 +80,7 @@ Item {
                     anchors.margins: 15
                     font.pointSize: 10
                     wrapMode: Text.WordWrap
-                    text: qsTr("If you got this program for free, please consider <a href=\"http://www.mardy.it/mappero-geotagger\">making a donation</a> to support its development.\nFor any questions, feature requests or bug reports please <a href=\"http://lists.mardy.it/listinfo.cgi/mappero-geotagger-mardy.it\">join the mailing-list</a>.")
+                    text: qsTr("If you got this program for free, please consider <a href=\"http://mappero.mardy.it/donate.html\">making a donation</a> to support its development.\nFor any questions, feature requests or bug reports please <a href=\"http://mappero.mardy.it/faq.html\">refer to the FAQ page</a>.")
                     onLinkActivated: Qt.openUrlExternally(link)
                 }
 
