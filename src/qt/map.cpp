@@ -70,6 +70,8 @@ public:
                 if (!diffUnits.isNull()) {
                     pos -= diffUnits.toPixelF(map()->animatedZoomLevel());
                 }
+            } else {
+                pos = QPointF(round(pos.x()), round(pos.y()));
             }
             setPos(pos);
         }
