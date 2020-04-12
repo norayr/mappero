@@ -102,12 +102,12 @@ Item {
   on the map, at the desired location\
   <li>Click on the \"Save\" button\
 </ol>\
-<p>You can also correlate with a GPX route, by selecting one via the <img\
-src=\"qrc:correlate\" width=\"20\"/> button.  The images should automatically\
-be placed along the route, and the time slider on the upper left corner of the\
+<p>You can also correlate with a GPX route, by selecting one via the <img \
+src=\"qrc:correlate\" width=\"20\"/> button.  The images should automatically \
+be placed along the route, and the time slider on the upper left corner of the \
 screen can be used to synchronise the images with the track.</p>\
-<p>There's also <a href=\"https://www.youtube.com/watch?v=b1J84dISuNk\">a video\
-showcasing Mappero Geotagger</a>, where the various features are briefly shown\
+<p>There's also <a href=\"https://www.youtube.com/watch?v=b1J84dISuNk\">a video \
+showcasing Mappero Geotagger</a>, where the various features are briefly shown \
 in action.</p>\
 ")
                     onLinkActivated: Qt.openUrlExternally(link)
