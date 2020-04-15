@@ -68,12 +68,22 @@ void TaggableModel::addUrls(const QList<QUrl> &urlList)
 
     QList<Taggable*> newTaggables;
     foreach (const QUrl &url, urlList) {
+        QString fileName = url.toLocalFile();
+        bool isDuplicate = false;
+        for (const Taggable *taggable: taggables) {
+            if (fileName == taggable->fileName()) {
+                isDuplicate = true;
+                break;
+            }
+        }
+        if (isDuplicate) continue;
+
         Taggable *taggable = new Taggable(this);
         QObject::connect(taggable, SIGNAL(locationChanged()),
                          this, SLOT(onTaggableChanged()));
         QObject::connect(taggable, SIGNAL(saveStateChanged()),
                          this, SLOT(onTaggableSaveStateChanged()));
-        taggable->setFileName(url.toLocalFile());
+        taggable->setFileName(fileName);
         if (!taggable->isValid()) {
             delete taggable;
             continue;
