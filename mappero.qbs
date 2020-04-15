@@ -3,7 +3,7 @@ import qbs 1.0
 Project {
     name: "mappero"
 
-    property string version: "1.7"
+    property string version: "1.8"
     property bool buildTests: false
     property bool enableCoverage: false
 

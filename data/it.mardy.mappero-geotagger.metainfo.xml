@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Copyright 2019 Alberto Mardegan <info@mardy.it> -->
+<!-- Copyright 2019-2020 Alberto Mardegan <info@mardy.it> -->
 <component type="desktop-application">
   <id>it.mardy.mappero-geotagger</id>
   <metadata_license>FSFAP</metadata_license>
@@ -58,6 +58,18 @@
     <release version="1.7" date="2020-02-07">
       <description>
         <p>Improve help screen, add tooltips</p>
+      </description>
+    </release>
+    <release version="1.8" date="2020-04-15">
+      <description>
+        <ul>
+          <li>Zooming with the mouse wheel now pivots on the mouse cursor</li>
+          <li>Prevent the same files to be added twice in the same session</li>
+          <li>Make HERE maps work again</li>
+          <li>Avoid sub-pixel smoothing of map tiles: improves readability</li>
+          <li>Set proper application icon for Linux window managers</li>
+          <li>Update About page for new site links</li>
+        </ul>
       </description>
     </release>
   </releases>
