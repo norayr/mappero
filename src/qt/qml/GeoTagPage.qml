@@ -1,3 +1,4 @@
+import QtQml 2.2
 import QtQuick 2.0
 import Mappero 1.0
 import "UIConstants.js" as UI
@@ -26,6 +27,7 @@ Item {
             MouseArea {
                 anchors.fill: parent
                 acceptedButtons: Qt.NoButton
+                enabled: Qt.platform.os != "osx"
                 onWheel: {
                     map.zoomCenter = mapToItem(map, wheel.x, wheel.y)
                     map.requestedZoomLevel -= wheel.angleDelta.y / 120
