@@ -57,7 +57,7 @@ Item {
                 id: routeItemRepeater
                 model: router.model
                 currentIndex: router.currentIndex
-                onCurrentItemChanged: if (currentItem) map.lookAt(currentItem.itemArea(), 0, 0, 10)
+                onCurrentItemChanged: if (currentItem) map.lookAt(currentItem.itemArea(), 0, 0, 10, 10)
             }
         }
 

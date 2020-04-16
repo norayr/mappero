@@ -102,7 +102,7 @@ Item {
 
             onTrackLoaded: {
                 track.loadFile(filePath)
-                map.lookAt(track.itemArea(), 0, 0, 40)
+                map.lookAt(track.itemArea(), 0, 0, map.width / 4, map.height / 4)
             }
 
             onHelp: helpLoader.source = "Help.qml"
@@ -185,7 +185,13 @@ Item {
 
     Connections {
         target: dropArea.model
-        onRowsInserted: map.lookAt(poiView.itemArea, 0, 80, 40)
+        onRowsInserted: dropAreaInsertedTimer.restart()
+        property var _t: Timer {
+            id: dropAreaInsertedTimer
+            interval: 100
+            onTriggered: map.lookAt(poiView.itemArea, 0, 80,
+                                    map.width / 5, map.height / 5)
+        }
     }
 
     Connections {

@@ -464,7 +464,8 @@ void PoiView::setCurrentIndex(int index)
         map()->ensureVisible(visualItem->geoPoint(),
                              item->width() / 2 - origin.x(),
                              item->height() / 2 - origin.y(),
-                             qMax(item->width(), item->height()));
+                             qMax(item->width(), map()->width() / 3),
+                             qMax(item->height(), map()->height() / 3));
         item->setZ(d->highestZ++);
     }
 }

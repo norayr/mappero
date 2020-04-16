@@ -591,7 +591,8 @@ bool Map::followGps() const
     return d->followGps;
 }
 
-void Map::lookAt(const QRectF &area, int offsetX, int offsetY, int margin)
+void Map::lookAt(const QRectF &area, int offsetX, int offsetY,
+                 int marginX, int marginY)
 {
     if (area.width() < 0 || area.height() < 0) return;
 
@@ -605,8 +606,8 @@ void Map::lookAt(const QRectF &area, int offsetX, int offsetY, int margin)
 
     Point size = southEast - northWest;
 
-    int fitWidth = width() - 2 * margin;
-    int fitHeight = height() - 2 * margin;
+    int fitWidth = width() - 2 * marginX;
+    int fitHeight = height() - 2 * marginY;
     int zoom;
     for (zoom = d->mainLayer->minZoom();
          zoom < d->mainLayer->maxZoom(); zoom++) {
@@ -626,7 +627,7 @@ void Map::lookAt(const QRectF &area, int offsetX, int offsetY, int margin)
 }
 
 void Map::ensureVisible(const GeoPoint &geoPoint, int offsetX, int offsetY,
-                        int margin)
+                        int marginX, int marginY)
 {
     Q_D(Map);
     if (d->mainLayer == 0) return;
@@ -640,16 +641,16 @@ void Map::ensureVisible(const GeoPoint &geoPoint, int offsetX, int offsetY,
     offsetPixels += QPoint(offsetX, offsetY);
 
     int scrollX = 0, scrollY = 0;
-    if (offsetPixels.x() + margin > width()) {
-        scrollX = width() - (offsetPixels.x() + margin);
-    } else if (offsetPixels.x() - margin < 0) {
-        scrollX = - (offsetPixels.x() - margin);
+    if (offsetPixels.x() + marginX > width()) {
+        scrollX = width() - (offsetPixels.x() + marginX);
+    } else if (offsetPixels.x() - marginX < 0) {
+        scrollX = - (offsetPixels.x() - marginX);
     }
 
-    if (offsetPixels.y() + margin > height()) {
-        scrollY = height() - (offsetPixels.y() + margin);
-    } else if (offsetPixels.y() - margin < 0) {
-        scrollY = - (offsetPixels.y() - margin);
+    if (offsetPixels.y() + marginY > height()) {
+        scrollY = height() - (offsetPixels.y() + marginY);
+    } else if (offsetPixels.y() - marginY < 0) {
+        scrollY = - (offsetPixels.y() - marginY);
     }
 
     // Convert the pixels back to units
