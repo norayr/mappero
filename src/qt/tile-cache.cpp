@@ -132,6 +132,13 @@ TileCache::~TileCache()
     delete d_ptr;
 }
 
+void TileCache::setMaxTiles(int max)
+{
+    Q_D(TileCache);
+    if (max > d->maxSize)
+        d->maxSize = max;
+}
+
 Tile *TileCache::tile(const TileSpec &tileSpec, bool *found)
 {
     Q_D(TileCache);

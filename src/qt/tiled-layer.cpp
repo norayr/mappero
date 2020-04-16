@@ -224,6 +224,11 @@ void TiledLayerPrivate::loadTiles(const QPoint &start, const QPoint stop)
     int &x = p.rx();
     int &y = p.ry();
 
+    /* Make sure that the tile cache is large enough. The magic number 6 is
+     * added to leave a safety margin of about 3 tiles per side. */
+    tileCache->setMaxTiles((stop.x() - start.x() + 6) *
+                           (stop.y() - start.y() + 6));
+
     foreach (QQuickItem *item, q->childItems()) {
         item->setVisible(false);
     }

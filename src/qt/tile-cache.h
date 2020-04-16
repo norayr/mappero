@@ -37,6 +37,8 @@ public:
     TileCache();
     ~TileCache();
 
+    void setMaxTiles(int max);
+
     Tile *tile(const TileSpec &spec, bool *found);
     Tile *find(const TileSpec &tileSpec) const;
 
