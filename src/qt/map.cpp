@@ -63,15 +63,16 @@ public:
         if (event->centerChanged() ||
             event->sizeChanged() ||
             event->animated()) {
-            QPointF pos = event->map()->boundingRect().center();
+            /* the toPoint() conversion serves to round up to the nearest
+             * integer, which we do in order to avoid sub-pixel smoothing
+             */
+            QPointF pos = event->map()->boundingRect().center().toPoint();
             if (event->animated()) {
                 Point diffUnits = map()->animatedCenterUnits().toPoint() -
                     map()->centerUnits();
                 if (!diffUnits.isNull()) {
                     pos -= diffUnits.toPixelF(map()->animatedZoomLevel());
                 }
-            } else {
-                pos = QPointF(round(pos.x()), round(pos.y()));
             }
             setPos(pos);
         }
