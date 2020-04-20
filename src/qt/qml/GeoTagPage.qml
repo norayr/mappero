@@ -165,6 +165,13 @@ Item {
                 model: dropArea.model
             }
 
+            MouseArea {
+                anchors.fill: parent
+                acceptedButtons: Qt.NoButton
+                enabled: Qt.platform.os != "osx"
+                onWheel: taggableView.flick(wheel.angleDelta.y * 4 - taggableView.horizontalVelocity, 0)
+            }
+
             BusyMessage {
                 id: busyMessage
                 count: dropArea.model.busyTaggableCount
