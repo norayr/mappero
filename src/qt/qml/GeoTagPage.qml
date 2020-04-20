@@ -23,16 +23,6 @@ Item {
         MapFlickable {
             id: mapFlickable
             anchors.fill: parent
-
-            MouseArea {
-                anchors.fill: parent
-                acceptedButtons: Qt.NoButton
-                enabled: Qt.platform.os != "osx"
-                onWheel: {
-                    map.zoomCenter = mapToItem(map, wheel.x, wheel.y)
-                    map.requestedZoomLevel -= wheel.angleDelta.y / 120
-                }
-            }
         }
 
         Map {
@@ -43,6 +33,16 @@ Item {
             mainLayer: layerManager.mainLayer
             center: Mappero.conf.lastPosition
             requestedZoomLevel: Mappero.conf.lastZoomLevel
+
+            MouseArea {
+                anchors.fill: parent
+                acceptedButtons: Qt.NoButton
+                enabled: Qt.platform.os != "osx"
+                onWheel: {
+                    map.zoomCenter = Qt.point(wheel.x, wheel.y)
+                    map.requestedZoomLevel -= wheel.angleDelta.y / 120
+                }
+            }
 
             PathLayer {
                 PathItem {
