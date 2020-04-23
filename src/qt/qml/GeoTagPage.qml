@@ -44,6 +44,19 @@ Item {
                 }
             }
 
+            PinchArea {
+                anchors.fill: parent
+                onPinchStarted: {
+                    map.zoomCenter = pinch.center
+                    mapFlickable.interactive = false
+                }
+                onPinchUpdated: map.pinchScale = pinch.scale
+                onPinchFinished: {
+                    map.pinchScale = 0
+                    mapFlickable.interactive = true
+                }
+            }
+
             PathLayer {
                 PathItem {
                     id: track
