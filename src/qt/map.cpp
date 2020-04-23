@@ -493,17 +493,15 @@ void Map::setRequestedZoomLevel(qreal zoom)
     Q_D(Map);
     if (zoom == d->requestedZoomLevel) return;
 
-    if (d->mainLayer != 0) {
-        if (zoom < d->mainLayer->minZoom() ||
-            zoom > d->mainLayer->maxZoom())
-            return;
-    }
-
     /* approximate the zoom level to the nearest integer.
      * TODO add a protected method so that subclasses can decide whether this
      * should happen.
      */
     zoom = (zoom > d->requestedZoomLevel) ? ceil(zoom) : floor(zoom);
+    if (d->mainLayer != 0) {
+        zoom = qMin(qMax(int(zoom), d->mainLayer->minZoom()), d->mainLayer->maxZoom());
+    }
+
     d->requestedZoomLevel = zoom;
     Q_EMIT requestedZoomLevelChanged(zoom);
 }
