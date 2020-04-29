@@ -1,6 +1,7 @@
 import QtQml 2.2
 import QtQuick 2.0
 import Mappero 1.0
+import Mardy 1.0
 import "UIConstants.js" as UI
 
 Item {
@@ -118,7 +119,9 @@ Item {
                 map.lookAt(track.itemArea(), 0, 0, map.width / 4, map.height / 4)
             }
 
-            onHelp: helpLoader.source = "Help.qml"
+            onHelp: helpLoader.setSource("Help.qml", {
+                    latestVersion: updater.latestVersion
+                })
         }
 
         Correlator {
@@ -196,6 +199,15 @@ Item {
         id: helpLoader
         anchors.fill: parent
         focus: true
+    }
+
+    Updater { id: updater
+        versionUrl: "http://mappero.mardy.it/latestversion.json"
+        property var timer: Timer {
+            running: true
+            interval: 2000
+            onTriggered: updater.start()
+        }
     }
 
     Connections {

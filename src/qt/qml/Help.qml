@@ -3,6 +3,8 @@ import QtQuick 2.0
 Item {
     id: root
 
+    property var latestVersion: null
+
     signal close()
 
     focus: true
@@ -75,12 +77,28 @@ Item {
                 Item { width: 1; height: 10 }
 
                 Text {
+                    id: updateLabel
+                    anchors.left: parent.left
+                    anchors.right: parent.right
+                    anchors.margins: 15
+                    font.pointSize: 10
+                    wrapMode: Text.WordWrap
+                    horizontalAlignment: Text.AlignJustify
+                    textFormat: TextEdit.RichText
+                    text: qsTr("<p align=\"center\"><font size=\"5\" color=\"green\">Version <b>%1</b> is available!</font></p><p align=\"justify\">If you obtained Mappero Geotagger from an application store, visit it to update to the latest version. Otherwise, you can get the latest version from <a href=\"http://mappero.mardy.it\">mappero.mardy.it</a>.</p>").arg(root.latestVersion.version)
+                    visible: Object.keys(root.latestVersion).length > 0 ?
+                        root.latestVersion.isNewer : false
+                    onLinkActivated: Qt.openUrlExternally(link)
+                }
+
+                Text {
                     anchors.left: parent.left
                     anchors.right: parent.right
                     anchors.margins: 15
                     font.pointSize: 10
                     wrapMode: Text.WordWrap
                     text: qsTr("If you got this program for free, please consider <a href=\"http://mappero.mardy.it/donate.html\">making a donation</a> to support its development.\nFor any questions, feature requests or bug reports please <a href=\"http://mappero.mardy.it/faq.html\">refer to the FAQ page</a>.")
+                    visible: !updateLabel.visible
                     onLinkActivated: Qt.openUrlExternally(link)
                 }
 

@@ -32,6 +32,7 @@
 #include "taggable-selection.h"
 #include "taggable.h"
 #include "ticks.h"
+#include "updater.h"
 #endif
 #include "tiled-layer.h"
 #include "tracker.h"
@@ -98,6 +99,7 @@ int main(int argc, char *argv[])
     engine.addImageProvider(Mappero::Taggable::ImageProvider::name(),
                             Mappero::Taggable::ImageProvider::instance());
     qmlRegisterType<Mappero::Ticks>("Mappero", 1, 0, "Ticks");
+    qmlRegisterType<Mardy::Updater>("Mardy", 1, 0, "Updater");
 #endif
 
     engine.addImportPath("qrc:/");
