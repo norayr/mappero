@@ -91,6 +91,8 @@ QtGuiApplication {
             "taggable.h",
             "ticks.cpp",
             "ticks.h",
+            "updater.cpp",
+            "updater.h",
             "qml/GeoTagPage.qml",
             "qml/ToolBar.qml",
             "qml/geotag.qrc",

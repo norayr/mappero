@@ -5,6 +5,7 @@ Project {
 
     references: [
         "path/path.qbs",
+        "tst_updater.qbs",
     ]
 
     CoverageClean {
