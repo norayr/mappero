@@ -17,7 +17,7 @@ QtGuiApplication {
         ]
         if (qbs.targetOS.contains("unix"))
             defines.push('XDG_THUMBNAILS')
-        if (exiv2.present)
+        if (project.geotagger)
             defines.push('GEOTAGGING_ENABLED')
         if (Qt.core.staticBuild)
             defines.push('STATIC_BUILD')
@@ -81,7 +81,7 @@ QtGuiApplication {
 
     Group {
         name: "geotagger"
-        condition: exiv2.present
+        condition: project.geotagger
         files: [
             "taggable-area.cpp",
             "taggable-area.h",
@@ -133,16 +133,16 @@ QtGuiApplication {
     Depends { name: "MapperoUi" }
     Depends {
         name: "exiv2"
-        required: false
+        condition: project.geotagger
     }
-    Depends { name: "Qt.concurrent"; condition: exiv2.present }
+    Depends { name: "Qt.concurrent"; condition: project.geotagger }
 
     // Disable QML tooling plugins
     Depends { name: "Qt.plugin_support" }
     Qt.plugin_support.pluginsByType: ({qmltooling: []})
 
     Properties {
-        condition: exiv2.present
+        condition: project.geotagger
         overrideListProperties: false
         cpp.defines: outer.concat([
             'GEOTAGGING_ENABLED',

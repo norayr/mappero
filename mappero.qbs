@@ -6,6 +6,7 @@ Project {
     property string version: "1.9"
     property bool buildTests: false
     property bool enableCoverage: false
+    property bool geotagger: true
 
     property string relativePluginDir: "mappero/qml-plugins"
     property string relativePluginManifestDir: "mappero/plugins"
