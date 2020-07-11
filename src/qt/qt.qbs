@@ -126,6 +126,7 @@ QtGuiApplication {
     Depends { name: "freedesktop" }
     Depends { name: "pkgconfig" }
     Depends { name: "Qt.core" }
+    Depends { name: "Qt.positioning"; condition: !project.geotagger }
     Depends { name: "Qt.quick" }
     Depends { name: "Qt.svg"; condition: Qt.core.staticBuild }
     Depends { name: "Qt.widgets"; condition: qbs.targetOS.contains("linux") }
