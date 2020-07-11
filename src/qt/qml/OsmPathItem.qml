@@ -34,7 +34,6 @@ Pane {
         FileDialog {
             id: fileChooserSave
             title: "Choose a file name"
-            folder: "/home/user"
             selectExisting: false
             selectMultiple: false
             //fileUrl: Qt.formatDate(new Date(), Qt.ISODate) + ".gpx"
@@ -50,7 +49,6 @@ Pane {
         FileDialog {
             id: fileChooserLoad
             title: "Choose a file"
-            folder: "."
             selectExisting: true
             selectMultiple: false
             nameFilters: [ "Tracks (*.gpx)", "Packages (*.deb)" ]
