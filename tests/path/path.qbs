@@ -9,7 +9,7 @@ Test {
         "paths.qrc",
     ]
 
-    Depends { name: "Mappero" }
+    Depends { name: "MapperoCore" }
     cpp.rpaths: cpp.libraryPaths
 }
 

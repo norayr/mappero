@@ -129,7 +129,7 @@ QtGuiApplication {
     Depends { name: "Qt.quick" }
     Depends { name: "Qt.svg"; condition: Qt.core.staticBuild }
     Depends { name: "Qt.widgets"; condition: qbs.targetOS.contains("linux") }
-    Depends { name: "Mappero" }
+    Depends { name: "MapperoCore" }
     Depends { name: "MapperoUi" }
     Depends {
         name: "exiv2"

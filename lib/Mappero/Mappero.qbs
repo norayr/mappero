@@ -1,7 +1,7 @@
 import qbs 1.0
 
 DynamicLibrary {
-    name: "Mappero"
+    name: "MapperoCore"
 
     bundle.isBundle: false
     install: true
