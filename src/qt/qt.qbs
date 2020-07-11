@@ -166,4 +166,12 @@ QtGuiApplication {
         patterns: [ "*.plist" ]
         fileTags: "infoplist"
     }
+
+    /*
+     * Android-specific section
+     */
+    Properties {
+        condition: qbs.targetOS.contains("android")
+        version: "" // Workaround for https://bugreports.qt.io/browse/QBS-1578
+    }
 }
