@@ -24,11 +24,11 @@
 #include "debug.h"
 #include "gps.h"
 
-#ifdef QT_LOCATION_LIB
-#define HAS_QT_LOCATION
+#ifdef QT_POSITIONING_LIB
+#define HAS_QT_POSITIONING
 #endif
 
-#ifdef HAS_QT_LOCATION
+#ifdef HAS_QT_POSITIONING
 #include <QGeoPositionInfo>
 #include <QGeoPositionInfoSource>
 #endif
@@ -49,7 +49,7 @@ class GpsPrivate: public QObject
     GpsPrivate(Gps *gps):
         QObject(gps),
         q_ptr(gps),
-#ifdef HAS_QT_LOCATION
+#ifdef HAS_QT_POSITIONING
         source(0),
 #endif
         updateInterval(0),
@@ -57,7 +57,7 @@ class GpsPrivate: public QObject
     {}
     ~GpsPrivate() {};
 
-#ifdef HAS_QT_LOCATION
+#ifdef HAS_QT_POSITIONING
 private:
     void setupSource();
 
@@ -67,7 +67,7 @@ private Q_SLOTS:
 
 private:
     mutable Gps *q_ptr;
-#ifdef HAS_QT_LOCATION
+#ifdef HAS_QT_POSITIONING
     QGeoPositionInfoSource *source;
 #endif
     QString sourceName;
@@ -93,7 +93,7 @@ QDebug operator<<(QDebug dbg, const GpsPosition &p)
     return dbg.space();
 }
 
-#ifdef HAS_QT_LOCATION
+#ifdef HAS_QT_POSITIONING
 void GpsPrivate::setupSource()
 {
     if (source != 0) return;
@@ -178,7 +178,7 @@ void Gps::setSourceName(const QString &sourceName)
 
     if (sourceName == d->sourceName) return;
 
-#ifdef HAS_QT_LOCATION
+#ifdef HAS_QT_POSITIONING
     // TODO: handle changing source on the fly
     if (d->source != 0) {
         qWarning() << "Ignoring GPS source change while GPS running";
@@ -201,7 +201,7 @@ void Gps::setUpdateInterval(int interval)
     if (interval == d->updateInterval) return;
 
     d->updateInterval = interval;
-#ifdef HAS_QT_LOCATION
+#ifdef HAS_QT_POSITIONING
     if (d->source != 0)
         d->source->setUpdateInterval(interval * 1000);
 #endif
@@ -221,7 +221,7 @@ bool Gps::isActive() const
 
 void Gps::start()
 {
-#ifdef HAS_QT_LOCATION
+#ifdef HAS_QT_POSITIONING
     Q_D(Gps);
 
     if (d->source == 0)
@@ -238,7 +238,7 @@ void Gps::start()
 void Gps::stop()
 {
     Q_D(Gps);
-#ifdef HAS_QT_LOCATION
+#ifdef HAS_QT_POSITIONING
     if (d->source != 0)
         d->source->stopUpdates();
     d->isActive = false;
