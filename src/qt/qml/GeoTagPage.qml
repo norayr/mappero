@@ -32,8 +32,8 @@ Item {
             flickable: mapFlickable
 
             mainLayer: layerManager.mainLayer
-            center: Mappero.conf.lastPosition
-            requestedZoomLevel: Mappero.conf.lastZoomLevel
+            center: Controller.conf.lastPosition
+            requestedZoomLevel: Controller.conf.lastZoomLevel
 
             MouseArea {
                 anchors.fill: parent
@@ -234,8 +234,8 @@ Item {
             if (dropArea.model.busyTaggableCount > 0) {
                 close.accepted = false
             } else {
-                Mappero.conf.lastPosition = map.center
-                Mappero.conf.lastZoomLevel = map.zoomLevel
+                Controller.conf.lastPosition = map.center
+                Controller.conf.lastZoomLevel = map.zoomLevel
             }
         }
     }

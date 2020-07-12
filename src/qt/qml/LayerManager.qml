@@ -5,7 +5,7 @@ Item {
     id: root
 
     property var mainLayer: root.createLayer(mainLayerIndex)
-    property int mainLayerIndex: layerModel.find(Mappero.conf.lastMainLayer)
+    property int mainLayerIndex: layerModel.find(Controller.conf.lastMainLayer)
     property var model: layerModel
 
     property var __currentLayer: null
@@ -31,7 +31,7 @@ Item {
     Connections {
         target: mainWindow
         onClosing: {
-            Mappero.conf.lastMainLayer = mainLayer.uid
+            Controller.conf.lastMainLayer = mainLayer.uid
         }
     }
 

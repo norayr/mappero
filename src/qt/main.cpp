@@ -86,7 +86,7 @@ int main(int argc, char *argv[])
     engine.rootContext()->setContextProperty("application",
                                              QVariant::fromValue(&app));
     engine.rootContext()->setContextProperty("gps", Mappero::Gps::instance());
-    engine.rootContext()->setContextProperty("Mappero", &controller);
+    engine.rootContext()->setContextProperty("Controller", &controller);
 
     engine.rootContext()->setContextProperty("firstPage", app.firstPage());
 

@@ -35,8 +35,8 @@ Item {
         flickable: mapFlickable
 
         mainLayer: layerManager.mainLayer
-        center: Mappero.conf.lastPosition
-        requestedZoomLevel: Mappero.conf.lastZoomLevel
+        center: Controller.conf.lastPosition
+        requestedZoomLevel: Controller.conf.lastZoomLevel
         followGps: visible
 
         PathLayer {
@@ -126,9 +126,9 @@ Item {
     Connections {
         target: mainWindow
         onClosing: {
-            Mappero.conf.lastPosition = map.center
-            Mappero.conf.lastZoomLevel = map.zoomLevel
-            Mappero.conf.gpsInterval = gps.updateInterval
+            Controller.conf.lastPosition = map.center
+            Controller.conf.lastZoomLevel = map.zoomLevel
+            Controller.conf.gpsInterval = gps.updateInterval
         }
     }
 

@@ -23,6 +23,7 @@
 #include "poi-model.h"
 #include "routing-model.h"
 #include "types.h"
+#include "utils.h"
 
 #include <QDataStream>
 #include <QtQml>
@@ -99,4 +100,6 @@ void Mappero::registerTypes()
     qmlRegisterType<Mappero::PathBuilder>("Mappero", 1, 0, "PathBuilder");
     qmlRegisterType<Mappero::PoiModel>("Mappero", 1, 0, "PoiModel");
     qmlRegisterType<Mappero::RoutingModel>("Mappero", 1, 0, "RoutingModel");
+    qmlRegisterSingletonType<Mappero::Utils>("Mappero", 1, 0, "Mappero",
+        [](QQmlEngine *, QJSEngine *) -> QObject * { return new Utils; });
 }
