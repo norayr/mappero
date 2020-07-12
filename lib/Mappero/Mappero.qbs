@@ -39,6 +39,8 @@ DynamicLibrary {
         "search-plugin.h",
         "types.cpp",
         "types.h",
+        "utils.cpp",
+        "utils.h",
     ]
 
     Group {
