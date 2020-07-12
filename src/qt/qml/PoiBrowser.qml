@@ -5,10 +5,10 @@ import Mappero.Ui 1.0
 ListBrowser {
     id: root
 
-    property variant currentGeoPoint
+    property var currentGeoPoint
 
-    signal destinationSet(variant point)
-    signal originSet(variant point)
+    signal destinationSet(var point)
+    signal originSet(var point)
 
     delegate: PoiBrowserDelegate {
         id: browserDelegate

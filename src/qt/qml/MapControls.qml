@@ -4,7 +4,7 @@ import "UIConstants.js" as UI
 
 Item {
     id: root
-    property variant map
+    property var map
     property alias layerManager: layerSelector.manager
     width: 32 + UI.ToolbarMargins * 2
     height: col.height + UI.ToolbarMargins * 2

@@ -4,15 +4,15 @@ import Mappero 1.0
 Rectangle {
     id: root
 
-    property variant model: null
-    property variant delegate
-    property variant location
-    property variant __plugin: null
-    property variant __poiBrowser: null
-    property variant currentGeoPoint
+    property var model: null
+    property var delegate
+    property var location
+    property var __plugin: null
+    property var __poiBrowser: null
+    property var currentGeoPoint
 
-    signal destinationSet(variant point)
-    signal originSet(variant point)
+    signal destinationSet(var point)
+    signal originSet(var point)
 
     height: 40 * Mappero.uiScale
     radius: height / 2

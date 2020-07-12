@@ -7,8 +7,8 @@ Item {
     default property alias children: content.children
     property Item source
     property bool isOpen: state == "open"
-    property variant _sourcePos
-    property variant _destPos
+    property var _sourcePos
+    property var _destPos
     property string position: ""
     property int minimumWidth: 100
     property int minimumHeight: 60

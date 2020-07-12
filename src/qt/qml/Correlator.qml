@@ -4,8 +4,8 @@ import QtQuick 2.0
 Item {
     id: root
 
-    property variant track
-    property variant selection
+    property var track
+    property var selection
 
     property string _fontFamily: "Helvetica"
     property real _fontSize: 8

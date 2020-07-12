@@ -6,9 +6,9 @@ import "UIConstants.js" as UI
 Item {
     id: root
 
-    property variant selection
+    property var selection
 
-    signal geoSetterDropped(variant pos)
+    signal geoSetterDropped(var pos)
     signal trackLoaded(url filePath)
     signal help()
 

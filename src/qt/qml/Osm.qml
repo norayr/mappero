@@ -8,10 +8,10 @@ Item {
     property int buttonSize: UI.OsmButtonSize
     property int screenMargin: UI.OsmScreenMargin
     property bool isPortrait: height > width
-    property variant tracker
-    property variant route
-    property variant searchBox
-    property variant router
+    property var tracker
+    property var route
+    property var searchBox
+    property var router
 
     states: [
         State {

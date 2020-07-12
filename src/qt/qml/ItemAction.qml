@@ -3,10 +3,10 @@ import QtQuick 2.0
 Item {
     id: root
 
-    property variant selectedItems: []
+    property var selectedItems: []
     property url source
 
-    signal activate(variant taggable)
+    signal activate(var taggable)
 
     enabled: selectedItems.length > 0
 

@@ -9,7 +9,7 @@ Rectangle {
     property alias topText: nameText.text
     property bool selected: false
 
-    signal clicked(variant mouse)
+    signal clicked(var mouse)
 
     color: "black"
     border.width: 0

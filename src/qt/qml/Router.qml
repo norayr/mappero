@@ -4,17 +4,17 @@ import Mappero 1.0
 Item {
     id: root
 
-    property variant currentPosition
-    property variant destinationPoint: Mappero.invalidGeoPoint
+    property var currentPosition
+    property var destinationPoint: Mappero.invalidGeoPoint
     property string destinationName
-    property variant originPoint: Mappero.invalidGeoPoint
+    property var originPoint: Mappero.invalidGeoPoint
     property string originName
-    property variant model: null
+    property var model: null
     property int currentIndex: -1
     readonly property bool isOpen: loader.status == Loader.Ready && loader.item.isOpen
     readonly property bool browsing: __routeBrowser != null
     readonly property int routeEndsModel: Mappero.isValid(originPoint) || Mappero.isValid(destinationPoint)
-    property variant routeEndsView: Component {
+    property var routeEndsView: Component {
         PoiView {
             anchors.fill: parent
             model: endsModel
@@ -24,7 +24,7 @@ Item {
 
     property var path
     property Component pathWayPointDelegate
-    property variant __routeBrowser: null
+    property var __routeBrowser: null
     property bool routeBrowserNeeded: (model != null) && (model.count > 0)
 
     anchors.fill: parent

@@ -4,8 +4,8 @@ import "UIConstants.js" as UI
 Column {
     id: root
 
-    property variant model
-    property variant selection: model.selection
+    property var model
+    property var selection: model.selection
 
     width: UI.FileToolsWidth
     spacing: 2

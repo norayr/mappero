@@ -2,7 +2,7 @@ import QtQuick 2.0
 import "UIConstants.js" as UI
 
 ListView {
-    property variant selectedItems:  model.selection.items
+    property var selectedItems:  model.selection.items
 
     orientation: ListView.Horizontal
     cacheBuffer: 40

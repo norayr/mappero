@@ -4,7 +4,7 @@ import "UIConstants.js" as UI
 
 Popup {
     id: root
-    property variant manager
+    property var manager
 
     minimumWidth: 200
     minimumHeight: 250

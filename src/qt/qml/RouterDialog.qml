@@ -6,13 +6,13 @@ import "UIConstants.js" as UI
 Popup {
     id: root
 
-    property variant currentPosition
-    property variant destinationPoint
+    property var currentPosition
+    property var destinationPoint
     property alias destinationName: destinationField.text
-    property variant originPoint
+    property var originPoint
     property alias originName: originField.text
-    property variant routeModel
-    property variant plugin: null
+    property var routeModel
+    property var plugin: null
     property var __routerOptions: {}
 
     signal routesReady()

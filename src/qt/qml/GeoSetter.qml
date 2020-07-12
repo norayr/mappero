@@ -3,9 +3,9 @@ import QtQuick 2.0
 Item {
     id: root
 
-    property variant selectedItems: []
+    property var selectedItems: []
 
-    signal dropped(variant pos)
+    signal dropped(var pos)
 
     enabled: selectedItems.length > 0
 
@@ -13,7 +13,7 @@ Item {
         id: handle
         property real hotX: width / 2
         property real hotY: height
-        property variant _previews: []
+        property var _previews: []
 
         width: parent.width
         height: parent.height
