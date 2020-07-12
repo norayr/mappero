@@ -1,6 +1,6 @@
 import Mappero.Ui 1.0
 import QtQuick 2.0
-import QtQuick.Dialogs 1.0
+import Qt.labs.platform 1.0
 
 Pane {
     id: pane
@@ -34,30 +34,28 @@ Pane {
         FileDialog {
             id: fileChooserSave
             title: "Choose a file name"
-            selectExisting: false
-            selectMultiple: false
+            fileMode: FileDialog.SaveFile
             //fileUrl: Qt.formatDate(new Date(), Qt.ISODate) + ".gpx"
 
             onFolderChanged: { console.log("Folder changed: " + folder) }
             onAccepted: {
                 pane.close()
-                console.log("Dialog accepted: " + fileUrl)
-                path.saveFile(fileUrl);
+                console.log("Dialog accepted: " + file)
+                path.saveFile(file);
             }
         },
 
         FileDialog {
             id: fileChooserLoad
             title: "Choose a file"
-            selectExisting: true
-            selectMultiple: false
+            fileMode: FileDialog.OpenFile
             nameFilters: [ "Tracks (*.gpx *.kml)" ]
 
             onFolderChanged: { console.log("Folder changed: " + folder) }
             onAccepted: {
                 pane.close()
-                console.log("Dialog accepted: " + fileUrl)
-                path.loadFile(fileUrl);
+                console.log("Dialog accepted: " + file)
+                path.loadFile(file);
             }
         }
     ]
