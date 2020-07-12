@@ -51,7 +51,7 @@ Pane {
             title: "Choose a file"
             selectExisting: true
             selectMultiple: false
-            nameFilters: [ "Tracks (*.gpx)", "Packages (*.deb)" ]
+            nameFilters: [ "Tracks (*.gpx *.kml)" ]
 
             onFolderChanged: { console.log("Folder changed: " + folder) }
             onAccepted: {
