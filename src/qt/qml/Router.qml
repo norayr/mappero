@@ -5,9 +5,9 @@ Item {
     id: root
 
     property variant currentPosition
-    property variant destinationPoint
+    property variant destinationPoint: Mappero.invalidGeoPoint
     property string destinationName
-    property variant originPoint
+    property variant originPoint: Mappero.invalidGeoPoint
     property string originName
     property variant model: null
     property int currentIndex: -1
