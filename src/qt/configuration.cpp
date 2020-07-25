@@ -34,6 +34,7 @@ static const QLatin1String keyLastMainLayer("LastMainLayer");
 static const QLatin1String keyLastPosition("LastPosition");
 static const QLatin1String keyLastZoomLevel("LastZoomLevel");
 static const QLatin1String keyMapCacheDir("MapCacheDir");
+static const QLatin1String keyPreferredSearchPlugin("PreferredSearchPlugin");
 
 namespace Mappero {
 class ConfigurationPrivate
@@ -123,4 +124,15 @@ void Configuration::setGpsInterval(int interval)
 int Configuration::gpsInterval() const
 {
     return value(keyGpsInterval, 1).toInt();
+}
+
+void Configuration::setPreferredSearchPlugin(const QString &pluginName)
+{
+    setValue(keyPreferredSearchPlugin, pluginName);
+    Q_EMIT preferredSearchPluginChanged();
+}
+
+QString Configuration::preferredSearchPlugin() const
+{
+    return value(keyPreferredSearchPlugin, "nominatim").toString();
 }

@@ -40,6 +40,9 @@ class Configuration: public QSettings
                WRITE setLastMainLayer NOTIFY lastMainLayerChanged);
     Q_PROPERTY(int gpsInterval READ gpsInterval \
                WRITE setGpsInterval NOTIFY gpsIntervalChanged);
+    Q_PROPERTY(QString preferredSearchPlugin READ preferredSearchPlugin
+               WRITE setPreferredSearchPlugin
+               NOTIFY preferredSearchPluginChanged)
 
 public:
     Configuration(QObject *parent = 0);
@@ -59,11 +62,15 @@ public:
     void setGpsInterval(int interval);
     int gpsInterval() const;
 
+    void setPreferredSearchPlugin(const QString &pluginName);
+    QString preferredSearchPlugin() const;
+
 Q_SIGNALS:
     void lastPositionChanged();
     void lastZoomLevelChanged();
     void lastMainLayerChanged();
     void gpsIntervalChanged();
+    void preferredSearchPluginChanged();
 
 private:
     ConfigurationPrivate *d_ptr;
