@@ -20,6 +20,7 @@ Project {
         "src/plugins/google-directions/plugin.qbs",
         "src/plugins/nominatim/plugin.qbs",
         "src/plugins/reittiopas/plugin.qbs",
+        "src/plugins/yandex/plugin.qbs",
         "tests/tests.qbs",
     ]
 
