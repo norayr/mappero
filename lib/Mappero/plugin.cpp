@@ -22,6 +22,7 @@
 
 #include <QQmlContext>
 #include <QQmlEngine>
+#include <QStandardPaths>
 #include <QStringList>
 
 using namespace Mappero;
@@ -65,19 +66,20 @@ QUrl PluginPrivate::resolvePath(const QVariantMap &manifestData,
         return QUrl::fromUserInput(path);
     } else if (path.startsWith("/")) {
         return QUrl::fromLocalFile(path);
+    } else if (manifestData.contains(keyBaseDir)) {
+        /* When running uninstalled, load files from the directory
+         * containing the manifest file. */
+        return QUrl::fromLocalFile(manifestData.value(keyBaseDir).toString() +
+                                   '/' + path);
     } else {
         /* URL relative to PLUGIN_QML_DIR/<plugin-name>/ */
-        QStringList components;
-        if (manifestData.contains(keyBaseDir)) {
-            /* When running uninstalled, load files from the directory
-             * containing the manifest file. */
-            components << manifestData.value(keyBaseDir).toString();
-        } else {
-            components << QStringLiteral(PLUGIN_QML_DIR);
-            components << Plugin::name(manifestData);
-        }
-        components << path;
-        return QUrl::fromLocalFile(components.join("/"));
+        QString relativePath =
+            QString(PLUGIN_QML_DIR) + '/' + Plugin::name(manifestData) +
+            '/' + path;
+        QString baseDir =
+            QStandardPaths::locate(QStandardPaths::GenericDataLocation,
+                                   relativePath);
+        return QUrl::fromLocalFile(baseDir);
     }
 }
 
