@@ -58,6 +58,8 @@ PluginModel::PluginModel(QObject *parent):
     QAbstractListModel(parent),
     d_ptr(new PluginModelPrivate)
 {
+    QObject::connect(this, &QAbstractItemModel::modelReset,
+                     this, &PluginModel::countChanged);
 }
 
 PluginModel::~PluginModel()

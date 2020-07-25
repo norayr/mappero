@@ -30,6 +30,7 @@ class PluginModelPrivate;
 class PluginModel: public QAbstractListModel
 {
     Q_OBJECT
+    Q_PROPERTY(int count READ rowCount NOTIFY countChanged)
 
 public:
     PluginModel(QObject *parent = 0);
@@ -50,6 +51,9 @@ public:
     int rowCount(const QModelIndex &parent = QModelIndex()) const;
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const;
     QHash<int, QByteArray> roleNames() const;
+
+Q_SIGNALS:
+    void countChanged();
 
 private:
     PluginModelPrivate *d_ptr;
