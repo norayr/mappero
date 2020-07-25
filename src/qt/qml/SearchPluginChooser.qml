@@ -5,7 +5,7 @@ ImageButton {
     id: root
 
     property string activePlugin: model.get(__selectedIndex, "name")
-    property int __selectedIndex: 0
+    property int __selectedIndex: preferredPluginIndex()
     property variant model
 
     source: model.get(__selectedIndex, "icon")
@@ -26,6 +26,7 @@ ImageButton {
             loader.item.open()
         }
     }
+    onActivePluginChanged: Mappero.conf.preferredSearchPlugin = activePlugin
 
     Loader {
         id: loader
@@ -34,5 +35,15 @@ ImageButton {
     Connections {
         target: loader.item
         onIsOpenChanged: if (!loader.item.isOpen) __selectedIndex = loader.item.selectedIndex
+    }
+
+    function preferredPluginIndex() {
+        var pluginName = Mappero.conf.preferredSearchPlugin
+        var model = root.model
+        for (var i = 0; i < model.count; i++) {
+            var name = model.get(i, "name")
+            if (name == pluginName) return i
+        }
+        return 0
     }
 }
