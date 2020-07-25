@@ -6,7 +6,7 @@ ImageButton {
 
     property string activePlugin: model.get(__selectedIndex, "name")
     property int __selectedIndex: preferredPluginIndex()
-    property variant model
+    property var model: null
 
     source: model.get(__selectedIndex, "icon")
 
