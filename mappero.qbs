@@ -7,8 +7,8 @@ Project {
     property bool buildTests: false
     property bool enableCoverage: false
 
-    property string pluginDir: "share/mappero/qml-plugins"
-    property string pluginManifestDir: "share/mappero/plugins"
+    property string relativePluginDir: "mappero/qml-plugins"
+    property string relativePluginManifestDir: "mappero/plugins"
 
     qbsSearchPaths: "qbs"
 

@@ -21,13 +21,13 @@ Product {
     Group {
         fileTagsFilter: "manifest"
         qbs.install: true
-        qbs.installDir: project.pluginManifestDir
+        qbs.installDir: "share/" + project.relativePluginManifestDir
     }
 
     Group {
         fileTagsFilter: [ "qml", "image" ]
         qbs.install: true
-        qbs.installDir: project.pluginDir
+        qbs.installDir: "share/" + project.relativePluginDir
         qbs.installSourceBase: "../"
     }
 }

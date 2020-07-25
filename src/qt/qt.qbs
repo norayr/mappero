@@ -13,7 +13,7 @@ QtGuiApplication {
     cpp.defines: {
         var defines = [
             'MAPPERO_VERSION="' + project.version + '"',
-            'PLUGIN_MANIFEST_DIR="' + project.pluginManifestDir + '"',
+            'PLUGIN_MANIFEST_DIR="' + project.relativePluginManifestDir + '"',
         ]
         if (qbs.targetOS.contains("unix"))
             defines.push('XDG_THUMBNAILS')
