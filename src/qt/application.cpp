@@ -19,6 +19,7 @@
 
 #include "application.h"
 
+#include <QByteArray>
 #include <QDebug>
 #include <QFileInfo>
 #include <QFileOpenEvent>
@@ -59,6 +60,14 @@ ApplicationPrivate::ApplicationPrivate(Application *q):
 #endif
     q_ptr(q)
 {
+    QString applicationDir = QCoreApplication::applicationDirPath();
+    if (applicationDir.endsWith("/bin")) {
+        QString dataDir = applicationDir.left(applicationDir.length() - 3) +
+            "share";
+        QByteArray originalPath = qgetenv("XDG_DATA_DIRS");
+        qputenv("XDG_DATA_DIRS", dataDir.toUtf8() + ':' + originalPath);
+    }
+
     parseCmdLine();
 }
 

@@ -24,7 +24,6 @@
 #include "Mappero/Plugin"
 #include "Mappero/RoutingPlugin"
 #include "Mappero/SearchPlugin"
-#include <QCoreApplication>
 #include <QDir>
 #include <QFile>
 #include <QFileInfo>
@@ -32,6 +31,7 @@
 #include <QJsonParseError>
 #include <QMap>
 #include <QQmlEngine>
+#include <QStandardPaths>
 #include <QStringList>
 
 using namespace Mappero;
@@ -68,16 +68,12 @@ private:
 
 PluginManagerPrivate::PluginManagerPrivate(PluginManager *q):
     q_ptr(q),
-    m_baseDir(QStringLiteral(PLUGIN_MANIFEST_DIR)),
+    m_baseDir(QStandardPaths::locate(QStandardPaths::GenericDataLocation,
+                                     PLUGIN_MANIFEST_DIR,
+                                     QStandardPaths::LocateDirectory)),
     m_isUninstalled(false)
 {
-    QString applicationDir = QCoreApplication::applicationDirPath();
-    if (applicationDir.endsWith("/src/qt")) {
-        DEBUG() << "Running uninstalled, not loading system plugins";
-        m_isUninstalled = true;
-
-        m_baseDir = applicationDir + "/../plugins";
-    }
+    DEBUG() << "basedir:" << m_baseDir;
 }
 
 PluginManagerPrivate::~PluginManagerPrivate()
