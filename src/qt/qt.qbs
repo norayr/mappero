@@ -174,4 +174,10 @@ QtGuiApplication {
         condition: qbs.targetOS.contains("android")
         version: "" // Workaround for https://bugreports.qt.io/browse/QBS-1578
     }
+    Group {
+        condition: qbs.targetOS.contains("android")
+        files: [
+            "android/AndroidManifest.xml",
+        ]
+    }
 }
