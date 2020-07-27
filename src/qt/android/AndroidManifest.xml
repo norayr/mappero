@@ -14,6 +14,7 @@
         <activity android:configChanges="orientation|uiMode|screenLayout|screenSize|smallestScreenSize|layoutDirection|locale|fontScale|keyboard|keyboardHidden|navigation|mcc|mnc|density"
                   android:name="org.qtproject.qt5.android.bindings.QtActivity"
                   android:label="-- %%INSERT_APP_NAME%% --"
+                  android:icon="@drawable/ic_launcher"
                   android:screenOrientation="unspecified"
                   android:launchMode="singleTop">
             <intent-filter>

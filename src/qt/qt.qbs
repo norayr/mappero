@@ -173,6 +173,7 @@ QtGuiApplication {
     Properties {
         condition: qbs.targetOS.contains("android")
         version: "" // Workaround for https://bugreports.qt.io/browse/QBS-1578
+        Android.sdk.resourcesDir: "android/res"
     }
     Group {
         condition: qbs.targetOS.contains("android")
