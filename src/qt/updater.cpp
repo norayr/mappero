@@ -28,7 +28,9 @@
 #include <QNetworkReply>
 #include <QNetworkRequest>
 #include <QSysInfo>
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 6, 0))
 #include <QVersionNumber>
+#endif
 #include <QtQml>
 
 using namespace Mardy;
@@ -94,6 +96,7 @@ void UpdaterPrivate::start()
     Q_Q(Updater);
     setStatus(Updater::Busy);
 
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 6, 0))
     QVersionNumber ourVersion =
         QVersionNumber::fromString(QCoreApplication::applicationVersion());
     QQmlEngine *engine = qmlEngine(q);
@@ -135,6 +138,11 @@ void UpdaterPrivate::start()
         }
         Q_EMIT q->finished();
     });
+#else
+    setStatus(Updater::Failed);
+    qWarning() << "Updater disabled, Qt version too old";
+    Q_EMIT q->finished();
+#endif
 }
 
 Updater::Updater(QObject *parent):
