@@ -5,7 +5,7 @@ QtGuiApplication {
     property string libPath: qbs.targetOS.contains("darwin") ?
         "../Frameworks" : "../lib"
 
-    name: "mappero"
+    name: "Mappero"
     version: project.version
     consoleApplication: false
     install: true
@@ -174,6 +174,7 @@ QtGuiApplication {
         condition: qbs.targetOS.contains("android")
         version: "" // Workaround for https://bugreports.qt.io/browse/QBS-1578
         Android.sdk.resourcesDir: "android/res"
+        Android.sdk.packageName: "it.mardy.Mappero"
     }
     Group {
         condition: qbs.targetOS.contains("android")
