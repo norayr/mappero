@@ -113,6 +113,12 @@ struct Point: public QPoint {
 };
 
 struct MAPPERO_EXPORT GeoPoint {
+    Q_GADGET
+    Q_PROPERTY(bool valid READ isValid)
+    Q_PROPERTY(qreal lat MEMBER lat)
+    Q_PROPERTY(qreal lon MEMBER lon)
+
+public:
     GeoPoint(): lat(NAN), lon(0) {}
     GeoPoint(const QPointF &p): lat(p.x()), lon(p.y()) {}
     GeoPoint(Geo lat, Geo lon): lat(lat), lon(lon) {}
