@@ -42,3 +42,14 @@ whether Mappero Geotagger should be built, use the `project.geotagger` option,
 like this:
 
     qbs resolve project.geotagger:false
+
+
+### Building for Android
+
+QBS will happily build Mappero for Android, if a proper profile is selected;
+the only thing requiring special care is SSL support (which must be enabled,
+otherwise the plugins won't work): you will need to download `libcrypto_1_1.so`
+and `libssl_1_1.so` from [this
+repository](https://github.com/KDAB/android_openssl/tree/master/latest/arm)
+and copy them into your Qt lib directory, that is `<path-to-qt>/android/lib`.
+Then QBS should be able to find them and embed them into the `apk` file.

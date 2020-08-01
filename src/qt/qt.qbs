@@ -173,11 +173,18 @@ QtGuiApplication {
     /*
      * Android-specific section
      */
+    Depends {
+        name: "Qt.android_support"
+        condition: qbs.targetOS.contains("android")
+    }
     Properties {
         condition: qbs.targetOS.contains("android")
         version: "" // Workaround for https://bugreports.qt.io/browse/QBS-1578
         Android.sdk.resourcesDir: "android/res"
         Android.sdk.packageName: "it.mardy.Mappero"
+        cpp.dynamicLibraries: ["crypto_1_1", "ssl_1_1"]
+        Qt.android_support.extraLibs: ["libcrypto_1_1.so", "libssl_1_1.so"].map(
+            function(lib) { return Qt.core.libPath + "/" + lib })
     }
     Group {
         condition: qbs.targetOS.contains("android")
