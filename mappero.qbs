@@ -10,6 +10,7 @@ Project {
 
     property string relativePluginDir: "mappero/qml-plugins"
     property string relativePluginManifestDir: "mappero/plugins"
+    property bool embedPlugins: qbs.targetOS.contains("android")
 
     qbsSearchPaths: "qbs"
 
@@ -17,11 +18,7 @@ Project {
         "lib/Mappero/Mappero.qbs",
         "lib/MapperoUi/MapperoUi.qbs",
         "src/qt/qt.qbs",
-        "src/plugins/google/plugin.qbs",
-        "src/plugins/google-directions/plugin.qbs",
-        "src/plugins/nominatim/plugin.qbs",
-        "src/plugins/reittiopas/plugin.qbs",
-        "src/plugins/yandex/plugin.qbs",
+        "src/plugins/plugins.qbs",
         "tests/tests.qbs",
     ]
 

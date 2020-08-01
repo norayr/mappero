@@ -167,6 +167,8 @@ QtGuiApplication {
         fileTags: "infoplist"
     }
 
+    Depends { name: "plugins"; condition: project.embedPlugins }
+
     /*
      * Android-specific section
      */

@@ -57,6 +57,9 @@ static QObject *createPluginManager(QQmlEngine *engine, QJSEngine *scriptEngine)
 
 int main(int argc, char *argv[])
 {
+#ifdef STATIC_PLUGINS
+    Q_INIT_RESOURCE(plugins);
+#endif
     Mappero::Application app(argc, argv);
 #ifdef STATIC_BUILD
     Q_INIT_RESOURCE(mappero_ui);
