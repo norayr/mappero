@@ -33,3 +33,12 @@ Finally, you can just run
 
 to build the application, and you can use `qbs -b check` to run the unit tests
 or `qbs -p coverage` to generate the coverage report.
+
+
+### Selecting geotag mode vs normal map
+
+By default, geotagging is enabled if exiv2 is found. To explicitly decide
+whether Mappero Geotagger should be built, use the `project.geotagger` option,
+like this:
+
+    qbs resolve project.geotagger:false
