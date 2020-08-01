@@ -129,7 +129,7 @@ QtGuiApplication {
     Depends { name: "Qt.core" }
     Depends { name: "Qt.positioning"; condition: !project.geotagger }
     Depends { name: "Qt.quick" }
-    Depends { name: "Qt.svg"; condition: Qt.core.staticBuild }
+    Depends { name: "Qt.svg" }
     Depends { name: "Qt.widgets"; condition: qbs.targetOS.contains("linux") }
     Depends { name: "MapperoCore" }
     Depends { name: "MapperoUi" }

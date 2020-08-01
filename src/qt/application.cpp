@@ -26,6 +26,9 @@
 #include <QIcon>
 #include <QMetaObject>
 #include <QThreadPool>
+#ifdef Q_OS_ANDROID
+#include <QSvgRenderer>
+#endif
 
 using namespace Mappero;
 
@@ -135,6 +138,9 @@ Application::Application(int &argc, char **argv):
 Application::~Application()
 {
     QThreadPool::globalInstance()->waitForDone(5000);
+#ifdef Q_OS_ANDROID
+    QSvgRenderer unusedRenderer; // Just to force linking to SVG
+#endif
 }
 
 QString Application::firstPage() const
