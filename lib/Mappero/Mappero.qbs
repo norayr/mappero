@@ -9,7 +9,6 @@ DynamicLibrary {
     cpp.allowUnresolvedSymbols: false
     cpp.defines: [
         'BUILDING_LIBMAPPERO',
-        'PLUGIN_QML_DIR="' + project.relativePluginDir + '"',
     ]
     cpp.cxxLanguageVersion: "c++11"
 

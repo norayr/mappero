@@ -61,10 +61,7 @@ QUrl PluginPrivate::resolvePath(const QVariantMap &manifestData,
 
     if (path.isEmpty()) return QUrl();
 
-    if (path.contains(":")) {
-        /* Assume it's a URL */
-        return QUrl::fromUserInput(path);
-    } else if (path.startsWith("/")) {
+    if (path.startsWith("/")) {
         return QUrl::fromLocalFile(path);
     } else if (manifestData.contains(keyBaseDir)) {
         /* When running uninstalled, load files from the directory
@@ -72,14 +69,8 @@ QUrl PluginPrivate::resolvePath(const QVariantMap &manifestData,
         return QUrl::fromLocalFile(manifestData.value(keyBaseDir).toString() +
                                    '/' + path);
     } else {
-        /* URL relative to PLUGIN_QML_DIR/<plugin-name>/ */
-        QString relativePath =
-            QString(PLUGIN_QML_DIR) + '/' + Plugin::name(manifestData) +
-            '/' + path;
-        QString baseDir =
-            QStandardPaths::locate(QStandardPaths::GenericDataLocation,
-                                   relativePath);
-        return QUrl::fromLocalFile(baseDir);
+        /* Assume it's a URL */
+        return QUrl::fromUserInput(path);
     }
 }
 

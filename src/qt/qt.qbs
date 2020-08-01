@@ -14,6 +14,7 @@ QtGuiApplication {
         var defines = [
             'MAPPERO_VERSION="' + project.version + '"',
             'PLUGIN_MANIFEST_DIR="' + project.relativePluginManifestDir + '"',
+            'PLUGIN_QML_DIR="' + project.relativePluginDir + '"',
         ]
         if (qbs.targetOS.contains("unix"))
             defines.push('XDG_THUMBNAILS')

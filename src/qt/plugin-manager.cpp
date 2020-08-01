@@ -136,19 +136,33 @@ void PluginManagerPrivate::reload()
 {
     clear();
     QDir path(m_baseDir);
+    QStringList manifestDirComponents =
+        QString(PLUGIN_MANIFEST_DIR).split('/', QString::SkipEmptyParts);
+    QString relativePluginPath;
+    for (int i = 0; i < manifestDirComponents.count(); i++) {
+        relativePluginPath += "../";
+    }
+    relativePluginPath += PLUGIN_QML_DIR;
+
     Q_FOREACH(QFileInfo fileInfo, path.entryInfoList()) {
         if (fileInfo.fileName()[0] == '.') continue;
         QVariantMap manifestData;
         if (fileInfo.suffix() == "manifest") {
             manifestData = parseManifest(fileInfo);
-        } else if (m_isUninstalled && fileInfo.isDir()) {
-            QDir subdir(fileInfo.filePath());
-            QFileInfo manifest(subdir, fileInfo.fileName() + ".manifest");
-            manifestData = parseManifest(manifest);
+            QString name =
+                manifestData.value(QStringLiteral(MAPPERO_PLUGIN_KEY_NAME))
+                .toString();
+            QDir manifestDir = fileInfo.dir();
+            if (!manifestDir.cd(relativePluginPath) || !manifestDir.cd(name)) {
+                qWarning() <<
+                    "Cannot find QML dir for plugin" << fileInfo.fileName() <<
+                    " - manifest:" << manifestDir <<
+                    " - relative:" << relativePluginPath;
+            }
             /* Append the name of the directory, so that plugins will load from
              * there */
             manifestData.insert(QLatin1String(MAPPERO_PLUGIN_KEY_BASEDIR),
-                                fileInfo.filePath());
+                                manifestDir.absolutePath());
         }
         if (manifestData.isEmpty()) continue;
 
