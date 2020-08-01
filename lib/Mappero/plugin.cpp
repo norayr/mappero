@@ -64,8 +64,7 @@ QUrl PluginPrivate::resolvePath(const QVariantMap &manifestData,
     if (path.startsWith("/")) {
         return QUrl::fromLocalFile(path);
     } else if (manifestData.contains(keyBaseDir)) {
-        /* When running uninstalled, load files from the directory
-         * containing the manifest file. */
+        /* The PluginManager has already computed the location for us */
         return QUrl::fromLocalFile(manifestData.value(keyBaseDir).toString() +
                                    '/' + path);
     } else {

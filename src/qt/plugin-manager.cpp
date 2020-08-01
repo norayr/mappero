@@ -60,7 +60,6 @@ class PluginManagerPrivate
 private:
     mutable PluginManager *q_ptr;
     QString m_baseDir;
-    bool m_isUninstalled;
     QMap<QString,PluginData> m_plugins;
     QHash<QString,PluginModel*> m_models;
 };
@@ -69,8 +68,7 @@ private:
 
 PluginManagerPrivate::PluginManagerPrivate(PluginManager *q):
     q_ptr(q),
-    m_baseDir(locateBaseDir()),
-    m_isUninstalled(false)
+    m_baseDir(locateBaseDir())
 {
     DEBUG() << "basedir:" << m_baseDir;
 }

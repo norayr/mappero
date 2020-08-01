@@ -35,7 +35,7 @@ namespace Mappero {
 #define MAPPERO_PLUGIN_KEY_TYPE "type"
 #define MAPPERO_PLUGIN_KEY_TRANSLATIONS "translations"
 
-#define MAPPERO_PLUGIN_KEY_BASEDIR "basedir" // for running uninstalled
+#define MAPPERO_PLUGIN_KEY_BASEDIR "basedir"
 
 /* Plugin types */
 #define MAPPERO_PLUGIN_TYPE_SEARCH "search"
