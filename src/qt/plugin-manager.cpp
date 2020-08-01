@@ -50,6 +50,7 @@ class PluginManagerPrivate
     inline PluginManagerPrivate(PluginManager *q);
     inline ~PluginManagerPrivate();
 
+    static QString locateBaseDir();
     QVariantMap parseManifest(const QFileInfo &manifest);
     Plugin *createPlugin(const QVariantMap &manifestData);
 
@@ -68,9 +69,7 @@ private:
 
 PluginManagerPrivate::PluginManagerPrivate(PluginManager *q):
     q_ptr(q),
-    m_baseDir(QStandardPaths::locate(QStandardPaths::GenericDataLocation,
-                                     PLUGIN_MANIFEST_DIR,
-                                     QStandardPaths::LocateDirectory)),
+    m_baseDir(locateBaseDir()),
     m_isUninstalled(false)
 {
     DEBUG() << "basedir:" << m_baseDir;
@@ -79,6 +78,20 @@ PluginManagerPrivate::PluginManagerPrivate(PluginManager *q):
 PluginManagerPrivate::~PluginManagerPrivate()
 {
     clear();
+}
+
+QString PluginManagerPrivate::locateBaseDir()
+{
+    QString baseDir =
+        QStandardPaths::locate(QStandardPaths::GenericDataLocation,
+                               PLUGIN_MANIFEST_DIR,
+                               QStandardPaths::LocateDirectory);
+    if (baseDir.isEmpty()) {
+        /* Fallback to resources */
+        baseDir = QStringLiteral(":/") + PLUGIN_MANIFEST_DIR;
+    }
+
+    return baseDir;
 }
 
 QVariantMap PluginManagerPrivate::parseManifest(const QFileInfo &manifest)
