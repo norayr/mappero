@@ -12,7 +12,7 @@ PoiModel {
     function doQuery() {
         listModel.clear()
         var url = "https://nominatim.openstreetmap.org/search?format=json&q=" +
-        search.query + "+" + search.location.x + "," + search.location.y +
+        search.query + "+" + search.location.lat + "," + search.location.lon +
         "&limit=" + search.itemsPerPage
         var xhr = new XMLHttpRequest;
         xhr.open("GET", url);

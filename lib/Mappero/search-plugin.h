@@ -22,6 +22,8 @@
 
 #include "plugin.h"
 
+#include "types.h"
+
 #include <QObject>
 #include <QPointF>
 #include <QVariant>
@@ -38,7 +40,7 @@ class MAPPERO_EXPORT SearchPlugin: public Plugin
     Q_PROPERTY(QQmlComponent *delegate READ delegate CONSTANT)
     Q_PROPERTY(QVariant model READ model CONSTANT)
     Q_PROPERTY(QString query READ query WRITE setQuery NOTIFY queryChanged)
-    Q_PROPERTY(QPointF location READ location WRITE setLocation \
+    Q_PROPERTY(GeoPoint location READ location WRITE setLocation \
                NOTIFY locationChanged)
     Q_PROPERTY(bool isRunning READ isRunning WRITE setRunning \
                NOTIFY isRunningChanged)
@@ -55,8 +57,8 @@ public:
     void setQuery(const QString &query);
     QString query() const;
 
-    void setLocation(const QPointF &location);
-    QPointF location() const;
+    void setLocation(const GeoPoint &location);
+    GeoPoint location() const;
 
     void setRunning(bool isRunning);
     bool isRunning() const;

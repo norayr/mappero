@@ -7,14 +7,13 @@ PoiModel {
     property string apiKey: "AIzaSyDdPxlISfxPRpL4Z-X5es5DWNSS28z1OF0"
 
     Component.onCompleted: {
-        console.log("Model loaded" + search.location)
         search.onQueryChanged.connect(doQuery)
     }
 
     function doQuery() {
         listModel.clear()
         var url = "https://maps.googleapis.com/maps/api/place/nearbysearch/json?key=" + apiKey +
-        "&location=" + search.location.x + "," + search.location.y + "&keyword=" +
+        "&location=" + search.location.lat + "," + search.location.lon + "&keyword=" +
         search.query + "&sensor=true&rankby=distance"
         console.log("url: " + url)
         var xhr = new XMLHttpRequest;

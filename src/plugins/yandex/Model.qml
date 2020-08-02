@@ -14,7 +14,7 @@ PoiModel {
         var url = "https://search-maps.yandex.ru/v1/" +
             "?apikey=4897c636-93f3-4337-a63b-559dde445cd9" +
             "&text=" + encodeURIComponent(search.query) +
-            "&ll=" + search.location.y + "," + search.location.x +
+            "&ll=" + search.location.lon + "," + search.location.lat +
             "&results=" + search.itemsPerPage +
             "&lang=ru_RU"
         var xhr = new XMLHttpRequest;

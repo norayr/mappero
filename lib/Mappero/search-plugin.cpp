@@ -40,7 +40,7 @@ class SearchPluginPrivate
 private:
     mutable SearchPlugin *q_ptr;
     QString m_query;
-    QPointF m_location;
+    GeoPoint m_location;
     bool m_isRunning;
     int m_itemsPerPage;
 };
@@ -123,7 +123,7 @@ QString SearchPlugin::query() const
     return d->m_query;
 }
 
-void SearchPlugin::setLocation(const QPointF &location)
+void SearchPlugin::setLocation(const GeoPoint &location)
 {
     Q_D(SearchPlugin);
     if (location == d->m_location) return;
@@ -131,7 +131,7 @@ void SearchPlugin::setLocation(const QPointF &location)
     Q_EMIT locationChanged();
 }
 
-QPointF SearchPlugin::location() const
+GeoPoint SearchPlugin::location() const
 {
     Q_D(const SearchPlugin);
     return d->m_location;
