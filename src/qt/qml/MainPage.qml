@@ -147,6 +147,7 @@ Item {
         anchors.horizontalCenter: parent.horizontalCenter
         width: 200 * Mappero.uiScale
         location: map.center
+        span: Mappero.geo(1,2)
         visible: false
 
         onCurrentGeoPointChanged: map.requestedCenter = currentGeoPoint
