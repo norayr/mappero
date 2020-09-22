@@ -41,6 +41,7 @@ private:
     mutable SearchPlugin *q_ptr;
     QString m_query;
     GeoPoint m_location;
+    GeoPoint m_span;
     bool m_isRunning;
     int m_itemsPerPage;
 };
@@ -135,6 +136,20 @@ GeoPoint SearchPlugin::location() const
 {
     Q_D(const SearchPlugin);
     return d->m_location;
+}
+
+void SearchPlugin::setSpan(const GeoPoint &span)
+{
+    Q_D(SearchPlugin);
+    if (span == d->m_span) return;
+    d->m_span = span;
+    Q_EMIT spanChanged();
+}
+
+GeoPoint SearchPlugin::span() const
+{
+    Q_D(const SearchPlugin);
+    return d->m_span;
 }
 
 void SearchPlugin::setRunning(bool isRunning)

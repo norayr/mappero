@@ -42,6 +42,7 @@ class MAPPERO_EXPORT SearchPlugin: public Plugin
     Q_PROPERTY(QString query READ query WRITE setQuery NOTIFY queryChanged)
     Q_PROPERTY(GeoPoint location READ location WRITE setLocation \
                NOTIFY locationChanged)
+    Q_PROPERTY(GeoPoint span READ span WRITE setSpan NOTIFY spanChanged)
     Q_PROPERTY(bool isRunning READ isRunning WRITE setRunning \
                NOTIFY isRunningChanged)
     Q_PROPERTY(int itemsPerPage READ itemsPerPage WRITE setItemsPerPage \
@@ -60,6 +61,9 @@ public:
     void setLocation(const GeoPoint &location);
     GeoPoint location() const;
 
+    void setSpan(const GeoPoint &span);
+    GeoPoint span() const;
+
     void setRunning(bool isRunning);
     bool isRunning() const;
 
@@ -69,6 +73,7 @@ public:
 Q_SIGNALS:
     void queryChanged();
     void locationChanged();
+    void spanChanged();
     void isRunningChanged();
     void itemsPerPageChanged();
 
