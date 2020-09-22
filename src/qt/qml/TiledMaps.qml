@@ -94,9 +94,9 @@ ListModel {
     ListElement {
         uid: "YandexSatellite"
         name: "Yandex Satellite"
-        url: "http://sat.maps.yandex.net/tiles?l=sat&v=1.36.0&x=%d&y=%d&z=%d"
+        url: "https://core-sat.maps.yandex.net/tiles?l=sat&v=3.702.0&scale=1&x=%d&y=%d&z=%d"
         type: "YANDEX"
-        format: "png"
+        format: "jpg"
         minZoom: 2
         maxZoom: 19
         notice: "Powered by Yandex"
