@@ -443,9 +443,14 @@ QPixmap TaggablePrivate::preview(QSize *size,
     previewSize = QSize(best->width_, best->height_);
     if (size != 0) *size = previewSize;
 
-    Exiv2::PreviewImage exivPreview = loader.getPreviewImage(*best);
     QImage preview;
-    preview.loadFromData(exivPreview.pData(), exivPreview.size());
+    try {
+        Exiv2::PreviewImage exivPreview = loader.getPreviewImage(*best);
+        preview.loadFromData(exivPreview.pData(), exivPreview.size());
+    } catch (Exiv2::AnyError &e) {
+        qDebug() << "Exiv2 exception, code" << e.code() << e.what();
+        return QPixmap();
+    }
 
     /* Handle image orientation */
     Exiv2::ExifData &exifData = image->exifData();
