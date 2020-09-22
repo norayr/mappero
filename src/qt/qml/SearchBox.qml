@@ -7,6 +7,7 @@ Rectangle {
     property var model: null
     property var delegate
     property var location
+    property var span
     property var __plugin: null
     property var __poiBrowser: null
     property var currentGeoPoint
@@ -82,6 +83,12 @@ Rectangle {
         value: location
     }
 
+    Binding {
+        target: __plugin
+        property: "span"
+        value: span
+    }
+
     Component {
         id: poiBrowserComponent
         PoiBrowser {
@@ -96,6 +103,7 @@ Rectangle {
         __plugin = PluginManager.loadPlugin(id)
         if (__plugin) {
             __plugin.location = location
+            __plugin.span = span
             delegate = __plugin.delegate
             model = __plugin.model
             modelConnection.target = model
