@@ -82,5 +82,14 @@
         </ul>
       </description>
     </release>
+    <release version="1.10" date="2020-09-22">
+      <description>
+        <ul>
+          <li>Fix a crash when loading certain DNG files</li>
+          <li>Fix the Yandex Satellite map layer</li>
+          <li>Add a notice in the Help screen if a new version is available</li>
+        </ul>
+      </description>
+    </release>
   </releases>
 </component>
