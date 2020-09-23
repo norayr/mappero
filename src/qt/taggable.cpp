@@ -426,25 +426,26 @@ QPixmap TaggablePrivate::cachedThumbnail(QSize *size, const QSize &) const
 QPixmap TaggablePrivate::preview(QSize *size,
                                  const QSize &requestedSize) const
 {
-    Exiv2::PreviewManager loader(*image);
-    Exiv2::PreviewPropertiesList list = loader.getPreviewProperties();
-
-    if (list.empty()) return QPixmap();
-
-    Exiv2::PreviewPropertiesList::const_iterator i, best;
     QSize previewSize;
-    for (i = list.begin(); i != list.end(); i++) {
-        best = i;
-        if (i->width_ >= uint(requestedSize.width()) &&
-            i->height_ >= uint(requestedSize.height()))
-            break;
-    }
-
-    previewSize = QSize(best->width_, best->height_);
-    if (size != 0) *size = previewSize;
-
     QImage preview;
+
     try {
+        Exiv2::PreviewManager loader(*image);
+        Exiv2::PreviewPropertiesList list = loader.getPreviewProperties();
+
+        if (list.empty()) return QPixmap();
+
+        Exiv2::PreviewPropertiesList::const_iterator i, best;
+        for (i = list.begin(); i != list.end(); i++) {
+            best = i;
+            if (i->width_ >= uint(requestedSize.width()) &&
+                i->height_ >= uint(requestedSize.height()))
+                break;
+        }
+
+        previewSize = QSize(best->width_, best->height_);
+        if (size != 0) *size = previewSize;
+
         Exiv2::PreviewImage exivPreview = loader.getPreviewImage(*best);
         preview.loadFromData(exivPreview.pData(), exivPreview.size());
     } catch (Exiv2::AnyError &e) {
